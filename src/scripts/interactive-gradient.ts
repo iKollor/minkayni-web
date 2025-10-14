@@ -67,6 +67,14 @@ export function makeInteractiveGradient(el: HTMLElement, opts: Opts = {}) {
     if (!el) return () => {};
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return () => {};
 
+    // Evita inicializaciones duplicadas que crean múltiples RAF loops y provocan "glitches" visuales
+    // Guardado ligero vía data-atributo + referencia de cleanup en el propio elemento
+    const anyEl = el as HTMLElement & { __interactiveGradientCleanup?: () => void };
+    if (el.dataset.gradientInit === "1") {
+        return anyEl.__interactiveGradientCleanup || (() => {});
+    }
+    el.dataset.gradientInit = "1";
+
     const wander = opts.wander ?? 6;
     const maxFps = opts.maxFps ?? 36;
     const driftSpeed = opts.driftSpeed ?? 0.06;
@@ -89,6 +97,17 @@ export function makeInteractiveGradient(el: HTMLElement, opts: Opts = {}) {
             el.style.animation = "none";
         } catch {}
     }
+
+    // Sugerencias de renderizado para minimizar parpadeos en cambios de background
+    try {
+        el.style.setProperty("will-change", "background");
+        el.style.setProperty("contain", "paint");
+        // activación de capa de composición en algunos navegadores
+        (el.style as any).webkitTransform = "translateZ(0)";
+        el.style.transform = "translateZ(0)";
+        (el.style as any).webkitBackfaceVisibility = "hidden";
+        el.style.backfaceVisibility = "hidden";
+    } catch {}
 
     // Computed style una sola vez
     const cs = getComputedStyle(el);
@@ -137,11 +156,15 @@ export function makeInteractiveGradient(el: HTMLElement, opts: Opts = {}) {
         last = t;
         acc += dt;
         if (acc < frameTime) return;
-        acc = 0;
+        // conserva el remanente de tiempo para un pacing más uniforme
+        acc -= frameTime;
+
+        // Factor de tiempo relativo a ~60fps para que driftSpeed sea estable
+        const tScale = Math.min(dt, 48) / (1000 / 60);
 
         for (i = 0; i < n; i++) {
-            phaseX[i] += driftSpeed * freqX[i];
-            phaseY[i] += driftSpeed * freqY[i];
+            phaseX[i] += driftSpeed * freqX[i] * tScale;
+            phaseY[i] += driftSpeed * freqY[i] * tScale;
 
             dx = Math.sin(phaseX[i]) * amp[i];
             dy = Math.sin(phaseY[i]) * amp[i];
@@ -177,10 +200,12 @@ export function makeInteractiveGradient(el: HTMLElement, opts: Opts = {}) {
     };
     document.addEventListener("visibilitychange", vis);
 
-    return () => {
+    const cleanup = () => {
         cancelAnimationFrame(rafId);
         document.removeEventListener("visibilitychange", vis);
     };
+    anyEl.__interactiveGradientCleanup = cleanup;
+    return cleanup;
 }
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a);

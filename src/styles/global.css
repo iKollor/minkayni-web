@@ -199,6 +199,13 @@ body {
                 var(--primary) 100%);
         background-repeat: no-repeat;
         background-size: 100% 100%;
+        /* Hints de render para evitar parpadeos en repaints masivos */
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        will-change: background;
+        contain: paint;
     }
 
     /* ===== fondo avanzado (oklch + color-mix soportado) ===== */
@@ -311,6 +318,10 @@ body {
             radial-gradient(80% 80% at var(--x3) var(--y3),
                 color-mix(in srgb, var(--mid) var(--bg-pct, 100%), transparent) 0%,
                 transparent 70%),
+            /* Mantener número de capas constante con gradientes vacíos (evita flicker en cambio de estado) */
+            radial-gradient(0% 0% at var(--x4) var(--y4), transparent 0%, transparent 100%),
+            radial-gradient(0% 0% at var(--x5) var(--y5), transparent 0%, transparent 100%),
+            radial-gradient(0% 0% at var(--x6) var(--y6), transparent 0%, transparent 100%),
             linear-gradient(130deg,
                 color-mix(in srgb, var(--p-boost) var(--bg-pct, 100%), transparent) 0%,
                 color-mix(in srgb, var(--mid) var(--bg-pct, 100%), transparent) 45%,
@@ -319,6 +330,7 @@ body {
         background-size:
             100% 100%,
             140% 140%, 140% 140%, 160% 160%,
+            0% 0%, 0% 0%, 0% 0%,
             100% 100%;
     }
 }
