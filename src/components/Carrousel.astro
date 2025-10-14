@@ -1,0 +1,167 @@
+---
+import { Image } from "astro:assets";
+
+export interface Props {
+    images: ReadonlyArray<{ src: string }>;
+    ariaLabel?: string;
+}
+
+const STRAPI_URL = import.meta.env.STRAPI_URL;
+
+const { images = [], ariaLabel = "Carrusel de imágenes" } = Astro.props;
+---
+
+{
+    images.length > 0 && (
+        <section id="logo-carousel" aria-label={ariaLabel} class="relative w-full overflow-hidden select-none h-[65px] md:h-[100px]">
+            <div class="carousel-viewport relative h-full w-full overflow-hidden">
+                <div class="carousel-inner h-full will-change-transform">
+                    <ul class="carousel-strip carousel-strip--1 absolute left-0 top-0 flex items-center h-full gap-12">
+                        {images.map((img, i) => {
+                            return (
+                                <li class="h-full flex items-center shrink-0" aria-hidden={false}>
+                                    <Image src={new URL(img.src, STRAPI_URL).href} alt="" width={220} height={100} class="block h-full max-w-48 object-contain" loading={i > 4 ? "lazy" : "eager"} />
+                                </li>
+                            );
+                        })}
+                    </ul>
+                    {/* Duplicado para bucle continuo */}
+                    <ul class="carousel-strip carousel-strip--2 absolute left-0 top-0 flex items-center h-full gap-12" aria-hidden="true">
+                        {images.map((img) => (
+                            <li class="h-full flex items-center shrink-0">
+                                <Image src={new URL(img.src, STRAPI_URL).href} alt="" width={220} height={100} class="block h-full max-w-48 object-contain" loading="lazy" />
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
+        </section>
+    )
+}
+
+<script>
+    import { gsap, ScrollTrigger } from "../scripts/main.ts";
+    // Notas de animación:
+    // - Reveal: timeline GSAP con fromTo y clearProps para dejar estado final estable y sin immediateRender.
+    // - Loop horizontal: dos tiras duplicadas movidas con gsap.ticker y quickSetter para suavidad y menos layout thrash.
+    // - Respeta prefers-reduced-motion y pausa fuera del viewport con ScrollTrigger.
+
+    const start = () => {
+        const root = document.getElementById("logo-carousel");
+        if (!root || root.dataset.initialized) return;
+        root.dataset.initialized = "1";
+
+        const prefersReduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const inner = root.querySelector<HTMLElement>(".carousel-inner");
+        const strip1 = root.querySelector<HTMLElement>(".carousel-strip--1");
+        const strip2 = root.querySelector<HTMLElement>(".carousel-strip--2");
+        let ro: ResizeObserver | null = null;
+        let tickerFn: ((time: number, deltaTime: number, frame: number) => void) | null = null;
+        let x1 = 0;
+        let x2 = 0;
+
+        if (!inner || !strip1 || !strip2) return;
+
+        const setup = () => {
+            // Limpiar animación previa
+            if (tickerFn) {
+                gsap.ticker.remove(tickerFn);
+                tickerFn = null;
+            }
+            gsap.set([strip1, strip2], { clearProps: "all" });
+
+            const w = strip1.scrollWidth;
+            const cs = getComputedStyle(strip1);
+            const gapPx = parseFloat((cs.columnGap || cs.gap || "0").toString()) || 0;
+            const W = w + gapPx; // ancho efectivo incluyendo un gap al final para separación strip1->strip2
+            if (!w || prefersReduce) {
+                // Sin animación (reduced motion) o ancho inválido
+                gsap.set([strip1, strip2], { x: 0 });
+                return;
+            }
+
+            x1 = 0;
+            x2 = W;
+            // setters rápidos para evitar layout thrash y mejorar suavidad
+            const setX1 = gsap.quickSetter(strip1, "x", "px");
+            const setX2 = gsap.quickSetter(strip2, "x", "px");
+            gsap.set([strip1, strip2], { force3D: true });
+            setX1(x1);
+            setX2(x2);
+
+            const PX_PER_SEC = 80; // velocidad constante
+            const pxPerTick = () => (gsap.ticker.deltaRatio() * PX_PER_SEC) / 60; // compensar FPS
+
+            tickerFn = () => {
+                const dx = pxPerTick();
+                x1 -= dx;
+                x2 -= dx;
+                if (x1 <= -W) x1 += 2 * W;
+                if (x2 <= -W) x2 += 2 * W;
+                setX1(x1);
+                setX2(x2);
+            };
+            gsap.ticker.add(tickerFn);
+        };
+
+        // (reveal inline con ScrollTrigger más abajo)
+
+        // Recalcular en resize (debounced por GSAP)
+        let resizeTween: gsap.core.Tween | null = null;
+        const handleResize = () => {
+            resizeTween?.kill();
+            resizeTween = gsap.delayedCall(0.15, setup);
+        };
+        window.addEventListener("resize", handleResize);
+
+        // Observar cambios de tamaño en la tira (cuando cargan imágenes cambia scrollWidth)
+        if ("ResizeObserver" in window && strip1) {
+            ro = new ResizeObserver(() => handleResize());
+            ro.observe(strip1);
+        }
+
+        // Si reduced-motion, solo asegurar visibilidad; si no, preparar reveal con toggleActions
+        if (prefersReduce) {
+            gsap.set(root, { autoAlpha: 1, y: 0 });
+        } else {
+            // Reveal con ScrollTrigger usando toggleActions para evitar onStart/onComplete
+            gsap.fromTo(
+                root,
+                { autoAlpha: 0, y: 12 },
+                {
+                    autoAlpha: 1,
+                    y: 0,
+                    duration: 0.6,
+                    ease: "power2.out",
+                    scrollTrigger: {
+                        trigger: root,
+                        start: "top 80%",
+                        toggleActions: "play none none reverse",
+                    },
+                }
+            );
+        }
+
+        // Control del loop con ScrollTrigger (play/pause al entrar/salir del viewport)
+        ScrollTrigger.create({
+            trigger: root,
+            start: "top bottom",
+            end: "bottom top",
+            onToggle: (self) => {
+                if (prefersReduce) return;
+                if (self.isActive) {
+                    if (!tickerFn) setup();
+                } else if (tickerFn) {
+                    gsap.ticker.remove(tickerFn);
+                    tickerFn = null;
+                }
+            },
+        });
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", start, { once: true });
+    } else {
+        start();
+    }
+</script>

@@ -1,0 +1,174 @@
+---
+// Props iguales
+interface Props {
+    href?: string | URL;
+    defaultText?: string;
+    hoverText?: string;
+    class?: string; // clase extra opcional
+}
+const { href, defaultText = "Aporta hoy 💜", hoverText = "Al cambio ✨", class: className = "" } = Astro.props as Props;
+---
+
+<style>
+    :root {
+        --btn-text-size: 18px;
+        --btn-px: 1.3rem;
+        --btn-py: 0.45em;
+
+        --btn-bg: var(--secondary);
+        --btn-text: var(--bg-white);
+
+        --btn-bg-hover: #4cede1;
+        --glow-a: #00f8f1;
+        --glow-b: #ffbd1e;
+        --glow-c: #fe848f;
+
+        --btn-radius: 9999px;
+        --glow-blur: 5px;
+        --glow-speed: 5s;
+    }
+
+    .glow-outer {
+        background: linear-gradient(-20deg, var(--glow-a), color-mix(in oklab, var(--glow-a) 20%, transparent) 16.5%, var(--glow-a) 33%, color-mix(in oklab, var(--glow-a) 10%, transparent) 49.5%, var(--glow-a) 66%, color-mix(in oklab, var(--glow-a) 0%, transparent) 85.5%, var(--glow-a) 100%);
+    }
+    .glow-inner {
+        background: linear-gradient(20deg, var(--glow-a), color-mix(in oklab, var(--glow-b) 12%, transparent) 16.5%, var(--glow-c) 33%, color-mix(in oklab, var(--glow-c) 12%, transparent) 49.5%, var(--glow-a) 66%, color-mix(in oklab, var(--glow-a) 40%, transparent) 85.5%, var(--glow-b) 100%);
+        mix-blend-mode: overlay;
+    }
+    .glow-outer,
+    .glow-inner {
+        background-size: 100% 200%;
+        background-position: 0% 100%;
+        filter: blur(var(--glow-blur));
+        opacity: 0;
+    }
+
+    /* Estado inicial multi‑instancia: ocultar hover antes de JS */
+    /* El contenedor hover debe ser visible; la animación gestiona cada .word */
+    [data-magic-btn] [data-role="label-hover"] {
+        opacity: 1;
+    }
+    [data-magic-btn][data-magic-btn-ready] [data-role="label-hover"],
+    [data-magic-btn][data-magic-btn-ready] [data-role="label-default"] {
+        transform: none;
+    }
+
+    /* Palabras de SplitText */
+    .word {
+        display: inline-block;
+        white-space: pre;
+        will-change: transform, opacity;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .will-animate {
+            transition: none !important;
+            animation: none !important;
+        }
+    }
+</style>
+
+<a href={href} data-magic-btn class={`magic-btn animate relative inline-block isolate select-none uppercase font-medium rounded-full font-display ${className}`} aria-label={defaultText}>
+    <!-- Fondo -->
+    <span data-role="bg-fill" class="absolute inset-0 -z-10 rounded-full" style="background:var(--btn-bg); border-radius:var(--btn-radius);"></span>
+
+    <!-- Borde + contenedor -->
+    <span class="relative block overflow-hidden p-[1px] rounded-full">
+        <!-- Glow interior -->
+        <span data-role="glow-inner" class="glow-inner absolute inset-[4px] rounded-full will-animate pointer-events-none"></span>
+
+        <!-- Superficie -->
+        <span data-role="btn-surface" class="relative z-10 block rounded-full" style="background:var(--btn-bg); border-radius:var(--btn-radius);">
+            <!-- WRAPPER: GRID superpuesto, pero contribuye al tamaño -->
+            <span data-role="label-wrap" class="relative inline-grid place-items-center text-center overflow-hidden
+                   text-[var(--btn-text)] px-[var(--btn-px)] py-[var(--btn-py)]
+                   whitespace-nowrap [font-size:var(--btn-text-size)]">
+                <!-- Ambas capas comparten la misma celda de grid -->
+                <span data-role="label-default" class="[grid-area:1/1] gap-1 flex items-center justify-center will-change-transform">
+                    {defaultText}
+                </span>
+                <span data-role="label-hover" class="[grid-area:1/1] gap-1 flex items-center justify-center will-change-transform">
+                    {hoverText}
+                </span>
+            </span>
+        </span>
+    </span>
+
+    <!-- Glow exterior -->
+    <span data-role="glow-outer" class="glow-outer absolute inset-0 -z-20 rounded-full will-animate"></span>
+</a>
+
+<script>
+    import { gsap, SplitText } from "../scripts/main.ts";
+
+    const initButton = (btn: HTMLAnchorElement) => {
+        if (btn.dataset.magicBtnReady) return;
+        const glowOuter = btn.querySelector('[data-role="glow-outer"]') as HTMLElement | null;
+        const glowInner = btn.querySelector('[data-role="glow-inner"]') as HTMLElement | null;
+        const bgFill = btn.querySelector('[data-role="bg-fill"]') as HTMLElement | null;
+        const defaultEl = btn.querySelector('[data-role="label-default"]') as HTMLElement | null;
+        const hoverEl = btn.querySelector('[data-role="label-hover"]') as HTMLElement | null;
+        if (!bgFill || !defaultEl || !hoverEl) return;
+        btn.dataset.magicBtnReady = "true";
+
+        const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const splitA = new SplitText(defaultEl, { type: "words", wordClass: "word" });
+        const splitB = new SplitText(hoverEl, { type: "words", wordClass: "word" });
+        const defaultWords = splitA.words as HTMLElement[];
+        const hoverWords = splitB.words as HTMLElement[];
+        gsap.set(hoverEl, { opacity: 1 });
+        gsap.set(defaultWords, { yPercent: 0, opacity: 1 });
+        gsap.set(hoverWords, { yPercent: 110, opacity: 0 });
+
+        const add = (evts: string[], h: (e?: Event) => void) => evts.forEach((e) => btn.addEventListener(e, h));
+
+        if (reduced) {
+            const setHover = (h: boolean) => {
+                bgFill.style.background = h ? "var(--btn-bg-hover)" : "var(--btn-bg)";
+                gsap.set(defaultWords, { yPercent: h ? -100 : 0, opacity: h ? 0 : 1 });
+                gsap.set(hoverWords, { yPercent: h ? 0 : 100, opacity: h ? 1 : 0 });
+                if (glowOuter) glowOuter.style.opacity = h ? "1" : "0";
+                if (glowInner) glowInner.style.opacity = h ? "0.5" : "0";
+            };
+            add(["mouseenter", "pointerenter", "focusin"], () => setHover(true));
+            add(["mouseleave", "pointerleave", "focusout"], () => setHover(false));
+            return;
+        }
+
+        const speedVar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--glow-speed")) || 5;
+        const createLoop = (el: HTMLElement | null) => el && gsap.to(el, { backgroundPosition: "0% 300%", duration: speedVar, ease: "none", repeat: -1, paused: true });
+        const outerLoop = createLoop(glowOuter);
+        const innerLoop = createLoop(glowInner);
+
+        const hoverTl = gsap
+            .timeline({ paused: true, defaults: { duration: 0.6, ease: "power3.out" } })
+            .to(bgFill, { backgroundColor: "var(--btn-bg-hover)", duration: 0.08, ease: "none" }, 0)
+            .to(glowOuter, { opacity: 1, duration: 0.35, ease: "power2.out" }, 0)
+            .to(glowInner, { opacity: 0.5, duration: 0.2, ease: "none" }, 0.05)
+            .to(defaultWords, { yPercent: -100, opacity: 0, stagger: { each: 0.05, from: "center" }, duration: 0.28 }, 0)
+            .to(hoverWords, { yPercent: 0, opacity: 1, stagger: { each: 0.05, from: "center" }, duration: 0.28 }, 0);
+
+        const playAll = () => {
+            hoverTl.play();
+            outerLoop?.play();
+            innerLoop?.play();
+        };
+        const reverseAll = () => {
+            hoverTl.reverse();
+            outerLoop?.pause(0);
+            innerLoop?.pause(0);
+            gsap.set([glowOuter, glowInner], { backgroundPosition: "0% 100%" });
+        };
+        add(["mouseenter", "pointerenter", "focusin"], playAll);
+        add(["mouseleave", "pointerleave", "focusout"], reverseAll);
+    };
+
+    const initAll = () => {
+        document.querySelectorAll<HTMLAnchorElement>("a[data-magic-btn]").forEach(initButton);
+    };
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initAll, { once: true });
+    } else {
+        initAll();
+    }
+</script>

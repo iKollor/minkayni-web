@@ -1,0 +1,31 @@
+---
+import ICON from "../../assets/SVG/misc/flor.svg";
+
+interface Props {
+    isAbsolute?: boolean;
+    className?: string;
+    showDecoration?: boolean;
+}
+
+const { className, isAbsolute = true, showDecoration = true } = Astro.props as Props;
+---
+
+<!-- Segmento bajo la curva (dome) -->
+<div class={`w-[calc(100%+2px)] h-[150px] md:h-[300px] ${isAbsolute ? "absolute -top-[calc(150px-1px)] md:-top-[calc(300px-1px)]" : "relative top-[1px]"}`}>
+    <!-- Contenedor general -->
+    <div class="relative h-[150px] md:h-[300px] text-white">
+        <!-- Capa base (relleno) -->
+        <div class="absolute inset-0 overflow-hidden">
+            <!-- Cúpula grande (rellena) -->
+            <div class=`absolute left-1/2 top-0 -translate-x-1/2 rounded-full bg-current w-[100vmax] h-[100vmax] md:w-[200vmax] md:h-[200vmax] ${className}`></div>
+
+            {showDecoration && <div class="absolute left-1/2 top-10 md:top-15 -translate-x-1/2 rounded-full border-[6px] border-primary w-[100vmax] h-[100vmax] md:w-[200vmax] md:h-[200vmax]" />}
+        </div>
+        {showDecoration && <ICON class="object-cover h-10 w-10 absolute right-1/2 top-11 md:top-16 translate-x-1/2 -translate-y-1/2 transform transform-origin-center" />}
+    </div>
+
+    <!-- Contenido centrado -->
+    <div class="absolute inset-0 flex items-center justify-center pt-12 md:pt-20">
+        <slot />
+    </div>
+</div>

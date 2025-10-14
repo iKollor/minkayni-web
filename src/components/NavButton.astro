@@ -1,0 +1,47 @@
+---
+import type { NavigationTree, NavItem } from '../schemas/navigation';
+
+
+export interface Props {
+    button: NavItem;
+    index: number;
+}
+const { button, index } = Astro.props;
+---
+
+<div class="nav-button relative mx-4 overflow-hidden">
+    <a href={button.path} class="inline-block relative z-10 focus:outline-none">
+        {button.title}
+    </a>
+    <span class="underline pointer-events-none absolute left-0 bottom-0 h-[1.5px] w-full bg-white rounded-xl" style="transform:translateX(-100%);will-change:transform;"></span>
+</div>
+<script>
+    import { gsap } from "gsap";
+
+    const buttons = document.querySelectorAll(".nav-button");
+
+    buttons.forEach((buttonElement) => {
+        const underline = buttonElement.querySelector(".underline");
+        if (!underline) return;
+
+        buttonElement.addEventListener("mouseenter", () => {
+            gsap.to(underline, {
+                duration: 0.3,
+                ease: "power2.out",
+                transform: "translateX(0%)",
+            });
+        });
+
+        buttonElement.addEventListener("mouseleave", () => {
+            gsap.to(underline, {
+                duration: 0.3,
+                ease: "power3.in",
+                transform: "translateX(100%)",
+                onComplete: () => {
+                    // Reset para que la siguiente entrada empiece desde la izquierda
+                    gsap.set(underline, { transform: "translateX(-100%)" });
+                },
+            });
+        });
+    });
+</script>

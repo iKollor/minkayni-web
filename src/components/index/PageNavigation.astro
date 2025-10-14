@@ -1,0 +1,169 @@
+---
+import { Icon } from "astro-icon/components";
+// Nav component (Astro + TSX)
+interface NavItem {
+    href: string;
+    text: string;
+    scrollAnchor?: "start" | "center" | "end";
+    scrollOffset?: number;
+    collapseThreshold?: number;
+}
+interface Props {
+    items: NavItem[];
+    scrollOffset?: number;
+    collapseThreshold?: number;
+}
+
+const { items = [], scrollOffset = 0, collapseThreshold = 0 } = Astro.props as Props;
+
+const NAV_CONFIG = {
+    baseFontSize: "clamp(12px, 4vw, 43px)",
+    activeFontSize: "clamp(14px, 5vw, 52px)",
+    inactiveStrokeWidth: 1,
+    activeStrokeWidth: 0,
+    activeScale: 1.06,
+    activeStartPct: 73,
+    activeEndPct: 50,
+    drawDuration: 5,
+    highlightIn: 0.5,
+    highlightOut: 0.5,
+    scrollDuration: 0.9,
+};
+---
+
+{
+    items.length > 0 && (
+        <nav
+            class="page-nav group fixed left-10 bottom-18 lg:bottom-3 z-40 pt-5 select-none text-[#a9f76b] mix-blend-difference"
+            aria-label="Navegación de secciones"
+            id="page-navigation"
+            data-page-nav
+            data-config={JSON.stringify({
+                baseFontSize: NAV_CONFIG.baseFontSize,
+                activeFontSize: NAV_CONFIG.activeFontSize,
+                inactiveStrokeWidth: NAV_CONFIG.inactiveStrokeWidth,
+                activeStrokeWidth: NAV_CONFIG.activeStrokeWidth,
+                activeScale: NAV_CONFIG.activeScale,
+                activeStartPct: NAV_CONFIG.activeStartPct,
+                activeEndPct: NAV_CONFIG.activeEndPct,
+                drawDuration: NAV_CONFIG.drawDuration,
+                highlightIn: NAV_CONFIG.highlightIn,
+                highlightOut: NAV_CONFIG.highlightOut,
+                scrollDuration: NAV_CONFIG.scrollDuration,
+                scrollOffset,
+                collapseThreshold,
+            })}
+            style={`--nav-font-size:${NAV_CONFIG.baseFontSize}; --nav-font-size-active:${NAV_CONFIG.activeFontSize}; --nav-stroke:${NAV_CONFIG.inactiveStrokeWidth}; --nav-stroke-active:${NAV_CONFIG.activeStrokeWidth}; --nav-active-scale:${NAV_CONFIG.activeScale}; --nav-margin: calc(${NAV_CONFIG.baseFontSize} * 0.5); --nav-margin-active: calc(${NAV_CONFIG.activeFontSize} * 0.6); --nav-margin-collapsed: calc(${NAV_CONFIG.baseFontSize} * 0.25); opacity:0; visibility:hidden; pointer-events:none; transform: translateY(16px);`}
+        >
+            <ul class="flex flex-col m-0 p-0 list-none font-OI mt-3">
+                {items.map((item, i) => (
+                    <li class="nav-item" data-href={item.href} data-index={i} data-scroll-anchor={item.scrollAnchor ?? undefined} data-scroll-offset={item.scrollOffset ?? undefined} data-collapse-threshold={item.collapseThreshold ?? undefined}>
+                        <a href={item.href} class="nav-link block">
+                            <svg class="nav-svg" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <text class="nav-text" x="0" y="0.8em">
+                                    {item.text}
+                                </text>
+                            </svg>
+                            <span class="sr-only">{item.text}</span>
+                        </a>
+                    </li>
+                ))}
+            </ul>
+            {/* Botón DENTRO del nav, alineado con la columna */}
+            <button type="button" class="page-nav-toggle relative grid place-items-center w-7 h-7 rounded-full bg-black/70 text-white backdrop-blur-sm border border-white/20 shadow-sm mix-blend-difference cursor-pointer transition-all duration-200 ease-out opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:translate-y-0 group-focus-within:pointer-events-auto" aria-controls="page-navigation" aria-expanded="true" aria-label="Ocultar navegación" data-page-nav-toggle>
+                <span class="sr-only">Alternar navegación</span>
+                <Icon name="mdi:eye-off" class="icon-eye-off w-[18px] h-[18px]" />
+                <Icon name="mdi:eye" class="icon-eye w-[18px] h-[18px]" />
+                <span class="tooltip">Ocultar navegación</span>
+            </button>
+        </nav>
+    )
+}
+
+<style>
+    /* ======== NAV: SVG & TEXT ======== */
+    .nav-svg {
+        display: block;
+        width: max-content;
+        height: 1.4em;
+        overflow: visible;
+    }
+    .nav-text {
+        font-size: var(--nav-font-size);
+        paint-order: stroke fill;
+        fill: currentColor;
+        stroke: currentColor;
+        stroke-width: var(--nav-stroke);
+        fill-opacity: 0;
+    }
+    .nav-item {
+        will-change: transform;
+        transform-origin: left center;
+        margin-bottom: var(--nav-margin);
+    }
+
+    /* Colapso por clase (se controla vía JS) */
+    .page-nav.is-collapsed .nav-text {
+        stroke-width: calc(var(--nav-stroke) * 0.75);
+    }
+    .page-nav.is-collapsed .nav-item {
+        margin-bottom: var(--nav-margin-collapsed);
+    }
+
+    /* Mostrar SIEMPRE el botón cuando la nav está oculta manualmente */
+    .page-nav[data-nav-hidden="true"] .page-nav-toggle {
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+        pointer-events: auto !important;
+    }
+    .page-nav[data-nav-hidden="true"] ul {
+        pointer-events: none;
+    }
+
+    /* Tooltip del botón */
+    .page-nav-toggle .tooltip {
+        position: absolute;
+        left: calc(100% + 10px);
+        top: 50%;
+        transform: translateY(-50%) translateX(0);
+        background: rgba(255, 255, 255, 0.95);
+        color: #111;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        line-height: 1.1;
+        white-space: nowrap;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+        opacity: 0;
+        transition:
+            opacity 150ms ease-out,
+            transform 150ms ease-out;
+        pointer-events: none;
+        z-index: 2;
+        mix-blend-mode: normal; /* evitar mezcla con diferencia */
+    }
+    .page-nav-toggle:hover .tooltip {
+        opacity: 1;
+        transform: translateY(-50%) translateX(2px);
+    }
+
+    /* Icon swap por data-attr */
+    .page-nav-toggle .icon-eye {
+        display: none;
+    }
+    .page-nav-toggle[data-nav-hidden="true"] .icon-eye {
+        display: inline-block;
+    }
+    .page-nav-toggle[data-nav-hidden="true"] .icon-eye-off {
+        display: none;
+    }
+
+    /* Mobile: puedes ocultar el botón si no quieres interferencias */
+    @media (max-width: 768px) {
+        .page-nav-toggle {
+            display: none !important;
+        }
+    }
+</style>
+
+<script src="../../scripts/components/PageNavigation.ts"></script>

@@ -1,0 +1,240 @@
+$primary: #FFF6E5;
+$mainFont: 'Nunito', sans-serif;
+$anim_time: 1s;
+
+//OPEN
+
+@keyframes topBar_open {
+	0% {
+		transform: translateY(0px) rotate(0deg);
+		width: 60px;
+	}
+	10% {
+		transform: translateY(-8px) rotate(0deg);
+		width: 60px;
+	}
+	50% {
+		transform: translateY(15px) rotate(45deg);
+		width: 84px;
+	}
+	75% {
+		transform: translateY(12px) rotate(45deg);
+		width: 84px;
+	}
+	100% {
+		transform: translateY(10px) rotate(45deg);
+		width: 84px;
+	}
+}
+
+@keyframes bottomBar_open {
+	0% {
+		transform: translateY(0px) rotate(0deg);
+		width: 60px;
+	}
+	10% {
+		transform: translateY(-8px) rotate(0deg);
+		width: 60px;
+	}
+	60% {
+		transform: translateY(0px) rotate(-45deg);
+		width: 84px;
+	}
+	75% {
+		transform: translateY(-10px) rotate(-45deg);
+		width: 84px;
+	}
+	100% {
+		transform: translateY(-5px) rotate(-45deg);
+		width: 84px;
+	}
+}
+
+@keyframes menuLabel_open {
+	0% {
+		transform: translateY(0px);
+		opacity: 1;
+	}
+	25% {
+		transform: translateY(-18px);
+	}
+	45% {
+		transform: translateY(44px);
+		opacity: 1;
+	}
+	48% {
+		transform: translateY(50px);
+		opacity: 0;
+	}
+	100% {
+		transform: translateY(30px);
+		opacity: 0;
+	}
+}
+
+// CLOSE
+
+@keyframes topBar_close {
+	0% {
+		transform: translateY(17px) rotate(45deg);
+		width: 84px;
+	}
+	35% {
+		transform: translateY(-8px) rotate(-4deg);
+		width: 60px;
+	}
+	53% {
+		transform: translateY(10px) rotate(3deg);
+		width: 60px;
+	}
+	70% {
+		transform: translateY(-6px) rotate(0deg);
+		width: 60px;
+	}
+	100% {
+		transform: translateY(-2px) rotate(0deg);
+		width: 60px;
+	}
+}
+
+@keyframes bottomBar_close {
+	0% {
+		transform: translateY(-8px) rotate(-45deg);
+		width: 84px;
+	}
+	35% {
+		transform: translateY(-18px) rotate(6deg);
+		width: 60px;
+	}
+	53% {
+		transform: translateY(0px) rotate(-3deg);
+		width: 60px;
+	}
+	68% {
+		transform: translateY(-7px) rotate(0deg);
+		width: 60px;
+	}
+	100% {
+		transform: translateY(0px) rotate(0deg);
+		width: 60px;
+	}
+}
+
+@keyframes menuLabel_close {
+	0% {
+		transform: translateY(30px);
+		opacity: 0;
+	}
+	5% {
+		transform: translateY(25px);
+		opacity: 1;
+	}
+	25% {
+		transform: translateY(-30px);
+		opacity: 1;
+	}
+	37% {
+		transform: translateY(-22px);
+		opacity: 1;
+	}
+	45% {
+		transform: translateY(-22px);
+		opacity: 1;
+	}
+	58% {
+		transform: translateY(8px) rotate(-10deg);
+		opacity: 1;
+	}
+	83% {
+		transform: translateY(-6px) rotate(0deg);
+		opacity: 1;
+	}
+	100% {
+		transform: translateY(0px);
+		opacity: 1;
+	}
+}
+
+#menu-btn {
+	display: block;
+	position: relative;
+	text-align: center;
+	width: 60px;
+	height: 60px;
+
+	&:before,
+	&:after {
+		content: '';
+		width: 100%;
+		height: 4px;
+		background-color: $primary;
+		display: block;
+		position: absolute;
+		transition: transform 0.3s ease-in-out;
+	}
+
+	&:before {
+		transform-origin: left center;
+	}
+
+	&:after {
+		right: 0;
+		top: 15px;
+		transform-origin: right center;
+	}
+
+	.text {
+		color: $primary;
+		font-family: $mainFont;
+		display: block;
+		position: absolute;
+		bottom: 10px;
+		font-size: 20px;
+		letter-spacing: 0.7px;
+		font-weight: 700;
+	}
+
+	&:hover {
+		cursor: pointer;
+		&::after {
+			transform: scaleX(1.5);
+		}
+		&::before {
+			transform: scaleX(1.2);
+		}
+	}
+
+	&.open {
+		&:before {
+			animation: topBar_open $anim_time ease-in-out;
+			animation-fill-mode: forwards;
+		}
+
+		&:after {
+			animation: bottomBar_open $anim_time ease-in-out;
+			animation-fill-mode: forwards;
+		}
+
+		.text {
+			animation: menuLabel_open $anim_time ease-in;
+			animation-fill-mode: forwards;
+		}
+	}
+
+	&.close {
+		&:before {
+			animation: topBar_close $anim_time ease-in-out;
+			animation-fill-mode: forwards;
+		}
+
+		&:after {
+			animation: bottomBar_close $anim_time ease-in-out;
+			animation-fill-mode: forwards;
+		}
+
+		.text {
+			animation: menuLabel_close $anim_time ease-in;
+			animation-fill-mode: forwards;
+		}
+	}
+}

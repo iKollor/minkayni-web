@@ -1,0 +1,116 @@
+---
+import { Icon } from "astro-icon/components";
+---
+
+<div class="flex items-center overflow-hidden gap-2 justify-center w-full animate">
+    <Icon name="svg-spinners:clock" width="18" height="18" />
+    <p>Guayaquil, Ecuador</p>
+    <div class="animate" id="timeDigits" aria-label="Hora en Guayaquil"></div>
+</div>
+
+<script>
+    import { gsap } from "../scripts/main.ts";
+
+    // Formatea números a 2 dígitos
+    const dos = (n: number) => (n < 10 ? "0" + n : "" + n);
+
+    let prev = "";
+
+    const container = document.getElementById("timeDigits");
+
+    function obtenerHoraGuayaquil(): string {
+        const ahora = new Date();
+        const local = new Date(ahora.toLocaleString("en-US", { timeZone: "America/Guayaquil" }));
+        return `${dos(local.getHours())}:${dos(local.getMinutes())}`;
+    }
+
+    function crearSpan(char: string, index: number): HTMLSpanElement {
+        const span = document.createElement("span");
+        span.textContent = char;
+        span.dataset.index = index.toString();
+        span.style.display = "inline-block";
+        span.style.minWidth = "0.6ch";
+        span.style.textAlign = "center";
+        return span;
+    }
+
+    function animarCambio(oldSpan: HTMLSpanElement, nuevoChar: string) {
+        // Animación de salida
+        gsap.to(oldSpan, {
+            y: -30,
+            opacity: 0,
+            duration: 0.35,
+            ease: "power2.in",
+            onComplete: () => {
+                oldSpan.textContent = nuevoChar;
+                gsap.set(oldSpan, { y: 30 });
+                gsap.to(oldSpan, {
+                    y: 0,
+                    opacity: 1,
+                    duration: 0.5,
+                    ease: "power2.out",
+                });
+            },
+        });
+    }
+
+    function animarEntrada(span: HTMLSpanElement) {
+        gsap.from(span, {
+            y: 30,
+            opacity: 0,
+            duration: 0.6,
+            ease: "power2.out",
+        });
+    }
+
+    function actualizarVisual(timeStr: string) {
+        if (!container) return;
+
+        // Inicial
+        if (prev === "") {
+            for (let i = 0; i < timeStr.length; i++) {
+                const span = crearSpan(timeStr[i], i);
+                container.appendChild(span);
+                animarEntrada(span);
+            }
+            prev = timeStr;
+            return;
+        }
+
+        // Dif incremental
+        for (let i = 0; i < timeStr.length; i++) {
+            const nuevoChar = timeStr[i];
+            const existente = container.querySelector(`span[data-index="${i}"]`) as HTMLSpanElement | null;
+
+            if (existente) {
+                if (existente.textContent !== nuevoChar) {
+                    animarCambio(existente, nuevoChar);
+                }
+            } else {
+                const span = crearSpan(nuevoChar, i);
+                container.appendChild(span);
+                animarEntrada(span);
+            }
+        }
+        prev = timeStr;
+    }
+
+    function tick() {
+        const t = obtenerHoraGuayaquil();
+        actualizarVisual(t);
+    }
+
+    function iniciar() {
+        tick(); // Inicial
+        // Sincronizar con el próximo minuto exacto
+        const ahora = new Date();
+        const msRestantes = (60 - ahora.getSeconds()) * 1000 - ahora.getMilliseconds();
+
+        setTimeout(() => {
+            tick();
+            setInterval(tick, 60000);
+        }, msRestantes);
+    }
+
+    iniciar();
+</script>

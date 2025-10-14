@@ -1,0 +1,386 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap');
+@import url(../assets/fonts/Aristotelica_Pro_Display_WEBFONT/AristotelicaProDisplay.css);
+@import url(../assets/fonts/Aristotelica_Pro_Text_WEBFONT/AristotelicaProText.css);
+@import url(../assets/fonts/SaoTorpes_WEBFONT/SaoTorpes.css);
+@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&display=swap');
+@import "tailwindcss";
+
+@theme {
+    --font-display: "Aristotelica Pro Display", "Nunito", system-ui, sans-serif;
+    --font-OI: "Sao Torpes", system-ui, sans-serif;
+    --color-primary: var(--primary);
+    --color-secondary: var(--secondary);
+    --color-white: var(--bg-white);
+    --color-black: var(--bg-black);
+    --ease-in-out-cubic: var(--ease-in-out-cubic);
+}
+
+:root {
+    --text: #0a0801;
+    --bg-black: #0a0801;
+    --bg-white: #FFF6E5;
+    --primary: #6e00a3;
+    --secondary: #3fa9f5;
+    --accent: #5d2a2c;
+    --ease-in-out-cubic: cubic-bezier(0.41, 0.99, 0.43, 1.44);
+    --duration: 640ms;
+    --navbar-menu-width: 25vw;
+    --scrollbar-width-px: 11px;
+}
+
+html {
+    font-family: "Aristotelica Pro Text", "Nunito", system-ui, sans-serif;
+    font-synthesis: none;
+    /* evita bold/italic falsos */
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-variant-ligatures: contextual common-ligatures;
+}
+
+a {
+    text-decoration: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+svg {
+    outline: none;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0 auto;
+    background-color: var(--bg-white);
+}
+
+/* iOS Safari: asegurar color detrás de la barra de estado cuando se usa
+   apple-mobile-web-app-status-bar-style=black-translucent y viewport-fit=cover */
+@supports (padding: max(env(safe-area-inset-top), 0px)) {
+    body {
+        /* Color de fondo que se verá tras la barra de estado */
+        background-color: var(--bg-white);
+        /* Si alguna vista fija necesita separarse de la barra, se puede usar este var */
+        --safe-top: env(safe-area-inset-top);
+    }
+
+    /* Wrapper principal ya existe (#smooth-wrapper). Si alguna cabecera está fija,
+       puede necesitar padding-top para evitar solaparse con la barra. */
+    .pad-safe-top {
+        padding-top: max(var(--safe-top, 0px), 0px);
+    }
+}
+
+.anchor-fx {
+    @apply relative inline-block hover:text-primary after:content-[''] after:absolute after:h-[0.1em] hover:after:w-full after:bg-primary after:inset-0 after:w-0 after:transition-all after:duration-500 after:ease-in-out after:top-[calc(100%-5px)] after:rounded-full;
+}
+
+/* GRADIENTE ANIMADO */
+/* Paleta base y fallbacks seguros (sin sintaxis relativa) */
+:root {
+    /* Defaults seguros si el navegador NO soporta relative-colors o color-mix */
+    --p-boost: var(--secondary);
+    --s-boost: var(--primary);
+    --mid: var(--secondary);
+    --mid-deep: var(--secondary);
+    --p-shift: var(--secondary);
+    --s-shift: var(--primary);
+    /* Menos scrim para dejar respirar el color (antes .12) */
+    --scrim: .08;
+}
+
+/* (Se eliminan tiers con relative-colors para máxima compatibilidad del parser) */
+
+/* props animables (centros de los radiales) */
+@property --x1 {
+    syntax: '<percentage>';
+    initial-value: 18%;
+    inherits: true;
+}
+
+@property --y1 {
+    syntax: '<percentage>';
+    initial-value: 36%;
+    inherits: true;
+}
+
+@property --x2 {
+    syntax: '<percentage>';
+    initial-value: 70%;
+    inherits: true;
+}
+
+@property --y2 {
+    syntax: '<percentage>';
+    initial-value: 24%;
+    inherits: true;
+}
+
+@property --x3 {
+    syntax: '<percentage>';
+    initial-value: 36%;
+    inherits: true;
+}
+
+@property --y3 {
+    syntax: '<percentage>';
+    initial-value: 76%;
+    inherits: true;
+}
+
+@property --x4 {
+    syntax: '<percentage>';
+    initial-value: 82%;
+    inherits: true;
+}
+
+@property --y4 {
+    syntax: '<percentage>';
+    initial-value: 72%;
+    inherits: true;
+}
+
+@property --x5 {
+    syntax: '<percentage>';
+    initial-value: 55%;
+    inherits: true;
+}
+
+@property --y5 {
+    syntax: '<percentage>';
+    initial-value: 55%;
+    inherits: true;
+}
+
+@property --x6 {
+    syntax: '<percentage>';
+    initial-value: 10%;
+    inherits: true;
+}
+
+@property --y6 {
+    syntax: '<percentage>';
+    initial-value: 70%;
+    inherits: true;
+}
+
+.bg-opacity-100 {
+    --bg-opacity: 1;
+}
+
+.bg-opacity-80 {
+    --bg-opacity: 0.8;
+}
+
+.bg-opacity-60 {
+    --bg-opacity: 0.6;
+}
+
+.bg-opacity-40 {
+    --bg-opacity: 0.4;
+}
+
+.bg-opacity-20 {
+    --bg-opacity: 0.2;
+}
+
+@layer utilities {
+
+    /* ===== fondo (fallback amplio SRGB para navegadores sin oklch/color-mix) ===== */
+    .gradient-custom {
+        /* Fallback: degradado simple srgb usando los tokens base (sin color-mix) */
+        background: linear-gradient(130deg,
+                var(--secondary) 0%,
+                var(--secondary) 45%,
+                var(--primary) 100%);
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+    }
+
+    /* ===== fondo avanzado (oklch + color-mix soportado) ===== */
+    @supports (color: oklch(50% 0.2 180)) and (background: color-mix(in srgb, black 50%, white 50%)) {
+        .gradient-custom {
+            /* posiciones iniciales */
+            --x1: 18%;
+            --y1: 36%;
+            --x2: 70%;
+            --y2: 24%;
+            --x3: 36%;
+            --y3: 76%;
+            --x4: 82%;
+            --y4: 72%;
+            --x5: 55%;
+            --y5: 55%;
+            --x6: 10%;
+            --y6: 70%;
+
+            /* control de opacidad global del fondo */
+            --bg-opacity: 1;
+            /* porcentaje utilizable en color-mix (evita calc() en Safari) */
+            --bg-pct: 100%;
+            /* valor por defecto: 100% visible */
+
+            /* CAPA BASE — siempre cubre el 100% (adiós huecos) */
+            /* Variables de color calculadas sin relative-colors */
+            --mid: color-mix(in oklch, var(--secondary) 36%, var(--primary) 64%);
+            --mid-deep: color-mix(in oklch, var(--mid) 85%, black 15%);
+            --p-boost: color-mix(in oklch, var(--secondary) 90%, white 10%);
+            --s-boost: color-mix(in oklch, var(--primary) 90%, white 10%);
+            --p-shift: color-mix(in oklch, var(--secondary) 80%, var(--primary) 20%);
+            --s-shift: color-mix(in oklch, var(--primary) 80%, var(--secondary) 20%);
+            background:
+                /* scrim para legibilidad de texto blanco */
+                linear-gradient(rgb(0 0 0 / var(--scrim, 0.08)),
+                    rgb(0 0 0 / var(--scrim, 0.08))),
+
+                /* manchas saturadas (se ven sobre la base) */
+                radial-gradient(60% 65% at var(--x1) var(--y1),
+                    color-mix(in srgb, var(--p-boost) var(--bg-pct), transparent) 0%,
+                    transparent 60%),
+                radial-gradient(60% 65% at var(--x2) var(--y2),
+                    color-mix(in srgb, var(--s-boost) var(--bg-pct), transparent) 0%,
+                    transparent 60%),
+                radial-gradient(55% 60% at var(--x3) var(--y3),
+                    color-mix(in srgb, var(--p-shift) var(--bg-pct), transparent) 0%,
+                    transparent 62%),
+                radial-gradient(55% 60% at var(--x4) var(--y4),
+                    color-mix(in srgb, var(--s-shift) var(--bg-pct), transparent) 0%,
+                    transparent 62%),
+                radial-gradient(80% 80% at var(--x5) var(--y5),
+                    color-mix(in srgb, var(--mid-deep) var(--bg-pct), transparent) 0%,
+                    transparent 70%),
+                radial-gradient(40% 45% at var(--x6) var(--y6),
+                    color-mix(in srgb, var(--mid) var(--bg-pct), transparent) 0%,
+                    transparent 55%),
+
+                /* base que garantiza cobertura total */
+                linear-gradient(130deg,
+                    color-mix(in srgb, var(--p-boost) var(--bg-pct), transparent) 0%,
+                    color-mix(in srgb, var(--mid) var(--bg-pct), transparent) 45%,
+                    color-mix(in srgb, var(--s-boost) var(--bg-pct), transparent) 100%);
+
+            background-repeat: no-repeat;
+            background-size:
+                100% 100%,
+                140% 140%, 140% 140%, 140% 140%, 140% 140%, 160% 160%, 120% 120%,
+                100% 100%;
+        }
+    }
+
+    /* ===== Fallback específico para Safari/iOS ===== */
+    /* Muchos dispositivos iOS (incl. iPhone 11) soportan color-mix/oklch, pero ciertas
+       combinaciones de múltiples radial-gradient pueden no pintarse. Forzamos un degradado
+       simple para asegurar visibilidad. */
+    @supports (-webkit-touch-callout: none) {
+        .gradient-custom {
+            background: linear-gradient(130deg,
+                    var(--secondary) 0%,
+                    var(--secondary) 45%,
+                    var(--primary) 100%) !important;
+            background-repeat: no-repeat !important;
+            background-size: 100% 100% !important;
+        }
+    }
+
+    /* ===== animación (rápida) ===== */
+    .animate-gradient {
+        animation: gradient-move 2s ease-in-out infinite alternate;
+    }
+
+    .interactive-gradient.animate-gradient {
+        animation: none;
+    }
+
+    /* ===== Override cuando el script interactivo está activo ===== */
+    /* Simplifica a 3 radiales para evitar parpadeos en algunos navegadores
+       y asegura que no quede ninguna animación CSS compitiendo. */
+    .gradient-custom.interactive-gradient {
+        animation: none !important;
+        background:
+            linear-gradient(rgb(0 0 0 / var(--scrim, 0.08)), rgb(0 0 0 / var(--scrim, 0.08))),
+            radial-gradient(60% 65% at var(--x1) var(--y1),
+                color-mix(in srgb, var(--p-boost) var(--bg-pct, 100%), transparent) 0%,
+                transparent 60%),
+            radial-gradient(60% 65% at var(--x2) var(--y2),
+                color-mix(in srgb, var(--s-boost) var(--bg-pct, 100%), transparent) 0%,
+                transparent 60%),
+            radial-gradient(80% 80% at var(--x3) var(--y3),
+                color-mix(in srgb, var(--mid) var(--bg-pct, 100%), transparent) 0%,
+                transparent 70%),
+            linear-gradient(130deg,
+                color-mix(in srgb, var(--p-boost) var(--bg-pct, 100%), transparent) 0%,
+                color-mix(in srgb, var(--mid) var(--bg-pct, 100%), transparent) 45%,
+                color-mix(in srgb, var(--s-boost) var(--bg-pct, 100%), transparent) 100%);
+        background-repeat: no-repeat;
+        background-size:
+            100% 100%,
+            140% 140%, 140% 140%, 160% 160%,
+            100% 100%;
+    }
+}
+
+/* Si el navegador no soporta registrar propiedades personalizadas, desactiva la animación (evita glitches en iOS viejo) */
+@supports not (property: --x1) {
+    .animate-gradient {
+        animation: none;
+    }
+}
+
+/* movimiento: sin dejar huecos, solo desplaza los centros */
+@keyframes gradient-move {
+    0% {
+        --x1: 16%;
+        --y1: 38%;
+        --x2: 68%;
+        --y2: 26%;
+        --x3: 40%;
+        --y3: 72%;
+        --x4: 84%;
+        --y4: 68%;
+        --x5: 58%;
+        --y5: 58%;
+        --x6: 12%;
+        --y6: 74%;
+    }
+
+    50% {
+        --x1: 22%;
+        --y1: 32%;
+        --x2: 60%;
+        --y2: 34%;
+        --x3: 30%;
+        --y3: 82%;
+        --x4: 74%;
+        --y4: 78%;
+        --x5: 48%;
+        --y5: 46%;
+        --x6: 16%;
+        --y6: 66%;
+    }
+
+    100% {
+        --x1: 20%;
+        --y1: 36%;
+        --x2: 76%;
+        --y2: 24%;
+        --x3: 44%;
+        --y3: 68%;
+        --x4: 80%;
+        --y4: 74%;
+        --x5: 52%;
+        --y5: 52%;
+        --x6: 10%;
+        --y6: 70%;
+    }
+}
+
+/* Accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+    .animate-gradient {
+        animation: none;
+    }
+}

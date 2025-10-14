@@ -1,0 +1,259 @@
+---
+import { Icon } from "astro-icon/components";
+import { StrapiBlocks } from "@sensinum/astro-strapi-blocks";
+import Blob from "../Blob.astro";
+import type { ComponentSectionsTestimonial } from "../../schemas/strapi.graphql.zod";
+
+const STRAPI_URL = import.meta.env.STRAPI_URL;
+
+interface Props {
+    testimonials: ComponentSectionsTestimonial[];
+}
+const { testimonials } = Astro.props;
+---
+
+<div class="flex items-center justify-center">
+    <h1 class="title font-bold font-display text-secondary mt-20 md:mt-32 lg:mt-40 text-4xl md:text-6xl lg:text-8xl">Historias de cambio</h1>
+</div>
+
+<div id="testimonials" class="t-pin-section relative w-full h-screen overflow-hidden" data-pin>
+    <div class="t-slides relative h-full w-[80%] mx-auto" data-slides>
+        {
+            testimonials.map((t, i) => {
+                const leftAlign = i % 2 === 0;
+                return (
+                    <section class={"t-slide absolute inset-0 flex items-center justify-between gap-8 opacity-0 pointer-events-none " + (leftAlign ? "flex-row" : "flex-row-reverse")} data-slide>
+                        <div class="t-blob-wrap shrink-0 w-1/2" data-blob-wrap>
+                            <Blob imageUrl={STRAPI_URL + t?.picture?.url} height={t?.picture?.height ?? 700} />
+                        </div>
+                        {/* META MÓVIL: Autor/Org debajo del blob */}
+                        <div class="t-meta-mobile md:hidden text-center" aria-hidden="true">
+                            <p class="t-author-mobile font-bold text-2xl text-secondary" data-author-mobile>
+                                {t?.author_quote?.author}, {t?.age}
+                            </p>
+                            <p class="t-org-mobile font-bold text-sm opacity-90" data-org-mobile>
+                                {t?.author_role} de la {t?.organization}
+                            </p>
+                        </div>
+                        <div class={"t-copy relative w-1/2 " + (leftAlign ? "text-right" : "text-left")} data-copy>
+                            <Icon name="oui:quote" class={"t-quote absolute -top-8 " + (leftAlign ? "right-0" : "left-0")} data-icon style="opacity:.08; pointer-events:none;" scale={5} />
+                            <div class="t-body text-xl leading-relaxed" data-body>
+                                <StrapiBlocks class="max-w-3xl" data={t?.author_quote?.body} />
+                            </div>
+                            <p class="t-author mt-4 font-bold text-xl text-secondary hidden md:block" data-author>
+                                — {t?.author_quote?.author}, {t?.age}
+                            </p>
+                            <p class="t-org font-bold text-base opacity-90 hidden md:block" data-org>
+                                {t?.author_role} de la {t?.organization}
+                            </p>
+                        </div>
+                    </section>
+                );
+            })
+        }
+    </div>
+</div>
+
+<style>
+    .t-slide {
+        will-change: opacity, transform;
+    }
+    .t-blob-wrap svg {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+    @media (max-width: 1024px) {
+        .t-slides {
+            width: 92%;
+        }
+        .t-slide {
+            gap: 1.25rem;
+        }
+    }
+
+    .t-quote {
+        font-size: 300px;
+    }
+
+    @media (max-width: 768px) {
+        /* Desactivar pin/alto fijo y posicionamiento absoluto en móvil */
+        .t-pin-section {
+            height: auto !important;
+            min-height: auto !important;
+            overflow: visible !important;
+            padding: 2.5rem 0 3rem 0;
+        }
+        .t-slides {
+            width: 92%;
+        }
+        .t-slide {
+            position: static !important;
+            inset: auto !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            flex-direction: column !important;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
+        .t-blob-wrap,
+        .t-copy {
+            width: 100%;
+        }
+        .t-blob-wrap {
+            max-width: 560px;
+            margin: 0 auto;
+        }
+        .t-copy {
+            text-align: center !important;
+        }
+        .t-body {
+            font-size: 1rem !important;
+            line-height: 1.7 !important;
+            max-width: 48rem;
+            margin: 0.5rem auto 0 auto;
+            text-align: center;
+        }
+        .t-meta-mobile {
+            margin-top: 0.75rem;
+        }
+        .t-quote {
+            font-size: 150px !important;
+            left: 0 !important;
+        }
+    }
+</style>
+
+<script>
+    // Cliente: GSAP + ScrollTrigger con limpieza via gsap.context
+    import { gsap, ScrollTrigger } from "../../scripts/main";
+    if (typeof window !== "undefined") {
+        const section = document.querySelector("[data-pin]") as HTMLElement;
+        const slides = gsap.utils.toArray("[data-slide]") as HTMLElement[];
+
+        const getEls = (s: HTMLElement) => ({
+            icon: s.querySelector("[data-icon]"),
+            body: s.querySelector("[data-body]"),
+            author: s.querySelector("[data-author]"),
+            org: s.querySelector("[data-org]"),
+            blob: s.querySelector("[data-blob-wrap]"),
+            left: s.classList.contains("flex-row"),
+        });
+
+        const prime = (els: ReturnType<typeof getEls>, o: Record<string, number>) => {
+            const { icon, body, author, org, blob, left } = els;
+            gsap.set([icon, body, author, org, blob], { clearProps: "all" });
+            gsap.set(icon, { opacity: 0, y: -o.iconY, x: left ? o.iconX : -o.iconX, rotate: left ? -o.iconR : o.iconR });
+            gsap.set(body, { opacity: 0, y: o.bodyY, x: left ? o.bodyX : -o.bodyX });
+            gsap.set(author, { opacity: 0, y: o.authorY, x: left ? o.authorX : -o.authorX });
+            gsap.set(org, { opacity: 0, y: o.orgY, x: left ? o.orgX : -o.orgX });
+            gsap.set(blob, { opacity: 0, scale: o.blobS, rotate: left ? -o.blobR : o.blobR, transformOrigin: "50% 50%" });
+        };
+
+        const enterTl = (els: ReturnType<typeof getEls>, dur = 0.7) => {
+            const { icon, body, author, org, blob } = els;
+            return gsap
+                .timeline({ defaults: { ease: "power2.out", duration: dur }, paused: true })
+                .to(blob, { opacity: 1, scale: 1 })
+                .to(icon, { opacity: 0.12, x: 0, y: 0, rotate: 0 }, "<+=0.05")
+                .to(body, { opacity: 1, x: 0, y: 0 }, "<+=0.10")
+                .to(author, { opacity: 1, x: 0, y: 0 }, "<+=0.18")
+                .to(org, { opacity: 1, x: 0, y: 0 }, "<+=0.24");
+        };
+
+        const mm = gsap.matchMedia();
+
+        // Desktop / Tablet (pin + crossfade + parallax)
+        mm.add("(min-width: 768px)", () => {
+            const ctx = gsap.context(() => {
+                slides.forEach((s, i) => {
+                    gsap.set(s, { autoAlpha: i === 0 ? 1 : 0, pointerEvents: i === 0 ? "auto" : "none" });
+                    prime(getEls(s), { iconY: 30, iconX: 30, iconR: 8, bodyY: 20, bodyX: 20, authorY: 16, authorX: 12, orgY: 12, orgX: 8, blobS: 0.95, blobR: 3 });
+                });
+
+                const tl = gsap.timeline({
+                    defaults: { ease: "power2.out", duration: 0.7 },
+                });
+
+                const e0 = getEls(slides[0]);
+                tl.addLabel("enter-0").to(slides[0], { autoAlpha: 1, pointerEvents: "auto", duration: 0.2 }, "enter-0").to(e0.blob, { opacity: 1, scale: 1, rotate: 0 }, "enter-0+=0.05").to(e0.icon, { opacity: 0.1, x: 0, y: 0, rotate: 0 }, "enter-0+=0.10").to(e0.body, { opacity: 1, x: 0, y: 0 }, "enter-0+=0.15").to(e0.author, { opacity: 1, x: 0, y: 0 }, "enter-0+=0.25").to(e0.org, { opacity: 1, x: 0, y: 0 }, "enter-0+=0.32");
+
+                slides.forEach((_, i) => {
+                    if (i === 0) return;
+                    const e = getEls(slides[i]);
+                    tl.addLabel(`enter-${i}`)
+                        .to(slides[i - 1], { autoAlpha: 0, pointerEvents: "none", duration: 0.25 }, `enter-${i}`)
+                        .to(slides[i], { autoAlpha: 1, pointerEvents: "auto", duration: 0.25 }, "<")
+                        .to(e.blob, { opacity: 1, scale: 1, rotate: 0 }, "<+=0.05")
+                        .to(e.icon, { opacity: 0.1, x: 0, y: 0, rotate: 0 }, "<+=0.10")
+                        .to(e.body, { opacity: 1, x: 0, y: 0 }, "<+=0.15")
+                        .to(e.author, { opacity: 1, x: 0, y: 0 }, "<+=0.25")
+                        .to(e.org, { opacity: 1, x: 0, y: 0 }, "<+=0.32")
+                        .to({}, { duration: 1 });
+                });
+
+                // Crear ScrollTrigger explícito para poder usar snap direccional personalizado
+                ScrollTrigger.create({
+                    trigger: section,
+                    start: "top top",
+                    end: "+=" + slides.length * 80 + "%",
+                    pin: true,
+                    scrub: true,
+                    anticipatePin: 1,
+                    animation: tl,
+                    snap: {
+                        snapTo: (value: number, self: any) => {
+                            const dur = tl.duration();
+                            const labels = Object.values(tl.labels)
+                                .map((t: number) => t / dur)
+                                .sort((a: number, b: number) => a - b);
+                            const eps = 1e-3;
+                            if (self.direction > 0) {
+                                for (let i = 0; i < labels.length; i++) if (labels[i] - value > eps) return labels[i];
+                                return 1; // última etiqueta
+                            } else {
+                                for (let i = labels.length - 1; i >= 0; i--) if (value - labels[i] > eps) return labels[i];
+                                return 0; // primera etiqueta
+                            }
+                        },
+                        duration: 0.25,
+                        ease: "power1.out",
+                    },
+                });
+
+                slides.forEach((s) => {
+                    const { blob, icon, left } = getEls(s);
+                    if (!blob || !icon) return;
+                    gsap.to(blob, { yPercent: 8, ease: "none", scrollTrigger: { trigger: section, start: "top top", end: "bottom bottom", scrub: true } });
+                    // Invertimos el desplazamiento horizontal según el lado para evitar que el ícono quede separado del borde
+                    gsap.to(icon, { yPercent: -18, xPercent: left ? 14 : -8, ease: "none", scrollTrigger: { trigger: section, start: "top top", end: "bottom bottom", scrub: true } });
+                });
+            }, section);
+            return () => ctx.revert();
+        });
+
+        // Móvil: animación por slide repetible con salida suave (como en "Nosotros")
+        mm.add("(max-width: 767px)", () => {
+            const ctx = gsap.context(() => {
+                slides.forEach((s) => {
+                    // Preferir nodos móviles si existen para autor/org
+                    const base = getEls(s);
+                    const am = s.querySelector("[data-author-mobile]");
+                    const om = s.querySelector("[data-org-mobile]");
+                    const els = { ...base, author: am || base.author, org: om || base.org };
+                    prime(els, { iconY: 32, iconX: 28, iconR: 8, bodyY: 26, bodyX: 18, authorY: 22, authorX: 14, orgY: 18, orgX: 12, blobS: 0.92, blobR: 0 });
+                    const tl = enterTl(els, 0.7);
+                    ScrollTrigger.create({
+                        trigger: s,
+                        start: "top 50%",
+                        animation: tl,
+                        toggleActions: "play none none reverse",
+                    });
+                });
+                ScrollTrigger.refresh();
+            }, section);
+            return () => ctx.revert();
+        });
+    }
+</script>

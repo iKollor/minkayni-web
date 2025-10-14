@@ -1,0 +1,80 @@
+@font-face {
+    font-family: "Aristotelica Pro Text";
+    src: url("AristotelicaProTx-Hln.woff2") format("woff2"),
+        url("AristotelicaProTx-Hln.woff") format("woff");
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Aristotelica Pro Text";
+    src: url("AristotelicaProTx-Extlt.woff2") format("woff2"),
+        url("AristotelicaProTx-Extlt.woff") format("woff");
+    font-weight: 200;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Aristotelica Pro Text";
+    src: url("AristotelicaProTx-Lt.woff2") format("woff2"),
+        url("AristotelicaProTx-Lt.woff") format("woff");
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Aristotelica Pro Text";
+    src: url("AristotelicaProTx-Rg.woff2") format("woff2"),
+        url("AristotelicaProTx-Rg.woff") format("woff");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Aristotelica Pro Text";
+    src: url("AristotelicaProTx-Dmbld.woff2") format("woff2"),
+        url("AristotelicaProTx-Dmbld.woff") format("woff");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Aristotelica Pro Text";
+    src: url("AristotelicaProTx-Bld.woff2") format("woff2"),
+        url("AristotelicaProTx-Bld.woff") format("woff");
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Aristotelica Pro Text";
+    src: url("AristotelicaProTx-Bld.woff2") format("woff2"),
+        url("AristotelicaProTx-Bld.woff") format("woff");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Aristotelica Pro Text";
+    src: url("AristotelicaProTx-Hv.woff2") format("woff2"),
+        url("AristotelicaProTx-Hv.woff") format("woff");
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Aristotelica Pro Text";
+    src: url("AristotelicaProTx-Ft.woff2") format("woff2"),
+        url("AristotelicaProTx-Ft.woff") format("woff");
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}

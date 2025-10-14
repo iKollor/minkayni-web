@@ -1,0 +1,79 @@
+---
+import { Icon } from "astro-icon/components";
+import { getCollection } from "astro:content";
+import { Image } from "astro:assets";
+
+import reelIcon from "../../assets/icons/reel.png";
+
+const STRAPI_URL = import.meta.env.STRAPI_URL ?? "";
+const posts = await getCollection("posts");
+
+// Si quieres, filtra sólo los que tienen media:
+const items = posts.filter((p) => p?.data?.source?.url);
+---
+
+<div class="bg-primary w-full">
+    <div class="wrapper h-[250px] md:h-[500px] relative flex items-center overflow-hidden gap-6">
+        {
+            items.length === 0 ? (
+                <div class="text-white opacity-70 w-full flex items-center justify-center text-center">Sin publicaciones disponibles.</div>
+            ) : (
+                items.map(({ data: post }) => (
+                    <div class="post-card group aspect-[1/1] h-full flex-shrink-0 rounded-lg overflow-hidden relative shadow-lg" data-id={post.external_id}>
+                        <div class="relative w-full h-full">
+                            {/* Media: fondo (solo el fondo escala en hover del grupo) */}
+                            {post.source?.url ? post.source.url.endsWith("mp4") ? <video class="media object-cover w-full h-full absolute inset-0 -z-10 pointer-events-none transition-transform duration-300 transform-gpu origin-center group-hover:scale-105" src={STRAPI_URL + post.source.url} autoplay muted loop playsinline /> : <img class="media object-cover w-full h-full absolute inset-0 -z-10 transition-transform duration-300 transform-gpu origin-center group-hover:scale-105" src={STRAPI_URL + post.source.url} alt={post.external_id} loading="lazy" /> : null}
+
+                            <div class="group-hover:opacity-100 opacity-0 transition-opacity duration-300">
+                                {/* Top bar: icono (izq) y permalink (der) en el mismo div */}
+                                <div class="absolute left-3 right-3 top-3 z-20 flex items-center justify-between pointer-events-auto p-2">
+                                    <div class="flex items-center">{post.media_kind === "reel" ? <Image src={reelIcon} alt="reel" class="w-8 h-8 object-contain drop-shadow-md invert" /> : <Icon name="mdi:images" class="w-6 h-6 text-white drop-shadow-md" />}</div>
+                                    <div>
+                                        <a href={post.permalink} target="_blank" rel="noopener noreferrer" aria-label="Open permalink" class="inline-flex items-center justify-center p-1.5 rounded bg-black/40 hover:bg-black/60">
+                                            <Icon name="mdi:external-link" class="w-5 h-5 text-white" />
+                                        </a>
+                                    </div>
+                                </div>
+
+                                {/* Caption: ocupa 20% height y queda abajo; ellipsis si es largo */}
+                                <div class="absolute left-0 right-0 bottom-0 h-[50%] flex items-end z-20">
+                                    <div class="w-full h-fit p-3 bg-gradient-to-t from-black/90 to-transparent">
+                                        <p class="text-base text-white leading-tight overflow-hidden line-clamp-4 m-2">{post.caption}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ))
+            )
+        }
+    </div>
+</div>
+
+<style>
+    .post-card {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 80%;
+        aspect-ratio: 1/1;
+        margin: 0;
+        padding: 0;
+        position: relative;
+        flex-shrink: 0;
+        color: black;
+        font-size: 21px;
+        border-radius: 10%;
+        overflow: hidden;
+    }
+</style>
+
+<script>
+    import { init } from "./momentsInit";
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+    } else {
+        init();
+    }
+</script>

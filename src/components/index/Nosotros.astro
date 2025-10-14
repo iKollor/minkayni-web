@@ -1,0 +1,15 @@
+---
+import type { ComponentSectionsTeam } from "../../schemas/strapi.graphql.zod";
+import CustomSlider from "./CustomSlider.astro";
+
+interface Props {
+    data: ComponentSectionsTeam[];
+}
+
+const { data = [] } = Astro.props;
+---
+
+<div class="flex items-center justify-center">
+    <h1 class="title text-center font-bold font-display text-secondary mt-20 md:mt-32 lg:mt-40 text-4xl md:text-6xl lg:text-8xl">Conoce a nuestro equipo</h1>
+</div>
+<CustomSlider members={data} />

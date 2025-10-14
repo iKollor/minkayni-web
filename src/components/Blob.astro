@@ -1,0 +1,284 @@
+---
+interface Props {
+    imageUrl: string;
+    height: number;
+    blobSize?: number;
+    numPoints?: number;
+    delta?: number;
+    speed?: number;
+    edgeBlur?: number; // <-- NUEVO: ancho de feather en px
+}
+
+const { imageUrl, height, blobSize = 400, numPoints = 8, delta = 55, speed = 1 } = Astro.props;
+
+const W = 1000;
+const H = height;
+const minR = blobSize;
+const maxR = blobSize + delta;
+const CX = W / 2;
+const CY = H / 2;
+
+const topEscape = height / 2;
+
+// IDs únicos
+const uid = `b${Math.random().toString(36).slice(2)}`;
+const gradId = `${uid}-grad`;
+const shapeId = `${uid}-shape`;
+const clipId = `${uid}-clip`;
+---
+
+<div class="blob-wrap">
+    <!-- SVG INFERIOR: blob + imagen dentro -->
+    <svg class="blob-base" data-blob-root viewBox={`0 0 ${W} ${H}`} xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" data-points={numPoints} data-minr={minR} data-maxr={maxR} data-speed={speed}>
+        <defs>
+            <linearGradient id={gradId} x1="0" y1="0" x2="0" y2={H} gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="var(--gc-start, #7c3aed)"></stop>
+                <stop offset="1" stop-color="var(--gc-end, #06b6d4)"></stop>
+            </linearGradient>
+
+            <path id={shapeId} d={`M${CX},${CY - minR} A${minR},${minR} 0 1,0 ${CX},${CY + minR} A${minR},${minR} 0 1,0 ${CX},${CY - minR} z`}></path>
+
+            <clipPath id={clipId}>
+                <use href={`#${shapeId}`}></use>
+            </clipPath>
+        </defs>
+
+        <!-- Fondo degradado dentro del blob -->
+        <use href={`#${shapeId}`} class="gradient-custom" style={`fill:url(#${gradId})`} clip-path={`url(#${clipId})`} data-blob-shape-bg></use>
+
+        <!-- Imagen principal dentro del blob -->
+        <g clip-path={`url(#${clipId})`}>
+            <image x="0" y="0" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" href={imageUrl} data-blob-image-in />
+        </g>
+    </svg>
+
+    <!-- SVG SUPERIOR: SOLO FRANJA SUPERIOR, alineado 1:1 por viewBox -->
+    <svg class="blob-top" aria-hidden="true" viewBox={`0 0 ${W} ${H}`} xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+        <defs>
+            <!-- mismo shape local; ids independientes por ser otro SVG -->
+            <path id={`${uid}-shape-top`} d={`M${CX},${CY - minR} A${minR},${minR} 0 1,0 ${CX},${CY + minR} A${minR},${minR} 0 1,0 ${CX},${CY - minR} z`}></path>
+            <!-- máscara: mostrar solo arriba y restar el blob un poquito dilatado -->
+            <filter id={`${uid}-grow`} x="-10%" y="-10%" width="120%" height="120%">
+                <feMorphology operator="dilate" radius="1.6" in="SourceGraphic"></feMorphology>
+            </filter>
+            <mask id={`${uid}-mask-top`} maskUnits="userSpaceOnUse">
+                <rect x="0" y="0" width="100%" height={topEscape} fill="#fff"></rect>
+            </mask>
+        </defs>
+
+        <!-- franja superior recortada, misma imagen y mismo preserveAspectRatio -->
+        <image x="0" y="0" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" href={imageUrl} mask={`url(#${uid}-mask-top)`} />
+    </svg>
+</div>
+
+<style>
+    .blob-wrap {
+        position: relative;
+        width: 100%;
+        /* altura se ajusta al SVG, evita estirar contenedor */
+    }
+    .blob-base {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+    .blob-top {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+</style>
+
+<script>
+    import { gsap } from "gsap";
+
+    // Inicializa TODOS los SVGs del componente en la página
+    if (typeof window !== "undefined") {
+        const init = (root: Element) => {
+            if (!root) return;
+            // Evitar doble inicialización
+            if ((root as any).dataset?._blobReady) return;
+            (root as any).dataset._blobReady = "1";
+
+            // Buscamos el <path> del blob dentro de este root sin depender de variables del build
+            const shape = (root.querySelector('path[id$="-shape"]') || root.querySelector("path")) as SVGPathElement | null;
+            const bgUse = root.querySelector("[data-blob-shape-bg]") as SVGUseElement | null;
+
+            if (!shape) {
+                console.warn("Blob: shape no encontrado");
+                return;
+            }
+
+            const numPoints = Number((root as HTMLElement).dataset.points) || 8;
+            const minR = Number((root as HTMLElement).dataset.minr) || 400;
+            const maxR = Number((root as HTMLElement).dataset.maxr) || 455;
+            const speed = Number((root as HTMLElement).dataset.speed) || 1;
+
+            const svgEl = shape.ownerSVGElement as SVGSVGElement | null;
+            const vb = svgEl?.viewBox?.baseVal;
+            const cx = vb ? vb.x + vb.width / 2 : 500;
+            const cy = vb ? vb.y + vb.height / 2 : 500;
+
+            const blob = createBlob({
+                element: shape,
+                numPoints,
+                centerX: cx,
+                centerY: cy,
+                minRadius: minR,
+                maxRadius: maxR,
+                minDuration: 1,
+                maxDuration: 2,
+                animateRadius: true,
+            });
+
+            // Asegura repintado inicial del bg (por si el <use> requiere el primer “d”)
+            if (bgUse) {
+                requestAnimationFrame(() => {
+                    try {
+                        // Usamos setAttribute para evitar problemas con href/baseVal dependiendo del navegador
+                        bgUse.setAttribute("href", `#${shape.id}`);
+                    } catch (e) {
+                        // fallback silencioso
+                    }
+                });
+            }
+
+            gsap.to(blob.tl, {
+                timeScale: speed,
+                duration: 0.3,
+                onStart() {
+                    blob.tl.play();
+                },
+            });
+
+            const onUnload = () => blob.tl?.kill?.();
+            window.addEventListener("beforeunload", onUnload, { once: true });
+        };
+
+        const roots = document.querySelectorAll("[data-blob-root]");
+        roots.forEach((r) => init(r));
+    }
+
+    // ---------- Utils: blob animado + cardinal spline ----------
+
+    function createBlob(opts: { element: SVGPathElement; numPoints: number; centerX: number; centerY: number; minRadius: number; maxRadius: number; minDuration: number; maxDuration: number; animateRadius?: boolean }) {
+        const { element, numPoints, centerX, centerY, minRadius, maxRadius, minDuration, maxDuration, animateRadius = true } = opts;
+
+        const slice = (Math.PI * 2) / numPoints;
+        const start = Math.random() * Math.PI * 2;
+
+        if (animateRadius) {
+            const points = new Array(numPoints);
+            for (let i = 0; i < numPoints; i++) {
+                const angle = start + i * slice;
+                points[i] = { angle, cos: Math.cos(angle), sin: Math.sin(angle), r: minRadius };
+            }
+
+            let dirty = false;
+            const render = () => {
+                if (!dirty) return;
+                const pathPoints = points.map((p) => ({ x: centerX + p.cos * p.r, y: centerY + p.sin * p.r }));
+                element.setAttribute("d", cardinal(pathPoints, true, 1));
+                dirty = false;
+            };
+            const schedule = () => {
+                if (!dirty) {
+                    dirty = true;
+                    requestAnimationFrame(render);
+                }
+            };
+
+            const tl = gsap.timeline({ paused: true });
+            for (let i = 0; i < numPoints; i++) {
+                const d = random(minDuration, maxDuration);
+                tl.to(points[i], { duration: d, r: maxRadius, repeat: -1, yoyo: true, ease: "sine.inOut", onUpdate: schedule }, -Math.random() * d);
+            }
+
+            // Pintado inicial
+            schedule();
+            tl.progress(1).progress(0);
+            tl.timeScale(0);
+
+            return { tl, points, centerX, centerY };
+        } else {
+            // Variante por posición (no necesaria aquí)
+            const points: { x: number; y: number }[] = [];
+            const tl = gsap.timeline({ paused: true });
+
+            for (let i = 0; i < numPoints; i++) {
+                const angle = start + i * slice;
+                const duration = random(minDuration, maxDuration);
+                const p = {
+                    x: centerX + Math.cos(angle) * minRadius,
+                    y: centerY + Math.sin(angle) * minRadius,
+                };
+                const target = {
+                    x: centerX + Math.cos(angle) * maxRadius,
+                    y: centerY + Math.sin(angle) * maxRadius,
+                };
+                const tween = gsap.to(p, {
+                    x: target.x,
+                    y: target.y,
+                    duration,
+                    repeat: -1,
+                    yoyo: true,
+                    ease: "sine.inOut",
+                });
+                tl.add(tween, -Math.random() * duration);
+                points.push(p);
+            }
+
+            const update = () => {
+                element.setAttribute("d", cardinal(points, true, 1));
+            };
+
+            let dirty = true;
+            const schedule = () => {
+                if (!dirty) {
+                    dirty = true;
+                    requestAnimationFrame(() => {
+                        update();
+                        dirty = false;
+                    });
+                }
+            };
+            tl.eventCallback("onUpdate", schedule);
+
+            tl.progress(1).progress(0);
+            tl.timeScale(0);
+
+            update();
+
+            return { tl, points, centerX, centerY };
+        }
+    }
+
+    function cardinal(data: { x: number; y: number }[], closed: boolean, tension = 1) {
+        if (!data || !data.length) return "M0 0";
+        const size = data.length - (closed ? 0 : 1);
+        let path = `M${data[0].x} ${data[0].y} C`;
+        for (let i = 0; i < size; i++) {
+            const p0 = closed ? data[(i - 1 + size) % size] : i === 0 ? data[0] : data[i - 1];
+            const p1 = data[i];
+            const p2 = data[(i + 1) % data.length];
+            const p3 = closed ? data[(i + 2) % size] : i === size - 1 ? p2 : data[i + 2];
+            const x1 = p1.x + ((p2.x - p0.x) / 6) * tension;
+            const y1 = p1.y + ((p2.y - p0.y) / 6) * tension;
+            const x2 = p2.x - ((p3.x - p1.x) / 6) * tension;
+            const y2 = p2.y - ((p3.y - p1.y) / 6) * tension;
+            path += ` ${x1} ${y1} ${x2} ${y2} ${p2.x} ${p2.y}`;
+        }
+        return closed ? path + "z" : path;
+    }
+
+    function random(min: number, max = min) {
+        if (max === undefined) {
+            max = min;
+            min = 0;
+        }
+        if (min > max) [min, max] = [max, min];
+        return min + (max - min) * Math.random();
+    }
+</script>

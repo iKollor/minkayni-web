@@ -1,0 +1,252 @@
+---
+import { Icon } from "astro-icon/components";
+import type { NavTree } from "../schemas/navigation";
+import { buildSocialItems } from "../scripts/components/socials";
+import type { Footer } from "../schemas/strapi.graphql.zod";
+import type { SocialItem } from "../scripts/components/socials";
+
+interface Props {
+    buttons: NavTree;
+    socials?: Footer["Socials"] | null;
+}
+
+const { buttons, socials } = Astro.props;
+
+const hasHome = buttons.some((b) => b.path === "/");
+const navButtons = hasHome ? [...buttons] : [{ title: "Inicio", path: "/" }, ...buttons];
+---
+
+<>
+    <!-- blocks -->
+    <div id="square-container" class="w-screen h-screen flex flex-wrap justify-start content-start box-border overflow-hidden z-[20] pointer-events-none fixed top-0 left-0"></div>
+
+    <!-- menu -->
+    <div class="opacity-0 content-overlay fixed top-0 w-screen h-screen flex justify-start items-center gap-[5em] bg-[var(--primary)] text-white z-[10] pointer-events-none pt-32">
+        <div class="nav-links w-[80%] mx-auto">
+            {
+                navButtons.map((button, index) => (
+                    <div class="flex relative">
+                        <div class={`nav-link flex relative ${button.items != null && "peer"}`}>
+                            <a href={button.path} class="px-0 py-2 text-2xl font-[800] text-white/70 tracking-wide peer font-display">
+                                <span data-text={button.title} class="relative block before:w-0 before:text-white before:overflow-hidden before:absolute before:content-[attr(data-text)] before:transition-all before:duration-500 before:ease-in-out hover:before:w-full before:whitespace-nowrap whitespace-nowrap">
+                                    {button.title}
+                                </span>
+                            </a>
+                            <span class="absolute text-white top-[0.3em] text-base -order-1 peer-hover:opacity-100 opacity-0 peer-hover:-left-6 left-0 transition-all duration-500 ease-in-out mr-2 pointer-events-none">0{index + 1}</span>
+                        </div>
+                        {button.items && (
+                            <>
+                                <div class="submenu pl-32 ml-20 flex-col flex pointer-events-none gap-2 peer-hover:pointer-events-auto justify-end hover:pointer-events-auto z-30 absolute top-[calc(50%-12px)] peer opacity-0 peer-hover:opacity-100 hover:opacity-100 delay-1000 ease-in-out duration-500">
+                                    {button.items.map((subbutton) => (
+                                        <a href={subbutton.path} class="opacity-70 hover:opacity-100">
+                                            {subbutton.title}
+                                        </a>
+                                    ))}
+                                </div>
+                                <span class="w-0 h-[1px] absolute top-1/2 left-32 peer-hover:w-16 bg-white transition-all duration-500 ease-in-out delay-500" />
+                            </>
+                        )}
+                    </div>
+                ))
+            }
+            {
+                (() => {
+                    const items: SocialItem[] = buildSocialItems(socials);
+                    if (items.length === 0) return null;
+                    return (
+                        <div class="nav-link flex gap-5 mt-2">
+                            {items.map((i) => (
+                                <a href={i.href} class="opacity-70 hover:opacity-100" aria-label={i.label} title={i.label} target="_blank" rel="noopener noreferrer">
+                                    <Icon name={i.icon} width={20} height={20} />
+                                </a>
+                            ))}
+                        </div>
+                    );
+                })()
+            }
+        </div>
+    </div>
+
+    <script>
+        import { gsap, ScrollSmoother } from "../scripts/main.ts";
+        window.addEventListener("DOMContentLoaded", () => {
+            const menu = document.querySelector(".content-overlay");
+            gsap.set(menu, { opacity: 0, pointerEvents: "none" });
+
+            const squareContainer = document.getElementById("square-container") as HTMLDivElement;
+            if (!squareContainer) return;
+
+            let overlayVisible = false;
+            let prevScroll = 0;
+            let squares: HTMLDivElement[] = [];
+            let tl: gsap.core.Timeline | null = null;
+            let isAnimating = false; // NUEVO
+
+            function isMobile() {
+                return window.matchMedia("(max-width: 640px)").matches;
+            }
+            function getAnimConfig() {
+                const mobile = isMobile();
+                return {
+                    squareSize: mobile ? 60 : 100,
+                    fadeInDuration: 0.02,
+                    fadeOutDuration: 0.02,
+                    fadeOutDelayOpen: mobile ? 0.55 : 0.9,
+                    fadeOutDelayClose: mobile ? 0.15 : 0.25,
+                    staggerEach: mobile ? 0.01 : 0.004,
+                };
+            }
+
+            let grid = { cols: 0, rows: 0, total: 0 };
+            function computeGrid() {
+                const { squareSize } = getAnimConfig();
+                const vw = window.innerWidth;
+                const vh = window.visualViewport?.height ?? window.innerHeight;
+                const cols = Math.ceil(vw / squareSize);
+                const rows = Math.ceil(vh / squareSize);
+                grid = { cols, rows, total: cols * rows };
+                squareContainer.style.width = `${cols * squareSize}px`;
+                squareContainer.style.height = `${rows * squareSize}px`;
+            }
+
+            function createSquares() {
+                squares = [];
+                squareContainer.innerHTML = "";
+                const frag = document.createDocumentFragment();
+                for (let i = 0; i < grid.total; i++) {
+                    const d = document.createElement("div");
+                    d.className = "square";
+                    frag.appendChild(d);
+                    squares.push(d);
+                }
+                squareContainer.appendChild(frag);
+            }
+
+            function buildSquares() {
+                computeGrid();
+                createSquares();
+            }
+
+            const menuButton = document.querySelector("#menu-btn") as HTMLDivElement;
+            if (!menuButton) return;
+
+            function playTransition(targetVisible: boolean) {
+                if (isAnimating) return;
+                isAnimating = true;
+
+                // preparar squares
+                buildSquares();
+
+                const { fadeInDuration, fadeOutDuration, fadeOutDelayOpen, fadeOutDelayClose, staggerEach } = getAnimConfig();
+
+                tl?.kill();
+                tl = gsap.timeline({
+                    onComplete() {
+                        if (!targetVisible) {
+                            gsap.set(menu, { opacity: 0, pointerEvents: "none" });
+                            // restaurar scroll SOLO después del cierre completo
+                            const smoother = ScrollSmoother.get();
+                            document.documentElement.classList.remove("no-scroll");
+                            smoother?.paused(false);
+                            if (smoother) {
+                                smoother.scrollTo(prevScroll, false);
+                            } else {
+                                window.scrollTo(0, prevScroll);
+                            }
+                        }
+                        isAnimating = false;
+                    },
+                });
+
+                if (targetVisible) {
+                    // ABRIR
+                    gsap.set(menu, { opacity: 0, pointerEvents: "none" });
+                    tl.fromTo(
+                        squares,
+                        { opacity: 0 },
+                        {
+                            opacity: 1,
+                            duration: fadeInDuration,
+                            stagger: { each: staggerEach, from: "random" },
+                        }
+                    )
+                        .add(() => {
+                            gsap.set(menu, { opacity: 1, pointerEvents: "all" });
+                            // bloquear scroll al inicio de apertura
+                            const smoother = ScrollSmoother.get();
+                            prevScroll = window.scrollY;
+                            document.documentElement.classList.add("no-scroll");
+                            smoother?.paused(true);
+                        })
+                        .to(squares, {
+                            opacity: 0,
+                            duration: fadeOutDuration,
+                            stagger: { each: staggerEach, from: "random" },
+                            delay: fadeOutDelayOpen,
+                        });
+                } else {
+                    // CERRAR
+                    // menu ya visible: cubrir, luego ocultar y desvanecer squares
+                    tl.fromTo(
+                        squares,
+                        { opacity: 0 },
+                        {
+                            opacity: 1,
+                            duration: fadeInDuration,
+                            stagger: { each: staggerEach, from: "random" },
+                        }
+                    )
+                        .add(() => {
+                            gsap.set(menu, { opacity: 0, pointerEvents: "none" });
+                        })
+                        .to(squares, {
+                            opacity: 0,
+                            duration: fadeOutDuration,
+                            stagger: { each: staggerEach, from: "random" },
+                            delay: fadeOutDelayClose,
+                        });
+                }
+
+                overlayVisible = targetVisible;
+                // actualizar clases del botón inmediatamente para feedback visual consistente
+                menuButton.classList.toggle("open", overlayVisible);
+                menuButton.classList.toggle("close", !overlayVisible);
+            }
+
+            // Resize (solo si visible y no animando para no interferir)
+            let resizeTO: number | null = null;
+            function onResize() {
+                if (!overlayVisible || isAnimating) return;
+                if (resizeTO) window.clearTimeout(resizeTO);
+                resizeTO = window.setTimeout(() => {
+                    // reconstruye squares sin reiniciar menú
+                    buildSquares();
+                }, 140);
+            }
+            window.addEventListener("resize", onResize);
+            window.addEventListener("orientationchange", onResize);
+
+            menuButton.addEventListener("click", () => {
+                playTransition(!overlayVisible);
+            });
+        });
+    </script>
+
+    <!-- estilo actualizado -->
+    <style is:global>
+        .square {
+            /* tamaño base controlado por JS, aquí solo estilo visual */
+            width: 100px;
+            height: 100px;
+            background-color: var(--secondary);
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+        @media (max-width: 640px) {
+            .square {
+                width: 60px;
+                height: 60px;
+            }
+        }
+    </style>
+</>

@@ -1,0 +1,120 @@
+---
+// Import necessary scripts and styles
+/* import "../styles/Hamburguer.scss"; */
+
+import Reloj from "./Reloj.astro";
+
+import NavButton from "./NavButton.astro";
+import Button from "./Button.astro";
+
+import { Image } from "astro:assets";
+
+import isotipo from "../assets/SVG/ISOTIPO_WHITE.svg";
+import logo from "../assets/SVG/LOGO_WHITE.svg"; // reañadido
+import BurgerIcon from "./BurgerIcon.astro";
+import type { NavTree } from "../schemas/navigation";
+
+interface Props {
+    buttons: NavTree;
+}
+
+const currentPath = typeof window !== "undefined" ? window.location.pathname : "/";
+
+const { buttons } = Astro.props;
+---
+
+<div class="fixed w-full h-[90px] overflow-hidden z-50 hidden" id="nav-container">
+    <div class="mx-10 h-full">
+        <div class="h-full w-full">
+            <div id="nav-switcher" class="max-lg:-translate-y-[100px]">
+                <div id="navBase" class="flex items-center h-[90px] justify-between text-lg text-white font-medium">
+                    <a href="/" class="animate">
+                        <Image src={isotipo} alt="Isotipo" class="h-10 mr-4" />
+                    </a>
+                    <div class="flex items-center space-x-8 mix-blend-difference w-full animate">
+                        {buttons.map((button, index) => ((button.additionalFields?.style ?? "default") === "default" ? <NavButton button={button} index={index} /> : null))}
+                    </div>
+                    <Reloj />
+                    {
+                        buttons.map((button) => {
+                            if (button.additionalFields?.style === "cta") return <Button href={button.path} defaultText={button.title} hoverText={button.additionalFields?.ctaText as string} />;
+                        })
+                    }
+                </div>
+                <div id="navScrolled" class="flex items-center h-[90px] justify-between">
+                    <a href="/">
+                        <picture class="block h-10">
+                            <source srcset={logo.src} class="h-10 w-auto" media="(min-width:1024px)" />
+                            <Image src={isotipo} alt="Logo" class="h-10 w-auto" loading="lazy" />
+                        </picture>
+                    </a>
+                    <BurgerIcon />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    import { gsap, ScrollTrigger, ScrollSmoother } from "../scripts/main.ts";
+
+    const initNavSwitcher = () => {
+        const navSwitcher = document.getElementById("nav-switcher");
+        if (!navSwitcher) return;
+
+        // Instancia matchMedia (reemplaza al deprecado ScrollTrigger.matchMedia)
+        const mm = gsap.matchMedia();
+
+        mm.add("(min-width: 1024px)", () => {
+            const header = document.getElementById("header");
+            const smoothContent = document.getElementById("smooth-content");
+            const triggerEl = header || smoothContent || document.body;
+
+            const tween = gsap.to(navSwitcher, {
+                y: -100,
+                ease: "none",
+                scrollTrigger: {
+                    trigger: triggerEl,
+                    start: "top top",
+                    end: "+=300",
+                    scrub: true,
+                    invalidateOnRefresh: true,
+                },
+            });
+
+            requestAnimationFrame(() => ScrollTrigger.refresh());
+        });
+
+        // Toggle mix-blend-difference al superar 70vh del documento
+        const container = document.getElementById("nav-container");
+        if (!container) return;
+
+        const applyBlend = (active: boolean) => {
+            container.classList.toggle("mix-blend-difference", active);
+        };
+
+        const updateBlend = () => {
+            const smoother = ScrollSmoother.get?.();
+            const y = smoother ? smoother.scrollTop() : window.scrollY;
+            const threshold = window.innerHeight * 0.7;
+            applyBlend(y > threshold);
+        };
+
+        // ScrollTrigger para actualizar en scroll/resize y con Smooth
+        ScrollTrigger.create({
+            start: 0,
+            end: () => ScrollTrigger.maxScroll(window) || document.documentElement.scrollHeight - window.innerHeight,
+            onUpdate: updateBlend,
+            onRefresh: updateBlend,
+        });
+
+        // Estado inicial
+        updateBlend();
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initNavSwitcher, { once: true });
+    } else {
+        initNavSwitcher();
+    }
+</script>

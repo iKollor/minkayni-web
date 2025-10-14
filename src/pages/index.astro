@@ -1,16 +1,220 @@
 ---
+import MainLayout from "../layouts/MainLayout.astro";
+import { Image } from "astro:assets";
+import Logo from "../assets/SVG/LOGO_HEADER_WHITE.svg";
+import Tag from "../components/index/Tag.astro";
+import Moments from "../components/index/Moments.astro";
+import Testimonials from "../components/index/Testimonials.astro";
+import Nosotros from "../components/index/Nosotros.astro";
+import logoIntroPC from "../assets/videos/logo_intro_stacked-hevc.mp4";
+import logoIntroMobile from "../assets/videos/logo_intro_stacked-1280-hevc.mp4";
 
+import { Markdown } from "@astropub/md";
+
+import { getEntry } from "astro:content";
+
+import { getData } from "../utils/i18n";
+import Projects from "../components/index/Projects.astro";
+
+const homepage = await getEntry("homepage", "homepage");
+
+const testimonials = getData(homepage, "Testimonials");
+const teams = getData(homepage, "Teams");
+const legend = getData(homepage, "legend");
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<MainLayout title="">
+    <style is:global>
+        /* Hint para evitar glitches al animar clip-path: forzar rasterización/GPU */
+        #app-content {
+            will-change: clip-path;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        @supports not (clip-path: circle(50% at 50% 50%)) {
+            #app-content {
+                clip-path: none !important;
+            }
+        }
+
+        /* Ocultar el <video> interno según la docs del componente */
+        stacked-alpha-video video {
+            display: none !important;
+        }
+        /* Nota: el canvas lo gestiona el componente; no forzamos estilos aquí. */
+
+        .intro-hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        body[data-intro="pending"] #navBase > * {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        #odometer {
+            overflow: visible;
+            font-variant-numeric: normal;
+            letter-spacing: 0;
+        }
+        #odometer .digit {
+            display: inline-block;
+            position: relative;
+            overflow: visible;
+            height: 1em;
+            width: auto;
+            min-width: 0;
+            padding: 0;
+            margin: 0;
+            font-variant-numeric: inherit;
+        }
+        #odometer .digit span {
+            display: block;
+            width: auto;
+        }
+
+        #foundation-text {
+            opacity: 0;
+            visibility: hidden;
+        }
+        #hero-background {
+            contain: paint;
+            will-change: background;
+        }
+    </style>
+
+    <!-- Overlay -->
+    <div id="intro-overlay" class="intro-hidden fixed inset-0 z-10 flex items-center justify-center overflow-hidden bg-transparent transition-opacity duration-500 [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
+        <button id="skip-intro" class="absolute bottom-6 right-6 text-lg tracking-wider uppercase opacity-60 hover:opacity-100 transition-opacity cursor-pointer"> Saltar </button>
+
+        <!-- Fallback estático (ahora es absolute vía CSS, no empuja nada) -->
+        <Image id="intro-fallback-logo" src={Logo} alt="Logo" class="pointer-events-none absolute inset-0 m-auto w-[min(90vw,900px)] opacity-0 invisible" />
+
+        <!-- Video apilado a ancho completo -->
+        <stacked-alpha-video id="intro-stacked" fit="cover" class="block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[180svw] md:w-[100svw] aspect-[16/9] origin-center will-change-[transform] [contain:paint]">
+            <video autoplay muted playsinline preload="auto" crossorigin="anonymous">
+                <source src={logoIntroPC} type="video/mp4" />
+                <source src={logoIntroMobile} type="video/mp4" />
+            </video>
+        </stacked-alpha-video>
+
+        <script type="module" src="https://cdn.jsdelivr.net/npm/stacked-alpha-video/+esm"></script>
+    </div>
+
+    <!-- Contenido principal -->
+    <div id="app-content" class="opacity-0 transition-opacity duration-500">
+        <header>
+            <div class="header__container w-full relative">
+                <div id="hero-background" class="bg__container absolute top-0 left-0 w-full h-[50vh] md:h-screen z-20 bg-[var(--primary)] gradient-custom animate-gradient"></div>
+                <div class="bg__container__logo absolute inset-0 flex items-center justify-center h-[50svh] md:h-full z-30 select-none">
+                    <Image class="logo pointer-events-none w-[70svw] sm:w-[50svw] md:w-[40svw] mb-2 mr-[2px]" src={Logo} alt="Logo" />
+                </div>
+                <div class="bottom__section__container w-full md:w-[90%] min-h-[100svh] flex flex-col-reverse md:flex-row mx-auto pt-[70svh] justify-end items-center">
+                    <div class="prose w-full md:w-1/2 h-[80%] text-[color:var(--text)] opacity-80 text-lg md:text-base max-w-[90%] md:max-w-[50%] text-center md:text-left leading-relaxed pt-5 md:pt-0" id="foundation-text">
+                        <Markdown of={legend} class="prose" />
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div id="moments">
+            <section class="max-w-[1200px] mx-auto my-16 px-4"><Tag /></section>
+            <section class="my-24">
+                <Moments />
+            </section>
+            <!-- Reemplazado: ahora cargamos el módulo de animaciones de Moments -->
+            <script src="../scripts/moments.ts"></script>
+        </div>
+        <section id="testimonials">
+            <Testimonials testimonials={testimonials} />
+        </section>
+
+        <section id="about-us">
+            <Nosotros data={teams} />
+        </section>
+        <section id="projects">
+            <Projects />
+        </section>
+    </div>
+    <script>
+        import { init } from "../scripts/index/init.ts";
+        import { makeInteractiveGradient } from "../scripts/interactive-gradient.ts";
+        const startGradient = () => {
+            const heroBackground = document.getElementById("hero-background");
+            if (heroBackground) {
+                makeInteractiveGradient(heroBackground, {
+                    wander: 6,
+                    maxFps: 36, // menor FPS efectivo para bajar CPU
+                    driftSpeed: 0.06,
+                    blobs: [1, 2, 3], // simplifica capas animadas (evita parpadeo)
+                });
+            }
+        };
+
+        // Inicia la intro y difiere el gradiente hasta que termine
+        init();
+        window.addEventListener("intro:finished", startGradient, { once: true });
+        if (document.readyState === "complete" || document.readyState === "interactive") {
+            // fallback por si no hay intro (salto inmediato)
+            setTimeout(startGradient, 1500);
+        } else {
+            document.addEventListener("DOMContentLoaded", () => setTimeout(startGradient, 1500), { once: true });
+        }
+    </script>
+</MainLayout>
+
+<script>
+    import { gsap } from "../scripts/main";
+
+    if (typeof window !== "undefined") {
+        const initTitles = () => {
+            const nodeList = document.querySelectorAll(".title, #title") as NodeListOf<HTMLElement>;
+            const titles = Array.from(nodeList) as HTMLElement[];
+            if (!titles.length) return;
+
+            titles.forEach((el) => {
+                if (el.dataset.gsapTitleInit) return;
+                el.dataset.gsapTitleInit = "1";
+
+                gsap.fromTo(
+                    el,
+                    { y: 80, opacity: 0, willChange: "transform, opacity" },
+                    {
+                        y: 0,
+                        opacity: 1,
+                        ease: "power1.out",
+                        duration: 0.8,
+                        scrollTrigger: {
+                            trigger: el,
+                            start: "top 85%",
+                            end: "bottom 60%",
+                            toggleActions: "play none none reverse",
+                        },
+                    }
+                );
+            });
+        };
+
+        if (document.readyState === "complete" || document.readyState === "interactive") {
+            initTitles();
+        } else {
+            window.addEventListener("DOMContentLoaded", initTitles, { once: true });
+        }
+
+        const observer = new MutationObserver((mutations) => {
+            for (const m of mutations) {
+                if (m.addedNodes && m.addedNodes.length) {
+                    initTitles();
+                    break;
+                }
+            }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+
+        window.addEventListener("beforeunload", () => observer.disconnect());
+    }
+</script>

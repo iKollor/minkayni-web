@@ -1,0 +1,168 @@
+---
+import type { ImageMetadata } from "astro";
+
+import PlaceholderLogo from "../../assets/SVG/LOGO_BATUCADA_2025.svg"; // TODO: reemplazar por wordmark BATUCADA POPULAR (blanco, con textura)
+import BatucadaPhoto from "../../assets/FOTO_BATUCADA.webp"; // TODO: reemplazar por foto del proyecto (batería / tambores)
+import Button from "../Button.astro";
+import { Image } from "astro:assets";
+
+interface Props {
+    logoSrc?: ImageMetadata;
+    photoSrc?: ImageMetadata;
+}
+
+const { logoSrc = PlaceholderLogo, photoSrc = BatucadaPhoto } = Astro.props as Props;
+---
+
+<section id="featured-project" class="relative mx-auto w-full h-auto md:h-[calc(100vh+300px)]">
+    <div id="featured-project-shell" class="relative h-full">
+        <!-- Layout 35% / 65% -->
+        <div class="relative grid h-full min-h-0 grid-cols-12 lg:grid-cols-[35%_auto] gap-0 grid-rows-[1fr_1fr] lg:grid-rows-[minmax(0,1fr)] content-stretch items-stretch rounded-t-[50px] md:rounded-t-[100px] overflow-hidden">
+            <!-- COLUMNA IMAGEN (35%) -->
+            <div class="featured-img-col relative col-span-12 lg:col-span-1 h-full min-h-0 overflow-hidden">
+                <Image src={photoSrc} alt="Batucada Popular – intervención cultural" class="batucada-photo absolute inset-0 h-full w-full object-cover object-center" />
+                <!-- Overlay solo mobile -->
+                <div class="mobile-photo-overlay absolute inset-0 lg:hidden pointer-events-none bg-black/55"></div>
+                <!-- Logo móvil centrado -->
+                <div class="mobile-wordmark-wrapper lg:hidden absolute inset-0 flex items-center justify-center p-4">
+                    <Image src={logoSrc} alt="Logo Batucada Popular" class="mobile-wordmark w-[62%] max-w-[320px] h-auto max-h-full object-contain drop-shadow-[0_2px_14px_rgba(0,0,0,0.55)]" />
+                </div>
+            </div>
+
+            <!-- PANEL TEXTO (65%) -->
+            <div id="featured-project-panel" class="relative col-span-12 lg:col-span-1 flex h-full pb-[200px] md:pb-0 lg:h-full flex-col p-14 text-white overflow-hidden bg-[linear-gradient(135deg,#4a0073_0%,#6e00a3_65%,#4a0073_100%)] lg:items-end">
+                <!-- Contenido alineado a la derecha -->
+                <div class="relative flex flex-col items-center lg:items-end lg:max-w-[500px] text-center lg:text-right gap-6">
+                    <header class="w-full flex lg:justify-end justify-center">
+                        <h2 class="featured-title font-display font-[900] tracking-tight text-[clamp(3.2rem,4.2vw,5.4rem)] leading-none">Proyecto destacado</h2>
+                    </header>
+                    <div class="featured-body flex flex-col text-base lg:text-xl leading-relaxed max-w-[50ch]">
+                        <p>Nuestro proyecto estrella es la Batucada Popular, una iniciativa cultural y social que utiliza la música (especialmente los tambores y percusión) como una herramienta de transformación comunitaria y protección de jóvenes en contextos vulnerables.</p>
+                        <p>Al promover valores como Derechos Humanos, convivencia pacífica y resistencia cultural, la Batucada ha demostrado reducir la exposición de los jóvenes a la violencia, al ofrecer un refugio comunitario y fortalecer redes de apoyo barrial.</p>
+                    </div>
+                    <Button href="/projects/batucada-popular" defaultText="Descubre más 🚀" hoverText="Y siente su impacto 🔥" />
+                </div>
+            </div>
+
+            <!-- LOGO SUPERPUESTO SALIENDO HACIA LA DERECHA -->
+            <div class="pointer-events-none -translate-y-[calc(50%+150px)] absolute z-10 top-1/2 left-[calc(50%/2)] hidden lg:block">
+                <div class="wordmark-parallax will-change-transform">
+                    <Image src={logoSrc} alt="Logo Batucada Popular" class="batucada-wordmark w-[150px] max-w-[30vw] md:w-[260px] lg:w-[420px] max-h-full select-none drop-shadow-[0_2px_14px_rgba(0,0,0,0.55)]" />
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    import { gsap, SplitText, ScrollSmoother } from "../../scripts/main.ts";
+
+    const initFeaturedProject = () => {
+        const section = document.getElementById("featured-project");
+        if (!section || section.dataset.fpReady) return;
+        section.dataset.fpReady = "true";
+
+        const panel = section.querySelector("#featured-project-panel");
+        const imgCol = section.querySelector(".featured-img-col");
+        const photo = section.querySelector(".batucada-photo");
+        const mobileOverlay = section.querySelector(".mobile-photo-overlay");
+        const wordmark = section.querySelector(".batucada-wordmark");
+        const wordmarkParallax = section.querySelector(".wordmark-parallax");
+        const mobileWordmark = section.querySelector(".mobile-wordmark");
+        const title = section.querySelector(".featured-title");
+        const body = section.querySelector(".featured-body");
+        const btn = section.querySelector("[data-magic-btn]");
+        const smoother = (ScrollSmoother as any)?.get?.();
+        let wordmarkEffectObj: any = null;
+
+        const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (reduced) {
+            gsap.set([imgCol, panel, photo, wordmark, title, body, btn], { autoAlpha: 1, clearProps: "all" });
+            return;
+        }
+
+        // Split texto título y párrafos
+        let titleSplit: any = null;
+        if (title) {
+            titleSplit = new SplitText(title as HTMLElement, { type: "words,chars", wordsClass: "word", charsClass: "char" });
+            gsap.set(titleSplit.chars, { yPercent: 120, opacity: 0 });
+        }
+        let bodySplit: any = null;
+        if (body) {
+            bodySplit = new SplitText(body as HTMLElement, { type: "lines", linesClass: "line" });
+            gsap.set(bodySplit.lines, { yPercent: 40, opacity: 0 });
+        }
+
+        const setInitial = () => {
+            if (imgCol) gsap.set(imgCol, { autoAlpha: 0, y: 20 });
+            if (panel) gsap.set(panel, { autoAlpha: 0, y: 20 });
+            gsap.set(photo, { scale: 1.15, autoAlpha: 0 });
+            if (mobileOverlay) gsap.set(mobileOverlay, { autoAlpha: 0 });
+            // Mantener transforms en el elemento del logo, no en su contenedor parallax
+            if (wordmark) gsap.set(wordmark, { yPercent: -10, rotate: -2, autoAlpha: 0, scale: 1 });
+            if (mobileWordmark) gsap.set(mobileWordmark, { scale: 0.9, autoAlpha: 0 });
+            if (btn) gsap.set(btn, { y: 30, autoAlpha: 0 });
+            // Asegurar que los contenedores de título y cuerpo estén visibles antes del reveal
+            if (title) gsap.set(title, { autoAlpha: 1, y: 0 });
+            if (body) gsap.set(body, { autoAlpha: 1, y: 0 });
+            if (titleSplit) gsap.set(titleSplit.chars, { yPercent: 120, opacity: 0 });
+            if (bodySplit) gsap.set(bodySplit.lines, { yPercent: 40, opacity: 0 });
+        };
+
+        setInitial();
+        // Preparar efecto parallax neutro (sin desplazamiento) si hay ScrollSmoother activo
+        if (smoother && wordmarkParallax) {
+            smoother.effects(wordmarkParallax as HTMLElement, { speed: 1, lag: 0 });
+            wordmarkEffectObj = { speed: 1, lag: 0 };
+        }
+        // El parallax del logo lo maneja ScrollSmoother (effects:true) y se activa suavemente tras el reveal.
+        // El parallax del logo ahora lo maneja ScrollSmoother (effects:true) vía data-speed/data-lag en .wordmark-parallax.
+        // En mobile está oculto por CSS, y en iOS/viewport pequeños ScrollSmoother no se crea (ver scripts/main.ts).
+
+        // Timeline principal controlado por ScrollTrigger (play / reverse)
+        const tl = gsap.timeline({
+            defaults: { ease: "power3.out" },
+            scrollTrigger: {
+                trigger: section,
+                start: "top 75%",
+                end: "center top",
+                toggleActions: "play none none reverse",
+                // markers: true,
+            },
+        });
+        // Fade-in de contenedores
+        if (imgCol) tl.to(imgCol, { autoAlpha: 1, y: 0, duration: 0.45 }, 0);
+        if (panel) tl.to(panel, { autoAlpha: 1, y: 0, duration: 0.45 }, 0.05);
+        // Foto + elementos
+        tl.to(photo, { autoAlpha: 1, duration: 0.4 }, 0.05)
+            .to(mobileOverlay, { autoAlpha: 1, duration: 0.35, ease: "power2.out" }, 0.08)
+            .to(photo, { scale: 1, duration: 1.2 }, 0.05)
+            .to(wordmark, { autoAlpha: 1, yPercent: 0, rotate: 0, duration: 0.9 }, 0.2)
+            // Activar parallax suavemente tras el reveal del logo (sin cortes)
+            .call(
+                () => {
+                    if (smoother && wordmarkParallax && wordmarkEffectObj) {
+                        gsap.to(wordmarkEffectObj, {
+                            speed: 0.9,
+                            lag: 0.12,
+                            duration: 0.6,
+                            ease: "power2.out",
+                            onUpdate: () => smoother.effects(wordmarkParallax as HTMLElement, { speed: wordmarkEffectObj.speed, lag: wordmarkEffectObj.lag }),
+                        });
+                    }
+                },
+                [],
+                ">-0.05"
+            )
+            .to(mobileWordmark, { autoAlpha: 1, scale: 1, duration: 0.6, ease: "power3.out" }, 0.25);
+        if (titleSplit) tl.to(titleSplit.chars, { yPercent: 0, opacity: 1, stagger: { each: 0.02, from: "center" }, duration: 0.65 }, 0.22);
+        if (bodySplit) tl.to(bodySplit.lines, { yPercent: 0, opacity: 1, stagger: 0.09, duration: 0.6 }, ">-0.15");
+        if (btn) tl.to(btn, { y: 0, autoAlpha: 1, duration: 0.5 }, ">-0.3");
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initFeaturedProject, { once: true });
+    } else {
+        initFeaturedProject();
+    }
+</script>
