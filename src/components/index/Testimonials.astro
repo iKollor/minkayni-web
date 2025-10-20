@@ -4,8 +4,6 @@ import { StrapiBlocks } from "@sensinum/astro-strapi-blocks";
 import Blob from "../Blob.astro";
 import type { ComponentSectionsTestimonial } from "../../schemas/strapi.graphql.zod";
 
-const STRAPI_URL = import.meta.env.STRAPI_URL;
-
 interface Props {
     testimonials: ComponentSectionsTestimonial[];
 }
@@ -24,7 +22,7 @@ const { testimonials } = Astro.props;
                 return (
                     <section class={"t-slide absolute inset-0 flex items-center justify-between gap-8 opacity-0 pointer-events-none " + (leftAlign ? "flex-row" : "flex-row-reverse")} data-slide>
                         <div class="t-blob-wrap shrink-0 w-1/2" data-blob-wrap>
-                            <Blob imageUrl={STRAPI_URL + t?.picture?.url} height={t?.picture?.height ?? 700} />
+                            <Blob imageUrl={t?.picture?.url} height={t?.picture?.height ?? 700} />
                         </div>
                         {/* META MÓVIL: Autor/Org debajo del blob */}
                         <div class="t-meta-mobile md:hidden text-center" aria-hidden="true">

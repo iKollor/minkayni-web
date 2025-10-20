@@ -95,6 +95,8 @@ export const initIntro = (prefersReduced: boolean): void => {
             content?.style.removeProperty("clip-path");
             gsap.set("#navBase > *", { opacity: 1, y: 0 });
             animateNavAndParagraph(prefersReduced, navTexts);
+            // Notificar a los listeners que la intro terminó incluso en el camino “skip”
+            requestAnimationFrame(() => window.dispatchEvent(new CustomEvent("intro:finished")));
             requestAnimationFrame(() => ScrollTrigger?.refresh());
         });
     };
@@ -184,14 +186,6 @@ export const initIntro = (prefersReduced: boolean): void => {
         setTimeout(runPostIntro, Math.max(0, MIN_VISIBLE_MS - elapsed));
     };
 
-    const runStaticIntro = (): void => {
-        if (finished) return;
-        overlay?.classList.remove("intro-hidden");
-        const logoFallback = document.getElementById("intro-fallback-logo") as HTMLElement | null;
-        if (logoFallback) logoFallback.style.opacity = "1";
-        finished = true;
-        setTimeout(runPostIntro, 900);
-    };
 
     document.documentElement.classList.add("no-scroll");
 
@@ -201,7 +195,8 @@ export const initIntro = (prefersReduced: boolean): void => {
     }
 
     if (!stackedEl || !video) {
-        runStaticIntro();
+        // Si no hay video, omite la intro por completo
+        finalizeImmediate();
         return;
     }
 
@@ -225,7 +220,8 @@ export const initIntro = (prefersReduced: boolean): void => {
     });
 
     on(video, ["ended"], () => finish(), { once: true });
-    on(video, ["error"], () => runStaticIntro(), { once: true });
+    // En fallo de reproducción, omitir intro inmediatamente
+    on(video, ["error"], () => finalizeImmediate(), { once: true });
     on(video, ["stalled", "waiting", "suspend"], () => {}, { once: false });
 
     on(skipBtn, ["click"], () => {
@@ -238,9 +234,10 @@ export const initIntro = (prefersReduced: boolean): void => {
     let playTimeout: number | undefined;
     const scheduleFallback = (): void => {
         if (playTimeout) return;
+        // Si no logra reproducirse en tiempo razonable (autoplay bloqueado o codec), omitir intro
         playTimeout = window.setTimeout(() => {
-            if (!finished) runStaticIntro();
-        }, 6000);
+            if (!finished) finalizeImmediate();
+        }, 3500);
     };
 
     const tryPlay = (): void => {
@@ -254,12 +251,14 @@ export const initIntro = (prefersReduced: boolean): void => {
                         if (playTimeout) clearTimeout(playTimeout);
                     })
                     .catch(() => {
+                        // No abortamos de inmediato para permitir desbloqueo por interacción
                         scheduleFallback();
                     });
             } else {
                 video.style.visibility = "visible";
             }
         } catch {
+            // Si play() lanza sin promesa, agenda omitir
             scheduleFallback();
         }
     };

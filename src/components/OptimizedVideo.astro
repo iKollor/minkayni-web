@@ -1,0 +1,245 @@
+---
+interface Props {
+    src: string;
+    poster: string;
+    alt: string;
+    loop: boolean;
+}
+
+const {
+    src, // p.ej: "https://strapi.minkayni.org/api/media/uploads/mi-reel.mp4"
+    poster, // p.ej: "https://img.minkayni.org/<firma>/fit-in/800x0/filters:format(webp)/uploads/posters/mi-reel.jpg"
+    alt = "Reel", // descripción accesible
+    loop = true,
+} = Astro.props;
+---
+
+<figure class="reel" data-src={src}>
+    <img class="reel-poster" src={poster} alt={alt} loading="lazy" decoding="async" />
+    <video class="reel-video" muted playsinline webkit-playsinline preload="metadata" {loop} poster={poster} aria-label={alt}></video>
+
+    <button class="reel-play" aria-label="Reproducir video" title="Reproducir">▶</button>
+    <button class="reel-unmute" aria-label="Activar sonido" title="Activar sonido">🔊</button>
+</figure>
+
+<style>
+    .reel {
+        position: relative;
+        width: 100%;
+        max-width: 420px;
+        margin: 0;
+    }
+    .reel::before {
+        content: "";
+        display: block;
+        width: 100%;
+        aspect-ratio: 9 / 16;
+    }
+    .reel > .reel-poster,
+    .reel > .reel-video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Póster con transición de desvanecido */
+    .reel > .reel-poster {
+        transition:
+            opacity 0.3s ease,
+            visibility 0.3s ease;
+    }
+    .reel.is-loaded > .reel-poster {
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    /* Botones overlays */
+    .reel > .reel-play,
+    .reel > .reel-unmute {
+        position: absolute;
+        right: 0.5rem;
+        bottom: 0.5rem;
+        border: 0;
+        border-radius: 999px;
+        padding: 0.4rem 0.6rem;
+        background: rgba(0, 0, 0, 0.5);
+        color: #fff;
+        cursor: pointer;
+    }
+    /* Play se muestra centrado cuando el usuario prefiere menos animación o antes de cargar */
+    .reel > .reel-play {
+        left: 50%;
+        right: auto;
+        bottom: 50%;
+        transform: translate(-50%, 50%);
+        display: none;
+    }
+    .reel.show-play > .reel-play {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .reel > .reel-unmute {
+        display: none;
+    }
+    .reel.is-playing > .reel-unmute {
+        display: inline-block;
+    }
+
+    .reel > .reel-play:focus-visible,
+    .reel > .reel-unmute:focus-visible {
+        outline: 2px solid #fff;
+        outline-offset: 2px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .reel-video {
+            animation: none;
+        }
+        /* En reduce motion, mostramos el botón de play de inicio */
+        .reel.show-play > .reel-play {
+            display: inline-flex;
+        }
+    }
+</style>
+
+<script>
+    /**
+     * Reglas:
+     * - No asignamos src hasta que el video está suficientemente visible (60%).
+     * - Autoplay muted; botón para unmute + controles.
+     * - Pausamos cuando sale de viewport o cuando la página pierde foco.
+     * - Solo 1 video reproduciéndose a la vez.
+     * - Si el usuario prefiere reducir movimiento, no hacemos autoplay; requiere interacción (Play).
+     */
+    (function () {
+        const fig = document.currentScript?.closest(".reel") as HTMLElement | null;
+        if (!fig) return;
+
+        // Guard de inicialización para evitar doble setup (HMR o montajes repetidos)
+        if (fig.dataset.initialized === "true") return;
+        fig.dataset.initialized = "true";
+
+        const vMaybe = fig.querySelector(".reel-video") as HTMLVideoElement | null;
+        const btnUnmuteMaybe = fig.querySelector(".reel-unmute") as HTMLButtonElement | null;
+        const btnPlayMaybe = fig.querySelector(".reel-play") as HTMLButtonElement | null;
+        const posterImgMaybe = fig.querySelector(".reel-poster") as HTMLImageElement | null;
+        if (!vMaybe || !btnUnmuteMaybe || !btnPlayMaybe || !posterImgMaybe) return;
+        const v = vMaybe as HTMLVideoElement;
+        const btnUnmute = btnUnmuteMaybe as HTMLButtonElement;
+        const btnPlay = btnPlayMaybe as HTMLButtonElement;
+        const posterImg = posterImgMaybe as HTMLImageElement;
+
+        const SRC = fig.getAttribute("data-src") || "";
+
+        const prefersReduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        // Pausa los demás reels cuando éste entra en play
+        function pauseOthers(me: HTMLVideoElement) {
+            (document.querySelectorAll(".reel-video") as NodeListOf<HTMLVideoElement>).forEach((el) => {
+                if (el !== me && !el.paused) {
+                    try {
+                        el.pause();
+                    } catch {}
+                }
+            });
+        }
+
+        // Cargar/descargar fuente bajo demanda
+        let loaded = false;
+        function loadAndPlay() {
+            if (!loaded) {
+                v.src = SRC; // asigna la URL cuando realmente se necesita
+                loaded = true;
+            }
+            // asegúrate de muted antes de pedir autoplay
+            v.muted = true;
+            v.play().catch(() => {
+                /* algunos navegadores requieren interacción */
+            });
+            pauseOthers(v);
+        }
+        function pauseAndMaybeUnload() {
+            try {
+                v.pause();
+            } catch {}
+            // Si quieres liberar memoria al salir de vista, descomenta:
+            // v.removeAttribute('src'); v.load(); loaded = false;
+        }
+
+        // Estados visuales
+        v.addEventListener("play", () => {
+            fig.classList.add("is-playing");
+            fig.classList.add("is-loaded");
+        });
+        v.addEventListener("pause", () => {
+            fig.classList.remove("is-playing");
+        });
+        v.addEventListener("loadeddata", () => {
+            fig.classList.add("is-loaded");
+        });
+
+        // IntersectionObserver para autoplay on-view
+        if (!prefersReduced && "IntersectionObserver" in window) {
+            const io = new IntersectionObserver(
+                (entries) => {
+                    for (const e of entries) {
+                        if (e.isIntersecting && e.intersectionRatio >= 0.6) {
+                            loadAndPlay();
+                            fig.classList.add("is-loaded");
+                            fig.classList.add("is-playing");
+                            // en autoplay, no necesitamos mostrar el botón play
+                            fig.classList.remove("show-play");
+                        } else {
+                            pauseAndMaybeUnload();
+                            fig.classList.remove("is-playing");
+                        }
+                    }
+                },
+                { threshold: [0, 0.6] }
+            );
+            io.observe(fig);
+        } else {
+            // Fallback: sin IO, carga directo pero en mute y pausa al hacer blur
+            if (prefersReduced) {
+                // No autoplay: mostrar botón de play
+                fig.classList.add("show-play");
+            } else {
+                loadAndPlay();
+            }
+        }
+
+        // Unmute + mostrar controles al pulsar botón
+        btnUnmute.addEventListener("click", () => {
+            v.muted = false;
+            v.controls = true;
+            // si estaba pausado por política, intenta reproducir de nuevo
+            v.play().catch(() => {});
+            btnUnmute.setAttribute("aria-hidden", "true");
+            btnUnmute.style.display = "none";
+        });
+
+        // Play bajo demanda (para reduce-motion o si el autoplay falló)
+        btnPlay.addEventListener("click", () => {
+            if (!loaded) v.src = SRC;
+            loaded = true;
+            v.muted = true;
+            v.play()
+                .then(() => {
+                    fig.classList.add("is-playing");
+                    fig.classList.add("is-loaded");
+                    fig.classList.remove("show-play");
+                })
+                .catch(() => {
+                    // Si falla, mantener el botón visible
+                });
+        });
+
+        // Pausa cuando la pestaña pierde foco (ahorro batería)
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) pauseAndMaybeUnload();
+        });
+    })();
+</script>

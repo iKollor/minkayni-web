@@ -55,7 +55,7 @@ const { logoSrc = PlaceholderLogo, photoSrc = BatucadaPhoto } = Astro.props as P
 </section>
 
 <script>
-    import { gsap, SplitText, ScrollSmoother } from "../../scripts/main.ts";
+    import { gsap, SplitText, ScrollSmoother, waitForFontsReady } from "../../scripts/main.ts";
 
     const initFeaturedProject = () => {
         const section = document.getElementById("featured-project");
@@ -81,17 +81,21 @@ const { logoSrc = PlaceholderLogo, photoSrc = BatucadaPhoto } = Astro.props as P
             return;
         }
 
-        // Split texto título y párrafos
+        // Split texto título y párrafos (una vez que las fuentes están listas)
         let titleSplit: any = null;
-        if (title) {
-            titleSplit = new SplitText(title as HTMLElement, { type: "words,chars", wordsClass: "word", charsClass: "char" });
-            gsap.set(titleSplit.chars, { yPercent: 120, opacity: 0 });
-        }
         let bodySplit: any = null;
-        if (body) {
-            bodySplit = new SplitText(body as HTMLElement, { type: "lines", linesClass: "line" });
-            gsap.set(bodySplit.lines, { yPercent: 40, opacity: 0 });
-        }
+        const splitNow = () => {
+            if (title && !titleSplit) {
+                titleSplit = new SplitText(title as HTMLElement, { type: "words,chars", wordsClass: "word", charsClass: "char" });
+                gsap.set(titleSplit.chars, { yPercent: 120, opacity: 0 });
+            }
+            if (body && !bodySplit) {
+                bodySplit = new SplitText(body as HTMLElement, { type: "lines", linesClass: "line" });
+                gsap.set(bodySplit.lines, { yPercent: 40, opacity: 0 });
+            }
+        };
+        splitNow();
+        waitForFontsReady(splitNow);
 
         const setInitial = () => {
             if (imgCol) gsap.set(imgCol, { autoAlpha: 0, y: 20 });

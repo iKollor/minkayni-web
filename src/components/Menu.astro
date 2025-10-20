@@ -89,11 +89,14 @@ const navButtons = hasHome ? [...buttons] : [{ title: "Inicio", path: "/" }, ...
                 const mobile = isMobile();
                 return {
                     squareSize: mobile ? 60 : 100,
-                    fadeInDuration: 0.02,
-                    fadeOutDuration: 0.02,
-                    fadeOutDelayOpen: mobile ? 0.55 : 0.9,
+                    // acelerar apertura y salida de squares
+                    fadeInDuration: 0.01,
+                    fadeOutDuration: 0.01,
+                    // reducir el delay de revelado para que el menú sea visible antes
+                    fadeOutDelayOpen: mobile ? 0.12 : 0.18,
                     fadeOutDelayClose: mobile ? 0.15 : 0.25,
-                    staggerEach: mobile ? 0.01 : 0.004,
+                    // menor separación entre cuadrados para acortar tiempos totales
+                    staggerEach: 0.002,
                 };
             }
 
@@ -130,6 +133,33 @@ const navButtons = hasHome ? [...buttons] : [{ title: "Inicio", path: "/" }, ...
             const menuButton = document.querySelector("#menu-btn") as HTMLDivElement;
             if (!menuButton) return;
 
+            // Cooldown para evitar clics repetidos que provoquen estados inconsistentes del overlay
+            let clickLocked = false;
+            function setButtonLocked(locked: boolean) {
+                clickLocked = locked;
+                if (locked) {
+                    menuButton.classList.add("is-locked");
+                    menuButton.setAttribute("aria-disabled", "true");
+                    menuButton.style.pointerEvents = "none";
+                } else {
+                    menuButton.classList.remove("is-locked");
+                    menuButton.removeAttribute("aria-disabled");
+                    menuButton.style.pointerEvents = "";
+                }
+            }
+            function getLockMs(targetVisible: boolean) {
+                const { fadeInDuration, fadeOutDuration, fadeOutDelayOpen, fadeOutDelayClose } = getAnimConfig();
+                // Aprox: suma de durations + delay principal; añadimos margen de 120ms mínimo
+                const seconds = fadeInDuration + fadeOutDuration + (targetVisible ? fadeOutDelayOpen : fadeOutDelayClose);
+                return Math.max(500, Math.round(seconds * 1000) + 500);
+            }
+
+            function dispatchState(open: boolean) {
+                // Actualiza atributos accesibles y emite evento global para sincronizar icono
+                menuButton.setAttribute("aria-expanded", String(open));
+                window.dispatchEvent(new CustomEvent("menu:state", { detail: { open } }));
+            }
+
             function playTransition(targetVisible: boolean) {
                 if (isAnimating) return;
                 isAnimating = true;
@@ -155,6 +185,8 @@ const navButtons = hasHome ? [...buttons] : [{ title: "Inicio", path: "/" }, ...
                             }
                         }
                         isAnimating = false;
+                        // liberar botón al final por si el timeout fue insuficiente
+                        setButtonLocked(false);
                     },
                 });
 
@@ -211,6 +243,8 @@ const navButtons = hasHome ? [...buttons] : [{ title: "Inicio", path: "/" }, ...
                 // actualizar clases del botón inmediatamente para feedback visual consistente
                 menuButton.classList.toggle("open", overlayVisible);
                 menuButton.classList.toggle("close", !overlayVisible);
+                // emitir estado actualizado
+                dispatchState(overlayVisible);
             }
 
             // Resize (solo si visible y no animando para no interferir)
@@ -226,8 +260,17 @@ const navButtons = hasHome ? [...buttons] : [{ title: "Inicio", path: "/" }, ...
             window.addEventListener("resize", onResize);
             window.addEventListener("orientationchange", onResize);
 
+            // Estado inicial explícito
+            menuButton.setAttribute("aria-expanded", "false");
+            dispatchState(false);
+
             menuButton.addEventListener("click", () => {
-                playTransition(!overlayVisible);
+                if (clickLocked || isAnimating) return;
+                const target = !overlayVisible;
+                setButtonLocked(true);
+                const lockMs = getLockMs(target);
+                window.setTimeout(() => setButtonLocked(false), lockMs);
+                playTransition(target);
             });
         });
     </script>
@@ -247,6 +290,11 @@ const navButtons = hasHome ? [...buttons] : [{ title: "Inicio", path: "/" }, ...
                 width: 60px;
                 height: 60px;
             }
+        }
+        /* Estado visual opcional para indicar cooldown del botón */
+        #menu-btn.is-locked {
+            opacity: 0.75;
+            cursor: not-allowed;
         }
     </style>
 </>

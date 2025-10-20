@@ -3,6 +3,20 @@ import { ScrollSmoother, ScrollTrigger, TextPlugin, SplitText, DrawSVGPlugin, Sc
 
 gsap.registerPlugin(ScrollSmoother, ScrollTrigger, TextPlugin, SplitText, DrawSVGPlugin, ScrollToPlugin, MotionPathPlugin, Draggable, InertiaPlugin);
 
+// Utilidad: esperar a que las fuentes estén listas (evita warnings de SplitText)
+const fontsReady: Promise<void> = (() => {
+    // @ts-ignore
+    const fonts = (typeof document !== "undefined" && (document as any).fonts) || null;
+    if (fonts?.ready && typeof fonts.ready.then === "function") {
+        return fonts.ready.then(() => void 0).catch(() => void 0);
+    }
+    return Promise.resolve();
+})();
+
+const waitForFontsReady = (cb: () => void) => {
+    fontsReady.then(() => requestAnimationFrame(cb));
+};
+
 // --- Eliminado injectNoOverflowXCSS: usar CSS global en su lugar ---
 const enforceNoOverflowX = () => {
     // Refuerzo por si algún inline style futuro cambia algo
@@ -112,3 +126,4 @@ if (!document.getElementById("smooth-wrapper") || !document.getElementById("smoo
 ["resize", "orientationchange"].forEach((evt) => window.addEventListener(evt, enforceNoOverflowX, { passive: true }));
 
 export { gsap, ScrollSmoother, ScrollTrigger, SplitText, DrawSVGPlugin, Draggable, InertiaPlugin };
+export { fontsReady, waitForFontsReady };

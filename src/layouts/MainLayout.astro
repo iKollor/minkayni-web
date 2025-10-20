@@ -49,8 +49,13 @@ const { title } = Astro.props;
         <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#67b7f0" />
         <!-- PWA en iOS (al añadir a la pantalla de inicio) -->
         <meta name="apple-mobile-web-app-capable" content="yes" />
+        <!-- Recomendado: equivalente genérico para Android/Chrome -->
+        <meta name="mobile-web-app-capable" content="yes" />
         <!-- black-translucent permite que el fondo de la página se vea detrás de la barra de estado -->
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <link rel="preconnect" href="https://strapi.minkayni.org" />
+        <link rel="preconnect" href="https://img.minkayni.org" />
+
         <title>{title ? `${title} • Fundación Minkayni` : "Fundación Minkayni"}</title>
         <style>
             body[data-grain="off"] #grain-layer {

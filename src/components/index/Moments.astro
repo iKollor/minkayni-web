@@ -22,7 +22,25 @@ const items = posts.filter((p) => p?.data?.source?.url);
                     <div class="post-card group aspect-[1/1] h-full flex-shrink-0 rounded-lg overflow-hidden relative shadow-lg" data-id={post.external_id}>
                         <div class="relative w-full h-full">
                             {/* Media: fondo (solo el fondo escala en hover del grupo) */}
-                            {post.source?.url ? post.source.url.endsWith("mp4") ? <video class="media object-cover w-full h-full absolute inset-0 -z-10 pointer-events-none transition-transform duration-300 transform-gpu origin-center group-hover:scale-105" src={STRAPI_URL + post.source.url} autoplay muted loop playsinline /> : <img class="media object-cover w-full h-full absolute inset-0 -z-10 transition-transform duration-300 transform-gpu origin-center group-hover:scale-105" src={STRAPI_URL + post.source.url} alt={post.external_id} loading="lazy" /> : null}
+                            {post.source?.url ? (
+                                post.media_kind === "reel" ? (
+                                    <video
+                                        class="media object-cover w-full h-full absolute inset-0 -z-10 pointer-events-none transition-transform duration-300 transform-gpu origin-center group-hover:scale-105"
+                                        src={STRAPI_URL + post.source.url}
+                                        autoplay
+                                        muted
+                                        loop
+                                        playsinline
+                                    />
+                                ) : (
+                                    <img
+                                        class="media object-cover w-full h-full absolute inset-0 -z-10 transition-transform duration-300 transform-gpu origin-center group-hover:scale-105"
+                                        src={STRAPI_URL + post.source.url}
+                                        alt={post.external_id}
+                                        loading="lazy"
+                                    />
+                                )
+                            ) : null}
 
                             <div class="group-hover:opacity-100 opacity-0 transition-opacity duration-300">
                                 {/* Top bar: icono (izq) y permalink (der) en el mismo div */}

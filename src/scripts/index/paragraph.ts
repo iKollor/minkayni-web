@@ -1,4 +1,4 @@
-import { gsap } from "../main.ts";
+import { gsap, waitForFontsReady } from "../main.ts";
 import SplitText from "gsap/SplitText";
 import { startOdometer } from "./odometer";
 
@@ -19,36 +19,40 @@ export const animateParagraph = (prefersReduced: boolean): void => {
             .match(/\S+/g) || []
     ).length;
 
-    const split = new SplitText(p, { type: "words" });
-    const words: HTMLElement[] = split.words as HTMLElement[];
-    const odometer = document.getElementById("odometer") as HTMLElement | null;
-    const ST = 0.03;
+    const doSplit = () => {
+        const split = new SplitText(p, { type: "words" });
+        const words: HTMLElement[] = split.words as HTMLElement[];
+        const odometer = document.getElementById("odometer") as HTMLElement | null;
+        const ST = 0.03;
 
-    gsap.set(p, { opacity: 1 });
-    gsap.set(words, { opacity: 0, y: 12 });
-    if (odometer) gsap.set(odometer, { opacity: 0, y: 12 });
+        gsap.set(p, { opacity: 1 });
+        gsap.set(words, { opacity: 0, y: 12 });
+        if (odometer) gsap.set(odometer, { opacity: 0, y: 12 });
 
-    if (prefersReduced) {
-        gsap.set(words, { opacity: 1, y: 0 });
-        if (odometer) gsap.set(odometer, { opacity: 1, y: 0 });
-        startOdometer();
-        return;
-    }
+        if (prefersReduced) {
+            gsap.set(words, { opacity: 1, y: 0 });
+            if (odometer) gsap.set(odometer, { opacity: 1, y: 0 });
+            startOdometer();
+            return;
+        }
 
-    const tl = gsap.timeline();
-    tl.to(words, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", stagger: ST }, 0);
+        const tl = gsap.timeline();
+        tl.to(words, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", stagger: ST }, 0);
 
-    if (odometer) {
-        tl.to(
-            odometer,
-            {
-                opacity: 1,
-                y: 0,
-                duration: 0.5,
-                ease: "power2.out",
-                onStart: startOdometer,
-            },
-            wordsBefore * ST
-        );
-    }
+        if (odometer) {
+            tl.to(
+                odometer,
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.5,
+                    ease: "power2.out",
+                    onStart: startOdometer,
+                },
+                wordsBefore * ST
+            );
+        }
+    };
+
+    waitForFontsReady(doSplit);
 };
