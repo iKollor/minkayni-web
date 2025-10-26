@@ -15,6 +15,7 @@ export type Scalars = {
   Float: { input: number; output: number; }
   JSON: { input: any; output: any; }
   DateTime: { input: any; output: any; }
+  Date: { input: any; output: any; }
   I18NLocaleCode: { input: any; output: any; }
 };
 
@@ -150,6 +151,31 @@ export type FloatFilterInput = {
   in?: InputMaybe<Array<InputMaybe<Scalars['Float']['input']>>>;
   notIn?: InputMaybe<Array<InputMaybe<Scalars['Float']['input']>>>;
   between?: InputMaybe<Array<InputMaybe<Scalars['Float']['input']>>>;
+};
+
+export type DateFilterInput = {
+  and?: InputMaybe<Array<InputMaybe<Scalars['Date']['input']>>>;
+  or?: InputMaybe<Array<InputMaybe<Scalars['Date']['input']>>>;
+  not?: InputMaybe<DateFilterInput>;
+  eq?: InputMaybe<Scalars['Date']['input']>;
+  eqi?: InputMaybe<Scalars['Date']['input']>;
+  ne?: InputMaybe<Scalars['Date']['input']>;
+  nei?: InputMaybe<Scalars['Date']['input']>;
+  startsWith?: InputMaybe<Scalars['Date']['input']>;
+  endsWith?: InputMaybe<Scalars['Date']['input']>;
+  contains?: InputMaybe<Scalars['Date']['input']>;
+  notContains?: InputMaybe<Scalars['Date']['input']>;
+  containsi?: InputMaybe<Scalars['Date']['input']>;
+  notContainsi?: InputMaybe<Scalars['Date']['input']>;
+  gt?: InputMaybe<Scalars['Date']['input']>;
+  gte?: InputMaybe<Scalars['Date']['input']>;
+  lt?: InputMaybe<Scalars['Date']['input']>;
+  lte?: InputMaybe<Scalars['Date']['input']>;
+  null?: InputMaybe<Scalars['Boolean']['input']>;
+  notNull?: InputMaybe<Scalars['Boolean']['input']>;
+  in?: InputMaybe<Array<InputMaybe<Scalars['Date']['input']>>>;
+  notIn?: InputMaybe<Array<InputMaybe<Scalars['Date']['input']>>>;
+  between?: InputMaybe<Array<InputMaybe<Scalars['Date']['input']>>>;
 };
 
 export type DateTimeFilterInput = {
@@ -288,6 +314,35 @@ export type ComponentSharedCopyright = {
   autoYear?: Maybe<Scalars['Boolean']['output']>;
   yearOverride?: Maybe<Scalars['Int']['output']>;
   extraText?: Maybe<Scalars['String']['output']>;
+};
+
+export type ComponentSharedCardFiltersInput = {
+  title?: InputMaybe<StringFilterInput>;
+  description?: InputMaybe<StringFilterInput>;
+  showIcon?: InputMaybe<BooleanFilterInput>;
+  cta?: InputMaybe<StringFilterInput>;
+  and?: InputMaybe<Array<InputMaybe<ComponentSharedCardFiltersInput>>>;
+  or?: InputMaybe<Array<InputMaybe<ComponentSharedCardFiltersInput>>>;
+  not?: InputMaybe<ComponentSharedCardFiltersInput>;
+};
+
+export type ComponentSharedCardInput = {
+  id?: InputMaybe<Scalars['ID']['input']>;
+  title?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  icon?: InputMaybe<Scalars['ID']['input']>;
+  showIcon?: InputMaybe<Scalars['Boolean']['input']>;
+  cta?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type ComponentSharedCard = {
+  __typename?: 'ComponentSharedCard';
+  id: Scalars['ID']['output'];
+  title?: Maybe<Scalars['String']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  icon?: Maybe<UploadFile>;
+  showIcon?: Maybe<Scalars['Boolean']['output']>;
+  cta?: Maybe<Scalars['String']['output']>;
 };
 
 export type ComponentSectionsTestimonialFiltersInput = {
@@ -816,6 +871,28 @@ export type HomepageTeamsArgs = {
   sort?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+export type JoinInput = {
+  infoCards?: InputMaybe<Array<InputMaybe<ComponentSharedCardInput>>>;
+  publishedAt?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+export type Join = {
+  __typename?: 'Join';
+  documentId: Scalars['ID']['output'];
+  infoCards?: Maybe<Array<Maybe<ComponentSharedCard>>>;
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  publishedAt?: Maybe<Scalars['DateTime']['output']>;
+  locale?: Maybe<Scalars['String']['output']>;
+};
+
+
+export type JoinInfoCardsArgs = {
+  filters?: InputMaybe<ComponentSharedCardFiltersInput>;
+  pagination?: InputMaybe<PaginationArg>;
+  sort?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
 export type Enum_Post_Platform =
   | 'instagram'
   | 'facebook';
@@ -885,6 +962,72 @@ export type Post = {
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   publishedAt?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export type Enum_Project_Project_Status =
+  | 'draft'
+  | 'in_progress'
+  | 'completed'
+  | 'archived';
+
+export type ProjectFiltersInput = {
+  documentId?: InputMaybe<IdFilterInput>;
+  title?: InputMaybe<StringFilterInput>;
+  slug?: InputMaybe<StringFilterInput>;
+  excerpt?: InputMaybe<StringFilterInput>;
+  project_status?: InputMaybe<StringFilterInput>;
+  featured?: InputMaybe<BooleanFilterInput>;
+  startDate?: InputMaybe<DateFilterInput>;
+  endDate?: InputMaybe<DateFilterInput>;
+  location?: InputMaybe<StringFilterInput>;
+  createdAt?: InputMaybe<DateTimeFilterInput>;
+  updatedAt?: InputMaybe<DateTimeFilterInput>;
+  publishedAt?: InputMaybe<DateTimeFilterInput>;
+  locale?: InputMaybe<StringFilterInput>;
+  localizations?: InputMaybe<ProjectFiltersInput>;
+  and?: InputMaybe<Array<InputMaybe<ProjectFiltersInput>>>;
+  or?: InputMaybe<Array<InputMaybe<ProjectFiltersInput>>>;
+  not?: InputMaybe<ProjectFiltersInput>;
+};
+
+export type ProjectInput = {
+  title?: InputMaybe<Scalars['String']['input']>;
+  slug?: InputMaybe<Scalars['String']['input']>;
+  excerpt?: InputMaybe<Scalars['String']['input']>;
+  project_status?: InputMaybe<Enum_Project_Project_Status>;
+  featured?: InputMaybe<Scalars['Boolean']['input']>;
+  startDate?: InputMaybe<Scalars['Date']['input']>;
+  endDate?: InputMaybe<Scalars['Date']['input']>;
+  location?: InputMaybe<Scalars['String']['input']>;
+  cover?: InputMaybe<Scalars['ID']['input']>;
+  gallery?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  publishedAt?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+export type Project = {
+  __typename?: 'Project';
+  documentId: Scalars['ID']['output'];
+  title: Scalars['String']['output'];
+  slug: Scalars['String']['output'];
+  excerpt?: Maybe<Scalars['String']['output']>;
+  project_status?: Maybe<Enum_Project_Project_Status>;
+  featured?: Maybe<Scalars['Boolean']['output']>;
+  startDate?: Maybe<Scalars['Date']['output']>;
+  endDate?: Maybe<Scalars['Date']['output']>;
+  location?: Maybe<Scalars['String']['output']>;
+  cover?: Maybe<UploadFile>;
+  gallery: Array<Maybe<UploadFile>>;
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  publishedAt?: Maybe<Scalars['DateTime']['output']>;
+  locale?: Maybe<Scalars['String']['output']>;
+};
+
+
+export type ProjectGalleryArgs = {
+  filters?: InputMaybe<UploadFileFiltersInput>;
+  pagination?: InputMaybe<PaginationArg>;
+  sort?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 export type Enum_Socialpage_Provider =
@@ -1038,8 +1181,11 @@ export type Query = {
   navigationNavigationItems: Array<Maybe<NavigationNavigationItem>>;
   footer?: Maybe<Footer>;
   homepage?: Maybe<Homepage>;
+  join?: Maybe<Join>;
   post?: Maybe<Post>;
   posts: Array<Maybe<Post>>;
+  project?: Maybe<Project>;
+  projects: Array<Maybe<Project>>;
   socialPage?: Maybe<SocialPage>;
   socialPages: Array<Maybe<SocialPage>>;
   me?: Maybe<UsersPermissionsMe>;
@@ -1186,6 +1332,12 @@ export type QueryHomepageArgs = {
 };
 
 
+export type QueryJoinArgs = {
+  status?: InputMaybe<PublicationStatus>;
+  locale?: InputMaybe<Scalars['I18NLocaleCode']['input']>;
+};
+
+
 export type QueryPostArgs = {
   documentId: Scalars['ID']['input'];
   status?: InputMaybe<PublicationStatus>;
@@ -1197,6 +1349,22 @@ export type QueryPostsArgs = {
   pagination?: InputMaybe<PaginationArg>;
   sort?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   status?: InputMaybe<PublicationStatus>;
+};
+
+
+export type QueryProjectArgs = {
+  documentId: Scalars['ID']['input'];
+  status?: InputMaybe<PublicationStatus>;
+  locale?: InputMaybe<Scalars['I18NLocaleCode']['input']>;
+};
+
+
+export type QueryProjectsArgs = {
+  filters?: InputMaybe<ProjectFiltersInput>;
+  pagination?: InputMaybe<PaginationArg>;
+  sort?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  status?: InputMaybe<PublicationStatus>;
+  locale?: InputMaybe<Scalars['I18NLocaleCode']['input']>;
 };
 
 
@@ -1234,9 +1402,14 @@ export type Mutation = {
   deleteFooter?: Maybe<DeleteMutationResponse>;
   updateHomepage?: Maybe<Homepage>;
   deleteHomepage?: Maybe<DeleteMutationResponse>;
+  updateJoin?: Maybe<Join>;
+  deleteJoin?: Maybe<DeleteMutationResponse>;
   createPost?: Maybe<Post>;
   updatePost?: Maybe<Post>;
   deletePost?: Maybe<DeleteMutationResponse>;
+  createProject?: Maybe<Project>;
+  updateProject?: Maybe<Project>;
+  deleteProject?: Maybe<DeleteMutationResponse>;
   createSocialPage?: Maybe<SocialPage>;
   updateSocialPage?: Maybe<SocialPage>;
   deleteSocialPage?: Maybe<DeleteMutationResponse>;
@@ -1385,6 +1558,18 @@ export type MutationDeleteHomepageArgs = {
 };
 
 
+export type MutationUpdateJoinArgs = {
+  status?: InputMaybe<PublicationStatus>;
+  data: JoinInput;
+  locale?: InputMaybe<Scalars['I18NLocaleCode']['input']>;
+};
+
+
+export type MutationDeleteJoinArgs = {
+  locale?: InputMaybe<Scalars['I18NLocaleCode']['input']>;
+};
+
+
 export type MutationCreatePostArgs = {
   status?: InputMaybe<PublicationStatus>;
   data: PostInput;
@@ -1400,6 +1585,27 @@ export type MutationUpdatePostArgs = {
 
 export type MutationDeletePostArgs = {
   documentId: Scalars['ID']['input'];
+};
+
+
+export type MutationCreateProjectArgs = {
+  status?: InputMaybe<PublicationStatus>;
+  data: ProjectInput;
+  locale?: InputMaybe<Scalars['I18NLocaleCode']['input']>;
+};
+
+
+export type MutationUpdateProjectArgs = {
+  documentId: Scalars['ID']['input'];
+  status?: InputMaybe<PublicationStatus>;
+  data: ProjectInput;
+  locale?: InputMaybe<Scalars['I18NLocaleCode']['input']>;
+};
+
+
+export type MutationDeleteProjectArgs = {
+  documentId: Scalars['ID']['input'];
+  locale?: InputMaybe<Scalars['I18NLocaleCode']['input']>;
 };
 
 
@@ -1515,6 +1721,8 @@ export const Enum_Navigationnavigationitem_TypeSchema = z.enum(['INTERNAL', 'EXT
 export const Enum_Post_PlatformSchema = z.enum(['instagram', 'facebook']);
 
 export const Enum_Post_Media_KindSchema = z.enum(['reel', 'post']);
+
+export const Enum_Project_Project_StatusSchema = z.enum(['draft', 'in_progress', 'completed', 'archived']);
 
 export const Enum_Socialpage_ProviderSchema = z.enum(['facebook', 'instagram']);
 
@@ -1657,6 +1865,33 @@ export function FloatFilterInputSchema(): z.ZodObject<Properties<FloatFilterInpu
     in: z.array(z.number().nullable()).nullish(),
     notIn: z.array(z.number().nullable()).nullish(),
     between: z.array(z.number().nullable()).nullish()
+  })
+}
+
+export function DateFilterInputSchema(): z.ZodObject<Properties<DateFilterInput>> {
+  return z.object({
+    and: z.array(definedNonNullAnySchema.nullable()).nullish(),
+    or: z.array(definedNonNullAnySchema.nullable()).nullish(),
+    not: z.lazy(() => DateFilterInputSchema().nullish()),
+    eq: definedNonNullAnySchema.nullish(),
+    eqi: definedNonNullAnySchema.nullish(),
+    ne: definedNonNullAnySchema.nullish(),
+    nei: definedNonNullAnySchema.nullish(),
+    startsWith: definedNonNullAnySchema.nullish(),
+    endsWith: definedNonNullAnySchema.nullish(),
+    contains: definedNonNullAnySchema.nullish(),
+    notContains: definedNonNullAnySchema.nullish(),
+    containsi: definedNonNullAnySchema.nullish(),
+    notContainsi: definedNonNullAnySchema.nullish(),
+    gt: definedNonNullAnySchema.nullish(),
+    gte: definedNonNullAnySchema.nullish(),
+    lt: definedNonNullAnySchema.nullish(),
+    lte: definedNonNullAnySchema.nullish(),
+    null: z.boolean().nullish(),
+    notNull: z.boolean().nullish(),
+    in: z.array(definedNonNullAnySchema.nullable()).nullish(),
+    notIn: z.array(definedNonNullAnySchema.nullable()).nullish(),
+    between: z.array(definedNonNullAnySchema.nullable()).nullish()
   })
 }
 
@@ -1822,6 +2057,41 @@ export function ComponentSharedCopyrightSchema(): z.ZodObject<Properties<Compone
     autoYear: z.boolean().nullish(),
     yearOverride: z.number().nullish(),
     extraText: z.string().nullish()
+  })
+}
+
+export function ComponentSharedCardFiltersInputSchema(): z.ZodObject<Properties<ComponentSharedCardFiltersInput>> {
+  return z.object({
+    title: z.lazy(() => StringFilterInputSchema().nullish()),
+    description: z.lazy(() => StringFilterInputSchema().nullish()),
+    showIcon: z.lazy(() => BooleanFilterInputSchema().nullish()),
+    cta: z.lazy(() => StringFilterInputSchema().nullish()),
+    and: z.array(z.lazy(() => ComponentSharedCardFiltersInputSchema().nullable())).nullish(),
+    or: z.array(z.lazy(() => ComponentSharedCardFiltersInputSchema().nullable())).nullish(),
+    not: z.lazy(() => ComponentSharedCardFiltersInputSchema().nullish())
+  })
+}
+
+export function ComponentSharedCardInputSchema(): z.ZodObject<Properties<ComponentSharedCardInput>> {
+  return z.object({
+    id: z.string().nullish(),
+    title: z.string().nullish(),
+    description: z.string().nullish(),
+    icon: z.string().nullish(),
+    showIcon: z.boolean().nullish(),
+    cta: z.string().nullish()
+  })
+}
+
+export function ComponentSharedCardSchema(): z.ZodObject<Properties<ComponentSharedCard>> {
+  return z.object({
+    __typename: z.literal('ComponentSharedCard').optional(),
+    id: z.string(),
+    title: z.string().nullish(),
+    description: z.string().nullish(),
+    icon: UploadFileSchema().nullish(),
+    showIcon: z.boolean().nullish(),
+    cta: z.string().nullish()
   })
 }
 
@@ -2429,6 +2699,33 @@ export function HomepageTeamsArgsSchema(): z.ZodObject<Properties<HomepageTeamsA
   })
 }
 
+export function JoinInputSchema(): z.ZodObject<Properties<JoinInput>> {
+  return z.object({
+    infoCards: z.array(z.lazy(() => ComponentSharedCardInputSchema().nullable())).nullish(),
+    publishedAt: z.string().datetime().nullish()
+  })
+}
+
+export function JoinSchema(): z.ZodObject<Properties<Join>> {
+  return z.object({
+    __typename: z.literal('Join').optional(),
+    documentId: z.string(),
+    infoCards: z.array(ComponentSharedCardSchema().nullable()).nullish(),
+    createdAt: z.string().datetime().nullish(),
+    updatedAt: z.string().datetime().nullish(),
+    publishedAt: z.string().datetime().nullish(),
+    locale: z.string().nullish()
+  })
+}
+
+export function JoinInfoCardsArgsSchema(): z.ZodObject<Properties<JoinInfoCardsArgs>> {
+  return z.object({
+    filters: z.lazy(() => ComponentSharedCardFiltersInputSchema().nullish()),
+    pagination: PaginationArgSchema().nullish(),
+    sort: z.array(z.string().nullable()).nullish()
+  })
+}
+
 export function PostFiltersInputSchema(): z.ZodObject<Properties<PostFiltersInput>> {
   return z.object({
     documentId: z.lazy(() => IdFilterInputSchema().nullish()),
@@ -2495,6 +2792,73 @@ export function PostSchema(): z.ZodObject<Properties<Post>> {
     createdAt: z.string().datetime().nullish(),
     updatedAt: z.string().datetime().nullish(),
     publishedAt: z.string().datetime().nullish()
+  })
+}
+
+export function ProjectFiltersInputSchema(): z.ZodObject<Properties<ProjectFiltersInput>> {
+  return z.object({
+    documentId: z.lazy(() => IdFilterInputSchema().nullish()),
+    title: z.lazy(() => StringFilterInputSchema().nullish()),
+    slug: z.lazy(() => StringFilterInputSchema().nullish()),
+    excerpt: z.lazy(() => StringFilterInputSchema().nullish()),
+    project_status: z.lazy(() => StringFilterInputSchema().nullish()),
+    featured: z.lazy(() => BooleanFilterInputSchema().nullish()),
+    startDate: z.lazy(() => DateFilterInputSchema().nullish()),
+    endDate: z.lazy(() => DateFilterInputSchema().nullish()),
+    location: z.lazy(() => StringFilterInputSchema().nullish()),
+    createdAt: z.lazy(() => DateTimeFilterInputSchema().nullish()),
+    updatedAt: z.lazy(() => DateTimeFilterInputSchema().nullish()),
+    publishedAt: z.lazy(() => DateTimeFilterInputSchema().nullish()),
+    locale: z.lazy(() => StringFilterInputSchema().nullish()),
+    localizations: z.lazy(() => ProjectFiltersInputSchema().nullish()),
+    and: z.array(z.lazy(() => ProjectFiltersInputSchema().nullable())).nullish(),
+    or: z.array(z.lazy(() => ProjectFiltersInputSchema().nullable())).nullish(),
+    not: z.lazy(() => ProjectFiltersInputSchema().nullish())
+  })
+}
+
+export function ProjectInputSchema(): z.ZodObject<Properties<ProjectInput>> {
+  return z.object({
+    title: z.string().nullish(),
+    slug: z.string().nullish(),
+    excerpt: z.string().nullish(),
+    project_status: Enum_Project_Project_StatusSchema.nullish(),
+    featured: z.boolean().nullish(),
+    startDate: definedNonNullAnySchema.nullish(),
+    endDate: definedNonNullAnySchema.nullish(),
+    location: z.string().nullish(),
+    cover: z.string().nullish(),
+    gallery: z.array(z.string().nullable()).nullish(),
+    publishedAt: z.string().datetime().nullish()
+  })
+}
+
+export function ProjectSchema(): z.ZodObject<Properties<Project>> {
+  return z.object({
+    __typename: z.literal('Project').optional(),
+    documentId: z.string(),
+    title: z.string(),
+    slug: z.string(),
+    excerpt: z.string().nullish(),
+    project_status: Enum_Project_Project_StatusSchema.nullish(),
+    featured: z.boolean().nullish(),
+    startDate: definedNonNullAnySchema.nullish(),
+    endDate: definedNonNullAnySchema.nullish(),
+    location: z.string().nullish(),
+    cover: UploadFileSchema().nullish(),
+    gallery: z.array(UploadFileSchema().nullable()),
+    createdAt: z.string().datetime().nullish(),
+    updatedAt: z.string().datetime().nullish(),
+    publishedAt: z.string().datetime().nullish(),
+    locale: z.string().nullish()
+  })
+}
+
+export function ProjectGalleryArgsSchema(): z.ZodObject<Properties<ProjectGalleryArgs>> {
+  return z.object({
+    filters: z.lazy(() => UploadFileFiltersInputSchema().nullish()),
+    pagination: PaginationArgSchema().nullish(),
+    sort: z.array(z.string().nullable()).nullish()
   })
 }
 

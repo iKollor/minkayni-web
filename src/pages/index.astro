@@ -6,8 +6,7 @@ import Tag from "../components/index/Tag.astro";
 import Moments from "../components/index/Moments.astro";
 import Testimonials from "../components/index/Testimonials.astro";
 import Nosotros from "../components/index/Nosotros.astro";
-import logoIntroPC from "../assets/videos/logo_intro_stacked-hevc.mp4";
-import logoIntroMobile from "../assets/videos/logo_intro_stacked-1280-hevc.mp4";
+import IntroVideo from "../components/IntroVideo.astro";
 
 import { Markdown } from "@astropub/md";
 
@@ -39,27 +38,7 @@ const legend = getData(homepage, "legend");
             }
         }
 
-        /* Mantener el <video> interno fuera de vista sin retirarlo del flujo (evita WebGL warnings) */
-        stacked-alpha-video video {
-            position: absolute !important;
-            inset: -9999px auto auto -9999px !important;
-            width: 1px !important;
-            height: 1px !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
-        }
-        /* Nota: el canvas lo gestiona el componente; no forzamos estilos aquí. */
-
-        .intro-hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-
-        body[data-intro="pending"] #navBase > * {
-            opacity: 0;
-            transform: translateY(40px);
-        }
+        /* Nota: estilos del intro movidos a `src/components/IntroVideo.astro` */
 
         #odometer {
             overflow: visible;
@@ -92,23 +71,7 @@ const legend = getData(homepage, "legend");
         }
     </style>
 
-    <!-- Overlay -->
-    <div id="intro-overlay" class="intro-hidden fixed inset-0 z-10 flex items-center justify-center overflow-hidden bg-transparent transition-opacity duration-500 [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
-        <button id="skip-intro" class="absolute bottom-6 right-6 text-lg tracking-wider uppercase opacity-60 hover:opacity-100 transition-opacity cursor-pointer z-100"> Saltar </button>
-
-        <!-- Fallback estático (ahora es absolute vía CSS, no empuja nada) -->
-        <Image id="intro-fallback-logo" src={Logo} alt="Logo" class="pointer-events-none absolute inset-0 m-auto w-[min(90vw,900px)] opacity-0 invisible" />
-
-        <!-- Video apilado a ancho completo -->
-        <stacked-alpha-video id="intro-stacked" fit="cover" class="block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[180svw] md:w-[100svw] aspect-[16/9] origin-center will-change-[transform] [contain:paint]">
-            <video autoplay muted playsinline preload="auto" crossorigin="anonymous">
-                <source src={logoIntroPC} type="video/mp4" />
-                <source src={logoIntroMobile} type="video/mp4" />
-            </video>
-        </stacked-alpha-video>
-
-        <script type="module" src="https://cdn.jsdelivr.net/npm/stacked-alpha-video/+esm"></script>
-    </div>
+    <IntroVideo />
 
     <!-- Contenido principal -->
     <div id="app-content" class="opacity-0 transition-opacity duration-500">
