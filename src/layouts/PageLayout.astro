@@ -1,0 +1,211 @@
+---
+import "../styles/global.css";
+import Footer from "../components/Footer.astro";
+import faviconSrc from "/public/favicon.png";
+import faviconSvgSrc from "/public/favicon.svg";
+import Navbar from "../components/Navbar.astro";
+import { Image, getImage } from "astro:assets";
+import Menu from "../components/Menu.astro";
+import Hero from "../components/Hero.astro";
+import paperTEX from "../assets/overlay/noise.webm";
+import noiseGIF from "../assets/overlay/noise.gif";
+import { getEntry } from "astro:content";
+import { getData } from "../utils/i18n";
+
+const appleTouchIcon = await getImage({
+    src: faviconSrc,
+    width: 180,
+    height: 180,
+    format: "png",
+});
+
+const faviconSvg = await getImage({ src: faviconSvgSrc, format: "svg" });
+
+interface Props {
+    title: string;
+}
+
+const navHeader = getData(
+    await getEntry("navigationHeader", "navigation:header:es"),
+);
+const footer = getData(await getEntry("footer", "footer"), "es");
+const { title } = Astro.props;
+const homepage = await getEntry("homepage", "homepage");
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+        />
+        <title>
+            {title ? `${title} • Fundación Minkayni` : "Fundación Minkayni"}
+        </title>
+
+        <!-- Favicon / Apple Touch Icon -->
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+        />
+        <link rel="icon" href="/favicon.ico" sizes="32x32" />
+        <link rel="icon" href={faviconSvg.src} type="image/svg+xml" />
+        <link rel="apple-touch-icon" href={appleTouchIcon.src} />
+        <meta name="generator" content={Astro.generator} />
+        <!-- Preferencias de color del agente y color de UI del navegador (Safari iOS/desktop) -->
+        <meta name="color-scheme" content="light dark" />
+        <!-- Fallback general -->
+        <meta name="theme-color" content="#67b7f0" />
+        <!-- Variantes por esquema de color (iOS 15+ soporta theme-color) -->
+        <meta
+            name="theme-color"
+            media="(prefers-color-scheme: light)"
+            content="#67b7f0"
+        />
+        <meta
+            name="theme-color"
+            media="(prefers-color-scheme: dark)"
+            content="#67b7f0"
+        />
+        <!-- PWA en iOS (al añadir a la pantalla de inicio) -->
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <!-- Recomendado: equivalente genérico para Android/Chrome -->
+        <meta name="mobile-web-app-capable" content="yes" />
+        <!-- black-translucent permite que el fondo de la página se vea detrás de la barra de estado -->
+        <meta
+            name="apple-mobile-web-app-status-bar-style"
+            content="black-translucent"
+        />
+        <link rel="preconnect" href="https://strapi.minkayni.org" />
+        <link rel="preconnect" href="https://img.minkayni.org" />
+        <style>
+            body[data-grain="off"] #grain-layer {
+                display: none;
+            }
+            html.no-scroll,
+            body.no-scroll {
+                overflow: hidden !important;
+                height: 100%;
+                overscroll-behavior: none;
+                touch-action: none;
+            }
+        </style>
+        <style is:global>
+            .grain-gif-fallback #grain-layer .gif-noise {
+                opacity: 0.1 !important;
+            }
+        </style>
+    </head>
+
+    <body class="bg-background text-black">
+        <!-- Grain Layer (textura global) -->
+        <div
+            id="grain-layer"
+            aria-hidden="true"
+            class="fixed inset-0 z-[1000] pointer-events-none"
+        >
+            <video
+                id="grain-video"
+                class="w-full h-dvh object-cover mix-blend-soft-light opacity-20 contrast-125 brightness-95 will-change-[opacity] dark:mix-blend-overlay dark:opacity-20"
+                autoplay
+                muted
+                loop
+                playsinline
+                webkit-playsinline
+                preload="auto"
+                poster={noiseGIF.src}
+                style="visibility:hidden;"
+            >
+                <source src={paperTEX} type="video/webm" />
+            </video>
+            <Image
+                src={noiseGIF}
+                alt="noise"
+                class="gif-noise fixed top-0 left-0 w-screen h-screen object-cover z-[1000] mix-blend-overlay pointer-events-none object-center opacity-5"
+            />
+        </div>
+
+        <script>
+            (function () {
+                const video = document.getElementById("grain-video");
+                if (!(video instanceof HTMLVideoElement)) return;
+                let played = false;
+                const mark = () => {
+                    played = true;
+                    document.documentElement.classList.remove(
+                        "grain-gif-fallback",
+                    );
+                    video.style.visibility = "visible";
+                };
+                const tryPlay = () => {
+                    try {
+                        const p = video.play?.();
+                        if (p && typeof p.then === "function")
+                            p.then(mark).catch(() => {});
+                    } catch {}
+                };
+                video.addEventListener("playing", mark, { once: true });
+                tryPlay();
+                const re = () => {
+                    if (!played) tryPlay();
+                };
+                ["pointerdown", "keydown", "scroll"].forEach((ev) =>
+                    window.addEventListener(ev, re, {
+                        passive: true,
+                        once: true,
+                    }),
+                );
+                const maxWait = /Mobi|Android|iPhone|iPad|iPod/.test(
+                    navigator.userAgent || "",
+                )
+                    ? 2500
+                    : 3800;
+                setTimeout(() => {
+                    if (!played) {
+                        document.documentElement.classList.add(
+                            "grain-gif-fallback",
+                        );
+                        setTimeout(() => {
+                            if (!played) tryPlay();
+                        }, 700);
+                    }
+                }, maxWait);
+            })();
+        </script>
+
+        <Navbar buttons={navHeader} />
+        <Menu buttons={navHeader} socials={footer.Socials} />
+
+        <div id="smooth-wrapper" class="overflow-x-hidden">
+            <div id="smooth-content" class="flex flex-col min-h-screen">
+                <Navbar buttons={navHeader} />
+                <Menu buttons={navHeader} socials={footer.Socials} />
+
+                <!-- Hero -->
+                <Hero text="Conócenos" />
+
+                <!-- Main: maneja espaciado automático -->
+                <main class="flex-1 w-full flex flex-col justify-start">
+                    <slot />
+                    <!-- Footer -->
+                    <Footer
+                        primaryLinks={navHeader}
+                        {footer}
+                        secondaryLinks="Proyectos"
+                    />
+                </main>
+            </div>
+        </div>
+
+        <!-- Scripts globales -->
+        <script src="/src/scripts/main.ts"></script>
+
+        <script>
+            import { showContentNoIntro } from "../scripts/index/intro";
+            showContentNoIntro();
+        </script>
+    </body>
+</html>

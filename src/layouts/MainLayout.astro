@@ -22,9 +22,12 @@ const appleTouchIcon = await getImage({
     height: 180,
     format: "png",
 });
+
 const faviconSvg = await getImage({ src: faviconSvgSrc, format: "svg" });
 
-const navHeader = getData(await getEntry("navigationHeader", "navigation:header:es"));
+const navHeader = getData(
+    await getEntry("navigationHeader", "navigation:header:es"),
+);
 
 const footer = getData(await getEntry("footer", "footer"), "es");
 
@@ -35,7 +38,10 @@ const { title } = Astro.props;
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+        />
         <link rel="icon" href="/favicon.ico" sizes="32x32" />
         <link rel="icon" href={faviconSvg.src} type="image/svg+xml" />
         <link rel="apple-touch-icon" href={appleTouchIcon.src} />
@@ -45,18 +51,31 @@ const { title } = Astro.props;
         <!-- Fallback general -->
         <meta name="theme-color" content="#67b7f0" />
         <!-- Variantes por esquema de color (iOS 15+ soporta theme-color) -->
-        <meta name="theme-color" media="(prefers-color-scheme: light)" content="#67b7f0" />
-        <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#67b7f0" />
+        <meta
+            name="theme-color"
+            media="(prefers-color-scheme: light)"
+            content="#67b7f0"
+        />
+        <meta
+            name="theme-color"
+            media="(prefers-color-scheme: dark)"
+            content="#67b7f0"
+        />
         <!-- PWA en iOS (al añadir a la pantalla de inicio) -->
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <!-- Recomendado: equivalente genérico para Android/Chrome -->
         <meta name="mobile-web-app-capable" content="yes" />
         <!-- black-translucent permite que el fondo de la página se vea detrás de la barra de estado -->
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta
+            name="apple-mobile-web-app-status-bar-style"
+            content="black-translucent"
+        />
         <link rel="preconnect" href="https://strapi.minkayni.org" />
         <link rel="preconnect" href="https://img.minkayni.org" />
 
-        <title>{title ? `${title} • Fundación Minkayni` : "Fundación Minkayni"}</title>
+        <title>
+            {title ? `${title} • Fundación Minkayni` : "Fundación Minkayni"}
+        </title>
         <style>
             body[data-grain="off"] #grain-layer {
                 display: none;
@@ -90,11 +109,30 @@ const { title } = Astro.props;
         </style>
     </head>
     <body class="bg-background text-black">
-        <div id="grain-layer" aria-hidden="true" class="fixed inset-0 z-[1000] pointer-events-none">
-            <video id="grain-video" class="w-full h-dvh object-cover mix-blend-soft-light opacity-20 contrast-125 brightness-95 will-change-[opacity] dark:mix-blend-overlay dark:opacity-20" autoplay muted loop playsinline webkit-playsinline preload="auto" poster={noiseGIF.src} style="visibility:hidden;">
+        <div
+            id="grain-layer"
+            aria-hidden="true"
+            class="fixed inset-0 z-[1000] pointer-events-none"
+        >
+            <video
+                id="grain-video"
+                class="w-full h-dvh object-cover mix-blend-soft-light opacity-20 contrast-125 brightness-95 will-change-[opacity] dark:mix-blend-overlay dark:opacity-20"
+                autoplay
+                muted
+                loop
+                playsinline
+                webkit-playsinline
+                preload="auto"
+                poster={noiseGIF.src}
+                style="visibility:hidden;"
+            >
                 <source src={paperTEX} type="video/webm" />
             </video>
-            <Image src={noiseGIF} alt="noise" class="gif-noise fixed top-0 left-0 w-screen h-screen object-cover z-[1000] mix-blend-overlay pointer-events-none object-center opacity-5" />
+            <Image
+                src={noiseGIF}
+                alt="noise"
+                class="gif-noise fixed top-0 left-0 w-screen h-screen object-cover z-[1000] mix-blend-overlay pointer-events-none object-center opacity-5"
+            />
         </div>
         <script>
             (function () {
@@ -103,13 +141,16 @@ const { title } = Astro.props;
                 let played = false;
                 const mark = () => {
                     played = true;
-                    document.documentElement.classList.remove("grain-gif-fallback");
+                    document.documentElement.classList.remove(
+                        "grain-gif-fallback",
+                    );
                     video.style.visibility = "visible";
                 };
                 const tryPlay = () => {
                     try {
                         const p = video.play?.();
-                        if (p && typeof p.then === "function") p.then(mark).catch(() => {});
+                        if (p && typeof p.then === "function")
+                            p.then(mark).catch(() => {});
                     } catch {}
                 };
                 video.addEventListener("playing", mark, { once: true });
@@ -117,11 +158,22 @@ const { title } = Astro.props;
                 const re = () => {
                     if (!played) tryPlay();
                 };
-                ["pointerdown", "keydown", "scroll"].forEach((ev) => window.addEventListener(ev, re, { passive: true, once: true }));
-                const maxWait = /Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent || "") ? 2500 : 3800;
+                ["pointerdown", "keydown", "scroll"].forEach((ev) =>
+                    window.addEventListener(ev, re, {
+                        passive: true,
+                        once: true,
+                    }),
+                );
+                const maxWait = /Mobi|Android|iPhone|iPad|iPod/.test(
+                    navigator.userAgent || "",
+                )
+                    ? 2500
+                    : 3800;
                 setTimeout(() => {
                     if (!played) {
-                        document.documentElement.classList.add("grain-gif-fallback");
+                        document.documentElement.classList.add(
+                            "grain-gif-fallback",
+                        );
                         setTimeout(() => {
                             if (!played) tryPlay();
                         }, 700);
@@ -166,7 +218,11 @@ const { title } = Astro.props;
         <div id="smooth-wrapper" class="overflow-hidden">
             <div id="smooth-content" class="overflow-hidden">
                 <slot />
-                <Footer primaryLinks={navHeader} {footer} secondaryLinks="Proyectos" />
+                <Footer
+                    primaryLinks={navHeader}
+                    {footer}
+                    secondaryLinks="Proyectos"
+                />
             </div>
         </div>
         <script src="/src/scripts/main.ts"></script>

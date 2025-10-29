@@ -1,0 +1,38 @@
+---
+import "../styles/global.css";
+import paperTEX from "../assets/overlay/noise.webm";
+import noiseGIF from "../assets/overlay/noise.gif";
+
+interface Props {
+  text: string;
+}
+
+const { text } = Astro.props;
+---
+
+<style>
+  .hero-bg {
+    border-bottom-left-radius: 30px;
+    border-bottom-right-radius: 30px;
+  }
+</style>
+
+<header
+  class="relative w-full flex items-center justify-center overflow-hidden"
+>
+  <!-- Fondo animado con bordes redondeados -->
+  <div
+    class="hero-bg absolute inset-0 z-0 h-[28vh] min-h-[200px] md:h-[60vh] md:min-h-[400px] bg-[var(--primary)] gradient-custom animate-gradient"
+  >
+  </div>
+  <!-- Contenedor del texto -->
+  <div
+    class="relative z-10 flex justify-center items-center h-[30vh] min-h-[200px] md:h-[60vh] md:min-h-[400px] w-full px-4 pointer-events-none select-none"
+  >
+    <h1
+      class="w-full max-w-[50svw] sm:max-w-[40svw] md:max-w-[30svw] font-bold text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-amber-50 text-center leading-tight"
+    >
+      {text}
+    </h1>
+  </div>
+</header>

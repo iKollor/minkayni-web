@@ -16,6 +16,7 @@ import type { NavTree } from "../schemas/navigation";
 
 interface Props {
     buttons: NavTree;
+    
 }
 
 const currentPath = typeof window !== "undefined" ? window.location.pathname : "/";

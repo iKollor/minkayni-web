@@ -1,0 +1,152 @@
+---
+import PageLayout from "../layouts/PageLayout.astro";
+import { Image } from "astro:assets";
+import decoration from "../assets/historyimage.png";
+import flor from "../assets/SVG/misc/flor.svg";
+---
+
+<PageLayout title="">
+    <section class="w-screen min-h-screen flex flex-col py-16">
+        <section class="flex flex-col w-full px-4 md:px-15">
+            <h1 class="text-3xl pl-2" style="color: var(--secondary);">
+                Nuestra historia
+            </h1>
+
+            <div
+                class="flex flex-col md:flex-row w-full gap-6 p-10 rounded-3xl shadow-md transform translate-y-10 rounded-br-none rounded-bl-none"
+                style="background-color: var(--fondo); z-index: 5;"
+            >
+                <div
+                    class="text-7xl pl-4"
+                    style="color: var(--textabout);
+                            min-width: 0;
+                            max-width: 2ch; 
+                            word-break: break-all;
+                            overflow-wrap: break-word;"
+                >
+                    <span>2020</span>
+                </div>
+                <div class="flex-1 text-sm md:text-base min-w-0">
+                    <p>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                        Natus ipsam perspiciatis error delectus cumque ratione
+                        tenetur voluptate, quo dolore voluptatem eaque commodi
+                        excepturi autem omnis dolorem, non beatae, eos
+                        exercitationem? Itia nisi. Lorem ipsum dolor sit, amet
+                        consectetur adipisicing elit. Fugit facere nesciunt
+                        omnis voluptatum consequuntur. Magni, consectetur illo
+                        et assumenda recusandae distinctio quia consequuntur
+                    </p>
+                </div>
+            </div>
+
+            <div
+                class="flex flex-col md:flex-row w-full min-h-[300px] h-auto rounded-3xl shadow-lg transform -translate-y-1 overflow-hidden mt-6"
+                style="z-index: 10; background-color: var(--secondary);"
+            >
+                <!-- Texto largo -->
+                <div class="flex flex-col w-full md:w-[80%] min-w-0">
+                    <div
+                        class="p-8 w-full h-auto rounded-l-3xl"
+                        style="color: var(--bg-white);"
+                    >
+                        Lorem ipsum dolor sit amet consectetur, adipisicing
+                        elit. Expedita illum provident doloremque consectetur,
+                        obcaecati in tenetur dolores placeat voluptate! Labore,
+                        error neque quia rerum quasi provident fugiat suscipit
+                        elit. Expedita illum provident doloremque consectetur,
+                        obcaecati in tenetur dolores placeat voluptate! Labore,
+                        error neque quia rerum quasi provident fugiat suscipit
+                    </div>
+
+                    <div
+                        class="p-4 flex flex-col md:flex-row flex-1 rounded-t-3xl w-full rounded-tr-none gap-4 md:gap-6"
+                        style="color: var(--bg-white); background-color: var(--bg-indigo-bright);"
+                    >
+                        <div
+                            class="flex flex-col h-full w-full md:w-300 min-w-0 p-4"
+                        >
+                            <div class="text-2xl">
+                                <h2>
+                                    De la Calle al Reconocimiento Internacional
+                                </h2>
+                            </div>
+                            <p>
+                                Lorem ipsum dolor sit, amet consectetur
+                                adipisicing elit. Fugit facere nesciunt omnis
+                                voluptatum consequuntur. Magni, consectetur illo
+                                et assumenda recusandae distinctio quia
+                                consequuntur repellendus ipsa, error, harum odit
+                                expedita quisquam. adipisicing elit. Fugit
+                                facere nesciunt omnis voluptatum consequuntur.
+                                Magni, consectetur illo et assumenda recusandae
+                                distinctio quia consequuntur repellendus ipsa,
+                                error, harum odit expedita quisquam. adipisicing
+                                elit. Fugit facere nesciunt omnis voluptatum
+                                consequuntur. Magni, consectetur illo et
+                                assumenda recusandae distinctio quia
+                                consequuntur repellendus ipsa, error, harum odit
+                                expedita quisquam. adipisicing elit. Fugit
+                                facere nesciunt omnis voluptatum consequuntur.
+                                Magni, consectetur illo et assumenda recusandae
+                                distinctio quia consequuntur repellendus ipsa,
+                                error, harum odit expedita quisquam.
+                            </p>
+                        </div>
+
+                        <div
+                            class="flex flex-col text-7xl pl-4 justify-center break-word p-4"
+                            style="color: var(--bg-white);   
+                                    min-width: 0;
+                                    max-width: 3ch; 
+                                    word-break: break-all;
+                                    overflow-wrap: break-word; "
+                        >
+                            <span>202 1</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Imagen decorativa -->
+                <div class="w-full md:w-[20%] shrink-0">
+                    <Image
+                        src={decoration}
+                        alt="decoration"
+                        class="object-cover w-full h-full"
+                    />
+                </div>
+            </div>
+        </section>
+    </section>
+
+    <section class="w-screen min-h-screen flex flex-col py-16 pb-[75vh]">
+        <div class="flex flex-col w-full">
+            <div class="relative flex items-center justify-center w-full py-10">
+                <!-- Línea curva -->
+                <div class="absolute bottom-0 w-80 h-20 overflow-hidden">
+                    <div
+                        class="w-full h-full border-t-4 border-amber-700 rounded-t-full "
+                    >
+                    </div>
+                </div>
+
+                <!-- Flor centrada -->
+                <div class="relative z-10">
+                    <Image src={flor} alt="decoration" class="w-10 h-10" />
+                </div>
+            </div>
+            <div>
+                <span
+                    >Lorem ipsum dolor sit, amet consectetur adipisicing elit.
+                    In ducimus dicta unde repellat soluta dolorum incidunt fugit
+                    delectus aliquam, veritatis debitis modi, explicabo
+                    repellendus consectetur quam, reprehenderit aut enim nobis.</span
+                >
+            </div>
+            <div class="flex flex-row items-center justify-center w-full">
+                <Image src={flor} alt="decoration" class="w-10" />
+            </div>
+        </div>
+        <secion></secion>
+    </section>
+</PageLayout>

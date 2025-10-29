@@ -27,6 +27,9 @@
     --duration: 640ms;
     --navbar-menu-width: 25vw;
     --scrollbar-width-px: 11px;
+    --textabout: rgb(243, 162, 11);
+    --fondo: rgba(215, 213, 213, 0.762);
+    --bg-indigo-bright: hsl(240, 80%, 55%);
 }
 
 html {
