@@ -81,7 +81,7 @@ const { logoSrc = PlaceholderLogo, photoSrc = BatucadaPhoto } = Astro.props as P
             return;
         }
 
-        // Split texto título y párrafos (una vez que las fuentes están listas)
+        // Split texto título y párrafos (solo cuando las fuentes estén listas)
         let titleSplit: any = null;
         let bodySplit: any = null;
         const splitNow = () => {
@@ -94,7 +94,7 @@ const { logoSrc = PlaceholderLogo, photoSrc = BatucadaPhoto } = Astro.props as P
                 gsap.set(bodySplit.lines, { yPercent: 40, opacity: 0 });
             }
         };
-        splitNow();
+        // No ejecutar inmediatamente: esperar fontsReady para evitar el warning de SplitText
         waitForFontsReady(splitNow);
 
         const setInitial = () => {
