@@ -1,0 +1,190 @@
+---
+import MaskFlor from "../components/MaskFlor.astro";
+import flor from "../assets/SVG/misc/flor.svg";
+import Image from "astro/components/Image.astro";
+import type { ImageMetadata } from "astro";
+
+export interface Step {
+    year: number;
+    tittle: string;
+    text: string;
+    image?: ImageMetadata;
+    link?: string;  
+    linkText?: string; 
+}
+
+export interface Props {
+    steps: Step[];
+    interval?: number;
+}
+
+const { steps = [], interval = 3000 } = Astro.props;
+const years = steps.map((s) => s.year);
+---
+
+<div class="relative flex flex-row w-[92%] h-130 justify-center mx-auto">
+    <!-- Máscaras decorativas -->
+    <div class="w-[95%] flex justify-between -translate-y-25 z-0 relative">
+        <!-- Años encima de las máscaras -->
+        <div
+            id="timeline-years"
+            class="absolute w-full top-12 md:top-14 lg:top-16 left-0 z-10 flex justify-between pl-5 md:pl-20 pr-5 md:pr-20"
+        >
+            {
+                years.map((year) => (
+                    <span class="text-lg md:text-2xl lg:text-3xl font-semibold text-gray-800 text-center">
+                        {year}
+                    </span>
+                ))
+            }
+        </div>
+
+        {
+            years.map((year) => (
+                <div class="flex flex-col items-center z-0">
+                    <MaskFlor
+                        alt={`Año ${year}`}
+                        className="w-24 md:w-36 lg:w-56 h-24 md:h-36 lg:h-56"
+                    />
+                </div>
+            ))
+        }
+    </div>
+
+    <!-- Contenedor principal -->
+    <div
+        class="z-20 bg-[#d5d5d5] absolute w-full h-full rounded-2xl md:rounded-3xl flex flex-col py-4 md:py-6 gap-3 md:gap-5"
+    >
+        <!-- Línea de tiempo -->
+        <div
+            class="absolute top-11 left-0 w-full border-b-2 border-gray-500 z-0"
+        >
+        </div>
+
+        <!-- Flores del timeline (steps) -->
+        <div
+            id="timeline-steps"
+            class="relative w-full flex flex-row justify-between px-5 md:px-30 z-10"
+        >
+            {
+                steps.map((step, index) => (
+                    <div
+                        class="cursor-pointer opacity-50 transition-transform md:w-10 lg:w-12"
+                        data-step={index}
+                    >
+                        <Image
+                            src={flor}
+                            alt={`step ${step.year}`}
+                            class="w-6 md:w-10 lg:w-12"
+                        />
+                    </div>
+                ))
+            }
+        </div>
+
+        <!-- Contenido de cada step -->
+<div id="timeline-content" class="w-full flex-1 px-4 md:px-10">
+  {
+    steps.map((step, index) => (
+      <div
+        class={`step-content ${index === 0 ? "" : "hidden"} h-full flex flex-col md:flex-row gap-4 md:gap-6`}
+        data-step={index}
+      >
+        <!-- Texto -->
+        <div class="flex flex-col w-full md:w-2/5 p-4 md:p-2 max-h-[60vh] md:max-h-none">
+          <h1 class="text-lg md:text-3xl lg:text-3xl font-bold mb-2" style="color: var(--bg-white); color: var(--bg-indigo-bright);">
+            {step.tittle}
+          </h1>
+          <p class="text-sm md:text-base lg:text-lg leading-relaxed mb-4">
+            {step.text}
+          </p>
+
+          {step.link && (
+            <a
+              href={step.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="self-start inline-block bg-amber-600 hover:bg-amber-700 text-white font-medium text-sm md:text-base px-10 py-5 rounded-3xl shadow-md transition-colors duration-200"
+            >
+              {step.linkText || "Ver más"}
+            </a>
+          )}
+        </div>
+
+        <!-- Imagen -->
+        <div class="flex w-full md:w-3/5 justify-center items-center rounded-xl overflow-hidden">
+          {step.image && (
+            <Image
+              src={step.image}
+              alt={step.tittle || `Imagen del año ${step.year}`}
+              class="w-full h-auto max-h-[60vh] object-contain md:object-cover rounded-xl transition-transform duration-300 hover:scale-[1.02]"
+            />
+          )}
+        </div>
+      </div>
+    ))
+  }
+</div>
+    </div>
+</div>
+
+<script is:inline>
+    window.addEventListener("DOMContentLoaded", () => {
+        const stepsflower = document.querySelectorAll(
+            "#timeline-steps [data-step]",
+        );
+        const anios = document.querySelectorAll("#timeline-years span");
+        const contents = document.querySelectorAll(
+            "#timeline-content [data-step]",
+        );
+        let activeStep = 0;
+        const totalSteps = stepsflower.length;
+        const intervalTime = Number(3000);
+
+        function setActiveStep(step) {
+            activeStep = step;
+
+            // Resalta la flor activa
+            stepsflower.forEach((el, index) => {
+                if (index === activeStep) {
+                    el.classList.add("scale-125", "opacity-100");
+                    el.classList.remove("opacity-50");
+                } else {
+                    el.classList.remove("scale-125", "opacity-100");
+                    el.classList.add("opacity-50");
+                }
+            });
+
+            // Resalta el año activo
+            anios.forEach((el, index) => {
+                if (index === activeStep) {
+                    el.style.color = "#f3a20b";
+                    el.classList.add("scale-110");
+                } else {
+                    el.style.color = "";
+                    el.classList.remove("scale-110");
+                }
+            });
+
+            // Mostrar solo el contenido activo
+            contents.forEach((el, index) => {
+                if (index === activeStep) el.classList.remove("hidden");
+                else el.classList.add("hidden");
+            });
+        }
+
+        // Inicializa
+        setActiveStep(activeStep);
+
+        // Click en cada flor
+        stepsflower.forEach(
+            (el, index) => (el.onclick = () => setActiveStep(index)),
+        );
+
+        // Avance automático
+        setInterval(
+            () => setActiveStep((activeStep + 1) % totalSteps),
+            intervalTime,
+        );
+    });
+</script>

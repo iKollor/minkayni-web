@@ -1,12 +1,19 @@
 ---
 import PageLayout from "../layouts/PageLayout.astro";
+import foto from "../assets/FOTO_BATUCADA.webp";
 import { Image } from "astro:assets";
 import decoration from "../assets/historyimage.png";
+import MaskFlor from "../components/MaskFlor.astro";
+import DomeSeparator from "../components/index/DomeSeparator.astro";
 import flor from "../assets/SVG/misc/flor.svg";
+import eu from "../assets/eu.png";
+import ecuavisa from "../assets/ecuavisa.png";
+import vistazo from "../assets/vistazo.png";
+import TimeLine from "../components/TimeLine.astro";
 ---
 
 <PageLayout title="">
-    <section class="w-screen min-h-screen flex flex-col py-16">
+    <section class="w-screen h-fit flex flex-col py-16">
         <section class="flex flex-col w-full px-4 md:px-15">
             <h1 class="text-3xl pl-2" style="color: var(--secondary);">
                 Nuestra historia
@@ -98,7 +105,7 @@ import flor from "../assets/SVG/misc/flor.svg";
                             class="flex flex-col text-7xl pl-4 justify-center break-word p-4"
                             style="color: var(--bg-white);   
                                     min-width: 0;
-                                    max-width: 3ch; 
+                                    max-width: 2.5ch; 
                                     word-break: break-all;
                                     overflow-wrap: break-word; "
                         >
@@ -119,34 +126,170 @@ import flor from "../assets/SVG/misc/flor.svg";
         </section>
     </section>
 
-    <section class="w-screen min-h-screen flex flex-col py-16 pb-[75vh]">
-        <div class="flex flex-col w-full">
-            <div class="relative flex items-center justify-center w-full py-10">
-                <!-- Línea curva -->
-                <div class="absolute bottom-0 w-80 h-20 overflow-hidden">
-                    <div
-                        class="w-full h-full border-t-4 border-amber-700 rounded-t-full "
-                    >
-                    </div>
-                </div>
+    <section class="w-screen h-fit flex flex-col items-center mb-20">
+        <div
+            class="relative flex flex-col items-center justify-center w-[60%] overflow-hidden"
+        >
+            <div class="w-full h-[12vw]">
+                <DomeSeparator isAbsolute={false} />
+            </div>
 
-                <!-- Flor centrada -->
-                <div class="relative z-10">
-                    <Image src={flor} alt="decoration" class="w-10 h-10" />
-                </div>
-            </div>
-            <div>
+            <div
+                class="relative z-10 mt-8 mb-8 sm:mt-10 sm:mb-10 md:mt-12 md:mb-12 lg:mt-0 lg:mb-0 px-6 text-center md:px-12"
+            >
                 <span
-                    >Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-                    In ducimus dicta unde repellat soluta dolorum incidunt fugit
-                    delectus aliquam, veritatis debitis modi, explicabo
-                    repellendus consectetur quam, reprehenderit aut enim nobis.</span
+                    class="block text-sm md:text-base lg:text-lg leading-relaxed"
                 >
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit. In
+                    ducimus dicta unde repellat soluta dolorum incidunt fugit
+                    delectus aliquam, veritatis debitis modi, explicabo
+                    repellendus consectetur quam, reprehenderit aut enim nobis.
+                </span>
             </div>
-            <div class="flex flex-row items-center justify-center w-full">
-                <Image src={flor} alt="decoration" class="w-10" />
+
+            <div class="w-full scale-y-[-1] h-[12vw]">
+                <DomeSeparator isAbsolute={false} />
             </div>
         </div>
-        <secion></secion>
+    </section>
+
+    <section class="w-screen h-fit flex flex-col">
+        <section class="flex flex-row w-full px-4 md:px-15 items-center">
+            <div class="flex flex-col md:flex-row w-full gap-4 relative">
+                <!-- Misión -->
+                <div
+                    class="flex flex-col gap-5 w-full md:w-1/2 p-10 items-center rounded-l-3xl min-h-[25vw]"
+                    style="color: var(--bg-white); background-color: var(--bg-indigo-bright); z-index: 10;"
+                >
+                    <h1 class="text-3xl pl-2">Misión</h1>
+                    <span>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                        Velit laborum facere placeat beatae. Reprehenderit
+                        maiores ut dolorum veritatis id praesentium sequi
+                        reiciendis labore! Excepturi quam optio earum molestiae
+                        blanditiis maiores!
+                    </span>
+                </div>
+
+                <!-- Visión -->
+                <div
+                    class="flex flex-col gap-5 w-full md:w-1/2 bg-secondary p-10 items-center rounded-3xl min-h-[25vw]
+               relative md:-translate-x-8 shadow-2xl z-20"
+                    style="color: var(--bg-white);"
+                >
+                    <h1 class="text-3xl pl-2">Visión</h1>
+                    <span>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                        Velit laborum facere placeat beatae. Reprehenderit
+                        maiores ut dolorum veritatis id praesentium sequi
+                        reiciendis labore! Excepturi quam optio earum molestiae
+                        blanditiis mayores!
+                    </span>
+                </div>
+            </div>
+        </section>
+    </section>
+
+    <section class="w-screen flex flex-col mt-30 items-center mb-20 h-fit">
+        <section
+            class="flex flex-col md:flex-row w-full md:w-[90%] px-4 md:px-15 items-center gap-10"
+        >
+            <!-- Contenedor de imagen con máscara -->
+            <div
+                class="w-full md:w-1/2 min-h-[25vw] flex justify-center items-center relative"
+            >
+                <!-- Flor de fondo superior derecha -->
+                <div
+                    class="absolute top-0 right-5 w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-50 lg:h-50 z-0"
+                >
+                    <Image
+                        src={flor}
+                        alt="flor"
+                        class="object-cover w-full h-full"
+                    />
+                </div>
+
+                <!-- Flor de fondo borde izquierdo -->
+                <div
+                    class="absolute bottom-0 left-8 w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-50 lg:h-50 z-0"
+                >
+                    <Image
+                        src={flor}
+                        alt="flor"
+                        class="object-cover w-full h-full"
+                    />
+                </div>
+
+                <!-- Mascara principal siempre encima -->
+                <MaskFlor
+                    src={foto}
+                    alt="Flor 1"
+                    className="w-56 h-56 sm:w-64 sm:h-64 md:w-96 md:h-96 lg:w-120 lg:h-120 shadow-lg z-10"
+                />
+            </div>
+
+            <!-- Contenido textual -->
+            <div class="flex-1 flex flex-col p-4 md:p-10 min-h-[25vw] gap-10">
+                <div
+                    class="text-3xl md:text-4xl lg:text-5xl w-full"
+                    style="color: var(--bg-indigo-bright);"
+                >
+                    <h1>Premios y Reconocimiento</h1>
+                </div>
+
+                <div class="text-base sm:text-lg md:text-xl text-gray-700">
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                    Vitae explicabo at ratione nostrum nam facere eius ut.
+                    Voluptates quod consequuntur, nobis numquam voluptate et
+                    optio nam molestias eveniet similique minima? Vitae
+                    explicabo at ratione nostrum nam facere eius ut. Voluptates
+                    quod consequuntur, nobis numquam voluptate et optio nam
+                    molestias eveniet similique minima?
+                </div>
+                <div class="flex flex-row w-full gap-20">
+                    <a>
+                        <Image src={eu} alt="ecuavisa" class="w-15 h-15" />
+                    </a>
+                    <a>
+                        <Image src={vistazo} alt="ecuavisa" class="w-14" />
+                    </a>
+                    <a>
+                        <Image src={ecuavisa} alt="ecuavisa" class="w-15" />
+                    </a>
+                </div>
+            </div>
+        </section>
+    </section>
+
+    <section class="w-screen flex flex-col mt-30 items-center mb-100 h-fit">
+        <TimeLine
+            interval={4000}
+            steps={[
+                {
+                    year: 2020,
+                    tittle: "Reportaje: Con la batucada despejo la mente y me alejo de robar",
+                    text: "El Universo presenta un reportaje que retrata cómo el arte puede convertirse en un motor de cambio social. La nota explora el trabajo de la Fundación Minkayni, una iniciativa que, desde la pandemia, ha utilizado la música como Illerramienta de resistencia y esperanza para jóvenes en contextos vulnerables.",
+                    image: foto,
+                    link: "https://www.eluniverso.com/noticias/reportaje-batucada/",
+                    linkText: "Más Información",
+                },
+                {
+                    year: 2021,
+                    tittle: "Reportaje: Con la batucada despejo la mente y me alejo de robar",
+                    text: "lorem",
+                    image: flor,
+                    link: "https://www.eluniverso.com/noticias/reportaje-batucada/",
+                    linkText: "Más Información",
+                },
+                {
+                    year: 2022,
+                    tittle: "Reportaje: Con la batucada despejo la mente y me alejo de robar",
+                    text: "El Universo presenta un reportaje que retrata cómo el arte puede convertirse en un motor de cambio social. La nota explora el trabajo de la Fundación Minkayni, una iniciativa que, desde la pandemia, ha utilizado la música como Illerramienta de resistencia y esperanza para jóvenes en contextos vulnerables.",
+                    image: decoration,
+                    link: "https://www.eluniverso.com/noticias/reportaje-batucada/",
+                    linkText: "Más Información",
+                },
+            ]}
+        />
     </section>
 </PageLayout>

@@ -1,0 +1,48 @@
+---
+import { Image } from 'astro:assets';
+
+interface Props {
+  src?: ImageMetadata;
+  alt?: string;
+  className?: string;
+}
+
+const { src, alt = '', className = '' } = Astro.props;
+---
+
+<div class={`flower-mask ${className}`} role="img" aria-label={alt}>
+  {src ? <Image src={src} alt={alt} /> : null}
+</div>
+
+<style>
+.flower-mask {
+  display: inline-block;
+  overflow: hidden;
+
+  /* Mascara CSS de flor de 4 pétalos */
+  --g: /50.422% 50.422% radial-gradient(#000 calc(71% - 1px), #0000 71%) no-repeat;
+
+  mask: 
+    50.785% 99.994% var(--g),
+    0.006% 50.785% var(--g),
+    49.215% 0.006% var(--g),
+    99.994% 49.215% var(--g),
+    radial-gradient(100% 100%, #000 20.711%, #0000 calc(20.711% + 1px));
+
+  -webkit-mask: 
+    50.785% 99.994% var(--g),
+    0.006% 50.785% var(--g),
+    49.215% 0.006% var(--g),
+    99.994% 49.215% var(--g),
+    radial-gradient(100% 100%, #000 20.711%, #0000 calc(20.711% + 1px));
+
+  background-color: #d5d5d5; /* opcional: fondo mientras carga */
+}
+
+.flower-mask img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+</style>

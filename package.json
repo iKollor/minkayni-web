@@ -28,6 +28,7 @@
         "@types/react-dom": "^19.1.7",
         "astro": "^5.13.5",
         "astro-icon": "^1.1.5",
+        "embla-carousel": "^8.6.0",
         "gsap": "^3.13.0",
         "hast-util-select": "^6.0.4",
         "jsdom": "^27.0.0",
