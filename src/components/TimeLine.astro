@@ -22,17 +22,17 @@ const { steps = [], interval = 3000 } = Astro.props;
 const years = steps.map((s) => s.year);
 ---
 
-<div class="relative flex flex-row w-[92%] h-130 justify-center mx-auto">
+<div class="relative flex flex-row w-full sm:w-[95%] md:w-[92%] h-auto min-h-[500px] md:min-h-[600px] lg:min-h-[700px] justify-center mx-auto px-2 sm:px-4">
     <!-- Máscaras decorativas -->
-    <div class="w-[95%] flex justify-between -translate-y-25 z-0 relative">
+    <div class="w-full sm:w-[95%] flex justify-between -translate-y-10 sm:-translate-y-12 md:-translate-y-25 z-0 relative">
         <!-- Años encima de las máscaras -->
         <div
             id="timeline-years"
-            class="absolute w-full top-12 md:top-14 lg:top-16 left-0 z-10 flex justify-between pl-5 md:pl-20 pr-5 md:pr-20"
+            class="absolute w-full top-5 sm:top-10 md:top-12 lg:top-16 left-0 z-10 flex justify-between px-4 sm:px-5 md:px-10 lg:px-20"
         >
             {
                 years.map((year) => (
-                    <span class="text-lg md:text-2xl lg:text-3xl font-semibold text-gray-800 text-center">
+                    <span class="text-sm sm:text-base md:text-xl lg:text-2xl xl:text-3xl font-semibold text-gray-800 text-center transition-all duration-300">
                         {year}
                     </span>
                 ))
@@ -44,7 +44,7 @@ const years = steps.map((s) => s.year);
                 <div class="flex flex-col items-center z-0">
                     <MaskFlor
                         alt={`Año ${year}`}
-                        className="w-24 md:w-36 lg:w-56 h-24 md:h-36 lg:h-56"
+                        className="w-16 h-16 sm:w-20 sm:h-20 md:w-32 md:h-32 lg:w-48 lg:h-48 xl:w-56 xl:h-56"
                     />
                 </div>
             ))
@@ -53,29 +53,29 @@ const years = steps.map((s) => s.year);
 
     <!-- Contenedor principal -->
     <div
-        class="z-20 bg-[#d5d5d5] absolute w-full h-full rounded-2xl md:rounded-3xl flex flex-col py-4 md:py-6 gap-3 md:gap-5"
+        class="z-20 bg-[#d5d5d5] absolute w-full h-full rounded-xl sm:rounded-2xl md:rounded-3xl flex flex-col py-3 sm:py-4 md:py-6 gap-2 sm:gap-3 md:gap-5"
     >
         <!-- Línea de tiempo -->
         <div
-            class="absolute top-11 left-0 w-full border-b-2 border-gray-500 z-0"
+            class="absolute top-5 sm:top-9 md:top-11 left-0 w-full border-b-2 border-gray-500 z-0"
         >
         </div>
 
         <!-- Flores del timeline (steps) -->
         <div
             id="timeline-steps"
-            class="relative w-full flex flex-row justify-between px-5 md:px-30 z-10"
+            class="relative w-full flex flex-row justify-between px-8 sm:px-5 md:px-10 lg:px-20 xl:px-30 z-10"
         >
             {
                 steps.map((step, index) => (
                     <div
-                        class="cursor-pointer opacity-50 transition-transform md:w-10 lg:w-12"
+                        class="cursor-pointer opacity-50 transition-all duration-300 hover:opacity-75 w-5 sm:w-6 md:w-8 lg:w-10 xl:w-12"
                         data-step={index}
                     >
                         <Image
                             src={flor}
                             alt={`step ${step.year}`}
-                            class="w-6 md:w-10 lg:w-12"
+                            class="w-full h-auto"
                         />
                     </div>
                 ))
@@ -83,48 +83,48 @@ const years = steps.map((s) => s.year);
         </div>
 
         <!-- Contenido de cada step -->
-<div id="timeline-content" class="w-full flex-1 px-4 md:px-10">
-  {
-    steps.map((step, index) => (
-      <div
-        class={`step-content ${index === 0 ? "" : "hidden"} h-full flex flex-col md:flex-row gap-4 md:gap-6`}
-        data-step={index}
-      >
-        <!-- Texto -->
-        <div class="flex flex-col w-full md:w-2/5 p-4 md:p-2 max-h-[60vh] md:max-h-none">
-          <h1 class="text-lg md:text-3xl lg:text-3xl font-bold mb-2" style="color: var(--bg-white); color: var(--bg-indigo-bright);">
-            {step.tittle}
-          </h1>
-          <p class="text-sm md:text-base lg:text-lg leading-relaxed mb-4">
-            {step.text}
-          </p>
+        <div id="timeline-content" class="w-full flex-1 px-2 sm:px-4 md:px-6 lg:px-10 overflow-y-auto bg">
+            {
+                steps.map((step, index) => (
+                    <div
+                        class={`step-content ${index === 0 ? "" : "hidden"} h-full flex flex-col lg:flex-row gap-3 sm:gap-4 md:gap-6`}
+                        data-step={index}
+                    >
+                        <!-- Texto -->
+                        <div class="flex flex-col w-full lg:w-2/5 p-2 sm:p-3 md:p-4 max-h-[50vh] lg:max-h-none">
+                            <h1 class="text-base sm:text-xl md:text-2xl lg:text-3xl font-bold mb-2 sm:mb-3 text-indigo-600">
+                                {step.tittle}
+                            </h1>
+                            <p class="text-xs sm:text-sm md:text-base lg:text-lg leading-relaxed mb-3 sm:mb-4 text-gray-700">
+                                {step.text}
+                            </p>
 
-          {step.link && (
-            <a
-              href={step.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="self-start inline-block bg-amber-600 hover:bg-amber-700 text-white font-medium text-sm md:text-base px-10 py-5 rounded-3xl shadow-md transition-colors duration-200"
-            >
-              {step.linkText || "Ver más"}
-            </a>
-          )}
-        </div>
+                            {step.link && (
+                                <a
+                                    href={step.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="self-start inline-block bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs sm:text-sm md:text-base px-4 sm:px-6 md:px-8 lg:px-10 py-2 sm:py-3 md:py-4 lg:py-5 rounded-2xl sm:rounded-3xl shadow-md transition-colors duration-200"
+                                >
+                                    {step.linkText || "Ver más"}
+                                </a>
+                            )}
+                        </div>
 
-        <!-- Imagen -->
-        <div class="flex w-full md:w-3/5 justify-center items-center rounded-xl overflow-hidden">
-          {step.image && (
-            <Image
-              src={step.image}
-              alt={step.tittle || `Imagen del año ${step.year}`}
-              class="w-full h-auto max-h-[60vh] object-contain md:object-cover rounded-xl transition-transform duration-300 hover:scale-[1.02]"
-            />
-          )}
+                        <!-- Imagen -->
+                        <div class="flex w-full lg:w-3/5 rounded-lg sm:rounded-xl overflow-hidden min-h-[200px] sm:min-h-[250px] md:min-h-[300px]">
+                            {step.image && (
+                                <Image
+                                    src={step.image}
+                                    alt={step.tittle || `Imagen del año ${step.year}`}
+                                    class="w-full h-full max-h-[40vh] sm:max-h-[50vh] md:max-h-[60vh] object-cover rounded-lg sm:rounded-xl transition-transform duration-300 hover:scale-[1.02]"
+                                />
+                            )}
+                        </div>
+                    </div>
+                ))
+            }
         </div>
-      </div>
-    ))
-  }
-</div>
     </div>
 </div>
 
@@ -147,10 +147,10 @@ const years = steps.map((s) => s.year);
             // Resalta la flor activa
             stepsflower.forEach((el, index) => {
                 if (index === activeStep) {
-                    el.classList.add("scale-125", "opacity-100");
+                    el.classList.add("scale-110", "sm:scale-125", "opacity-100");
                     el.classList.remove("opacity-50");
                 } else {
-                    el.classList.remove("scale-125", "opacity-100");
+                    el.classList.remove("scale-110", "sm:scale-125", "opacity-100");
                     el.classList.add("opacity-50");
                 }
             });
@@ -159,10 +159,10 @@ const years = steps.map((s) => s.year);
             anios.forEach((el, index) => {
                 if (index === activeStep) {
                     el.style.color = "#f3a20b";
-                    el.classList.add("scale-110");
+                    el.classList.add("scale-105", "sm:scale-110");
                 } else {
                     el.style.color = "";
-                    el.classList.remove("scale-110");
+                    el.classList.remove("scale-105", "sm:scale-110");
                 }
             });
 
@@ -188,3 +188,32 @@ const years = steps.map((s) => s.year);
         );
     });
 </script>
+
+<style>
+    /* Asegurar que el contenido no cause overflow horizontal */
+    #timeline-content {
+        scrollbar-width: thin;
+        scrollbar-color: #f3a20b #d5d5d5;
+    }
+
+    #timeline-content::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    #timeline-content::-webkit-scrollbar-track {
+        background: #d5d5d5;
+    }
+
+    #timeline-content::-webkit-scrollbar-thumb {
+        background: #f3a20b;
+        border-radius: 3px;
+    }
+
+    /* Prevenir zoom en inputs en iOS */
+    @media screen and (max-width: 640px) {
+        input, select, textarea {
+            font-size: 16px !important;
+        }
+    }
+</style>

@@ -190,7 +190,7 @@ import TimeLine from "../components/TimeLine.astro";
         </section>
     </section>
 
-    <section class="w-screen flex flex-col mt-30 items-center mb-20 h-fit">
+    <section class="w-screen flex flex-col mt-30 items-center mb-10 h-fit">
         <section
             class="flex flex-col md:flex-row w-full md:w-[90%] px-4 md:px-15 items-center gap-10"
         >
@@ -200,7 +200,7 @@ import TimeLine from "../components/TimeLine.astro";
             >
                 <!-- Flor de fondo superior derecha -->
                 <div
-                    class="absolute top-0 right-5 w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-50 lg:h-50 z-0"
+                    class="absolute top-5 right-8 w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-50 lg:h-50 z-0"
                 >
                     <Image
                         src={flor}
@@ -248,7 +248,7 @@ import TimeLine from "../components/TimeLine.astro";
                 </div>
                 <div class="flex flex-row w-full gap-20">
                     <a>
-                        <Image src={eu} alt="ecuavisa" class="w-15 h-15" />
+                        <Image src={eu} alt="ecuavisa" class="w-15" />
                     </a>
                     <a>
                         <Image src={vistazo} alt="ecuavisa" class="w-14" />
@@ -261,26 +261,11 @@ import TimeLine from "../components/TimeLine.astro";
         </section>
     </section>
 
-    <section class="w-screen flex flex-col mt-30 items-center mb-100 h-fit">
+    <section class="w-screen flex flex-col mt-30 items-center mb-75 h-fit">
         <TimeLine
             interval={4000}
             steps={[
-                {
-                    year: 2020,
-                    tittle: "Reportaje: Con la batucada despejo la mente y me alejo de robar",
-                    text: "El Universo presenta un reportaje que retrata cómo el arte puede convertirse en un motor de cambio social. La nota explora el trabajo de la Fundación Minkayni, una iniciativa que, desde la pandemia, ha utilizado la música como Illerramienta de resistencia y esperanza para jóvenes en contextos vulnerables.",
-                    image: foto,
-                    link: "https://www.eluniverso.com/noticias/reportaje-batucada/",
-                    linkText: "Más Información",
-                },
-                {
-                    year: 2021,
-                    tittle: "Reportaje: Con la batucada despejo la mente y me alejo de robar",
-                    text: "lorem",
-                    image: flor,
-                    link: "https://www.eluniverso.com/noticias/reportaje-batucada/",
-                    linkText: "Más Información",
-                },
+                
                 {
                     year: 2022,
                     tittle: "Reportaje: Con la batucada despejo la mente y me alejo de robar",
@@ -289,6 +274,23 @@ import TimeLine from "../components/TimeLine.astro";
                     link: "https://www.eluniverso.com/noticias/reportaje-batucada/",
                     linkText: "Más Información",
                 },
+                   {
+                    year: 2023,
+                    tittle: "Reportaje: Con la batucada despejo la mente y me alejo de robar",
+                    text: "El Universo presenta un reportaje que retrata cómo el arte puede convertirse en un motor de cambio social. La nota explora el trabajo de la Fundación Minkayni, una iniciativa que, desde la pandemia, ha utilizado la música como Illerramienta de resistencia y esperanza para jóvenes en contextos vulnerables.",
+                    image: decoration,
+                    link: "https://www.eluniverso.com/noticias/reportaje-batucada/",
+                    linkText: "Más Información",
+                },
+                   {
+                    year: 2024,
+                    tittle: "Reportaje: Con la batucada despejo la mente y me alejo de robar",
+                    text: "El Universo presenta un reportaje que retrata cómo el arte puede convertirse en un motor de cambio social. La nota explora el trabajo de la Fundación Minkayni, una iniciativa que, desde la pandemia, ha utilizado la música como Illerramienta de resistencia y esperanza para jóvenes en contextos vulnerables.",
+                    image: decoration,
+                    link: "https://www.eluniverso.com/noticias/reportaje-batucada/",
+                    linkText: "Más Información",
+                },
+                
             ]}
         />
     </section>
