@@ -1,0 +1,143 @@
+---
+import Lefticon from "../assets/SVG/misc/arrowizq.svg";
+import RightIcon from "../assets/SVG/misc/arrowder.svg";
+import Image from "astro/components/Image.astro";
+import CardInfo from "./CardInfo.astro";
+
+interface SlideData {
+  isVisible: boolean;
+  imageSrc?: ImageMetadata;
+  buttonText?: string;
+  text: string;
+}
+
+interface Props {
+  slides: SlideData[];
+  autoPlay?: boolean;
+  interval?: number;
+}
+
+const { slides, autoPlay = false, interval = 5000 } = Astro.props;
+const slidesCount = slides.length;
+---
+
+<div class="w-[90%] mx-auto mt-[2%] relative">
+  <!-- Contenedor de slides -->
+  <div id="slides-container" class="relative">
+    {slides.map((slide) => (
+      <CardInfo 
+        isVisible={slide.isVisible}
+        imageSrc={slide.imageSrc}
+        buttonText={slide.buttonText}
+        text={slide.text}
+      />
+    ))}
+  </div>
+
+  {slidesCount > 1 && (
+    <>
+      <div class="absolute top-1/2 -translate-y-1/2 w-full flex justify-between z-10 pointer-events-none">
+        <button 
+          id="prev-slide" 
+          class="flex justify-center items-center bg-amber-600 w-[4vw] h-[4vw] max-w-[60px] max-h-[60px] min-w-10 min-h-10 rounded-full border-none cursor-pointer transition-colors duration-300 hover:bg-black/50 -ml-5 pointer-events-auto"
+          aria-label="Slide anterior"
+        >
+          <div class="w-full h-full flex justify-center items-center rounded-full bg-white p-2">
+            <Image
+              src={Lefticon}
+              alt="anterior"
+              class="object-cover w-full h-full"
+            />
+          </div>
+        </button>
+
+        <button 
+          id="next-slide" 
+          class="flex justify-center items-center bg-amber-600 w-[4vw] h-[4vw] max-w-[60px] max-h-[60px] min-w-10 min-h-10 rounded-full border-none cursor-pointer transition-colors duration-300 hover:bg-black/50 -mr-5 pointer-events-auto"
+          aria-label="Siguiente slide"
+        >
+          <div class="w-full h-full flex justify-center items-center rounded-full bg-white p-2">
+            <Image
+              src={RightIcon}
+              alt="siguiente"
+              class="object-cover w-full h-full"
+            />
+          </div>
+        </button>
+      </div>
+
+      <!-- Indicadores -->
+      <div id="indicators" class="flex justify-center gap-2 mt-4">
+        {Array.from({ length: slidesCount }).map((_, index) => (
+          <button
+            class={`indicator w-2 h-2 rounded-full transition-all duration-300 ${index === 0 ? 'bg-[#d97706] w-6' : 'bg-gray-400'}`}
+            data-indicator-index={index}
+            aria-label={`Ir a slide ${index + 1}`}
+          />
+        ))}
+      </div>
+    </>
+  )}
+</div>
+
+<script define:vars={{ autoPlay, interval, slidesCount }}>
+  if (slidesCount > 1) {
+    let currentIndex = 0;
+    const slides = document.querySelectorAll('#slides-container > *');
+    const indicators = document.querySelectorAll('.indicator');
+    let autoPlayInterval;
+
+    const showSlide = (index) => {
+      slides.forEach((slide, i) => {
+        slide.style.display = i === index ? 'flex' : 'none';
+      });
+
+      indicators.forEach((indicator, i) => {
+        if (i === index) {
+          indicator.classList.add('bg-[#d97706]', 'w-6');
+          indicator.classList.remove('bg-gray-400');
+        } else {
+          indicator.classList.remove('bg-[#d97706]', 'w-6');
+          indicator.classList.add('bg-gray-400');
+        }
+      });
+    };
+
+    const nextSlide = () => {
+      currentIndex = (currentIndex + 1) % slidesCount;
+      showSlide(currentIndex);
+    };
+
+    const prevSlide = () => {
+      currentIndex = (currentIndex - 1 + slidesCount) % slidesCount;
+      showSlide(currentIndex);
+    };
+
+    const goToSlide = (index) => {
+      currentIndex = index;
+      showSlide(currentIndex);
+    };
+
+    // Inicializar
+    showSlide(0);
+
+    // Event listeners
+    document.getElementById('next-slide')?.addEventListener('click', nextSlide);
+    document.getElementById('prev-slide')?.addEventListener('click', prevSlide);
+
+    indicators.forEach((indicator, index) => {
+      indicator.addEventListener('click', () => goToSlide(index));
+    });
+
+    // Auto-play
+    if (autoPlay) {
+      autoPlayInterval = setInterval(nextSlide, interval);
+
+      const container = document.getElementById('slides-container');
+      container?.addEventListener('mouseenter', () => clearInterval(autoPlayInterval));
+      container?.addEventListener('mouseleave', () => {
+        autoPlayInterval = setInterval(nextSlide, interval);
+      });
+    }
+  }
+</script>

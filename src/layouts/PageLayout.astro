@@ -23,14 +23,15 @@ const faviconSvg = await getImage({ src: faviconSvgSrc, format: "svg" });
 
 interface Props {
     title: string;
+    section_title:string;
 }
 
 const navHeader = getData(
     await getEntry("navigationHeader", "navigation:header:es"),
 );
 const footer = getData(await getEntry("footer", "footer"), "es");
-const { title } = Astro.props;
-const homepage = await getEntry("homepage", "homepage");
+const { title,section_title } = Astro.props;
+
 ---
 
 <!doctype html>
@@ -105,7 +106,7 @@ const homepage = await getEntry("homepage", "homepage");
         <div
             id="grain-layer"
             aria-hidden="true"
-            class="fixed inset-0 z-[1000] pointer-events-none"
+            class="fixed inset-0 z-1000 pointer-events-none"
         >
             <video
                 id="grain-video"
@@ -124,7 +125,7 @@ const homepage = await getEntry("homepage", "homepage");
             <Image
                 src={noiseGIF}
                 alt="noise"
-                class="gif-noise fixed top-0 left-0 w-screen h-screen object-cover z-[1000] mix-blend-overlay pointer-events-none object-center opacity-5"
+                class="gif-noise fixed top-0 left-0 w-screen h-screen object-cover z-1000 mix-blend-overlay pointer-events-none object-center opacity-5"
             />
         </div>
 
@@ -185,7 +186,7 @@ const homepage = await getEntry("homepage", "homepage");
                 <Menu buttons={navHeader} socials={footer.Socials} />
 
                 <!-- Hero -->
-                <Hero text="Conócenos" />
+                <Hero text={section_title} />
 
                 <!-- Main: maneja espaciado automático -->
                 <main class="flex-1 w-full flex flex-col justify-start">
