@@ -24,20 +24,30 @@ export function navigationLoader({ slug = "header", locale = "es", url, token, c
             }
 
             const endpoint = `${url}/api/navigation/render/${encodeURIComponent(slug)}` + `?type=TREE&menu=true&locale=${encodeURIComponent(locale)}`;
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 8000);
 
-            const res = await fetch(endpoint, {
-                headers: token ? { Authorization: `Bearer ${token}` } : {},
-            });
-            if (!res.ok) {
-                const body = await res.text().catch(() => "");
-                throw new Error(`Navigation fetch failed: ${res.status} ${body}`);
+            try {
+                const res = await fetch(endpoint, {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                    signal: controller.signal,
+                });
+                if (!res.ok) {
+                    const body = await res.text().catch(() => "");
+                    throw new Error(`Navigation fetch failed: ${res.status} ${body}`);
+                }
+
+                const data = await res.json();
+                const id = `navigation:${slug}:${locale}`;
+                const parsed = await parseData({ id, data });
+                store.set({ id, digest: generateDigest(parsed), data: parsed });
+                meta.set("lastSynced", String(Date.now()));
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                logger.warn(`[nav:${slug}] No se pudo sincronizar; se conserva la caché local. ${message}`);
+            } finally {
+                clearTimeout(timeout);
             }
-
-            const data = await res.json();
-            const id = `navigation:${slug}:${locale}`;
-            const parsed = await parseData({ id, data });
-            store.set({ id, digest: generateDigest(parsed), data: parsed });
-            meta.set("lastSynced", String(Date.now()));
         },
         schema() {
             // Import diferido para evitar ciclos

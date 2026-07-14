@@ -1,17 +1,36 @@
 {
   "extends": "astro/tsconfigs/strict",
   "include": [
+    "astro.config.ts",
     ".astro/types.d.ts",
-    "**/*"
+    "src",
+    "env.d.ts"
   ],
   "exclude": [
-    "dist"
+    "dist",
+    "node_modules",
+    "schemas/"
   ],
   "compilerOptions": {
+    "module": "ESNext",
+    "target": "ES2022",
+    "moduleResolution": "bundler",
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2022"
+    ],
+    "noEmit": true,
+    "strict": true,
+    "verbatimModuleSyntax": false,
     "jsx": "react-jsx",
     "jsxImportSource": "react",
-    "verbatimModuleSyntax": true,
-        "plugins": [
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
+    "plugins": [
       {
         "name": "@astrojs/ts-plugin"
       },

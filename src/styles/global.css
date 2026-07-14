@@ -11,6 +11,8 @@
     --font-OI: "Sao Torpes", system-ui, sans-serif;
     --color-primary: var(--primary);
     --color-secondary: var(--secondary);
+    --color-accent: var(--accent);
+    --color-background: var(--bg-white);
     --color-white: var(--bg-white);
     --color-black: var(--bg-black);
     --ease-in-out-cubic: var(--ease-in-out-cubic);
@@ -59,6 +61,8 @@ svg {
 body {
     margin: 0 auto;
     background-color: var(--bg-white);
+    color: var(--text);
+    overflow-x: hidden;
 }
 
 /* iOS Safari: asegurar color detrás de la barra de estado cuando se usa
@@ -398,4 +402,9 @@ body {
     .animate-gradient {
         animation: none;
     }
+}
+
+/* Utilidad local para optimizar animaciones de chips */
+.will-change-smooth {
+    will-change: transform, opacity, background-color;
 }

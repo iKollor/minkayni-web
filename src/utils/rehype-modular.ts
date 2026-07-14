@@ -1,8 +1,8 @@
 // src/rehype/rehype-modular.ts
 import { selectAll } from "hast-util-select";
 import { visit } from "unist-util-visit";
-import type { Root, Element, Properties, Text, Parent } from "hast";
-
+import type { Root, Element, Text, Properties } from "hast";
+import type { Parent } from "unist";
 /* -------------------- tipos utilitarios -------------------- */
 type Dict<T = any> = Record<string, T>;
 const toArr = <T>(v?: T | T[]) => (v == null ? [] : Array.isArray(v) ? v : [v]);

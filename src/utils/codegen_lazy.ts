@@ -4,7 +4,7 @@ import { codegen } from "@graphql-codegen/core";
 import { loadSchema } from "@graphql-tools/load";
 import { UrlLoader } from "@graphql-tools/url-loader";
 import { mapSchema, MapperKind, pruneSchema } from "@graphql-tools/utils";
-import { GraphQLSchema, getNamedType, printSchema, parse, isListType, isNonNullType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLUnionType, GraphQLEnumType, GraphQLScalarType, GraphQLInterfaceType, GraphQLInputObjectType, type GraphQLNamedType, type GraphQLOutputType } from "graphql";
+import { GraphQLSchema, getNamedType, printSchema, parse, isListType, isNonNullType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLUnionType, GraphQLEnumType, GraphQLScalarType, GraphQLInterfaceType, type GraphQLNamedType, type GraphQLOutputType } from "graphql";
 import * as fs from "node:fs/promises";
 import * as validationPlugin from "graphql-codegen-typescript-validation-schema";
 

@@ -1,55 +1,55 @@
 ---
-// Import necessary scripts and styles
-/* import "../styles/Hamburguer.scss"; */
-
 import Reloj from "./Reloj.astro";
 
 import NavButton from "./NavButton.astro";
 import Button from "./Button.astro";
 
-import { Image } from "astro:assets";
-
-import isotipo from "../assets/SVG/ISOTIPO_WHITE.svg";
-import logo from "../assets/SVG/LOGO_WHITE.svg"; // reañadido
+import IsotipoIcon from "../assets/SVG/ISOTIPO_WHITE.svg";
+import LogoIcon from "../assets/SVG/LOGO.svg";
+import LogoIconWhite from "../assets/SVG/LOGO_WHITE.svg";
 import BurgerIcon from "./BurgerIcon.astro";
 import type { NavTree } from "../schemas/navigation";
+import type { LinkColor, UnderlineColor } from "./NavButton.astro";
 
 interface Props {
     buttons: NavTree;
-    
+    threshold?: number;
+    linkColor?: LinkColor; // clase extra opcional
+    underlineColor?: UnderlineColor; // color del underline
+    buttonClassName?: string; // clase extra opcional
+    enableMixBlend?: boolean;
 }
+// traer el pathname pero no existe en url aunque te devuelve toda la url
 
-const currentPath = typeof window !== "undefined" ? window.location.pathname : "/";
-
-const { buttons } = Astro.props;
+const { buttons, threshold, linkColor, underlineColor, buttonClassName = "", enableMixBlend = true } = Astro.props;
 ---
 
-<div class="fixed w-full h-[90px] overflow-hidden z-50 hidden" id="nav-container">
+<div class="fixed w-full h-[90px] overflow-hidden z-50 hidden" id="nav-container" data-threshold={threshold ?? 0.7} data-enable-mixblend={enableMixBlend}>
     <div class="mx-10 h-full">
         <div class="h-full w-full">
             <div id="nav-switcher" class="max-lg:-translate-y-[100px]">
                 <div id="navBase" class="flex items-center h-[90px] justify-between text-lg text-white font-medium">
-                    <a href="/" class="animate">
-                        <Image src={isotipo} alt="Isotipo" class="h-10 mr-4" />
+                    <a href="/" class="animate" aria-label="Ir al inicio">
+                        <IsotipoIcon class={`h-10 mr-10 ${linkColor}`} />
                     </a>
-                    <div class="flex items-center space-x-8 mix-blend-difference w-full animate">
-                        {buttons.map((button, index) => ((button.additionalFields?.style ?? "default") === "default" ? <NavButton button={button} index={index} /> : null))}
+                    <div class="flex items-center space-x-8 w-full animate">
+                        {buttons.map((button, index) => ((button.additionalFields?.style ?? "default") === "default" ? <NavButton button={button} index={index} linkColor={linkColor} underlineColor={underlineColor} /> : null))}
                     </div>
                     <Reloj />
                     {
                         buttons.map((button) => {
-                            if (button.additionalFields?.style === "cta") return <Button href={button.path} defaultText={button.title} hoverText={button.additionalFields?.ctaText as string} />;
+                            if (button.additionalFields?.style === "cta" && button.path) {
+                                return <Button href={button.path} defaultText={button.title} hoverText={String(button.additionalFields?.ctaText)} className={buttonClassName} />;
+                            }
+                            return null;
                         })
                     }
                 </div>
                 <div id="navScrolled" class="flex items-center h-[90px] justify-between">
-                    <a href="/">
-                        <picture class="block h-10">
-                            <source srcset={logo.src} class="h-10 w-auto" media="(min-width:1024px)" />
-                            <Image src={isotipo} alt="Logo" class="h-10 w-auto" loading="lazy" />
-                        </picture>
+                    <a href="/" aria-label="Ir al inicio">
+                        {!enableMixBlend ? <LogoIcon class={`h-10 w-auto ${linkColor}`} /> : <LogoIconWhite class={`h-10 w-auto ${linkColor}`} />}
                     </a>
-                    <BurgerIcon />
+                    <BurgerIcon color={linkColor} />
                 </div>
             </div>
         </div>
@@ -71,7 +71,7 @@ const { buttons } = Astro.props;
             const smoothContent = document.getElementById("smooth-content");
             const triggerEl = header || smoothContent || document.body;
 
-            const tween = gsap.to(navSwitcher, {
+            gsap.to(navSwitcher, {
                 y: -100,
                 ease: "none",
                 scrollTrigger: {
@@ -86,31 +86,41 @@ const { buttons } = Astro.props;
             requestAnimationFrame(() => ScrollTrigger.refresh());
         });
 
-        // Toggle mix-blend-difference al superar 70vh del documento
+        // Toggle mix-blend-difference al superar threshold del documento
         const container = document.getElementById("nav-container");
         if (!container) return;
 
-        const applyBlend = (active: boolean) => {
-            container.classList.toggle("mix-blend-difference", active);
-        };
+        // data-enable-mixblend controla si la funcionalidad está activa (por defecto true)
+        const enableAttr = container.dataset.enableMixblend;
+        const enableMixBlendFlag = enableAttr === undefined ? true : enableAttr === "true" || enableAttr === "1";
 
-        const updateBlend = () => {
-            const smoother = ScrollSmoother.get?.();
-            const y = smoother ? smoother.scrollTop() : window.scrollY;
-            const threshold = window.innerHeight * 0.7;
-            applyBlend(y > threshold);
-        };
+        if (!enableMixBlendFlag) {
+            // Si está deshabilitado, asegurarse de que no haya mix-blend y salir
+            container.classList.remove("mix-blend-difference");
+        } else {
+            const applyBlend = (active: boolean) => {
+                container.classList.toggle("mix-blend-difference", active);
+            };
 
-        // ScrollTrigger para actualizar en scroll/resize y con Smooth
-        ScrollTrigger.create({
-            start: 0,
-            end: () => ScrollTrigger.maxScroll(window) || document.documentElement.scrollHeight - window.innerHeight,
-            onUpdate: updateBlend,
-            onRefresh: updateBlend,
-        });
+            const updateBlend = () => {
+                const smoother = ScrollSmoother.get?.();
+                const y = smoother ? smoother.scrollTop() : window.scrollY;
+                const raw = container.dataset.threshold;
+                const thresholdVal = raw ? parseFloat(raw) * window.innerHeight : window.innerHeight * 0.7;
+                applyBlend(y > thresholdVal);
+            };
 
-        // Estado inicial
-        updateBlend();
+            // ScrollTrigger para actualizar en scroll/resize y con Smooth
+            ScrollTrigger.create({
+                start: 0,
+                end: () => ScrollTrigger.maxScroll(window) || document.documentElement.scrollHeight - window.innerHeight,
+                onUpdate: updateBlend,
+                onRefresh: updateBlend,
+            });
+
+            // Estado inicial
+            updateBlend();
+        }
     };
 
     if (document.readyState === "loading") {

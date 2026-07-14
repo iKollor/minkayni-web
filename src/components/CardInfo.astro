@@ -1,85 +1,38 @@
 ---
 import Image from "astro/components/Image.astro";
 import Statics from "./Statics.astro";
+import decoration from "../assets/historyimage.png";
 
-// Props del componente
 interface Props {
     isVisible: boolean;
     imageSrc?: ImageMetadata;
     buttonText?: string;
     text?: string;
+    href?: string;
 }
 
-const { isVisible, imageSrc, buttonText, text } = Astro.props;
-
-// Imagen por defecto si no se pasa ninguna
-import decoration from "../assets/historyimage.png";
+const { isVisible, imageSrc, buttonText, text, href = "/about#contacto" } = Astro.props;
 const displayImage = imageSrc || decoration;
 ---
 
-<div
-    class="flex flex-col lg:flex-row w-[90%] mx-auto bg-[#d5d5d5] p-6 sm:p-10 rounded-3xl gap-8 lg:gap-10"
->
-    <!-- Columna izquierda -->
-    <div
-        class={`flex flex-col w-full h-fit gap-5 lg:text-left ${isVisible ? "lg:w-[40%]" : "lg:w-[45%]"}`}
-    >
-        <h1
-            class="text-2xl sm:text-3xl font-bold"
-            style="color: var(--bg-indigo-bright);"
-        >
-            De la calle al reconocimiento
-        </h1>
-
-        <p class="text-sm sm:text-base leading-relaxed">
-            {text}
-        </p>
-
-        {
-            buttonText && (
-                <a class="self-center lg:self-start inline-block bg-amber-600 hover:bg-amber-700 text-white font-medium text-sm sm:text-base px-6 sm:px-8 py-2 sm:py-3 rounded-2xl shadow-md transition-colors duration-200">
-                    {buttonText}
-                </a>
-            )
-        }
+<div class="flex flex-col lg:flex-row w-[90%] mx-auto bg-[#d5d5d5] p-6 sm:p-10 rounded-3xl gap-8 lg:gap-10">
+    <div class={`flex flex-col w-full h-fit gap-5 lg:text-left ${isVisible ? "lg:w-[40%]" : "lg:w-[45%]"}`}>
+        <h1 class="text-2xl sm:text-3xl font-bold" style="color: var(--bg-indigo-bright);">De la calle al reconocimiento</h1>
+        <p class="text-sm sm:text-base leading-relaxed">{text}</p>
+        {buttonText && <a href={href} class="self-center lg:self-start inline-block bg-amber-600 hover:bg-amber-700 text-white font-medium text-sm sm:text-base px-6 sm:px-8 py-2 sm:py-3 rounded-2xl shadow-md transition-colors duration-200">{buttonText}</a>}
     </div>
-
-    <!-- Columna derecha -->
-    <div
-        class={`flex flex-col w-full gap-2 h-fit ${isVisible ? "lg:w-[60%]" : "lg:w-[55%]"}`}
-    >
+    <div class={`flex flex-col w-full gap-2 h-fit ${isVisible ? "lg:w-[60%]" : "lg:w-[55%]"}`}>
         <div class={`w-full ${isVisible ? "pl-4 sm:pl-6 md:pl-10" : ""}`}>
-            <div
-                class={`overflow-hidden rounded-3xl ${isVisible ? "h-30 sm:h-30 md:h-30 lg:h-30" : "h-64 sm:h-80 lg:h-96"}`}
-            >
-                <Image
-                    src={displayImage}
-                    alt="decoración"
-                    class="object-cover w-full h-full rounded-3xl"
-                />
+            <div class={`overflow-hidden rounded-3xl ${isVisible ? "h-30 sm:h-30 md:h-30 lg:h-30" : "h-64 sm:h-80 lg:h-96"}`}>
+                <Image src={displayImage} alt="decoración" class="object-cover w-full h-full rounded-3xl" />
             </div>
         </div>
-
-        {
-            isVisible && (
-                <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 w-full p-4 sm:p-6 rounded-2xl">
-                    <Statics
-                        tittle="+150"
-                        subtitle="Integrantes"
-                        text="Somos una comunidad en crecimiento constante con miembros apasionados."
-                    />
-                    <Statics
-                        tittle="+50"
-                        subtitle="Proyectos"
-                        text="Cada proyecto refleja nuestro compromiso con la creatividad y el impacto social."
-                    />
-                    <Statics
-                        tittle="+10"
-                        subtitle="Años de trayectoria"
-                        text="Una historia construida con esfuerzo, pasión y trabajo en equipo."
-                    />
-                </div>
-            )
-        }
+        {isVisible && (
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 w-full p-4 sm:p-6 rounded-2xl">
+                <Statics tittle="+150" subtitle="Integrantes" text="Somos una comunidad en crecimiento constante con miembros apasionados." />
+                <Statics tittle="+50" subtitle="Proyectos" text="Cada proyecto refleja nuestro compromiso con la creatividad y el impacto social." />
+                <Statics tittle="+10" subtitle="Años de trayectoria" text="Una historia construida con esfuerzo, pasión y trabajo en equipo." />
+            </div>
+        )}
     </div>
 </div>

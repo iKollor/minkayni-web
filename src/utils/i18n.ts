@@ -144,7 +144,7 @@ export function getData(src: any, a?: any, b?: any, c?: any): any {
     }
 
     // Con clave: si src nullish → devuelve defaults ([], "" o fallback)
-    if (src == null) return isArr ? [] : undefined;
+    if (src == null) return fallback !== undefined ? fallback : isArr ? [] : "";
 
     const project = (entry: any) => {
         const data = isEntryLike(entry) ? entry.data : entry;

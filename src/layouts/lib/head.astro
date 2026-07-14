@@ -1,0 +1,81 @@
+---
+import faviconSrc from "/public/favicon.png";
+import faviconSvgSrc from "/public/favicon.svg";
+import { getImage } from "astro:assets";
+interface Props {
+    title: string;
+    description?: string;
+}
+const appleTouchIcon = await getImage({
+    src: faviconSrc,
+    width: 180,
+    height: 180,
+    format: "png",
+});
+const faviconSvg = await getImage({ src: faviconSvgSrc, format: "svg" });
+const { title, description = "Fundación Minkayni transforma comunidades a través del arte, el liderazgo juvenil y la cultura de paz en Guayaquil." } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+        <link rel="icon" href="/favicon.ico" sizes="32x32" />
+        <link rel="icon" href={faviconSvg.src} type="image/svg+xml" />
+        <link rel="apple-touch-icon" href={appleTouchIcon.src} />
+        <meta name="generator" content={Astro.generator} />
+        <meta name="description" content={description} />
+        <!-- Preferencias de color del agente y color de UI del navegador (Safari iOS/desktop) -->
+        <meta name="color-scheme" content="light dark" />
+        <!-- Fallback general -->
+        <meta name="theme-color" content="#67b7f0" />
+        <!-- Variantes por esquema de color (iOS 15+ soporta theme-color) -->
+        <meta name="theme-color" media="(prefers-color-scheme: light)" content="#67b7f0" />
+        <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#67b7f0" />
+        <!-- PWA en iOS (al añadir a la pantalla de inicio) -->
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <!-- Recomendado: equivalente genérico para Android/Chrome -->
+        <meta name="mobile-web-app-capable" content="yes" />
+        <!-- black-translucent permite que el fondo de la página se vea detrás de la barra de estado -->
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <link rel="preconnect" href="https://strapi.minkayni.org" />
+        <link rel="preconnect" href="https://img.minkayni.org" />
+
+        <title>{title ? `${title} • Fundación Minkayni` : "Fundación Minkayni"}</title>
+        <style>
+            body[data-grain="off"] #grain-layer {
+                display: none;
+            }
+            html.no-scroll,
+            body.no-scroll {
+                overflow: hidden !important;
+                height: 100%;
+                overscroll-behavior: none;
+                touch-action: none;
+            }
+        </style>
+        <style is:global>
+            @media (max-width: 768px) {
+                nav.page-nav {
+                    display: none !important;
+                    visibility: hidden !important;
+                    pointer-events: none !important;
+                    height: 0 !important;
+                    overflow: hidden !important;
+                }
+            }
+            /* Ocultar COMPLETAMENTE el PageNavigation durante la intro */
+            html.no-scroll nav.page-nav,
+            body[data-intro="pending"] nav.page-nav {
+                opacity: 0 !important;
+                visibility: hidden !important;
+                pointer-events: none !important;
+                transform: translateY(16px);
+            }
+        </style>
+    </head>
+    <body class="bg-background text-black">
+        <slot />
+    </body>
+</html>

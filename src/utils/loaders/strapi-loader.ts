@@ -265,6 +265,7 @@ export function strapiLoader({ mode = "collection", rootField, client, depth = 2
                 return;
             }
 
+            try {
             const schema = await getSchema();
             const locales = await detectLocales(schema, logger);
             const { rootShape } = buildSelection(schema);
@@ -467,6 +468,10 @@ export function strapiLoader({ mode = "collection", rootField, client, depth = 2
             meta.set("lastSynced", String(Date.now()));
             if (!stored) ctx.logger.warn(`[${rootField}] collection: no trajo items (status=${status}).`);
             else ctx.logger.info(`[${rootField}] collection: stored ${stored} bundled documents.`);
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                logger.warn(`[${rootField}] No se pudo sincronizar con Strapi; se conserva la caché local. ${message}`);
+            }
         },
         schema() {
             throw new Error("Pasa tu schema Zod en defineCollection().");

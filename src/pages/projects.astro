@@ -1,0 +1,121 @@
+---
+import PageLayout from "@/layouts/PageLayout.astro";
+import ProjectExplorer, { type ProjectItem } from "@/components/projects/ProjectExplorer.astro";
+import BatucadaPhoto from "@/assets/FOTO_BATUCADA.webp";
+
+const projects: ProjectItem[] = [
+    {
+        id: "batucada-popular",
+        category: "musica",
+        categoryLabel: "Música comunitaria",
+        type: "Proyecto insignia",
+        title: "Batucada Popular",
+        summary: "El tambor abre la puerta a un proceso de formación artística, liderazgo juvenil, derechos y cultura de paz.",
+        detail: "Desde 2020, niñas, niños y adolescentes encuentran un espacio de expresión y pertenencia que hoy conecta a 11 sectores de Guayaquil.",
+        image: BatucadaPhoto,
+        href: "https://www.instagram.com/batucada_popular_/",
+        linkText: "Ver la Batucada en acción",
+        external: true,
+        accent: "accent",
+    },
+    {
+        id: "liderazgo-juvenil",
+        category: "liderazgo",
+        categoryLabel: "Liderazgo",
+        type: "Línea de acción",
+        title: "Liderazgo que se multiplica",
+        summary: "La formación artística se convierte en capacidad para organizar, acompañar y activar cambios dentro del barrio.",
+        detail: "Más de 40 líderes juveniles comparten lo aprendido y sostienen procesos con nuevas generaciones.",
+        href: "#metodologia",
+        linkText: "Conoce la metodología",
+        accent: "secondary",
+    },
+    {
+        id: "artes-comunitarias",
+        category: "artes",
+        categoryLabel: "Artes",
+        type: "Línea de acción",
+        title: "Artes para convivir",
+        summary: "Música, danza, teatro y creación colectiva ayudan a nombrar lo que ocurre y a imaginar otras posibilidades.",
+        detail: "Cada encuentro prioriza la escucha, la participación y el derecho de las juventudes a ocupar el espacio público con seguridad.",
+        href: "#metodologia",
+        linkText: "Descubre cómo trabajamos",
+        accent: "primary",
+    },
+    {
+        id: "redes-comunitarias",
+        category: "comunidad",
+        categoryLabel: "Comunidad",
+        type: "Línea de acción",
+        title: "Barrios que cuidan",
+        summary: "El proceso se construye con familias, liderazgos locales, organizaciones y aliados que conocen el territorio.",
+        detail: "La red permite sostener espacios seguros y ampliar las oportunidades disponibles para cada participante.",
+        href: "#alianzas",
+        linkText: "Conoce el valor de las alianzas",
+        accent: "accent",
+    },
+];
+---
+
+<PageLayout title="Proyectos" linkColor="text-white" navbarThreshold={0.45}>
+    <section class="mx-auto w-[90%] max-w-[1280px] py-20 sm:py-28" aria-labelledby="projects-intro-title">
+        <div class="grid items-end gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+            <div>
+                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">Arte que se organiza</p>
+                <h2 id="projects-intro-title" class="font-display text-5xl font-black leading-[0.92] tracking-tight text-black sm:text-7xl lg:text-8xl">
+                    Un proyecto.<br /><span class="text-secondary">Muchas formas</span> de cuidar.
+                </h2>
+            </div>
+            <div class="max-w-[62ch] text-lg leading-relaxed text-black/70 lg:pb-2 lg:text-xl">
+                <p>Batucada Popular es el corazón de nuestro trabajo. A su alrededor crecen procesos de liderazgo, convivencia y articulación comunitaria que convierten el arte en una herramienta de protección.</p>
+            </div>
+        </div>
+    </section>
+
+    <ProjectExplorer {projects} />
+
+    <section id="metodologia" class="mx-auto w-[90%] max-w-[1280px] py-24 sm:py-32" aria-labelledby="method-title">
+        <div class="mb-12 max-w-[760px]">
+            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">Nuestra metodología</p>
+            <h2 id="method-title" class="font-display text-5xl font-black leading-none text-primary sm:text-7xl">El tambor convoca. La comunidad sostiene.</h2>
+        </div>
+
+        <ol class="grid gap-5 md:grid-cols-3">
+            <li class="rounded-[2.25rem] bg-primary p-8 text-white sm:p-10">
+                <span class="mb-12 block font-display text-6xl font-black text-secondary">01</span>
+                <h3 class="mb-4 font-display text-3xl font-bold">Llegar y escuchar</h3>
+                <p class="leading-relaxed text-white/75">El proceso parte de las realidades, necesidades y capacidades que ya existen en cada barrio.</p>
+            </li>
+            <li class="rounded-[2.25rem] bg-secondary p-8 text-black sm:p-10 md:translate-y-8">
+                <span class="mb-12 block font-display text-6xl font-black text-primary">02</span>
+                <h3 class="mb-4 font-display text-3xl font-bold">Crear y aprender</h3>
+                <p class="leading-relaxed text-black/65">La práctica artística se combina con derechos, cultura de paz, disciplina colectiva y liderazgo juvenil.</p>
+            </li>
+            <li class="rounded-[2.25rem] bg-accent p-8 text-black sm:p-10 md:translate-y-16">
+                <span class="mb-12 block font-display text-6xl font-black text-primary">03</span>
+                <h3 class="mb-4 font-display text-3xl font-bold">Compartir y multiplicar</h3>
+                <p class="leading-relaxed text-black/65">Presentaciones, encuentros y nuevos liderazgos llevan lo aprendido a familias y espacios comunitarios.</p>
+            </li>
+        </ol>
+    </section>
+
+    <section id="alianzas" class="mx-auto mb-24 mt-16 w-[94%] max-w-[1440px] overflow-hidden rounded-[2.75rem] bg-[linear-gradient(130deg,var(--primary),#410063)] px-6 py-16 text-white sm:px-12 lg:rounded-[5rem] lg:px-20 lg:py-24" aria-labelledby="alliances-title">
+        <div class="grid items-center gap-10 lg:grid-cols-[1fr_auto]">
+            <div class="max-w-[760px]">
+                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">Alianzas que amplifican</p>
+                <h2 id="alliances-title" class="font-display text-5xl font-black leading-[0.95] sm:text-7xl">Hagamos que el ritmo llegue más lejos.</h2>
+                <p class="mt-6 max-w-[58ch] text-lg leading-relaxed text-white/75">Cada alianza puede abrir un nuevo espacio, sostener un proceso formativo o conectar a las juventudes con oportunidades concretas.</p>
+            </div>
+            <a href="https://www.instagram.com/batucada_popular_/" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-14 items-center justify-center rounded-full bg-accent px-7 py-4 text-center font-display text-lg font-bold text-black transition hover:-translate-y-1 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
+                Conversemos por Instagram
+            </a>
+        </div>
+
+        <p class="mt-12 text-sm text-white/55">
+            Cifras actualizadas a 2026 según
+            <a class="underline underline-offset-4 hover:text-secondary" href="https://www.vistazo.com/actualidad/nacional/2026-03-08-historia-mujer-convirtio-tambores-refugio-jovenes-violencia-guayaquil-GG10707818" target="_blank" rel="noopener noreferrer">Vistazo</a>
+            y contexto territorial documentado por
+            <a class="underline underline-offset-4 hover:text-secondary" href="https://www.eluniverso.com/noticias/informes/con-la-batucada-despejo-la-mente-y-me-alejo-de-robar-plan-de-serpaz-busca-que-los-jovenes-no-sean-reclutados-por-las-bandas-nota/" target="_blank" rel="noopener noreferrer">El Universo</a>.
+        </p>
+    </section>
+</PageLayout>

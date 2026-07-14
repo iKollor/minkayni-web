@@ -7,12 +7,12 @@ import { gsap, ScrollTrigger } from "../../scripts/main";
         vib = (ms: number) => {
             try {
                 navigator.vibrate?.(ms);
-            } catch {}
+            } catch { }
         };
     const section = $(".team-hscroll");
     if (!section || (section as any)._init) return;
     (section as any)._init = true;
-    const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || /iPad|iPhone|iPod/.test(navigator.platform || "") || (/Mac/.test(navigator.platform || "") && "ontouchend" in document),
+    const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (/Mac/.test(navigator.userAgent) && "ontouchend" in document),
         isMobile = () => matchMedia("(max-width: 767px)").matches;
     const startIdx = +(section.dataset.start || 0),
         cardsBox = $(".cards", section)!,
@@ -480,7 +480,7 @@ import { gsap, ScrollTrigger } from "../../scripts/main";
                     const seq = ordered(),
                         fadeTargets = [...seq, ...uiEls];
                     gsap.killTweensOf(fadeTargets);
-                    gsap.to(fadeTargets, { opacity: 0, y: (i, el) => (el.classList?.contains("dot") ? 18 : el.classList?.contains("card") ? 0 : 14), duration: 0.38, ease: "power2.inOut", stagger: { each: 0.04, from: "end" }, onComplete: () => setInit() });
+                    gsap.to(fadeTargets, { opacity: 0, y: (_i, el) => (el.classList?.contains("dot") ? 18 : el.classList?.contains("card") ? 0 : 14), duration: 0.38, ease: "power2.inOut", stagger: { each: 0.04, from: "end" }, onComplete: () => setInit() });
                 },
             });
         } else {

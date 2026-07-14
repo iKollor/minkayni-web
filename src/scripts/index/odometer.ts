@@ -58,13 +58,23 @@ const animateIncrement = (newValue: number): void => {
     rebuildIfLengthChanged(newValue);
     const c = document.getElementById("odometer");
     if (!c) return;
+
     const newStr = String(newValue);
-    const oldStr = [...c.querySelectorAll(".digit .current")].map((s) => s.textContent || "").join("");
+    const currents = Array.from(
+        c.querySelectorAll<HTMLElement>(".digit .current")
+    );
+    const oldStr = currents.map((s) => s.textContent || "").join("");
+
     for (let i = newStr.length - 1; i >= 0; i--) {
-        if (newStr[i] !== oldStr[i]) animateDigitSlide(c.children[i] as HTMLElement, newStr[i]);
-        else break;
+        if (newStr[i] !== oldStr[i]) {
+            const wrap = c.children[i] as HTMLElement | undefined;
+            if (wrap) animateDigitSlide(wrap, newStr[i]);
+        } else {
+            break;
+        }
     }
 };
+
 
 export const startOdometer = (): void => {
     const c = document.getElementById("odometer") as (HTMLElement & { _started?: boolean }) | null;

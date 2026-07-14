@@ -142,8 +142,8 @@ export const init = () => {
         }
 
         const tl = gsap.timeline({
-            repeat: config.repeat,
-            paused: config.paused,
+            repeat: config.repeat ?? 0,
+            paused: !!config.paused,
             defaults: { ease: "none" },
             onReverseComplete: () => {
                 tl.totalTime(tl.rawTime() + tl.duration() * 100);

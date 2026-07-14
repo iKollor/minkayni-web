@@ -1,0 +1,71 @@
+---
+import { Image } from "astro:assets";
+import paperTexture from "../assets/overlay/noise.webm";
+import noisePoster from "../assets/overlay/noise.gif";
+---
+
+<div id="grain-layer" aria-hidden="true" class="fixed inset-0 z-1000 pointer-events-none">
+    <video
+        id="grain-video"
+        class="w-full h-dvh object-cover mix-blend-soft-light opacity-20 contrast-125 brightness-95 will-change-[opacity] dark:mix-blend-overlay dark:opacity-20"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="metadata"
+        poster={noisePoster.src}
+        style="visibility:hidden;"
+    >
+        <source src={paperTexture} type="video/webm" />
+    </video>
+    <Image src={noisePoster} alt="" class="gif-noise fixed top-0 left-0 w-screen h-screen object-cover z-1000 mix-blend-overlay pointer-events-none object-center opacity-5" />
+</div>
+
+<script>
+    const initGrain = () => {
+        const root = document.getElementById("grain-layer");
+        const video = document.getElementById("grain-video");
+        if (!root || root.dataset.ready === "true" || !(video instanceof HTMLVideoElement)) return;
+        root.dataset.ready = "true";
+
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            document.body.dataset.grain = "off";
+            return;
+        }
+
+        let played = false;
+        const markPlaying = () => {
+            played = true;
+            document.documentElement.classList.remove("grain-gif-fallback");
+            video.style.visibility = "visible";
+        };
+        const play = () => video.play().then(markPlaying).catch(() => undefined);
+
+        video.addEventListener("playing", markPlaying, { once: true });
+        play();
+
+        const retry = () => {
+            if (!played) play();
+        };
+        ["pointerdown", "keydown"].forEach((eventName) => window.addEventListener(eventName, retry, { passive: true, once: true }));
+
+        const fallbackTimer = window.setTimeout(() => {
+            if (!played) document.documentElement.classList.add("grain-gif-fallback");
+        }, 3000);
+
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") retry();
+            else video.pause();
+        });
+        window.addEventListener("pagehide", () => window.clearTimeout(fallbackTimer), { once: true });
+    };
+
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initGrain, { once: true });
+    else initGrain();
+</script>
+
+<style is:global>
+    .grain-gif-fallback #grain-layer .gif-noise {
+        opacity: 0.1 !important;
+    }
+</style>

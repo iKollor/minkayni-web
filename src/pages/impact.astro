@@ -7,105 +7,77 @@ import Image from "astro/components/Image.astro";
 import flor from "../assets/SVG/misc/flor.svg";
 import MaskFlor from "../components/MaskFlor.astro";
 import foto from "../assets/FOTO_BATUCADA.webp";
-
 ---
 
-<PageLayout title="" section_title="Impacto">
-    <!-- Sección CardInfo -->
+<PageLayout title="Impacto" navbarThreshold={0.5}>
     <section class="w-screen h-fit flex flex-col mt-30 mb-5 items-center">
-        <CardInfo isVisible={true} buttonText="Conversemos" text="lorem" />
+        <CardInfo
+            isVisible={true}
+            buttonText="Conversemos"
+            href="/about#contacto"
+            text="Batucada Popular convierte la música en un espacio seguro de formación, liderazgo y convivencia. El proceso acompaña a 300 jóvenes en 11 sectores de Guayaquil y fortalece una red de más de 40 líderes juveniles."
+        />
     </section>
 
-    <!--Sección Slider -->
     <section class="w-screen h-fit flex flex-col mt-10 mb-5 sm:mb-20 items-center">
         <Slider
             slides={[
                 {
                     isVisible: false,
                     buttonText: "Conoce más",
-                    text: "Nuestra historia comienza en las calles de la ciudad, donde un grupo de jóvenes decidió hacer la diferencia...",
+                    href: "/projects#batucada-popular",
+                    text: "El tambor convoca y abre una primera experiencia de pertenencia. Desde ahí comienza un proceso sostenido de escucha, disciplina y creación colectiva.",
                 },
                 {
                     isVisible: false,
-                    buttonText: "Ver más",
-                    text: "Un camino lleno de desafíos y aprendizajes que nos ha llevado a crecer como comunidad...",
+                    buttonText: "Ver metodología",
+                    href: "/projects#metodologia",
+                    text: "La práctica artística se combina con formación en derechos, cultura de paz y liderazgo para que cada participante reconozca su capacidad de actuar.",
                 },
                 {
                     isVisible: false,
                     buttonText: "Únete",
-                    text: "El futuro que construimos juntos, con pasión, dedicación y el compromiso de transformar vidas...",
+                    href: "/about#contacto",
+                    text: "Familias, liderazgos barriales y organizaciones sostienen los espacios seguros y ayudan a que las oportunidades lleguen a nuevas comunidades.",
                 },
             ]}
             interval={4000}
         />
     </section>
 
-    <!-- Sección Cards en fila -->
-    <section
-        class="w-screen h-fit flex flex-col md:flex-row flex-wrap gap-8 justify-center items-center mt-30 mb-2 px-4"
-    >
+    <section class="w-screen h-fit flex flex-col md:flex-row flex-wrap gap-8 justify-center items-center mt-30 mb-2 px-4">
         <Card
-            tittle="lorem asfasfasfasfasf"
-            text="Describe cómo la Batucada Popular llegó a involucrar a más de 150 niñas y adolescentes, gracias al apoyo de la Iniciativa Global contra el Crimen Organizado."
-            buttontext="Más Información"
+            tittle="Expresión y autoestima"
+            text="La práctica artística ofrece un lenguaje para reconocer emociones, desarrollar confianza y descubrir capacidades propias."
+            buttontext="Conoce el proyecto"
+            href="/projects#batucada-popular"
         />
         <Card
-            tittle="lorem asfasfasfasfasf"
-            text="Describe cómo la Batucada Popular llegó a involucrar a más de 150 niñas y adolescentes, gracias al apoyo de la Iniciativa Global contra el Crimen Organizado."
-            buttontext="Más Información"
+            tittle="Liderazgo juvenil"
+            text="Las y los participantes asumen responsabilidades, acompañan a sus pares y convierten la experiencia en acción colectiva."
+            buttontext="Nuestra metodología"
+            href="/projects#metodologia"
         />
         <Card
-            tittle="lorem asfasfasfasfasf"
-            text="Describe cómo la Batucada Popular llegó a involucrar a más de 150 niñas y adolescentes, gracias al apoyo de la Iniciativa Global contra el Crimen Organizado."
-            buttontext="Más Información"
+            tittle="Redes que protegen"
+            text="Familias, liderazgos locales y aliados se articulan para sostener oportunidades y espacios de encuentro en el territorio."
+            buttontext="Hagamos minka"
+            href="/about#contacto"
         />
     </section>
 
-    <!-- Sección Informe de Avance -->
-    <section
-        class="w-screen h-fit flex flex-col md:flex-row items-center justify-center mt-30 px-6 md:px-12 mb-50 sm:mb-100"
-    >
-        <!-- Imagen -->
-        <div
-            class="w-full md:w-1/2 min-h-[25vw] flex justify-center items-center relative z-20"
-        >
-            <!-- Flor de fondo -->
-            <div
-                class="absolute bottom-30 left-10 sm:bottom-70 sm:left-20 w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 z-0"
-            >
-                <Image
-                    src={flor}
-                    alt="flor decorativa"
-                    class="object-cover w-full h-full"
-                />
+    <section class="w-screen h-fit flex flex-col md:flex-row items-center justify-center mt-30 px-6 md:px-12 mb-50 sm:mb-100">
+        <div class="w-full md:w-1/2 min-h-[25vw] flex justify-center items-center relative z-20">
+            <div class="absolute bottom-30 left-10 sm:bottom-70 sm:left-20 w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 z-0">
+                <Image src={flor} alt="flor decorativa" class="object-cover w-full h-full" />
             </div>
-
-            <!-- Imagen principal con máscara -->
-            <MaskFlor
-                src={foto}
-                alt="Flor 1"
-                className="w-56 h-56  shadow-lg z-10 sm:w-64 sm:h-64 md:w-120 md:h-120 lg:w-120"
-            />
+            <MaskFlor src={foto} alt="Integrantes de Batucada Popular" className="w-56 h-56 shadow-lg z-10 sm:w-64 sm:h-64 md:w-120 md:h-120 lg:w-120" />
         </div>
 
-        <!-- Contenedor de texto -->
-        <div
-            class="flex flex-col gap-6 rounded-3xl bg-(--bg-indigo-bright) text-(--bg-white) px-6 sm:px-8 md:px-12 lg:px-16 py-8 sm:py-10 md:py-12 lg:py-16 md:-translate-x-10 lg:-translate-x-40 max-w-2xl shadow-lg sm:translate-y-0 -translate-y-8"
-        >
-            <h1 class="text-3xl sm:text-4xl md:text-5xl text-center font-semibold">
-                Informe de Avance
-            </h1>
+        <div class="flex flex-col gap-6 rounded-3xl bg-(--bg-indigo-bright) text-(--bg-white) px-6 sm:px-8 md:px-12 lg:px-16 py-8 sm:py-10 md:py-12 lg:py-16 md:-translate-x-10 lg:-translate-x-40 max-w-2xl shadow-lg sm:translate-y-0 -translate-y-8">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl text-center font-semibold">Informe de avance</h1>
             <p class="text-sm sm:text-base md:text-lg leading-relaxed text-justify">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Mollitia,
-                magni hic deserunt veniam rem vero officia quasi possimus labore
-                illum ad iusto assumenda architecto sed ab ratione ut eligendi
-                eum! Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                Mollitia, magni hic deserunt veniam rem vero officia quasi possimus
-                labore illum ad iusto assumenda architecto sed ab ratione ut
-                eligendi eum! Lorem ipsum dolor sit amet consectetur adipisicing
-                elit. Mollitia, magni hic deserunt veniam rem vero officia quasi
-                possimus labore illum ad iusto assumenda architecto sed ab ratione
-                ut eligendi eum!
+                Medimos el impacto observando la permanencia, la participación, los liderazgos que nacen y las redes comunitarias que se fortalecen. Desde 2020, Batucada Popular ha crecido hasta vincular a 300 jóvenes y más de 40 líderes en 11 sectores de Guayaquil. Los reportajes publicados en 2025 y 2026 también documentan el papel del arte en la prevención del reclutamiento y la construcción de comunidades resilientes.
             </p>
         </div>
     </section>
