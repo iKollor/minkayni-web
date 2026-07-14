@@ -14,12 +14,13 @@ import { getEntry } from "astro:content";
 
 import { getData } from "../utils/i18n";
 import Projects from "../components/index/Projects.astro";
+import { fallbackLegend } from "../data/site";
 
 const homepage = await getEntry("homepage", "homepage");
 
-const testimonials = getData(homepage, "Testimonials");
-const teams = getData(homepage, "Teams");
-const legend = getData(homepage, "legend");
+const testimonials = getData(homepage, "Testimonials", "es", []);
+const teams = getData(homepage, "Teams", "es", []);
+const legend = getData(homepage, "legend", "es", fallbackLegend);
 ---
 
 <MainLayout title="">
@@ -98,11 +99,36 @@ const legend = getData(homepage, "legend");
             <script src="../scripts/moments.ts"></script>
         </div>
         <section id="testimonials">
-            <Testimonials testimonials={testimonials} />
+            {
+                testimonials.length > 0 ? (
+                    <Testimonials testimonials={testimonials} />
+                ) : (
+                    <div class="mx-auto w-[90%] max-w-[1200px] py-24 sm:py-32">
+                        <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">Historias de cambio</p>
+                        <blockquote class="rounded-[2.75rem] bg-secondary p-8 text-black sm:p-14 lg:rounded-[5rem] lg:p-20">
+                            <p class="max-w-[32ch] font-display text-4xl font-black leading-[1.05] sm:text-6xl">“Aprendí a tocar el tambor, a manejar mejor mi carácter y encontré buenos amigos.”</p>
+                            <footer class="mt-8 text-lg font-bold">Daniel · Integrante de Batucada Popular</footer>
+                        </blockquote>
+                    </div>
+                )
+            }
         </section>
 
         <section id="about-us">
-            <Nosotros data={teams} />
+            {
+                teams.length > 0 ? (
+                    <Nosotros data={teams} />
+                ) : (
+                    <div class="mx-auto grid w-[90%] max-w-[1200px] items-center gap-8 py-24 sm:py-32 lg:grid-cols-[1fr_auto]">
+                        <div>
+                            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">Quiénes somos</p>
+                            <h2 class="max-w-[14ch] font-display text-5xl font-black leading-[0.92] text-primary sm:text-7xl">Un equipo que cree en el trabajo compartido.</h2>
+                            <p class="mt-6 max-w-[54ch] text-lg leading-relaxed text-black/65">Educación, arte y organización comunitaria se encuentran para acompañar a las juventudes y sostener procesos que nacen desde el territorio.</p>
+                        </div>
+                        <a href="/about" class="inline-flex min-h-14 items-center justify-center rounded-full bg-primary px-7 py-4 font-display text-lg font-bold text-white transition hover:-translate-y-1 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">Conoce a Minkayni</a>
+                    </div>
+                )
+            }
         </section>
         <section id="projects">
             <Projects />

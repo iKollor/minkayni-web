@@ -11,6 +11,7 @@ import Menu from "../components/Menu.astro";
 import PageNavigation from "../components/index/PageNavigation.astro";
 import { getEntry } from "astro:content";
 import { getData } from "../utils/i18n";
+import { fallbackFooter, fallbackNavigation } from "../data/site";
 
 interface Props {
     title: string;
@@ -25,11 +26,15 @@ const appleTouchIcon = await getImage({
 
 const faviconSvg = await getImage({ src: faviconSvgSrc, format: "svg" });
 
-const navHeader = getData(
-    await getEntry("navigationHeader", "navigation:header:es"),
+const navigationEntry = await getEntry(
+    "navigationHeader",
+    "navigation:header:es",
 );
-
-const footer = getData(await getEntry("footer", "footer"), "es");
+const footerEntry = await getEntry("footer", "footer");
+const navHeader = navigationEntry
+    ? getData(navigationEntry)
+    : fallbackNavigation;
+const footer = footerEntry ? getData(footerEntry, "es") : fallbackFooter;
 
 const { title } = Astro.props;
 ---
