@@ -7,7 +7,6 @@ import Moments from "../components/index/Moments.astro";
 import Testimonials from "../components/index/Testimonials.astro";
 import Nosotros from "../components/index/Nosotros.astro";
 import IntroVideo from "../components/IntroVideo.astro";
-import { BubbleBackground } from "@/components/animate-ui/components/backgrounds/bubble";
 
 import { Markdown } from "@astropub/md";
 
@@ -15,13 +14,12 @@ import { getEntry } from "astro:content";
 
 import { getData } from "../utils/i18n";
 import Projects from "../components/index/Projects.astro";
-import { fallbackLegend } from "../data/site";
 
 const homepage = await getEntry("homepage", "homepage");
 
-const testimonials = getData(homepage, "Testimonials", "es", []);
-const teams = getData(homepage, "Teams", "es", []);
-const legend = getData(homepage, "legend", "es", fallbackLegend);
+const testimonials = getData(homepage, "Testimonials");
+const teams = getData(homepage, "Teams");
+const legend = getData(homepage, "legend");
 ---
 
 <MainLayout title="">
@@ -39,6 +37,8 @@ const legend = getData(homepage, "legend", "es", fallbackLegend);
                 clip-path: none !important;
             }
         }
+
+        /* Nota: estilos del intro movidos a `src/components/IntroVideo.astro` */
 
         #odometer {
             overflow: visible;
@@ -77,23 +77,9 @@ const legend = getData(homepage, "legend", "es", fallbackLegend);
     <div id="app-content" class="opacity-0 transition-opacity duration-500">
         <header>
             <div class="header__container w-full relative">
-                <div id="hero-background" class="bg__container absolute top-0 left-0 w-full h-[50vh] md:h-screen z-20 bg-[var(--primary)]">
-                    <BubbleBackground
-                        interactive={true}
-                        colors={{
-                            first: "140,100,255",
-                            second: "18,113,255",
-                            third: "140,100,255",
-                            fourth: "63,169,245",
-                            fifth: "140,100,255",
-                            sixth: "63,169,245",
-                        }}
-                        client:load
-                    >
-                        <div class="z-10 relative flex justify-center items-center h-full">
-                            <Image class="logo pointer-events-none w-[70svw] sm:w-[50svw] md:w-[40svw] mb-2 mr-[2px]" src={Logo} alt="Logo" />
-                        </div>
-                    </BubbleBackground>
+                <div id="hero-background" class="bg__container absolute top-0 left-0 w-full h-[50vh] md:h-screen z-20 bg-[var(--primary)] gradient-custom animate-gradient"></div>
+                <div class="bg__container__logo absolute inset-0 flex items-center justify-center h-[50svh] md:h-full z-30 select-none">
+                    <Image class="logo pointer-events-none w-[70svw] sm:w-[50svw] md:w-[40svw] mb-2 mr-[2px]" src={Logo} alt="Logo" />
                 </div>
                 <div class="bottom__section__container w-full md:w-[90%] min-h-[100svh] flex flex-col-reverse md:flex-row mx-auto pt-[70svh] justify-end items-center">
                     <div class="prose w-full md:w-1/2 h-[80%] text-[color:var(--text)] opacity-80 text-lg md:text-base max-w-[90%] md:max-w-[50%] text-center md:text-left leading-relaxed pt-5 md:pt-0" id="foundation-text">
@@ -112,36 +98,11 @@ const legend = getData(homepage, "legend", "es", fallbackLegend);
             <script src="../scripts/moments.ts"></script>
         </div>
         <section id="testimonials">
-            {
-                testimonials.length > 0 ? (
-                    <Testimonials testimonials={testimonials} />
-                ) : (
-                    <div class="mx-auto w-[90%] max-w-[1200px] py-24 sm:py-32">
-                        <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">Historias de cambio</p>
-                        <blockquote class="rounded-[2.75rem] bg-secondary p-8 text-black sm:p-14 lg:rounded-[5rem] lg:p-20">
-                            <p class="max-w-[32ch] font-display text-4xl font-black leading-[1.05] sm:text-6xl">“Aprendí a tocar el tambor, a manejar mejor mi carácter y encontré buenos amigos.”</p>
-                            <footer class="mt-8 text-lg font-bold">Daniel · Integrante de Batucada Popular</footer>
-                        </blockquote>
-                    </div>
-                )
-            }
+            <Testimonials testimonials={testimonials} />
         </section>
 
         <section id="about-us">
-            {
-                teams.length > 0 ? (
-                    <Nosotros data={teams} />
-                ) : (
-                    <div class="mx-auto grid w-[90%] max-w-[1200px] items-center gap-8 py-24 sm:py-32 lg:grid-cols-[1fr_auto]">
-                        <div>
-                            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">Quiénes somos</p>
-                            <h2 class="max-w-[14ch] font-display text-5xl font-black leading-[0.92] text-primary sm:text-7xl">Un equipo que cree en el trabajo compartido.</h2>
-                            <p class="mt-6 max-w-[54ch] text-lg leading-relaxed text-black/65">Educación, arte y organización comunitaria se encuentran para acompañar a las juventudes y sostener procesos que nacen desde el territorio.</p>
-                        </div>
-                        <a href="/about" class="inline-flex min-h-14 items-center justify-center rounded-full bg-primary px-7 py-4 font-display text-lg font-bold text-white transition hover:-translate-y-1 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">Conoce a Minkayni</a>
-                    </div>
-                )
-            }
+            <Nosotros data={teams} />
         </section>
         <section id="projects">
             <Projects />
@@ -149,8 +110,28 @@ const legend = getData(homepage, "legend", "es", fallbackLegend);
     </div>
     <script>
         import { init } from "../scripts/index/init.ts";
+        import { makeInteractiveGradient } from "../scripts/interactive-gradient.ts";
+        const startGradient = () => {
+            const heroBackground = document.getElementById("hero-background");
+            if (heroBackground) {
+                makeInteractiveGradient(heroBackground, {
+                    wander: 6,
+                    maxFps: 36, // menor FPS efectivo para bajar CPU
+                    driftSpeed: 0.06,
+                    blobs: [1, 2, 3], // simplifica capas animadas (evita parpadeo)
+                });
+            }
+        };
 
+        // Inicia la intro y difiere el gradiente hasta que termine
         init();
+        window.addEventListener("intro:finished", startGradient, { once: true });
+        if (document.readyState === "complete" || document.readyState === "interactive") {
+            // fallback por si no hay intro (salto inmediato)
+            setTimeout(startGradient, 1500);
+        } else {
+            document.addEventListener("DOMContentLoaded", () => setTimeout(startGradient, 1500), { once: true });
+        }
     </script>
 </MainLayout>
 
