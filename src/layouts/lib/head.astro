@@ -14,6 +14,7 @@ const appleTouchIcon = await getImage({
 });
 const faviconSvg = await getImage({ src: faviconSvgSrc, format: "svg" });
 const { title, description = "Fundación Minkayni transforma comunidades a través del arte, el liderazgo juvenil y la cultura de paz en Guayaquil." } = Astro.props;
+const strapiOrigin = new URL(import.meta.env.STRAPI_URL).origin;
 ---
 
 <!doctype html>
@@ -39,8 +40,7 @@ const { title, description = "Fundación Minkayni transforma comunidades a trav�
         <meta name="mobile-web-app-capable" content="yes" />
         <!-- black-translucent permite que el fondo de la página se vea detrás de la barra de estado -->
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <link rel="preconnect" href="https://strapi.minkayni.org" />
-        <link rel="preconnect" href="https://img.minkayni.org" />
+        <link rel="preconnect" href={strapiOrigin} />
 
         <title>{title ? `${title} • Fundación Minkayni` : "Fundación Minkayni"}</title>
         <style>

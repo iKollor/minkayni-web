@@ -1,22 +1,22 @@
 ---
+import { strapiMediaUrl } from "../utils/media-url";
+
 interface Props {
     src: string;
     poster: string;
-    alt: string;
-    loop: boolean;
+    alt?: string;
+    loop?: boolean;
 }
 
-const {
-    src, // p.ej: "https://strapi.minkayni.org/api/media/uploads/mi-reel.mp4"
-    poster, // p.ej: "https://img.minkayni.org/<firma>/fit-in/800x0/filters:format(webp)/uploads/posters/mi-reel.jpg"
-    alt = "Reel", // descripción accesible
-    loop = true,
-} = Astro.props;
+const { src, poster, alt = "Reel", loop = true } = Astro.props;
+const STRAPI_URL = import.meta.env.STRAPI_URL;
+const videoSrc = strapiMediaUrl(src, STRAPI_URL);
+const posterSrc = strapiMediaUrl(poster, STRAPI_URL, 800);
 ---
 
-<figure class="reel" data-src={src}>
-    <img class="reel-poster" src={poster} alt={alt} loading="lazy" decoding="async" />
-    <video class="reel-video" muted playsinline webkit-playsinline preload="metadata" {loop} poster={poster} aria-label={alt}></video>
+<figure class="reel" data-src={videoSrc}>
+    <img class="reel-poster" src={posterSrc} alt={alt} width="800" height="1422" loading="lazy" decoding="async" />
+    <video class="reel-video" muted playsinline webkit-playsinline preload="metadata" {loop} poster={posterSrc} aria-label={alt}></video>
 
     <button class="reel-play" aria-label="Reproducir video" title="Reproducir">▶</button>
     <button class="reel-unmute" aria-label="Activar sonido" title="Activar sonido">🔊</button>

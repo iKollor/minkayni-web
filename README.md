@@ -155,6 +155,28 @@ if (reduce) { /* set() estado final y return */ }
 - El sitio es estático (output en `dist/`).
 - Asegúrate de definir `STRAPI_URL` y `STRAPI_TOKEN` en el entorno de build del proveedor (Vercel, Netlify, etc.), o el build fallará por la validación de Strapi.
 
+## Medios de Strapi
+
+El frontend permanece estático en Astro 5. Los medios remotos se generan como
+`<STRAPI_URL>/media/<key>`; Strapi los reenvía internamente a `s3-media-edge`.
+El navegador no conoce `CDN_BASE_URL`, Garage ni `IMAGOR_SECRET`.
+
+Variables de build del frontend en Coolify:
+
+```env
+STRAPI_URL=https://strapi.minkayni.org
+STRAPI_TOKEN=<token de solo lectura>
+```
+
+El CMS, no este frontend, debe tener como variable de runtime:
+
+```env
+CDN_BASE_URL=https://img.minkayni.org
+```
+
+Después de cambiar estas variables se requiere un redeploy completo, porque el
+contenido de Strapi se obtiene durante el build estático.
+
 ## Solución de problemas
 
 - Build/Dev falla con “Strapi connection is invalid”:

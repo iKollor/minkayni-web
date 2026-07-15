@@ -1,5 +1,5 @@
 ---
-import { Image } from "astro:assets";
+import { strapiMediaSrcSet, strapiMediaUrl } from "../utils/media-url";
 
 export interface Props {
     images: ReadonlyArray<{ src: string }>;
@@ -7,6 +7,10 @@ export interface Props {
 }
 
 const STRAPI_URL = import.meta.env.STRAPI_URL;
+const partnerMedia = (src: string) => ({
+    src: strapiMediaUrl(src, STRAPI_URL, 440),
+    srcset: strapiMediaSrcSet(src, STRAPI_URL, [220, 440, 660]),
+});
 
 const { images = [], ariaLabel = "Carrusel de imágenes" } = Astro.props;
 ---
@@ -18,20 +22,24 @@ const { images = [], ariaLabel = "Carrusel de imágenes" } = Astro.props;
                 <div class="carousel-inner h-full will-change-transform">
                     <ul class="carousel-strip carousel-strip--1 absolute left-0 top-0 flex items-center h-full gap-12">
                         {images.map((img, i) => {
+                            const media = partnerMedia(img.src);
                             return (
                                 <li class="h-full flex items-center shrink-0" aria-hidden={false}>
-                                    <Image src={new URL(img.src, STRAPI_URL).href} alt="" width={220} height={100} class="block h-full max-w-48 object-contain" loading={i > 4 ? "lazy" : "eager"} />
+                                    <img src={media.src} srcset={media.srcset || undefined} sizes="220px" alt="" width="220" height="100" class="block h-full max-w-48 object-contain" loading={i > 4 ? "lazy" : "eager"} decoding="async" />
                                 </li>
                             );
                         })}
                     </ul>
                     {/* Duplicado para bucle continuo */}
                     <ul class="carousel-strip carousel-strip--2 absolute left-0 top-0 flex items-center h-full gap-12" aria-hidden="true">
-                        {images.map((img) => (
-                            <li class="h-full flex items-center shrink-0">
-                                <Image src={new URL(img.src, STRAPI_URL).href} alt="" width={220} height={100} class="block h-full max-w-48 object-contain" loading="lazy" />
-                            </li>
-                        ))}
+                        {images.map((img) => {
+                            const media = partnerMedia(img.src);
+                            return (
+                                <li class="h-full flex items-center shrink-0">
+                                    <img src={media.src} srcset={media.srcset || undefined} sizes="220px" alt="" width="220" height="100" class="block h-full max-w-48 object-contain" loading="lazy" decoding="async" />
+                                </li>
+                            );
+                        })}
                     </ul>
                 </div>
             </div>

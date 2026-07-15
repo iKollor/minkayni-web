@@ -1,6 +1,7 @@
 ---
 import { StrapiBlocks } from "@sensinum/astro-strapi-blocks";
 import type { ComponentSectionsTeam } from "../../schemas/strapi.graphql.zod";
+import { strapiMediaUrl } from "../../utils/media-url";
 
 interface Props {
     members?: ComponentSectionsTeam[];
@@ -57,7 +58,7 @@ startIdx = startIdx >= 0 ? startIdx : 0;
                 <div class="gutter-start shrink-0" aria-hidden="true"></div>
                 {
                     list.map((m, i) => {
-                        const picture = m?.picture?.url ? new URL(m.picture.url, STRAPI_URL).href : "";
+                        const picture = strapiMediaUrl(m?.picture?.url, STRAPI_URL, 960);
                         const color = "#EFEFEF";
                         const name = m?.full_name ?? "";
                         const role = m?.role ?? "";

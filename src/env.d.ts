@@ -6,8 +6,10 @@ declare global {
         toggleGrain?: () => void;
     }
     interface ImportMetaEnv {
-        readonly STRAPI_TOKEN: string;
         readonly STRAPI_URL: string;
+        readonly STRAPI_TOKEN: string;
+        readonly STRAPI_STRICT?: "true" | "false";
+        readonly STRAPI_CODEGEN_DEBUG?: "0" | "1";
     }
 
     interface ImportMeta {
