@@ -13,6 +13,7 @@ import { fallbackFooter, fallbackNavigation } from "../data/site";
 
 interface Props {
     title: string;
+    showHero?: boolean;
     linkColor?: LinkColor;
     underlineColor?: UnderlineColor;
     buttonClassName?: string;
@@ -24,7 +25,7 @@ const navigationEntry = await getEntry("navigationHeader", "navigation:header:es
 const footerEntry = await getEntry("footer", "footer");
 const navHeader = navigationEntry ? getData(navigationEntry) : fallbackNavigation;
 const footer = footerEntry ? getData(footerEntry, "es") : fallbackFooter;
-const { title, linkColor = "text-white", underlineColor, buttonClassName = "", enableMixBlend, navbarThreshold } = Astro.props;
+const { title, showHero = true, linkColor = "text-white", underlineColor, buttonClassName = "", enableMixBlend, navbarThreshold } = Astro.props;
 ---
 
 <Head title={title}>
@@ -36,7 +37,7 @@ const { title, linkColor = "text-white", underlineColor, buttonClassName = "", e
     <div id="smooth-wrapper" class="overflow-x-hidden">
         <div id="smooth-content" class="flex flex-col min-h-screen">
             <main class="flex-1 w-full flex flex-col justify-start">
-                <Hero text={title} />
+                {showHero && <Hero text={title} />}
                 <slot />
                 <Footer primaryLinks={navHeader} {footer} secondaryLinks="Proyectos" />
             </main>

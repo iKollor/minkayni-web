@@ -7,6 +7,7 @@ import Moments from "../components/index/Moments.astro";
 import Testimonials from "../components/index/Testimonials.astro";
 import Nosotros from "../components/index/Nosotros.astro";
 import IntroVideo from "../components/IntroVideo.astro";
+import { BubbleBackground } from "@/components/animate-ui/components/backgrounds/bubble";
 
 import { Markdown } from "@astropub/md";
 
@@ -38,8 +39,6 @@ const legend = getData(homepage, "legend", "es", fallbackLegend);
                 clip-path: none !important;
             }
         }
-
-        /* Nota: estilos del intro movidos a `src/components/IntroVideo.astro` */
 
         #odometer {
             overflow: visible;
@@ -78,9 +77,23 @@ const legend = getData(homepage, "legend", "es", fallbackLegend);
     <div id="app-content" class="opacity-0 transition-opacity duration-500">
         <header>
             <div class="header__container w-full relative">
-                <div id="hero-background" class="bg__container absolute top-0 left-0 w-full h-[50vh] md:h-screen z-20 bg-[var(--primary)] gradient-custom animate-gradient"></div>
-                <div class="bg__container__logo absolute inset-0 flex items-center justify-center h-[50svh] md:h-full z-30 select-none">
-                    <Image class="logo pointer-events-none w-[70svw] sm:w-[50svw] md:w-[40svw] mb-2 mr-[2px]" src={Logo} alt="Logo" />
+                <div id="hero-background" class="bg__container absolute top-0 left-0 w-full h-[50vh] md:h-screen z-20 bg-[var(--primary)]">
+                    <BubbleBackground
+                        interactive={true}
+                        colors={{
+                            first: "140,100,255",
+                            second: "18,113,255",
+                            third: "140,100,255",
+                            fourth: "63,169,245",
+                            fifth: "140,100,255",
+                            sixth: "63,169,245",
+                        }}
+                        client:load
+                    >
+                        <div class="z-10 relative flex justify-center items-center h-full">
+                            <Image class="logo pointer-events-none w-[70svw] sm:w-[50svw] md:w-[40svw] mb-2 mr-[2px]" src={Logo} alt="Logo" />
+                        </div>
+                    </BubbleBackground>
                 </div>
                 <div class="bottom__section__container w-full md:w-[90%] min-h-[100svh] flex flex-col-reverse md:flex-row mx-auto pt-[70svh] justify-end items-center">
                     <div class="prose w-full md:w-1/2 h-[80%] text-[color:var(--text)] opacity-80 text-lg md:text-base max-w-[90%] md:max-w-[50%] text-center md:text-left leading-relaxed pt-5 md:pt-0" id="foundation-text">
@@ -136,28 +149,8 @@ const legend = getData(homepage, "legend", "es", fallbackLegend);
     </div>
     <script>
         import { init } from "../scripts/index/init.ts";
-        import { makeInteractiveGradient } from "../scripts/interactive-gradient.ts";
-        const startGradient = () => {
-            const heroBackground = document.getElementById("hero-background");
-            if (heroBackground) {
-                makeInteractiveGradient(heroBackground, {
-                    wander: 6,
-                    maxFps: 36, // menor FPS efectivo para bajar CPU
-                    driftSpeed: 0.06,
-                    blobs: [1, 2, 3], // simplifica capas animadas (evita parpadeo)
-                });
-            }
-        };
 
-        // Inicia la intro y difiere el gradiente hasta que termine
         init();
-        window.addEventListener("intro:finished", startGradient, { once: true });
-        if (document.readyState === "complete" || document.readyState === "interactive") {
-            // fallback por si no hay intro (salto inmediato)
-            setTimeout(startGradient, 1500);
-        } else {
-            document.addEventListener("DOMContentLoaded", () => setTimeout(startGradient, 1500), { once: true });
-        }
     </script>
 </MainLayout>
 

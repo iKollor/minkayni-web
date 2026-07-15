@@ -1,0 +1,925 @@
+---
+import { Image } from "astro:assets";
+import PageLayout from "@/layouts/PageLayout.astro";
+import HeroPhoto from "@/assets/FOTO_BATUCADA.webp";
+import CommunityPhoto from "@/assets/batucada-popular/comunidad.webp";
+import MarchPhoto from "@/assets/batucada-popular/marcha.webp";
+import BatucadaLogo from "@/assets/batucada-popular/logo-batucada-popular.svg";
+
+const methodSteps = [
+    { number: "01", title: "Diagnóstico", text: "Identificamos necesidades y fortalezas del territorio." },
+    { number: "02", title: "Acción de aprendizaje", text: "Desarrollamos talleres y actividades formativas mediante el arte." },
+    { number: "03", title: "Acompañamiento", text: "Damos seguimiento y fortalecemos el proceso de cada participante." },
+    { number: "04", title: "Revisión", text: "Evaluamos resultados, avances y aspectos por mejorar." },
+    { number: "05", title: "Reflexión", text: "Analizamos aprendizajes y proyectamos nuevas acciones comunitarias." },
+];
+
+const communityActions = ["Encuentros barriales", "Procesos de memoria", "Campañas comunitarias", "Comunicación popular"];
+---
+
+<PageLayout title="Batucada Popular" showHero={false} linkColor="text-white" navbarThreshold={0.85}>
+    <article class="bp-page">
+        <header class="bp-hero" aria-labelledby="bp-title">
+            <div class="bp-hero__ink" aria-hidden="true"></div>
+            <div class="bp-hero__copy">
+                <p class="bp-kicker">Guayaquil, Ecuador <span>Desde 2020</span></p>
+                <Image class="bp-logo" src={BatucadaLogo} alt="Batucada Popular" loading="eager" />
+                <h1 id="bp-title">El barrio suena, se organiza y se transforma.</h1>
+                <div class="bp-hero__actions">
+                    <a class="bp-button bp-button--dark" href="#historia">Conoce el proceso</a>
+                    <a class="bp-text-link" href="#metodologia">Ver metodología <span aria-hidden="true">↘</span></a>
+                </div>
+            </div>
+
+            <figure class="bp-hero__visual">
+                <Image src={HeroPhoto} alt="Jóvenes de Batucada Popular tocando tambores durante una presentación" loading="eager" widths={[720, 1080, 1600, 2200]} sizes="(min-width: 900px) 55vw, 100vw" />
+                <figcaption>Arte, organización y transformación comunitaria.</figcaption>
+            </figure>
+        </header>
+
+        <div class="bp-rhythm" aria-label="Percusión, educación popular y acción comunitaria">
+            <div class="bp-rhythm__track">
+                <span>Percusión</span><i aria-hidden="true"></i><span>Educación popular</span><i aria-hidden="true"></i><span>Acción comunitaria</span><i aria-hidden="true"></i>
+                <span aria-hidden="true">Percusión</span><i aria-hidden="true"></i><span aria-hidden="true">Educación popular</span><i aria-hidden="true"></i><span aria-hidden="true">Acción comunitaria</span>
+            </div>
+        </div>
+
+        <section id="historia" class="bp-intro bp-section" aria-labelledby="intro-title">
+            <div class="bp-section__label">
+                <span>01</span>
+                <p>Quiénes somos</p>
+            </div>
+            <div class="bp-intro__body">
+                <p class="bp-eyebrow">Un proceso construido desde los territorios</p>
+                <h2 id="intro-title">Cuando el tambor convoca, la comunidad responde.</h2>
+                <div class="bp-intro__text">
+                    <p>Batucada Popular es un colectivo juvenil comunitario y territorial que desarrolla procesos de organización, formación y participación con niñas, niños, adolescentes y jóvenes de sectores populares de Guayaquil.</p>
+                    <p>A través de la percusión, la educación popular y la acción comunitaria, el arte se convierte en una herramienta para fortalecer la convivencia, el liderazgo juvenil y la defensa de los derechos humanos.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="bp-pulse" aria-labelledby="pulse-title">
+            <figure class="bp-pulse__image">
+                <Image src={CommunityPhoto} alt="Integrantes de Batucada Popular compartiendo juntas después de una presentación" widths={[640, 960, 1400, 1800]} sizes="(min-width: 900px) 52vw, 100vw" />
+            </figure>
+            <div class="bp-pulse__copy">
+                <div class="bp-burst" aria-hidden="true"></div>
+                <p class="bp-eyebrow">El corazón del proyecto</p>
+                <h2 id="pulse-title">La percusión como eje transformador.</h2>
+                <p>Los ensayos permanentes son espacios seguros donde las juventudes fortalecen sus capacidades artísticas, desarrollan disciplina, construyen vínculos solidarios y se reconocen como protagonistas del cambio social.</p>
+                <p class="bp-pulse__statement">No se trata solo de aprender música. Se trata de pertenecer.</p>
+            </div>
+        </section>
+
+        <section id="metodologia" class="bp-method bp-section" aria-labelledby="method-title">
+            <div class="bp-section__label bp-section__label--dark">
+                <span>02</span>
+                <p>Cómo trabajamos</p>
+            </div>
+            <div class="bp-method__content">
+                <p class="bp-eyebrow">Metodología DAARR</p>
+                <h2 id="method-title">Escuchar. Hacer. Acompañar. Aprender de nuevo.</h2>
+                <ol class="bp-method__list">
+                    {
+                        methodSteps.map((step) => (
+                            <li>
+                                <span>{step.number}</span>
+                                <h3>{step.title}</h3>
+                                <p>{step.text}</p>
+                            </li>
+                        ))
+                    }
+                </ol>
+                <p class="bp-method__note">El ciclo busca que cada participante desarrolle liderazgo, habilidades para la vida, participación ciudadana y una cultura de paz.</p>
+            </div>
+        </section>
+
+        <section class="bp-territory" aria-labelledby="territory-title">
+            <div class="bp-territory__number" aria-hidden="true">13</div>
+            <div class="bp-territory__copy">
+                <p class="bp-eyebrow">Presencia activa</p>
+                <h2 id="territory-title"><strong>13 territorios</strong> conectados por una red juvenil que se organiza desde adentro.</h2>
+                <p>La presencia territorial permite responder a las necesidades de cada barrio y fortalecer procesos de liderazgo e incidencia social desde las propias comunidades.</p>
+            </div>
+            <figure class="bp-territory__image">
+                <Image src={MarchPhoto} alt="Jóvenes de Batucada Popular marchando con sus tambores en una calle de Guayaquil" widths={[640, 960, 1072]} sizes="(min-width: 900px) 48vw, 100vw" />
+            </figure>
+        </section>
+
+        <section class="bp-action bp-section" aria-labelledby="action-title">
+            <div class="bp-section__label">
+                <span>03</span>
+                <p>Más allá del ensayo</p>
+            </div>
+            <div class="bp-action__content">
+                <div class="bp-action__heading">
+                    <p class="bp-eyebrow">Acción comunitaria en los barrios</p>
+                    <h2 id="action-title">El ritmo también recupera memoria, espacio público y voz.</h2>
+                </div>
+                <ol class="bp-action__list">
+                    {
+                        communityActions.map((action, index) => (
+                            <li>
+                                <span>0{index + 1}</span>
+                                <p>{action}</p>
+                            </li>
+                        ))
+                    }
+                </ol>
+            </div>
+        </section>
+
+        <section class="bp-rights" aria-labelledby="rights-title">
+            <p class="bp-eyebrow">Enfoque de derechos</p>
+            <h2 id="rights-title">Participar.<br />Crear.<br /><em>Vivir sin violencia.</em></h2>
+            <div class="bp-rights__copy">
+                <p>El proyecto promueve el acceso a la cultura, la educación, la convivencia pacífica, la igualdad, la inclusión y el respeto a la diversidad.</p>
+                <p>Así, las juventudes no son espectadoras: lideran, cuentan sus historias y se convierten en agentes de paz en sus territorios.</p>
+            </div>
+        </section>
+
+        <section class="bp-cta" aria-labelledby="cta-title">
+            <div class="bp-cta__mark" aria-hidden="true"></div>
+            <div>
+                <p class="bp-eyebrow">Haz que el ritmo llegue más lejos</p>
+                <h2 id="cta-title">Dale ritmo a tus proyectos y trabaja con nosotros.</h2>
+            </div>
+            <div class="bp-cta__actions">
+                <a class="bp-button bp-button--orange" href="https://wa.me/593985261647" target="_blank" rel="noopener noreferrer">Escríbenos por WhatsApp</a>
+                <a class="bp-text-link bp-text-link--light" href="https://www.instagram.com/batucada_popular_/" target="_blank" rel="noopener noreferrer">Ver la Batucada en acción <span aria-hidden="true">↗</span></a>
+            </div>
+        </section>
+    </article>
+</PageLayout>
+
+<style>
+    .bp-page {
+        --bp-orange: #f5a508;
+        --bp-black: #080808;
+        --bp-cream: #f6eee7;
+        --bp-purple: #55008a;
+        background: var(--bp-cream);
+        color: var(--bp-black);
+        overflow: clip;
+    }
+
+    .bp-page :is(h1, h2, h3, p, figure) {
+        margin: 0;
+    }
+
+    .bp-page :is(h1, h2, h3) {
+        text-wrap: balance;
+    }
+
+    .bp-page p {
+        text-wrap: pretty;
+    }
+
+    .bp-hero {
+        min-height: 100svh;
+        padding-top: 90px;
+        display: grid;
+        grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+        position: relative;
+        background: var(--bp-black);
+        isolation: isolate;
+    }
+
+    .bp-hero__ink {
+        position: absolute;
+        inset: 90px 50% 0 0;
+        z-index: -1;
+        background-color: var(--bp-orange);
+        background-image: radial-gradient(circle at 18% 16%, rgb(255 255 255 / 0.2), transparent 28%), repeating-radial-gradient(circle at 48% 44%, transparent 0 5px, rgb(0 0 0 / 0.045) 6px 7px);
+    }
+
+    .bp-hero__copy {
+        min-height: calc(100svh - 90px);
+        padding: clamp(2rem, 5vw, 5.5rem);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        background: var(--bp-orange);
+        position: relative;
+    }
+
+    .bp-kicker,
+    .bp-eyebrow {
+        font-size: 0.78rem;
+        font-weight: 900;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+    }
+
+    .bp-kicker {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 2px solid currentColor;
+        padding-bottom: 0.75rem;
+        margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+    }
+
+    .bp-logo {
+        width: clamp(11rem, 21vw, 19rem);
+        height: auto;
+        max-height: 39vh;
+        object-fit: contain;
+        object-position: left center;
+        margin-bottom: clamp(1.25rem, 3vw, 2.5rem);
+    }
+
+    .bp-hero h1 {
+        max-width: 15ch;
+        font-family: "Special Gothic Expanded One", "Aristotelica Pro Display", sans-serif;
+        font-size: clamp(2.2rem, 4.1vw, 5rem);
+        line-height: 0.92;
+        letter-spacing: -0.055em;
+        text-transform: uppercase;
+    }
+
+    .bp-hero__actions,
+    .bp-cta__actions {
+        margin-top: clamp(1.75rem, 4vw, 3.25rem);
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 1rem 1.5rem;
+    }
+
+    .bp-button {
+        min-height: 48px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.9rem 1.35rem;
+        border: 2px solid currentColor;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        transition: transform 180ms ease, background-color 180ms ease, color 180ms ease;
+    }
+
+    .bp-button:hover {
+        transform: translateY(-3px) rotate(-1deg);
+    }
+
+    .bp-button--dark {
+        background: var(--bp-black);
+        color: var(--bp-cream);
+    }
+
+    .bp-button--orange {
+        background: var(--bp-orange);
+        color: var(--bp-black);
+    }
+
+    .bp-text-link {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        border-bottom: 2px solid currentColor;
+        color: inherit;
+        font-weight: 900;
+    }
+
+    .bp-text-link span {
+        font-size: 1.35em;
+        transition: transform 180ms ease;
+    }
+
+    .bp-text-link:hover span {
+        transform: translate(0.2rem, 0.2rem);
+    }
+
+    .bp-text-link--light {
+        color: var(--bp-cream);
+    }
+
+    .bp-page :is(a, button):focus-visible {
+        outline: 3px solid #29aae1;
+        outline-offset: 5px;
+    }
+
+    .bp-hero__visual {
+        min-height: calc(100svh - 90px);
+        position: relative;
+        overflow: hidden;
+        background: var(--bp-black);
+    }
+
+    .bp-hero__visual img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 52% center;
+        filter: saturate(0.95) contrast(1.06);
+        animation: bp-breathe 14s ease-in-out infinite alternate;
+    }
+
+    .bp-hero__visual::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, rgb(8 8 8 / 0.12), transparent 30%), linear-gradient(0deg, rgb(8 8 8 / 0.6), transparent 35%);
+        pointer-events: none;
+    }
+
+    .bp-hero__visual figcaption {
+        position: absolute;
+        z-index: 1;
+        right: clamp(1.25rem, 3vw, 3rem);
+        bottom: 1.5rem;
+        max-width: 28ch;
+        color: var(--bp-cream);
+        font-size: 0.75rem;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+        text-align: right;
+        text-transform: uppercase;
+    }
+
+    @keyframes bp-breathe {
+        to {
+            transform: scale(1.035);
+        }
+    }
+
+    .bp-rhythm {
+        overflow: hidden;
+        border-block: 3px solid var(--bp-black);
+        background: var(--bp-cream);
+        color: var(--bp-black);
+    }
+
+    .bp-rhythm__track {
+        width: max-content;
+        min-height: 76px;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding-inline: 1.5rem;
+        font-family: "Special Gothic Expanded One", "Aristotelica Pro Display", sans-serif;
+        font-size: clamp(1.4rem, 3vw, 2.7rem);
+        text-transform: uppercase;
+        animation: bp-ticker 26s linear infinite;
+    }
+
+    .bp-rhythm__track i {
+        width: 1.1rem;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background: var(--bp-orange);
+        box-shadow: 0 0 0 3px var(--bp-black);
+    }
+
+    @keyframes bp-ticker {
+        to {
+            transform: translateX(-50%);
+        }
+    }
+
+    .bp-section {
+        width: min(100% - 2rem, 1480px);
+        margin-inline: auto;
+        display: grid;
+        grid-template-columns: minmax(8.5rem, 0.25fr) minmax(0, 1.75fr);
+    }
+
+    .bp-section__label {
+        border-right: 2px solid var(--bp-black);
+        padding: clamp(3rem, 7vw, 7rem) clamp(1rem, 3vw, 2.5rem) clamp(3rem, 7vw, 7rem) 0;
+    }
+
+    .bp-section__label span {
+        display: block;
+        font-family: "Special Gothic Expanded One", "Aristotelica Pro Display", sans-serif;
+        font-size: clamp(3rem, 8vw, 8rem);
+        line-height: 0.8;
+        color: var(--bp-orange);
+    }
+
+    .bp-section__label p {
+        margin-top: 1rem;
+        font-size: 0.75rem;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+    }
+
+    .bp-intro__body,
+    .bp-method__content,
+    .bp-action__content {
+        padding: clamp(3rem, 7vw, 7rem) 0 clamp(3rem, 7vw, 7rem) clamp(1.5rem, 6vw, 7rem);
+    }
+
+    .bp-intro h2,
+    .bp-method h2,
+    .bp-action h2,
+    .bp-territory h2,
+    .bp-cta h2 {
+        font-family: "Special Gothic Expanded One", "Aristotelica Pro Display", sans-serif;
+        font-size: clamp(2.7rem, 6.8vw, 7.6rem);
+        line-height: 0.94;
+        letter-spacing: -0.055em;
+        text-transform: uppercase;
+    }
+
+    .bp-intro h2 {
+        max-width: 12ch;
+        margin-top: 1.25rem;
+    }
+
+    .bp-intro__text {
+        margin-top: clamp(2rem, 5vw, 4.5rem);
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 2rem;
+        font-size: clamp(1.05rem, 1.4vw, 1.3rem);
+        line-height: 1.65;
+    }
+
+    .bp-pulse {
+        display: grid;
+        grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+        background: var(--bp-black);
+        color: var(--bp-cream);
+    }
+
+    .bp-pulse__image {
+        min-height: 760px;
+    }
+
+    .bp-pulse__image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .bp-pulse__copy {
+        padding: clamp(3rem, 7vw, 7rem);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        isolation: isolate;
+    }
+
+    .bp-burst,
+    .bp-cta__mark {
+        position: absolute;
+        z-index: -1;
+        width: min(31vw, 27rem);
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background: repeating-conic-gradient(var(--bp-orange) 0 4deg, transparent 4deg 10deg);
+        opacity: 0.22;
+    }
+
+    .bp-burst {
+        top: 5%;
+        right: -8%;
+    }
+
+    .bp-pulse h2 {
+        margin-top: 1.25rem;
+        font-family: "Special Gothic Expanded One", "Aristotelica Pro Display", sans-serif;
+        font-size: clamp(3rem, 6vw, 7rem);
+        line-height: 0.92;
+        letter-spacing: -0.055em;
+        text-transform: uppercase;
+    }
+
+    .bp-pulse__copy > p:not(.bp-eyebrow) {
+        max-width: 43ch;
+        margin-top: 2rem;
+        font-size: clamp(1.05rem, 1.35vw, 1.25rem);
+        line-height: 1.65;
+    }
+
+    .bp-pulse__statement {
+        padding-top: 1.5rem;
+        border-top: 2px solid var(--bp-orange);
+        color: var(--bp-orange);
+        font-weight: 900;
+    }
+
+    .bp-method {
+        width: 100%;
+        max-width: none;
+        background-color: var(--bp-orange);
+        background-image: radial-gradient(circle at 8% 85%, rgb(255 255 255 / 0.14), transparent 32%);
+    }
+
+    .bp-method .bp-section__label {
+        padding-left: max(1rem, calc((100vw - 1480px) / 2));
+    }
+
+    .bp-section__label--dark span {
+        color: var(--bp-black);
+    }
+
+    .bp-method__content {
+        padding-right: max(1rem, calc((100vw - 1480px) / 2));
+    }
+
+    .bp-method h2 {
+        max-width: 13ch;
+        margin-top: 1.25rem;
+    }
+
+    .bp-method__list {
+        margin: clamp(3rem, 7vw, 6rem) 0 0;
+        padding: 0;
+        list-style: none;
+        border-top: 3px solid var(--bp-black);
+    }
+
+    .bp-method__list li {
+        display: grid;
+        grid-template-columns: 5rem minmax(12rem, 0.7fr) minmax(0, 1.3fr);
+        gap: 1.5rem;
+        align-items: baseline;
+        padding: 1.45rem 0;
+        border-bottom: 2px solid var(--bp-black);
+    }
+
+    .bp-method__list span {
+        font-family: "Special Gothic Expanded One", "Aristotelica Pro Display", sans-serif;
+        font-size: 1.4rem;
+    }
+
+    .bp-method__list h3 {
+        font-family: "Aristotelica Pro Display", sans-serif;
+        font-size: clamp(1.35rem, 2vw, 2rem);
+        font-weight: 900;
+    }
+
+    .bp-method__list p,
+    .bp-method__note {
+        font-size: 1rem;
+        line-height: 1.55;
+    }
+
+    .bp-method__note {
+        max-width: 60ch;
+        margin: 2rem 0 0 auto;
+        font-weight: 900;
+    }
+
+    .bp-territory {
+        min-height: 870px;
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+        grid-template-rows: 1fr auto;
+        position: relative;
+        background: var(--bp-cream);
+    }
+
+    .bp-territory__number {
+        position: absolute;
+        z-index: 2;
+        top: clamp(2rem, 4vw, 4rem);
+        left: clamp(1rem, 4vw, 4rem);
+        color: var(--bp-orange);
+        font-family: "Special Gothic Expanded One", "Aristotelica Pro Display", sans-serif;
+        font-size: clamp(10rem, 30vw, 32rem);
+        line-height: 0.75;
+        letter-spacing: -0.12em;
+        pointer-events: none;
+    }
+
+    .bp-territory__copy {
+        z-index: 3;
+        grid-column: 1;
+        grid-row: 2;
+        padding: clamp(15rem, 28vw, 26rem) clamp(2rem, 5vw, 6rem) clamp(3rem, 6vw, 6rem);
+        align-self: end;
+    }
+
+    .bp-territory h2 {
+        max-width: 10ch;
+        margin-top: 1rem;
+        font-size: clamp(2.6rem, 5vw, 6.2rem);
+    }
+
+    .bp-territory h2 strong {
+        display: block;
+        color: var(--bp-purple);
+    }
+
+    .bp-territory__copy > p:last-child {
+        max-width: 46ch;
+        margin-top: 2rem;
+        font-size: 1.1rem;
+        line-height: 1.65;
+    }
+
+    .bp-territory__image {
+        grid-column: 2;
+        grid-row: 1 / -1;
+        clip-path: polygon(12% 0, 100% 0, 100% 100%, 0 100%);
+        background: var(--bp-black);
+    }
+
+    .bp-territory__image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 45% center;
+        filter: contrast(1.04) saturate(0.96);
+    }
+
+    .bp-action__content {
+        display: grid;
+        grid-template-columns: minmax(0, 1.08fr) minmax(18rem, 0.92fr);
+        gap: clamp(3rem, 7vw, 7rem);
+        align-items: end;
+    }
+
+    .bp-action h2 {
+        max-width: 11ch;
+        margin-top: 1rem;
+        font-size: clamp(2.7rem, 5.4vw, 6.4rem);
+    }
+
+    .bp-action__list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        border-top: 3px solid var(--bp-black);
+    }
+
+    .bp-action__list li {
+        display: grid;
+        grid-template-columns: 3rem 1fr;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.2rem 0;
+        border-bottom: 2px solid var(--bp-black);
+    }
+
+    .bp-action__list span {
+        color: var(--bp-purple);
+        font-weight: 900;
+    }
+
+    .bp-action__list p {
+        font-size: clamp(1.15rem, 1.8vw, 1.7rem);
+        font-weight: 900;
+    }
+
+    .bp-rights {
+        padding: clamp(4rem, 9vw, 9rem) max(1rem, calc((100vw - 1480px) / 2));
+        background: var(--bp-black);
+        color: var(--bp-cream);
+    }
+
+    .bp-rights h2 {
+        margin-top: 1.5rem;
+        font-family: "Special Gothic Expanded One", "Aristotelica Pro Display", sans-serif;
+        font-size: clamp(4rem, 12vw, 13.5rem);
+        line-height: 0.78;
+        letter-spacing: -0.075em;
+        text-transform: uppercase;
+    }
+
+    .bp-rights h2 em {
+        color: var(--bp-orange);
+        font-style: normal;
+    }
+
+    .bp-rights__copy {
+        width: min(100%, 880px);
+        margin: clamp(3rem, 7vw, 6rem) 0 0 auto;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid var(--bp-orange);
+        font-size: clamp(1.05rem, 1.4vw, 1.3rem);
+        line-height: 1.65;
+    }
+
+    .bp-cta {
+        min-height: 680px;
+        padding: clamp(4rem, 9vw, 9rem) max(1rem, calc((100vw - 1480px) / 2));
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.65fr);
+        gap: clamp(2rem, 8vw, 9rem);
+        align-items: center;
+        position: relative;
+        isolation: isolate;
+        background: var(--bp-purple);
+        color: var(--bp-cream);
+    }
+
+    .bp-cta__mark {
+        left: -8rem;
+        bottom: -10rem;
+        width: min(55vw, 44rem);
+        opacity: 0.38;
+    }
+
+    .bp-cta h2 {
+        max-width: 10ch;
+        margin-top: 1.25rem;
+    }
+
+    .bp-cta__actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    @media (max-width: 980px) {
+        .bp-hero {
+            grid-template-columns: 1fr;
+        }
+
+        .bp-hero__copy,
+        .bp-hero__visual {
+            min-height: auto;
+        }
+
+        .bp-hero__copy {
+            padding-top: 3rem;
+            padding-bottom: 4rem;
+        }
+
+        .bp-logo {
+            max-height: none;
+        }
+
+        .bp-hero__visual {
+            height: min(78svh, 720px);
+        }
+
+        .bp-section {
+            grid-template-columns: 7rem minmax(0, 1fr);
+        }
+
+        .bp-pulse,
+        .bp-action__content,
+        .bp-cta {
+            grid-template-columns: 1fr;
+        }
+
+        .bp-pulse__image {
+            min-height: 560px;
+        }
+
+        .bp-territory {
+            min-height: auto;
+            grid-template-columns: 1fr;
+            grid-template-rows: auto;
+        }
+
+        .bp-territory__number {
+            position: relative;
+            top: auto;
+            left: auto;
+            padding: 4rem 1rem 0;
+        }
+
+        .bp-territory__copy,
+        .bp-territory__image {
+            grid-column: 1;
+            grid-row: auto;
+        }
+
+        .bp-territory__copy {
+            padding: 3rem 1.5rem 4rem;
+        }
+
+        .bp-territory__image {
+            height: 68vw;
+            min-height: 420px;
+            clip-path: polygon(0 10%, 100% 0, 100% 100%, 0 100%);
+        }
+    }
+
+    @media (max-width: 680px) {
+        .bp-hero {
+            padding-top: 80px;
+        }
+
+        .bp-kicker {
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .bp-hero__actions,
+        .bp-cta__actions {
+            align-items: stretch;
+        }
+
+        .bp-button,
+        .bp-text-link {
+            width: 100%;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .bp-section {
+            width: min(100% - 1.5rem, 1480px);
+            grid-template-columns: 1fr;
+        }
+
+        .bp-section__label,
+        .bp-method .bp-section__label {
+            padding: 3rem 0 1.5rem;
+            display: flex;
+            align-items: flex-end;
+            gap: 1rem;
+            border-right: 0;
+            border-bottom: 2px solid var(--bp-black);
+        }
+
+        .bp-section__label span {
+            font-size: 3.5rem;
+        }
+
+        .bp-section__label p {
+            margin: 0 0 0.2rem;
+        }
+
+        .bp-intro__body,
+        .bp-method__content,
+        .bp-action__content {
+            padding: 2.5rem 0 4rem;
+        }
+
+        .bp-intro__text,
+        .bp-rights__copy {
+            grid-template-columns: 1fr;
+        }
+
+        .bp-pulse__image {
+            min-height: 430px;
+        }
+
+        .bp-pulse__copy {
+            padding: 3.5rem 1.25rem;
+        }
+
+        .bp-method {
+            padding-inline: 0.75rem;
+        }
+
+        .bp-method__content {
+            padding-right: 0;
+        }
+
+        .bp-method__list li {
+            grid-template-columns: 3.25rem 1fr;
+            gap: 0.5rem 1rem;
+        }
+
+        .bp-method__list li p {
+            grid-column: 2;
+        }
+
+        .bp-method__note {
+            margin-left: 0;
+        }
+
+        .bp-territory__number {
+            font-size: 10rem;
+        }
+
+        .bp-territory__image {
+            min-height: 370px;
+        }
+
+        .bp-rights,
+        .bp-cta {
+            padding-inline: 1.25rem;
+        }
+
+        .bp-rights h2 {
+            font-size: clamp(3.4rem, 19vw, 6.4rem);
+        }
+
+        .bp-cta {
+            min-height: 620px;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .bp-page *,
+        .bp-page *::before,
+        .bp-page *::after {
+            scroll-behavior: auto !important;
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
+        }
+
+        .bp-rhythm__track {
+            animation: none;
+        }
+    }
+</style>

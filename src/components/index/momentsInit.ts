@@ -9,7 +9,7 @@ export const init = () => {
 
     const boxes = gsap.utils.toArray<HTMLElement>(wrapperEl.querySelectorAll(".post-card"));
     if (boxes.length === 0) {
-        console.error('No se encontraron elementos con selector ".post-card".');
+        return;
     }
 
     if (boxes.length) gsap.set(boxes[boxes.length - 1], { marginRight: `${MARGIN_RIGHT_PX}px` });
@@ -142,8 +142,8 @@ export const init = () => {
         }
 
         const tl = gsap.timeline({
-            repeat: config.repeat,
-            paused: config.paused,
+            repeat: config.repeat ?? 0,
+            paused: !!config.paused,
             defaults: { ease: "none" },
             onReverseComplete: () => {
                 tl.totalTime(tl.rawTime() + tl.duration() * 100);
