@@ -3,6 +3,7 @@ import { defineCollection } from "astro:content";
 import type { Loader } from "astro/loaders";
 import { strapiLoader } from "../utils/loaders/strapi-loader";
 import { navigationLoader } from "../utils/loaders/strapi-navigation-loader";
+import { validateStrapiConnection } from "../utils/strapi-connection";
 import {
   PostSchema,
   HomepageSchema,
@@ -10,8 +11,8 @@ import {
 } from "../schemas/strapi.graphql.zod";
 import { NavigationTreeSchema } from "../schemas/navigation";
 
-const STRAPI_BASE = import.meta.env.STRAPI_URL ?? "";
-const STRAPI_TOKEN = import.meta.env.STRAPI_TOKEN ?? "";
+const STRAPI_BASE = (import.meta.env.STRAPI_URL ?? "").trim();
+const STRAPI_TOKEN = (import.meta.env.STRAPI_TOKEN ?? "").trim();
 const GRAPHQL_ENDPOINT = STRAPI_BASE
   ? `${STRAPI_BASE.replace(/\/$/, "")}/graphql`
   : "";
@@ -23,96 +24,17 @@ const buildAuthHeaders = (token?: string) => ({
   ...(token ? { Authorization: `Bearer ${token}` } : {}),
 });
 
-type ValidateResult = {
-  ok: boolean;
-  status?: number;
-  message?: string;
-  elapsedMs: number;
-};
-
-export async function validateStrapiConnection(
-  url = GRAPHQL_ENDPOINT,
-  token = STRAPI_TOKEN,
-  timeoutMs = 8000
-): Promise<ValidateResult> {
-  const start = Date.now();
-  if (!url || !url.startsWith("http"))
-    return {
-      ok: false,
-      message: "Endpoint inválido o vacío",
-      elapsedMs: Date.now() - start,
-    };
-
-  const headers = buildAuthHeaders(token);
-  const ac = new AbortController();
-  const timer = setTimeout(() => ac.abort(), timeoutMs);
-
-  try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ query: "query Ping { __typename }" }),
-      signal: ac.signal,
-    });
-    clearTimeout(timer);
-
-    const status = res.status;
-    const text = await res.text();
-    let json: any = null;
-    try {
-      json = text ? JSON.parse(text) : null;
-    } catch {
-      return {
-        ok: false,
-        status,
-        message: `Respuesta no JSON (${status}): ${text.slice(0, 200)}`,
-        elapsedMs: Date.now() - start,
-      };
-    }
-
-    if (!res.ok)
-      return {
-        ok: false,
-        status,
-        message: `HTTP ${status}: ${JSON.stringify(json)?.slice(0, 300)}`,
-        elapsedMs: Date.now() - start,
-      };
-
-    if (json?.data?.__typename === "Query")
-      return { ok: true, status, elapsedMs: Date.now() - start };
-
-    if (json?.errors?.length)
-      return {
-        ok: false,
-        status,
-        message: `GraphQL errors: ${JSON.stringify(json.errors)}`,
-        elapsedMs: Date.now() - start,
-      };
-
-    return {
-      ok: false,
-      status,
-      message: `Respuesta inesperada: ${JSON.stringify(json)?.slice(0, 300)}`,
-      elapsedMs: Date.now() - start,
-    };
-  } catch (err: any) {
-    clearTimeout(timer);
-    const msg =
-      err?.name === "AbortError"
-        ? `Timeout después de ${timeoutMs}ms`
-        : String(err?.message || err);
-    return { ok: false, message: msg, elapsedMs: Date.now() - start };
-  }
-}
-
-const check = await validateStrapiConnection(
-  GRAPHQL_ENDPOINT,
-  STRAPI_TOKEN,
-  3000
-);
 const strictStrapi = import.meta.env.STRAPI_STRICT === "true";
-if (!check.ok && strictStrapi)
-  throw new Error(check.message ?? "Strapi connection failed");
+const strapiConfigured = Boolean(GRAPHQL_ENDPOINT && STRAPI_TOKEN);
+
+if (strictStrapi) {
+  const check = await validateStrapiConnection({
+    endpoint: GRAPHQL_ENDPOINT,
+    token: STRAPI_TOKEN,
+  });
+  if (!check.ok)
+    throw new Error(check.message ?? "Strapi connection failed");
+}
 
 const preserveCachedContent = (name: string): Loader => ({
   name,
@@ -216,7 +138,7 @@ const footerSelection = `
 `;
 
 const posts = defineCollection({
-  loader: check.ok
+  loader: strapiConfigured
     ? strapiLoader({
         mode: "collection",
         rootField: "posts",
@@ -229,7 +151,7 @@ const posts = defineCollection({
 });
 
 const homepage = defineCollection({
-  loader: check.ok
+  loader: strapiConfigured
     ? strapiLoader({
         mode: "single",
         rootField: "homepage",
@@ -244,7 +166,7 @@ const homepage = defineCollection({
 });
 
 const footer = defineCollection({
-  loader: check.ok
+  loader: strapiConfigured
     ? strapiLoader({
         mode: "single",
         rootField: "footer",
@@ -259,7 +181,7 @@ const footer = defineCollection({
 });
 
 const navigationHeader = defineCollection({
-  loader: check.ok
+  loader: strapiConfigured
     ? navigationLoader({
         slug: "header",
         locale: "es",

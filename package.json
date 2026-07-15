@@ -8,6 +8,7 @@
         "preview": "astro preview",
         "astro": "astro",
         "test:media": "tsx --test tests/media-url.test.ts",
+        "test:strapi": "tsx --test tests/strapi-connection.test.ts",
         "zod:gen": "tsx src/utils/codegen.ts",
         "zod:gen:lazy": "tsx src/utils/codegen_lazy.ts"
     },
