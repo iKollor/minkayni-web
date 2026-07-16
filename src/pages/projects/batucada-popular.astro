@@ -96,7 +96,6 @@ const communityActions = ["Encuentros barriales", "Procesos de memoria", "Campa√
         </section>
 
         <section class="bp-territory" aria-labelledby="territory-title">
-            <div class="bp-territory__number" aria-hidden="true">13</div>
             <div class="bp-territory__copy">
                 <p class="bp-eyebrow">Presencia activa</p>
                 <h2 id="territory-title"><strong>13 territorios</strong> conectados por una red juvenil que se organiza desde adentro.</h2>
@@ -153,6 +152,78 @@ const communityActions = ["Encuentros barriales", "Procesos de memoria", "Campa√
     </article>
 </PageLayout>
 
+<script>
+    import { ScrollSmoother } from "../../scripts/main";
+
+    const anchorOffset = () => (window.innerWidth < 768 ? 92 : 116);
+    const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const findHashTarget = (hash: string) => {
+        if (!hash || hash === "#") return null;
+
+        try {
+            return document.getElementById(decodeURIComponent(hash.slice(1)));
+        } catch {
+            return null;
+        }
+    };
+
+    const scrollToHash = (hash: string, animated: boolean) => {
+        const target = findHashTarget(hash);
+        if (!target) return;
+
+        const offset = anchorOffset();
+        const smoother = ScrollSmoother.get();
+        const shouldAnimate = animated && !reduceMotion();
+
+        if (smoother) {
+            const destination = Math.max(0, smoother.offset(target, "top top") - offset);
+            smoother.scrollTo(destination, shouldAnimate);
+        } else {
+            const destination = Math.max(0, window.scrollY + target.getBoundingClientRect().top - offset);
+            window.scrollTo({ top: destination, behavior: shouldAnimate ? "smooth" : "auto" });
+        }
+    };
+
+    const queueCurrentHash = (animated: boolean) => {
+        if (!window.location.hash) return;
+        requestAnimationFrame(() => requestAnimationFrame(() => scrollToHash(window.location.hash, animated)));
+    };
+
+    const initBatucadaAnchors = () => {
+        if (document.documentElement.dataset.batucadaAnchors === "ready") return;
+        document.documentElement.dataset.batucadaAnchors = "ready";
+
+        document.addEventListener("click", (event) => {
+            const origin = event.target;
+            if (!(origin instanceof Element)) return;
+
+            const link = origin.closest<HTMLAnchorElement>('a[href^="#"]');
+            if (!link) return;
+
+            const hash = link.getAttribute("href") ?? "";
+            if (!findHashTarget(hash)) return;
+
+            event.preventDefault();
+            history.pushState(null, "", hash);
+            scrollToHash(hash, true);
+        });
+
+        window.addEventListener("hashchange", () => queueCurrentHash(true));
+        window.addEventListener("load", () => {
+            queueCurrentHash(false);
+            window.setTimeout(() => queueCurrentHash(false), 180);
+        }, { once: true });
+
+        if (document.readyState === "complete") {
+            queueCurrentHash(false);
+            window.setTimeout(() => queueCurrentHash(false), 180);
+        }
+    };
+
+    initBatucadaAnchors();
+</script>
+
 <style>
     .bp-page {
         --bp-orange: #f5a508;
@@ -170,10 +241,19 @@ const communityActions = ["Encuentros barriales", "Procesos de memoria", "Campa√
 
     .bp-page :is(h1, h2, h3) {
         text-wrap: balance;
+        overflow-wrap: normal;
     }
 
     .bp-page p {
         text-wrap: pretty;
+    }
+
+    .bp-page section[id] {
+        scroll-margin-top: 116px;
+    }
+
+    .bp-page :is(.bp-hero__copy, .bp-intro__body, .bp-pulse__copy, .bp-method__content, .bp-territory__copy, .bp-action__content, .bp-action__heading, .bp-cta > div) {
+        min-width: 0;
     }
 
     .bp-hero {
@@ -422,7 +502,7 @@ const communityActions = ["Encuentros barriales", "Procesos de memoria", "Campa√
     .bp-territory h2,
     .bp-cta h2 {
         font-family: "Special Gothic Expanded One", "Aristotelica Pro Display", sans-serif;
-        font-size: clamp(2.7rem, 6.8vw, 7.6rem);
+        font-size: clamp(2.7rem, 6vw, 6.9rem);
         line-height: 0.94;
         letter-spacing: -0.055em;
         text-transform: uppercase;
@@ -431,6 +511,7 @@ const communityActions = ["Encuentros barriales", "Procesos de memoria", "Campa√
     .bp-intro h2 {
         max-width: 12ch;
         margin-top: 1.25rem;
+        font-size: clamp(2.8rem, 5.7vw, 6.7rem);
     }
 
     .bp-intro__text {
@@ -460,7 +541,7 @@ const communityActions = ["Encuentros barriales", "Procesos de memoria", "Campa√
     }
 
     .bp-pulse__copy {
-        padding: clamp(3rem, 7vw, 7rem);
+        padding: clamp(3rem, 5.5vw, 6rem);
         position: relative;
         display: flex;
         flex-direction: column;
@@ -485,10 +566,11 @@ const communityActions = ["Encuentros barriales", "Procesos de memoria", "Campa√
     }
 
     .bp-pulse h2 {
+        max-width: 11ch;
         margin-top: 1.25rem;
         font-family: "Special Gothic Expanded One", "Aristotelica Pro Display", sans-serif;
-        font-size: clamp(3rem, 6vw, 7rem);
-        line-height: 0.92;
+        font-size: clamp(2.7rem, 3.3vw, 4rem);
+        line-height: 0.94;
         letter-spacing: -0.055em;
         text-transform: uppercase;
     }
@@ -527,8 +609,10 @@ const communityActions = ["Encuentros barriales", "Procesos de memoria", "Campa√
     }
 
     .bp-method h2 {
-        max-width: 13ch;
+        max-width: 14ch;
         margin-top: 1.25rem;
+        font-size: clamp(3rem, 5.15vw, 6.1rem);
+        line-height: 0.96;
     }
 
     .bp-method__list {
@@ -571,44 +655,33 @@ const communityActions = ["Encuentros barriales", "Procesos de memoria", "Campa√
     }
 
     .bp-territory {
-        min-height: 870px;
+        min-height: clamp(760px, 88svh, 920px);
         display: grid;
         grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-        grid-template-rows: 1fr auto;
         position: relative;
         background: var(--bp-cream);
-    }
-
-    .bp-territory__number {
-        position: absolute;
-        z-index: 2;
-        top: clamp(2rem, 4vw, 4rem);
-        left: clamp(1rem, 4vw, 4rem);
-        color: var(--bp-orange);
-        font-family: "Special Gothic Expanded One", "Aristotelica Pro Display", sans-serif;
-        font-size: clamp(10rem, 30vw, 32rem);
-        line-height: 0.75;
-        letter-spacing: -0.12em;
-        pointer-events: none;
     }
 
     .bp-territory__copy {
         z-index: 3;
         grid-column: 1;
-        grid-row: 2;
-        padding: clamp(15rem, 28vw, 26rem) clamp(2rem, 5vw, 6rem) clamp(3rem, 6vw, 6rem);
-        align-self: end;
+        padding: clamp(5rem, 8vw, 8rem) clamp(2rem, 5vw, 6rem);
+        align-self: center;
     }
 
     .bp-territory h2 {
-        max-width: 10ch;
+        max-width: 11ch;
         margin-top: 1rem;
-        font-size: clamp(2.6rem, 5vw, 6.2rem);
+        font-size: clamp(2.7rem, 4.35vw, 5.35rem);
+        line-height: 0.96;
     }
 
     .bp-territory h2 strong {
         display: block;
         color: var(--bp-purple);
+        font-size: 0.86em;
+        line-height: 1.02;
+        margin-bottom: 0.16em;
     }
 
     .bp-territory__copy > p:last-child {
@@ -620,7 +693,6 @@ const communityActions = ["Encuentros barriales", "Procesos de memoria", "Campa√
 
     .bp-territory__image {
         grid-column: 2;
-        grid-row: 1 / -1;
         clip-path: polygon(12% 0, 100% 0, 100% 100%, 0 100%);
         background: var(--bp-black);
     }
@@ -635,15 +707,16 @@ const communityActions = ["Encuentros barriales", "Procesos de memoria", "Campa√
 
     .bp-action__content {
         display: grid;
-        grid-template-columns: minmax(0, 1.08fr) minmax(18rem, 0.92fr);
-        gap: clamp(3rem, 7vw, 7rem);
-        align-items: end;
+        grid-template-columns: minmax(0, 1.02fr) minmax(19rem, 0.98fr);
+        gap: clamp(3rem, 5vw, 6rem);
+        align-items: center;
     }
 
     .bp-action h2 {
-        max-width: 11ch;
+        max-width: 10.5ch;
         margin-top: 1rem;
-        font-size: clamp(2.7rem, 5.4vw, 6.4rem);
+        font-size: clamp(2.8rem, 4.25vw, 5.25rem);
+        line-height: 0.96;
     }
 
     .bp-action__list {
@@ -681,8 +754,8 @@ const communityActions = ["Encuentros barriales", "Procesos de memoria", "Campa√
     .bp-rights h2 {
         margin-top: 1.5rem;
         font-family: "Special Gothic Expanded One", "Aristotelica Pro Display", sans-serif;
-        font-size: clamp(4rem, 12vw, 13.5rem);
-        line-height: 0.78;
+        font-size: clamp(4rem, 10.5vw, 11.75rem);
+        line-height: 0.82;
         letter-spacing: -0.075em;
         text-transform: uppercase;
     }
@@ -705,8 +778,8 @@ const communityActions = ["Encuentros barriales", "Procesos de memoria", "Campa√
     }
 
     .bp-cta {
-        min-height: 680px;
-        padding: clamp(4rem, 9vw, 9rem) max(1rem, calc((100vw - 1480px) / 2));
+        min-height: 820px;
+        padding: clamp(5rem, 8vw, 8rem) max(1rem, calc((100vw - 1480px) / 2)) clamp(21rem, 23vw, 24rem);
         display: grid;
         grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.65fr);
         gap: clamp(2rem, 8vw, 9rem);
@@ -725,8 +798,10 @@ const communityActions = ["Encuentros barriales", "Procesos de memoria", "Campa√
     }
 
     .bp-cta h2 {
-        max-width: 10ch;
+        max-width: 11ch;
         margin-top: 1.25rem;
+        font-size: clamp(3rem, 5.1vw, 6rem);
+        line-height: 0.96;
     }
 
     .bp-cta__actions {
@@ -777,13 +852,6 @@ const communityActions = ["Encuentros barriales", "Procesos de memoria", "Campa√
             grid-template-rows: auto;
         }
 
-        .bp-territory__number {
-            position: relative;
-            top: auto;
-            left: auto;
-            padding: 4rem 1rem 0;
-        }
-
         .bp-territory__copy,
         .bp-territory__image {
             grid-column: 1;
@@ -791,13 +859,17 @@ const communityActions = ["Encuentros barriales", "Procesos de memoria", "Campa√
         }
 
         .bp-territory__copy {
-            padding: 3rem 1.5rem 4rem;
+            padding: 5rem 1.5rem 4rem;
         }
 
         .bp-territory__image {
             height: 68vw;
             min-height: 420px;
             clip-path: polygon(0 10%, 100% 0, 100% 100%, 0 100%);
+        }
+
+        .bp-cta {
+            padding-bottom: 21rem;
         }
     }
 
@@ -826,6 +898,10 @@ const communityActions = ["Encuentros barriales", "Procesos de memoria", "Campa√
         .bp-section {
             width: min(100% - 1.5rem, 1480px);
             grid-template-columns: 1fr;
+        }
+
+        .bp-page section[id] {
+            scroll-margin-top: 92px;
         }
 
         .bp-section__label,
@@ -886,10 +962,6 @@ const communityActions = ["Encuentros barriales", "Procesos de memoria", "Campa√
             margin-left: 0;
         }
 
-        .bp-territory__number {
-            font-size: 10rem;
-        }
-
         .bp-territory__image {
             min-height: 370px;
         }
@@ -904,7 +976,9 @@ const communityActions = ["Encuentros barriales", "Procesos de memoria", "Campa√
         }
 
         .bp-cta {
-            min-height: 620px;
+            min-height: 760px;
+            padding-top: 5rem;
+            padding-bottom: 13rem;
         }
     }
 

@@ -30,11 +30,12 @@ const items = posts.filter((p) => p?.data?.source?.url);
                                 post.media_kind === "reel" ? (
                                     <video
                                         class="media object-cover w-full h-full absolute inset-0 -z-10 pointer-events-none transition-transform duration-300 transform-gpu origin-center group-hover:scale-105"
-                                        src={strapiMediaUrl(post.source?.url, STRAPI_URL)}
-                                        autoplay
+                                        data-src={strapiMediaUrl(post.source?.url, STRAPI_URL)}
+                                        preload="none"
                                         muted
                                         loop
                                         playsinline
+                                        aria-label={post.caption || `Reel ${post.external_id}`}
                                     />
                                 ) : (
                                     <img

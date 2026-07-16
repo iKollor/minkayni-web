@@ -47,6 +47,43 @@ export const init = () => {
     const io = new IntersectionObserver((entries) => entries.forEach((e) => (e.isIntersecting ? onEnterView() : onExitView())), { threshold: 0.2 });
     io.observe(wrapperEl);
 
+    const videos = Array.from(wrapperEl.querySelectorAll<HTMLVideoElement>("video[data-src]"));
+    const visibleVideos = new Set<HTMLVideoElement>();
+
+    const playVideo = (video: HTMLVideoElement) => {
+        const src = video.dataset.src;
+        if (!src) return;
+        if (!video.getAttribute("src")) {
+            video.src = src;
+            video.load();
+        }
+        video.muted = true;
+        void video.play().catch(() => {});
+    };
+
+    const pauseVideo = (video: HTMLVideoElement) => {
+        try {
+            video.pause();
+        } catch {}
+    };
+
+    const videoObserver = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                const video = entry.target as HTMLVideoElement;
+                if (entry.isIntersecting && entry.intersectionRatio >= 0.35) {
+                    visibleVideos.add(video);
+                    if (!document.hidden) playVideo(video);
+                    return;
+                }
+                visibleVideos.delete(video);
+                pauseVideo(video);
+            });
+        },
+        { threshold: [0, 0.35, 1] }
+    );
+    videos.forEach((video) => videoObserver.observe(video));
+
     // Pausar el carousel al hacer hover (pointer enter) y restaurar al salir.
     // Guardamos si estaba reproduciéndose para restaurar correctamente.
     let wasPlayingOnHover = false;
@@ -86,8 +123,10 @@ export const init = () => {
     const onVisibility = () => {
         if (document.hidden) {
             loop.pause();
+            videos.forEach(pauseVideo);
         } else if (isInView) {
             loop.play();
+            visibleVideos.forEach(playVideo);
         }
     };
     document.addEventListener("visibilitychange", onVisibility);
@@ -97,6 +136,10 @@ export const init = () => {
         try {
             io.disconnect();
         } catch {}
+        try {
+            videoObserver.disconnect();
+        } catch {}
+        videos.forEach(pauseVideo);
         document.removeEventListener("visibilitychange", onVisibility);
         wrapperEl.removeEventListener("pointerenter", onHoverEnter);
         wrapperEl.removeEventListener("pointerleave", onHoverLeave);

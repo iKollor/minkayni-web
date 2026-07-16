@@ -12,6 +12,9 @@ import rehypeModular from "./src/utils/rehype-modular";
 // https://astro.build/config
 export default defineConfig({
     integrations: [react(), icon(), md()],
+    redirects: {
+        "/batucada-popular": "/projects/batucada-popular/",
+    },
     vite: {
         plugins: [tailwindcss()],
         assetsInclude: ["**/*.mov"],

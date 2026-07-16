@@ -9,11 +9,36 @@ export const fallbackNavigation: NavTree = [
         title: "Proyectos",
         type: "INTERNAL",
         path: "/projects",
-        items: [{ title: "Batucada Popular", type: "INTERNAL", path: "/projects#batucada-popular", items: [] }],
+        items: [{ title: "Batucada Popular", type: "INTERNAL", path: "/projects/batucada-popular/", items: [] }],
         additionalFields: { style: "default" },
     },
     { title: "Súmate", type: "INTERNAL", path: "/about#contacto", items: [], additionalFields: { style: "cta", ctaText: "Hagamos minka" } },
 ];
+
+export const withBatucadaProject = (navigation: NavTree): NavTree =>
+    navigation.map((item) => {
+        const items = item.items?.map((child) => ({ ...child })) ?? [];
+        const isProjects = item.path === "/projects" || item.title.trim().toLocaleLowerCase("es") === "proyectos";
+
+        if (!isProjects) return { ...item, items };
+
+        const existing = items.find((child) => child.title.trim().toLocaleLowerCase("es") === "batucada popular");
+        const otherItems = items.filter((child) => child !== existing);
+
+        return {
+            ...item,
+            items: [
+                ...otherItems,
+                {
+                    ...existing,
+                    title: "Batucada Popular",
+                    type: "INTERNAL",
+                    path: "/projects/batucada-popular/",
+                    items: existing?.items ?? [],
+                },
+            ],
+        };
+    });
 
 export const fallbackFooter: Footer = {
     documentId: "fallback-footer",

@@ -22,10 +22,13 @@ interface Props {
 // traer el pathname pero no existe en url aunque te devuelve toda la url
 
 const { buttons, threshold, linkColor, underlineColor, buttonClassName = "", enableMixBlend = true } = Astro.props;
+const submenuButtons = buttons
+    .map((button, index) => ({ button, index }))
+    .filter(({ button }) => Array.isArray(button.items) && button.items.length > 0);
 ---
 
-<div class="fixed w-full h-[90px] overflow-hidden z-50 hidden" id="nav-container" data-threshold={threshold ?? 0.7} data-enable-mixblend={enableMixBlend}>
-    <div class="mx-10 h-full">
+<div class="fixed w-full h-[90px] z-50 hidden" id="nav-container" data-threshold={threshold ?? 0.7} data-enable-mixblend={enableMixBlend}>
+    <div class="mx-10 h-full overflow-hidden">
         <div class="h-full w-full">
             <div id="nav-switcher" class="max-lg:-translate-y-[100px]">
                 <div id="navBase" class="flex items-center h-[90px] justify-between text-lg text-white font-medium">
@@ -54,6 +57,26 @@ const { buttons, threshold, linkColor, underlineColor, buttonClassName = "", ena
             </div>
         </div>
     </div>
+
+    {
+        submenuButtons.map(({ button, index }) => (
+            <nav
+                id={`navbar-submenu-${index}`}
+                class="navbar-submenu absolute top-[68px] min-w-60 rounded-2xl border border-primary/15 bg-[var(--bg-white)] p-2 text-primary opacity-0 invisible pointer-events-none -translate-y-2 shadow-[0_18px_45px_rgba(35,15,55,0.18)] transition-[opacity,transform,visibility] duration-200"
+                aria-label={`Submenú de ${button.title}`}
+            >
+                <ul>
+                    {button.items?.map((item) => (
+                        <li>
+                            <a href={item.path} class="block rounded-xl px-4 py-3 font-display font-bold text-base hover:bg-primary hover:text-white focus-visible:bg-primary focus-visible:text-white focus-visible:outline-none">
+                                {item.title}
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            </nav>
+        ))
+    }
 </div>
 
 <script>
@@ -123,9 +146,77 @@ const { buttons, threshold, linkColor, underlineColor, buttonClassName = "", ena
         }
     };
 
+    const initNavbarSubmenus = () => {
+        const submenuElements = Array.from(document.querySelectorAll<HTMLElement>(".navbar-submenu"));
+        if (submenuElements.length === 0) return;
+
+        let closeTimer: number | undefined;
+
+        const setExpanded = (trigger: HTMLElement, expanded: boolean) => {
+            trigger.querySelector("a")?.setAttribute("aria-expanded", String(expanded));
+        };
+
+        const hideAll = () => {
+            submenuElements.forEach((submenu) => {
+                submenu.classList.add("opacity-0", "invisible", "pointer-events-none", "-translate-y-2");
+                submenu.classList.remove("opacity-100", "visible", "pointer-events-auto", "translate-y-0");
+                const index = submenu.id.replace("navbar-submenu-", "");
+                const trigger = document.getElementById(`nav-button-${index}`);
+                if (trigger) setExpanded(trigger, false);
+            });
+        };
+
+        submenuElements.forEach((submenu) => {
+            const index = submenu.id.replace("navbar-submenu-", "");
+            const trigger = document.getElementById(`nav-button-${index}`);
+            if (!trigger) return;
+
+            const triggerLink = trigger.querySelector("a");
+            triggerLink?.setAttribute("aria-haspopup", "true");
+            triggerLink?.setAttribute("aria-expanded", "false");
+            triggerLink?.setAttribute("aria-controls", submenu.id);
+
+            const show = () => {
+                window.clearTimeout(closeTimer);
+                hideAll();
+
+                const triggerRect = trigger.getBoundingClientRect();
+                const submenuWidth = submenu.offsetWidth || 240;
+                const left = Math.min(Math.max(16, triggerRect.left), window.innerWidth - submenuWidth - 16);
+                submenu.style.left = `${left}px`;
+                submenu.classList.remove("opacity-0", "invisible", "pointer-events-none", "-translate-y-2");
+                submenu.classList.add("opacity-100", "visible", "pointer-events-auto", "translate-y-0");
+                setExpanded(trigger, true);
+            };
+
+            const scheduleHide = () => {
+                window.clearTimeout(closeTimer);
+                closeTimer = window.setTimeout(hideAll, 140);
+            };
+
+            trigger.addEventListener("mouseenter", show);
+            trigger.addEventListener("mouseleave", scheduleHide);
+            trigger.addEventListener("focusin", show);
+            trigger.addEventListener("focusout", scheduleHide);
+            submenu.addEventListener("mouseenter", () => window.clearTimeout(closeTimer));
+            submenu.addEventListener("mouseleave", scheduleHide);
+            submenu.addEventListener("focusin", () => window.clearTimeout(closeTimer));
+            submenu.addEventListener("focusout", scheduleHide);
+        });
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") hideAll();
+        });
+        window.addEventListener("resize", hideAll, { passive: true });
+    };
+
     if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initNavSwitcher, { once: true });
+        document.addEventListener("DOMContentLoaded", () => {
+            initNavSwitcher();
+            initNavbarSubmenus();
+        }, { once: true });
     } else {
         initNavSwitcher();
+        initNavbarSubmenus();
     }
 </script>
