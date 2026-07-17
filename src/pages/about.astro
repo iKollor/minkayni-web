@@ -1,122 +1,511 @@
 ---
 import PageLayout from "../layouts/PageLayout.astro";
-import foto from "../assets/FOTO_BATUCADA.webp";
 import { Image } from "astro:assets";
-import decoration from "../assets/historyimage.png";
 import MaskFlor from "../components/MaskFlor.astro";
-import DomeSeparator from "../components/index/DomeSeparator.astro";
+import Button from "../components/Button.astro";
 import flor from "../assets/SVG/misc/flor.svg";
+import foto from "../assets/FOTO_BATUCADA.webp";
+import comunidad from "../assets/batucada-popular/comunidad.webp";
+import marcha from "../assets/batucada-popular/marcha.webp";
+import pandemia from "../assets/historyimage.png";
+import daniel from "../assets/DANIEL.png";
 import eu from "../assets/eu.png";
-import ecuavisa from "../assets/ecuavisa.png";
 import vistazo from "../assets/vistazo.png";
-import TimeLine from "../components/TimeLine.astro";
+
+const timeline = [
+    {
+        chip: "2010",
+        period: "2010 – 2015",
+        title: "Primeros aprendizajes comunitarios",
+        text: "Quienes hoy impulsamos MINKAYNI comenzamos en los barrios populares de Guayaquil junto a NURTAC, trabajando con niñez en situación de calle, personas adultas mayores, personas con discapacidad y madres jefas de hogar. Ahí aprendimos organización barrial y educación popular.",
+    },
+    {
+        chip: "2016",
+        period: "2016 – 2019",
+        title: "Consolidación del trabajo territorial",
+        text: "Desde Fundación Terranueva profundizamos el trabajo con mujeres, juventudes y liderazgos comunitarios, y construimos los primeros vínculos con la cooperación internacional. Confirmamos algo esencial: los barrios ya tienen capacidades, conocimientos y redes de solidaridad propias.",
+    },
+    {
+        chip: "2019",
+        period: "2019",
+        title: "Los primeros tambores",
+        text: "Johanna Chévez y Xavier Moreira impulsaron las primeras batucadas con palos, baldes y barriles reciclados. Junto a la Colectiva Batambá, un proceso feminista comunitario de madres de los barrios, la percusión se volvió una forma de tomar la palabra y ocupar el espacio público.",
+    },
+    {
+        chip: "2020",
+        period: "2020",
+        title: "Nace la Fundación MINKAYNI",
+        text: "En plena pandemia nos constituimos jurídicamente como fundación sin fines de lucro (Resolución MIES-CZ-8-DDG1-2020-0059-R, 30 de junio de 2020), con domicilio en Guayaquil y alcance nacional. La música ayudó a reencontrarse cuando el miedo vaciaba las calles.",
+        image: pandemia,
+        alt: "Niñas y niños de la batucada tocando baldes reciclados como tambores durante la pandemia",
+    },
+    {
+        chip: "2021",
+        period: "2021 – 2023",
+        title: "Respuesta comunitaria frente a la violencia",
+        text: "Ante el aumento de la violencia armada y del riesgo de reclutamiento de niñas, niños y adolescentes, la Batucada Popular se transformó en una estrategia permanente de prevención, protección y organización juvenil, con formación en derechos y acompañamiento socioemocional.",
+        image: marcha,
+        alt: "Jóvenes de la Batucada Popular marchando con sus tambores por el centro de Guayaquil",
+    },
+    {
+        chip: "2024",
+        period: "2024",
+        title: "Reconocimiento internacional",
+        text: "El Fondo de Resiliencia de la Global Initiative Against Transnational Organized Crime (GI-TOC, Ginebra) seleccionó a Batucadas Populares para su fellowship 2024, entre cientos de propuestas de todo el mundo. Se fortalecieron las alianzas con PNUD, GIZ, Misión Alianza y Fundación Terranueva.",
+    },
+    {
+        chip: "2025",
+        period: "2025",
+        title: "Pensamiento, comunicación y expansión",
+        text: "FLACSO Ecuador acogió el conversatorio “Batucada Popular de Guayaquil: arte y violencia”, ONU Mujeres nos convocó entre las seis organizaciones del proyecto Construimos Paz, nació Radio Sin Paro y la red superó los 300 integrantes en 12 sectores, sosteniendo el proceso incluso en los momentos más duros de la violencia en la ciudad.",
+        image: comunidad,
+        alt: "Integrantes de la batucada con camisetas de la obra “Sueños que suenan, batucada que transforma”",
+    },
+    {
+        chip: "2026",
+        period: "2026",
+        title: "Fortalecimiento institucional",
+        text: "Aprobamos nuestro Manual Institucional MEAL, firmamos un acuerdo de cooperación con la OIM, proyectamos el Centro de Articulación e Innovación Social en Paraíso de la Flor y comenzamos a tejer una red latinoamericana de iniciativas juveniles frente a la violencia.",
+        image: foto,
+        alt: "Presentación de la Batucada Popular",
+    },
+];
+
+const politicas = [
+    { name: "Código de Ética y Conducta", year: "2023" },
+    { name: "Manual Antifraude y Anticorrupción", year: "2023" },
+    { name: "Ruta de Atención ante Violencia Basada en Género", year: "2023" },
+    { name: "Manual de Salvaguarda y PSEA", year: "2025" },
+    { name: "Manual Institucional MEAL", year: "2026" },
+    { name: "Manual de Protección de Datos", year: "2026" },
+    { name: "Mecanismo de Quejas y Denuncias", year: "2026" },
+    { name: "Manual de Seguridad en Territorio y Eventos", year: "2026" },
+];
+
+const ecosistema = [
+    {
+        name: "Batucada Popular",
+        role: "Proyecto insignia",
+        text: "Colectivos juveniles de percusión que previenen el reclutamiento forzado y recuperan el espacio público en 12 sectores de Guayaquil.",
+        accent: "var(--primary)",
+        dark: true,
+    },
+    {
+        name: "CESCU",
+        role: "Investigación",
+        text: "Centro de estudios que investiga el conflicto urbano desde la experiencia de las juventudes y las madres de los barrios, en articulación con FLACSO.",
+        accent: "var(--secondary)",
+        dark: false,
+    },
+    {
+        name: "Movimiento de Barrios Organizados",
+        role: "Organización adulta",
+        text: "Madres de familia y lideresas populares que discuten la ciudad desde los propios barrios, con autonomía frente a agendas electorales.",
+        accent: "var(--accent)",
+        dark: false,
+    },
+    {
+        name: "Radio Sin Paro",
+        role: "Comunicación popular",
+        text: "Plataforma juvenil de radio y contenidos que disputa las narrativas sobre los barrios, ganadora de la convocatoria Radio Activa de la Casa de la Cultura.",
+        accent: "#dedbd4",
+        dark: false,
+    },
+];
 ---
 
 <PageLayout title="Conócenos" navbarThreshold={0.5}>
-    <section class="w-screen h-fit flex flex-col py-16">
-        <section class="flex flex-col w-full px-4 md:px-15">
-            <h1 class="text-3xl pl-2" style="color: var(--secondary);">Nuestra historia</h1>
-
-            <div class="flex flex-col md:flex-row w-full gap-6 p-10 rounded-3xl shadow-md transform translate-y-10 rounded-br-none rounded-bl-none" style="background-color: var(--fondo); z-index: 5;">
-                <div class="text-7xl pl-4" style="color: var(--textabout); min-width: 0; max-width: 2ch; word-break: break-all; overflow-wrap: break-word;">
-                    <span>2020</span>
-                </div>
-                <div class="flex-1 text-sm md:text-base min-w-0">
-                    <p>En plena pandemia nació Batucada Popular: una propuesta para reunir a niñas, niños y adolescentes de Guayaquil alrededor del tambor. Lo que comenzó como un espacio artístico pronto se convirtió en una comunidad de escucha, disciplina, expresión y cuidado.</p>
-                </div>
+    <!-- Quiénes somos -->
+    <section class="mx-auto w-[90%] max-w-[1280px] py-20 sm:py-28" aria-labelledby="about-intro-title">
+        <div class="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr]">
+            <div data-reveal>
+                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">Fundación MINKAYNI</p>
+                <h2 id="about-intro-title" class="font-display text-5xl font-black leading-[0.92] tracking-tight text-black sm:text-7xl">
+                    Desde los barrios<br /><span class="text-secondary">también se produce</span> futuro.
+                </h2>
+                <p class="mt-8 max-w-[62ch] text-lg leading-relaxed text-black/70">
+                    Somos una organización social ecuatoriana, sin fines de lucro, nacida en el Suburbio de Guayaquil. Nuestro nombre viene de la <em>minka</em>, la tradición andina de
+                    trabajo colectivo: nadie transforma un barrio solo. Con más de quince años de trayectoria territorial de nuestro equipo, acompañamos a niñas, niños, adolescentes,
+                    jóvenes y familias mediante el arte, la educación popular y la organización comunitaria.
+                </p>
             </div>
 
-            <div class="flex flex-col md:flex-row w-full min-h-[300px] h-auto rounded-3xl shadow-lg transform -translate-y-1 overflow-hidden mt-6" style="z-index: 10; background-color: var(--secondary);">
-                <div class="flex flex-col w-full md:w-[80%] min-w-0">
-                    <div class="p-8 w-full h-auto rounded-l-3xl" style="color: var(--bg-white);">La música abrió una puerta para reconectar con la creatividad, fortalecer la autoestima y volver a ocupar el barrio desde la convivencia. Con el tiempo, el proceso incorporó formación en derechos, cultura de paz y liderazgo juvenil.</div>
-
-                    <div class="p-4 flex flex-col md:flex-row flex-1 rounded-t-3xl w-full rounded-tr-none gap-4 md:gap-6" style="color: var(--bg-white); background-color: var(--bg-indigo-bright);">
-                        <div class="flex flex-col h-full w-full md:w-300 min-w-0 p-4">
-                            <div class="text-2xl"><h2>De la calle al reconocimiento</h2></div>
-                            <p>La constancia de participantes, familias y liderazgos comunitarios permitió que la Batucada creciera hacia nuevos sectores. Cada ensayo se convirtió en una oportunidad para aprender a organizarse, acompañar a otros y hacer visible el derecho de las juventudes a vivir y crear sin violencia.</p>
-                        </div>
-                        <div class="flex flex-col text-7xl pl-4 justify-center break-word p-4" style="color: var(--bg-white); min-width: 0; max-width: 2.5ch; word-break: break-all; overflow-wrap: break-word;">
-                            <span>202 1</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="w-full md:w-[20%] shrink-0"><Image src={decoration} alt="Detalle de la historia de Fundación Minkayni" class="object-cover w-full h-full" /></div>
+            <div class="relative mx-auto w-fit pb-16 pl-10 sm:pb-20" data-reveal data-reveal-delay="0.15">
+                <div class="absolute -top-8 right-0 h-24 w-24 sm:h-32 sm:w-32" data-float aria-hidden="true"><Image src={flor} alt="" class="h-full w-full object-cover" /></div>
+                <MaskFlor src={comunidad} alt="Integrantes de la Batucada Popular celebrando tras una presentación" className="h-72 w-72 shadow-xl sm:h-96 sm:w-96 lg:h-[28rem] lg:w-[28rem]" />
+                <figure class="absolute -bottom-0 -left-0 w-44 rotate-[-6deg] overflow-hidden rounded-[1.25rem] border-[6px] border-white shadow-2xl sm:w-60" data-float>
+                    <Image src={marcha} alt="Jóvenes marchando con tambores en el centro de Guayaquil" class="h-full w-full object-cover" />
+                </figure>
             </div>
-        </section>
-    </section>
+        </div>
 
-    <section class="w-screen h-fit flex flex-col items-center mb-20">
-        <div class="relative flex flex-col items-center justify-center w-[60%] overflow-hidden">
-            <div class="w-full h-[12vw]"><DomeSeparator isAbsolute={false} /></div>
-            <div class="relative z-10 mt-8 mb-8 sm:mt-10 sm:mb-10 md:mt-12 md:mb-12 lg:mt-0 lg:mb-0 px-6 text-center md:px-12">
-                <span class="block text-sm md:text-base lg:text-lg leading-relaxed">Creemos que el arte no reemplaza a la comunidad: le devuelve un lugar para encontrarse, organizarse y actuar. Esa idea guía cada proceso de Fundación Minkayni.</span>
+        <div class="mt-16 grid gap-5 md:grid-cols-3" data-reveal-group>
+            <div class="rounded-[2.25rem] bg-primary p-8 text-white transition duration-300 hover:-translate-y-2 sm:p-10">
+                <h3 class="mb-3 font-display text-2xl font-bold">Fortalecimiento juvenil</h3>
+                <p class="leading-relaxed text-white/75">Arte, cultura y liderazgo para que las juventudes defiendan sus derechos y construyan paz en sus territorios.</p>
             </div>
-            <div class="w-full scale-y-[-1] h-[12vw]"><DomeSeparator isAbsolute={false} /></div>
+            <div class="rounded-[2.25rem] bg-secondary p-8 text-black transition duration-300 hover:-translate-y-2 sm:p-10">
+                <h3 class="mb-3 font-display text-2xl font-bold">Economía popular y solidaria</h3>
+                <p class="leading-relaxed text-black/65">Formación y acompañamiento a emprendimientos asociativos que generan ingresos dignos en los barrios.</p>
+            </div>
+            <div class="rounded-[2.25rem] bg-accent p-8 text-black transition duration-300 hover:-translate-y-2 sm:p-10">
+                <h3 class="mb-3 font-display text-2xl font-bold">Participación ciudadana</h3>
+                <p class="leading-relaxed text-black/65">Liderazgo social, organización barrial e incidencia en la política pública desde las voces de los territorios.</p>
+            </div>
         </div>
     </section>
 
-    <section class="w-screen h-fit flex flex-col">
-        <section class="flex flex-row w-full px-4 md:px-15 items-center">
-            <div class="flex flex-col md:flex-row w-full gap-4 relative">
-                <div class="flex flex-col gap-5 w-full md:w-1/2 p-10 items-center rounded-l-3xl min-h-[25vw]" style="color: var(--bg-white); background-color: var(--bg-indigo-bright); z-index: 10;">
-                    <h1 class="text-3xl pl-2">Misión</h1>
-                    <span>Acompañar a niñas, niños y adolescentes mediante procesos artísticos que fortalezcan su autoestima, liderazgo, derechos y vínculos comunitarios.</span>
-                </div>
-                <div class="flex flex-col gap-5 w-full md:w-1/2 bg-secondary p-10 items-center rounded-3xl min-h-[25vw] relative md:-translate-x-8 shadow-2xl z-20" style="color: var(--bg-white);">
-                    <h1 class="text-3xl pl-2">Visión</h1>
-                    <span>Construir barrios donde las juventudes sean reconocidas como protagonistas y encuentren oportunidades para vivir, crear y participar sin violencia.</span>
+    <!-- Historia / línea de tiempo inmersiva -->
+    <section class="mx-auto w-[94%] max-w-[1440px] rounded-[2.75rem] bg-[#dedbd4] px-4 py-14 sm:px-8 lg:rounded-[5rem] lg:px-14 lg:py-20" aria-labelledby="history-title">
+        <div class="mb-10 max-w-[760px]" data-reveal>
+            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">Nuestra historia</p>
+            <h2 id="history-title" class="font-display text-4xl font-black leading-none text-black sm:text-6xl">Una trayectoria que empezó mucho antes del primer tambor.</h2>
+        </div>
+
+        <nav class="mb-14 flex flex-wrap gap-2" aria-label="Saltar a una época de la historia" data-reveal>
+            {
+                timeline.map((item, index) => (
+                    <button
+                        type="button"
+                        data-tl-jump={index}
+                        class="min-h-11 rounded-full border border-black/15 px-4 py-2 font-display text-sm font-bold transition hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    >
+                        {item.chip}
+                    </button>
+                ))
+            }
+        </nav>
+
+        <div class="lg:grid lg:grid-cols-[300px_1fr] lg:gap-14">
+            <!-- Panel fijo (desktop) -->
+            <div class="hidden lg:block">
+                <div data-tl-panel class="flex flex-col gap-2 pt-2">
+                    <p class="overflow-hidden font-display text-8xl font-black leading-none text-primary" aria-hidden="true"><span class="block" data-tl-year>2010</span></p>
+                    <p class="font-display text-lg font-bold uppercase tracking-[0.18em] text-black/60" data-tl-period>2010 – 2015</p>
+                    <p class="font-display text-sm font-bold text-black/40" data-tl-count>01 / 08</p>
+                    <div class="mt-8 h-24 w-24 opacity-60" data-float aria-hidden="true"><Image src={flor} alt="" class="h-full w-full object-cover" /></div>
                 </div>
             </div>
-        </section>
+
+            <!-- Hitos -->
+            <ol class="relative" data-tl-list>
+                <div class="absolute bottom-2 left-[11px] top-2 w-[3px] rounded-full bg-primary/15" aria-hidden="true">
+                    <span data-tl-progress class="absolute inset-0 origin-top scale-y-0 rounded-full bg-primary"></span>
+                </div>
+                {
+                    timeline.map((item, index) => (
+                        <li class="tl-item relative mb-16 pl-12 last:mb-0 sm:pl-14" data-tl-item data-chip={item.chip} data-period={item.period}>
+                            <span class="tl-dot absolute left-0 top-1 flex h-[25px] w-[25px] items-center justify-center rounded-full border-[3px] border-primary bg-[#dedbd4] transition-all duration-300" aria-hidden="true">
+                                <span class="tl-dot-core h-2 w-2 scale-0 rounded-full bg-primary transition-transform duration-300" />
+                            </span>
+                            <p class="font-display text-sm font-bold uppercase tracking-[0.18em] text-primary lg:hidden">{item.period}</p>
+                            <h3 class="mt-1 font-display text-2xl font-bold text-black sm:text-3xl">{item.title}</h3>
+                            <p class="mt-2 max-w-[66ch] leading-relaxed text-black/70">{item.text}</p>
+                            {item.image && (
+                                <figure class={`mt-6 w-full max-w-[440px] overflow-hidden rounded-[1.75rem] shadow-lg ${index % 2 === 0 ? "rotate-[1.5deg]" : "rotate-[-1.5deg]"}`}>
+                                    <Image src={item.image} alt={item.alt} class="h-auto w-full object-cover transition duration-700 hover:scale-[1.04]" />
+                                </figure>
+                            )}
+                        </li>
+                    ))
+                }
+            </ol>
+        </div>
     </section>
 
-    <section class="w-screen flex flex-col mt-30 items-center mb-10 h-fit">
-        <section class="flex flex-col md:flex-row w-full md:w-[90%] px-4 md:px-15 items-center gap-10">
-            <div class="w-full md:w-1/2 min-h-[25vw] flex justify-center items-center relative">
-                <div class="absolute top-5 right-8 w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-50 lg:h-50 z-0"><Image src={flor} alt="" class="object-cover w-full h-full" /></div>
-                <div class="absolute bottom-0 left-8 w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-50 lg:h-50 z-0"><Image src={flor} alt="" class="object-cover w-full h-full" /></div>
-                <MaskFlor src={foto} alt="Integrantes de Batucada Popular" className="w-56 h-56 sm:w-64 sm:h-64 md:w-96 md:h-96 lg:w-120 lg:h-120 shadow-lg z-10" />
+    <!-- Misión y visión -->
+    <section class="mx-auto w-[90%] max-w-[1280px] py-24" aria-label="Misión y visión">
+        <div class="grid gap-5 lg:grid-cols-2" data-reveal-group>
+            <div class="relative overflow-hidden rounded-[2.75rem] bg-primary p-8 text-white sm:p-12">
+                <Image src={flor} alt="" class="absolute -bottom-14 -right-12 h-56 w-56 rotate-12 opacity-15" aria-hidden="true" />
+                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">Misión</p>
+                <p class="max-w-[58ch] text-lg leading-relaxed text-white/90">
+                    Proponer y ejecutar programas, proyectos y servicios orientados a la inclusión económica y social de niñas, niños, adolescentes, jóvenes, personas adultas mayores,
+                    personas con discapacidad y poblaciones en situación de pobreza, exclusión o vulnerabilidad; promoviendo el desarrollo integral, el cuidado durante todo el ciclo de
+                    vida, la movilidad social ascendente, el fortalecimiento comunitario y la economía popular y solidaria, desde un enfoque de derechos, equidad, participación,
+                    interculturalidad y justicia social.
+                </p>
             </div>
-
-            <div class="flex-1 flex flex-col p-4 md:p-10 min-h-[25vw] gap-10">
-                <div class="text-3xl md:text-4xl lg:text-5xl w-full" style="color: var(--bg-indigo-bright);"><h1>Premios y reconocimiento</h1></div>
-                <div class="text-base sm:text-lg md:text-xl text-gray-700">El crecimiento de Batucada Popular ha llevado la conversación sobre arte, prevención y liderazgo juvenil a medios nacionales. Estas historias ayudan a poner en el centro las voces de las juventudes y el valor de invertir en comunidad.</div>
-                <div class="flex flex-row w-full gap-20">
-                    <a href="https://www.eluniverso.com/noticias/informes/con-la-batucada-despejo-la-mente-y-me-alejo-de-robar-plan-de-serpaz-busca-que-los-jovenes-no-sean-reclutados-por-las-bandas-nota/" target="_blank" rel="noopener noreferrer" aria-label="Leer reportaje en El Universo"><Image src={eu} alt="El Universo" class="w-15" /></a>
-                    <a href="https://www.vistazo.com/actualidad/nacional/2026-03-08-historia-mujer-convirtio-tambores-refugio-jovenes-violencia-guayaquil-GG10707818" target="_blank" rel="noopener noreferrer" aria-label="Leer perfil en Vistazo"><Image src={vistazo} alt="Vistazo" class="w-14" /></a>
-                    <a href="https://www.ecuavisa.com/seguridad/dos-jovenes-de-13-anos-pierden-la-vida-por-balas-perdidas-en-flor-de-bastion-noroeste-de-guayaquil-20250630-0094.html" target="_blank" rel="noopener noreferrer" aria-label="Ver cobertura en Ecuavisa"><Image src={ecuavisa} alt="Ecuavisa" class="w-15" /></a>
-                </div>
+            <div class="relative overflow-hidden rounded-[2.75rem] bg-secondary p-8 text-black sm:p-12">
+                <Image src={flor} alt="" class="absolute -bottom-14 -right-12 h-56 w-56 -rotate-12 opacity-20" aria-hidden="true" />
+                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">Visión</p>
+                <p class="max-w-[58ch] text-lg leading-relaxed text-black/80">
+                    Ser una organización social referente en Guayaquil y el Ecuador por impulsar procesos comunitarios sostenibles que fortalezcan la dignidad, la organización popular,
+                    la inclusión social y económica, la protección de derechos y la construcción de territorios más justos, seguros, solidarios y libres de violencia.
+                </p>
             </div>
-        </section>
+        </div>
     </section>
 
-    <section class="w-screen flex flex-col mt-30 items-center mb-75 h-fit">
-        <TimeLine
-            interval={5000}
-            steps={[
-                {
-                    year: 2020,
-                    title: "Nace Batucada Popular",
-                    text: "Durante la pandemia, el tambor se convierte en una forma de reunir, escuchar y acompañar a niñas, niños y adolescentes de Guayaquil.",
-                    image: foto,
-                },
-                {
-                    year: 2025,
-                    title: "Arte para comunidades resilientes",
-                    text: "El trabajo de la Batucada entra en una conversación nacional sobre prevención del reclutamiento, participación juvenil y recuperación del tejido social.",
-                    image: decoration,
-                    link: "https://www.eluniverso.com/noticias/informes/con-la-batucada-despejo-la-mente-y-me-alejo-de-robar-plan-de-serpaz-busca-que-los-jovenes-no-sean-reclutados-por-las-bandas-nota/",
-                    linkText: "Más información",
-                },
-                {
-                    year: 2026,
-                    title: "El liderazgo se multiplica",
-                    text: "Batucada Popular alcanza a 300 jóvenes y cuenta con más de 40 líderes distribuidos en 11 sectores de Guayaquil.",
-                    image: foto,
-                    link: "https://www.vistazo.com/actualidad/nacional/2026-03-08-historia-mujer-convirtio-tambores-refugio-jovenes-violencia-guayaquil-GG10707818",
-                    linkText: "Conocer la historia",
-                },
-            ]}
-        />
+    <!-- Ecosistema -->
+    <section class="mx-auto w-[90%] max-w-[1280px] pb-24" aria-labelledby="ecosystem-title">
+        <div class="mb-12 max-w-[760px]" data-reveal>
+            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">Un ecosistema comunitario</p>
+            <h2 id="ecosystem-title" class="font-display text-4xl font-black leading-none text-primary sm:text-6xl">La percusión es el pretexto para encontrarnos y organizarnos.</h2>
+            <p class="mt-6 max-w-[62ch] text-lg leading-relaxed text-black/70">
+                Alrededor de la Batucada Popular hemos construido un ecosistema de organizaciones y estrategias que se sostienen mutuamente: investigación, organización adulta,
+                comunicación popular y formación política.
+            </p>
+        </div>
+
+        <div class="grid gap-5 md:grid-cols-2" data-reveal-group>
+            {
+                ecosistema.map((item) => (
+                    <article class={`rounded-[2.25rem] p-8 transition duration-300 hover:-translate-y-2 sm:p-10 ${item.dark ? "text-white" : "text-black"}`} style={`background: ${item.accent};`}>
+                        <span class={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] ${item.dark ? "bg-white/15 text-white" : "bg-black/10 text-black"}`}>{item.role}</span>
+                        <h3 class="mt-6 font-display text-3xl font-bold">{item.name}</h3>
+                        <p class={`mt-3 leading-relaxed ${item.dark ? "text-white/80" : "text-black/70"}`}>{item.text}</p>
+                    </article>
+                ))
+            }
+        </div>
+    </section>
+
+    <!-- Equipo -->
+    <section class="mx-auto w-[90%] max-w-[1280px] pb-24" aria-labelledby="team-title">
+        <div class="grid items-center gap-10 lg:grid-cols-[auto_1fr]">
+            <div class="relative mx-auto flex items-center justify-center" data-reveal>
+                <div class="absolute -left-8 -top-6 h-28 w-28 sm:h-36 sm:w-36" data-float aria-hidden="true"><Image src={flor} alt="" class="h-full w-full object-cover" /></div>
+                <MaskFlor src={foto} alt="Integrantes de Batucada Popular junto al equipo de MINKAYNI" className="h-64 w-64 shadow-lg sm:h-80 sm:w-80 lg:h-96 lg:w-96" />
+            </div>
+            <div data-reveal data-reveal-delay="0.1">
+                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">Quiénes lo hacemos posible</p>
+                <h2 id="team-title" class="font-display text-4xl font-black leading-none text-black sm:text-6xl">Un equipo nacido en los mismos barrios que acompaña.</h2>
+                <div class="mt-8 grid gap-6 sm:grid-cols-2">
+                    <div>
+                        <h3 class="font-display text-xl font-bold text-primary">Johanna Chévez Contreras</h3>
+                        <p class="mt-2 leading-relaxed text-black/70">
+                            Cofundadora y vicepresidenta. Educadora popular y feminista comunitaria; diseña la metodología, la formación y el acompañamiento territorial de la Batucada
+                            Popular desde sus inicios.
+                        </p>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-xl font-bold text-primary">Xavier Moreira Flores</h3>
+                        <p class="mt-2 leading-relaxed text-black/70">
+                            Cofundador, presidente y representante legal. Sociólogo con más de 15 años en programas sociales y de cooperación; certificado en Prevención de la Explotación
+                            y el Abuso Sexuales (UNICEF–Agora, 2026).
+                        </p>
+                    </div>
+                </div>
+                <p class="mt-6 max-w-[68ch] leading-relaxed text-black/70">
+                    El equipo técnico y operativo está integrado por jóvenes de 19 a 25 años de Socio Vivienda, Sergio Toral, Bastión Popular, Flor de Bastión, el Suburbio, Isla
+                    Trinitaria y Guasmo, con equidad de género: el relevo generacional no es un discurso, es nuestra estructura.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Transparencia y gobernanza -->
+    <section class="mx-auto w-[94%] max-w-[1440px] rounded-[2.75rem] bg-[linear-gradient(130deg,var(--primary),#410063)] px-6 py-16 text-white sm:px-12 lg:rounded-[5rem] lg:px-20 lg:py-24" aria-labelledby="transparency-title">
+        <div class="mb-12 max-w-[760px]" data-reveal>
+            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">Transparencia y gobernanza</p>
+            <h2 id="transparency-title" class="font-display text-4xl font-black leading-[0.95] sm:text-6xl">Preparados para trabajar con la cooperación internacional.</h2>
+            <p class="mt-6 max-w-[62ch] text-lg leading-relaxed text-white/75">
+                Estamos legalmente constituidos desde 2020 (Resolución MIES-CZ-8-DDG1-2020-0059-R) y registrados ante el Ministerio de Gobierno del Ecuador. Contamos con un acuerdo de
+                cooperación con la OIM (2025), convenios con seis universidades —Universidad de Guayaquil, Casa Grande, Católica de Santiago de Guayaquil, Universidad de las Artes,
+                ESPOL y Bolivariana— y un sistema institucional de políticas que se revisa periódicamente.
+            </p>
+        </div>
+
+        <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" data-reveal-group>
+            {
+                politicas.map((p) => (
+                    <li class="rounded-[1.5rem] bg-white/10 px-5 py-4 backdrop-blur">
+                        <p class="font-display font-bold leading-snug">{p.name}</p>
+                        <p class="mt-1 text-sm text-white/60">Aprobado en {p.year}</p>
+                    </li>
+                ))
+            }
+        </ul>
+
+        <p class="mt-10 max-w-[70ch] text-sm leading-relaxed text-white/55">
+            Nuestro Manual Institucional MEAL (monitoreo, evaluación, aprendizaje y rendición de cuentas) nos compromete a registrar resultados, escuchar a las poblaciones
+            participantes y rendir cuentas ante comunidades y organizaciones aliadas, con informes periódicos de ingresos y gastos.
+        </p>
+    </section>
+
+    <!-- Prensa -->
+    <section class="mx-auto w-[90%] max-w-[1280px] py-24" aria-labelledby="press-title">
+        <div class="grid items-center gap-10 lg:grid-cols-[1fr_auto]">
+            <div data-reveal>
+                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">Lo que se dice de nosotros</p>
+                <h2 id="press-title" class="font-display text-4xl font-black leading-none text-primary sm:text-6xl">Una historia que ya cuenta el país.</h2>
+                <p class="mt-6 max-w-[62ch] text-lg leading-relaxed text-black/70">
+                    Medios nacionales han documentado cómo el tambor se convirtió en refugio y en estrategia de prevención del reclutamiento en Guayaquil. Estas historias ponen en el
+                    centro las voces de las juventudes y el valor de invertir en comunidad.
+                </p>
+            </div>
+            <div class="flex flex-row items-center gap-14 lg:flex-col lg:gap-10" data-reveal data-reveal-delay="0.15">
+                <a
+                    href="https://www.eluniverso.com/noticias/informes/con-la-batucada-despejo-la-mente-y-me-alejo-de-robar-plan-de-serpaz-busca-que-los-jovenes-no-sean-reclutados-por-las-bandas-nota/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Leer reportaje en El Universo"
+                    class="transition hover:-translate-y-1"><Image src={eu} alt="El Universo" class="w-16" /></a
+                >
+                <a
+                    href="https://www.vistazo.com/actualidad/nacional/2026-03-08-historia-mujer-convirtio-tambores-refugio-jovenes-violencia-guayaquil-GG10707818"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Leer perfil en Vistazo"
+                    class="transition hover:-translate-y-1"><Image src={vistazo} alt="Vistazo" class="w-14" /></a
+                >
+            </div>
+        </div>
+    </section>
+
+    <!-- Contacto -->
+    <section id="contacto" class="mx-auto mb-44 w-[94%] max-w-[1440px] overflow-hidden rounded-[2.75rem] bg-accent px-6 py-16 text-black sm:px-12 md:mb-80 lg:rounded-[5rem] lg:px-20 lg:py-24" aria-labelledby="contact-title">
+        <div class="grid items-center gap-12 lg:grid-cols-[1fr_auto]">
+            <div class="max-w-[760px]" data-reveal>
+                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">Hagamos minka</p>
+                <h2 id="contact-title" class="font-display text-5xl font-black leading-[0.95] sm:text-7xl">El ritmo crece cuando alguien más se suma.</h2>
+                <p class="mt-6 max-w-[58ch] text-lg leading-relaxed text-black/70">
+                    Si representas a una organización de cooperación, una empresa, una universidad o un organismo internacional, conversemos: cada alianza sostiene liderazgo juvenil,
+                    arte comunitario y construcción de paz desde los barrios populares de Guayaquil.
+                </p>
+                <div class="mt-10 flex flex-wrap items-center gap-5">
+                    <Button href="mailto:xavier.moreira@minkayni.org" defaultText="Escríbenos 💌" hoverText="Hagamos minka 🥁" />
+                    <a
+                        href="https://www.instagram.com/batucada_popular_/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="inline-flex min-h-12 items-center justify-center rounded-full bg-black px-7 py-3 text-center font-display font-bold text-white transition hover:-translate-y-1 hover:bg-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black"
+                    >
+                        Síguenos en Instagram
+                    </a>
+                </div>
+            </div>
+            <div class="relative mx-auto hidden lg:block" data-reveal data-reveal-delay="0.2">
+                <div class="absolute -left-10 top-4 h-24 w-24 opacity-70" data-float aria-hidden="true"><Image src={flor} alt="" class="h-full w-full object-cover" /></div>
+                <Image src={daniel} alt="Daniel, integrante de la Batucada Popular" class="h-96 w-auto drop-shadow-2xl" data-float />
+            </div>
+        </div>
     </section>
 </PageLayout>
+
+<script>
+    import { gsap, ScrollTrigger, ScrollSmoother } from "../scripts/main";
+
+    const initAbout = () => {
+        const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        // Reveals al hacer scroll (tween creado dentro de onEnter)
+        if (!reduced) {
+            document.querySelectorAll<HTMLElement>("[data-reveal]").forEach((el) => {
+                if (el.dataset.revealReady) return;
+                el.dataset.revealReady = "1";
+                gsap.set(el, { opacity: 0, y: 44 });
+                ScrollTrigger.create({
+                    trigger: el,
+                    start: "top 88%",
+                    once: true,
+                    onEnter: () => gsap.to(el, { opacity: 1, y: 0, duration: 0.9, ease: "power2.out", delay: parseFloat(el.dataset.revealDelay || "0") }),
+                });
+            });
+
+            document.querySelectorAll<HTMLElement>("[data-reveal-group]").forEach((group) => {
+                if (group.dataset.revealReady) return;
+                group.dataset.revealReady = "1";
+                const kids = Array.from(group.children) as HTMLElement[];
+                gsap.set(kids, { opacity: 0, y: 44 });
+                ScrollTrigger.create({
+                    trigger: group,
+                    start: "top 85%",
+                    once: true,
+                    onEnter: () => gsap.to(kids, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out", stagger: 0.12 }),
+                });
+            });
+
+            document.querySelectorAll<HTMLElement>("[data-float]").forEach((el, i) => {
+                gsap.to(el, { y: -12, rotation: "+=4", duration: 2.8 + (i % 3) * 0.5, ease: "sine.inOut", yoyo: true, repeat: -1 });
+            });
+        }
+
+        // Línea de tiempo inmersiva
+        const list = document.querySelector<HTMLElement>("[data-tl-list]");
+        if (!list || list.dataset.tlReady) return;
+        list.dataset.tlReady = "1";
+
+        const items = Array.from(list.querySelectorAll<HTMLElement>("[data-tl-item]"));
+        const yearEl = document.querySelector<HTMLElement>("[data-tl-year]");
+        const periodEl = document.querySelector<HTMLElement>("[data-tl-period]");
+        const countEl = document.querySelector<HTMLElement>("[data-tl-count]");
+        const progressEl = list.querySelector<HTMLElement>("[data-tl-progress]");
+        const panel = document.querySelector<HTMLElement>("[data-tl-panel]");
+        let current = -1;
+
+        const setPanel = (i: number) => {
+            if (i === current || !items[i]) return;
+            current = i;
+            if (yearEl) yearEl.textContent = items[i].dataset.chip ?? "";
+            if (periodEl) periodEl.textContent = items[i].dataset.period ?? "";
+            if (countEl) countEl.textContent = `${String(i + 1).padStart(2, "0")} / ${String(items.length).padStart(2, "0")}`;
+            if (yearEl && !reduced) gsap.fromTo(yearEl, { yPercent: 30, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.45, ease: "power2.out" });
+        };
+        setPanel(0);
+
+        if (progressEl && !reduced) {
+            gsap.fromTo(
+                progressEl,
+                { scaleY: 0 },
+                { scaleY: 1, ease: "none", scrollTrigger: { trigger: list, start: "top 62%", end: "bottom 58%", scrub: 0.5 } }
+            );
+        }
+
+        items.forEach((item, i) => {
+            ScrollTrigger.create({
+                trigger: item,
+                start: "top 58%",
+                end: "bottom 58%",
+                onToggle: (self) => {
+                    item.classList.toggle("tl-active", self.isActive);
+                    if (self.isActive) setPanel(i);
+                },
+            });
+        });
+
+        // Panel pineado en desktop (position:sticky no funciona con ScrollSmoother)
+        if (panel && window.matchMedia("(min-width: 1024px)").matches) {
+            ScrollTrigger.create({ trigger: list, start: "top 25%", end: "bottom 70%", pin: panel, pinSpacing: false });
+        }
+
+        // Chips: saltar a una época
+        document.querySelectorAll<HTMLElement>("[data-tl-jump]").forEach((chip) => {
+            chip.addEventListener("click", () => {
+                const target = items[Number(chip.dataset.tlJump)];
+                if (!target) return;
+                const smoother = ScrollSmoother.get();
+                if (smoother) smoother.scrollTo(target, !reduced, "top 35%");
+                else gsap.to(window, { scrollTo: { y: target, offsetY: window.innerHeight * 0.35 }, duration: reduced ? 0 : 0.8, ease: "power2.inOut" });
+            });
+        });
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initAbout, { once: true });
+    } else {
+        initAbout();
+    }
+</script>
+
+<style>
+    .tl-item .tl-dot {
+        background-color: #dedbd4;
+    }
+    .tl-item.tl-active .tl-dot {
+        border-color: var(--primary);
+        background-color: var(--accent);
+        transform: scale(1.25);
+        box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 30%, transparent);
+    }
+    .tl-item.tl-active .tl-dot-core {
+        transform: scale(1);
+    }
+    .tl-item h3 {
+        transition: color 0.3s ease;
+    }
+    .tl-item.tl-active h3 {
+        color: var(--primary);
+    }
+</style>

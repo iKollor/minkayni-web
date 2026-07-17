@@ -11,6 +11,8 @@ import rehypeModular from "./src/utils/rehype-modular";
 
 // https://astro.build/config
 export default defineConfig({
+    // Permite que herramientas (p. ej. previews) asignen puerto vía PORT
+    server: process.env.PORT ? { port: Number(process.env.PORT) } : undefined,
     integrations: [react(), icon(), md()],
     redirects: {
         "/batucada-popular": "/projects/batucada-popular/",
@@ -18,6 +20,10 @@ export default defineConfig({
     vite: {
         plugins: [tailwindcss()],
         assetsInclude: ["**/*.mov"],
+        optimizeDeps: {
+            force: true,
+            include: ["react", "react-dom", "react/jsx-runtime", "motion/react", "gsap", "gsap/all", "gsap/ScrollTrigger", "gsap/SplitText", "leaflet"],
+        },
     },
     markdown: {
         remarkPlugins: [],

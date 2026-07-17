@@ -5,7 +5,7 @@ import flor from "../../assets/SVG/misc/flor.svg";
 
 export interface ProjectItem {
     id: string;
-    category: "musica" | "liderazgo" | "artes" | "comunidad";
+    category: "musica" | "liderazgo" | "comunicacion" | "comunidad" | "economia" | "investigacion";
     categoryLabel: string;
     type: string;
     title: string;
@@ -27,8 +27,10 @@ const filters = [
     { id: "all", label: "Todos" },
     { id: "musica", label: "Música" },
     { id: "liderazgo", label: "Liderazgo" },
-    { id: "artes", label: "Artes" },
+    { id: "comunicacion", label: "Comunicación" },
     { id: "comunidad", label: "Comunidad" },
+    { id: "economia", label: "Economía" },
+    { id: "investigacion", label: "Investigación" },
 ] as const;
 
 const accentStyles = {

@@ -1,0 +1,30 @@
+---
+/* Línea de pulso: marquee infinito de los ejes del proyecto.
+   Dos tiras idénticas movidas por gsap.ticker (ver scripts/batucada/motion.ts),
+   mismo principio que el carrusel de aliados del homepage. La tira va rotada
+   como cinta pegada a mano; el contenedor de página recorta el desborde. */
+interface Props {
+    items?: string[];
+}
+
+const { items = ["Percusión", "Educación popular", "Acción comunitaria"] } = Astro.props;
+const reps = 3;
+const cells = Array.from({ length: reps }, () => items).flat();
+---
+
+<div class="-my-px -rotate-[1.1deg] scale-[1.02] overflow-hidden border-y-[3px] border-black bg-black text-white" data-bp-pulseline role="img" aria-label={items.join(" · ")}>
+    <div class="relative h-[52px]">
+        {
+            [0, 1].map(() => (
+                <ul class="absolute left-0 top-0 flex h-full w-max items-center" data-bp-strip aria-hidden="true">
+                    {cells.map((text, i) => (
+                        <li class="flex items-center gap-7 whitespace-nowrap pr-7 text-[0.9rem] font-black uppercase tracking-[0.22em]">
+                            <span>{text}</span>
+                            <i class:list={["aspect-square w-[0.65rem] flex-none", i % items.length === items.length - 1 ? "rotate-45 bg-accent" : "bg-bp-blue"]} />
+                        </li>
+                    ))}
+                </ul>
+            ))
+        }
+    </div>
+</div>

@@ -83,6 +83,12 @@ export const showContentNoIntro = (opts?: {
     cascade?: boolean;        // <-- nuevo
     cascadeDelay?: number;    // <-- nuevo
 }): void => {
+    const hasIntroShell = Boolean(
+        document.getElementById("app-content") ||
+        document.getElementById("intro-overlay") ||
+        document.querySelector(".bg__container, .bg__container__logo")
+    );
+
     const prefersReduced =
         opts?.prefersReduced ??
         (typeof window !== "undefined" &&
@@ -95,9 +101,43 @@ export const showContentNoIntro = (opts?: {
     const doCascade = opts?.cascade ?? true;
     const cascadeDelay = opts?.cascadeDelay ?? 0.6;
 
+    /* Esenciales de TODA página (el navbar y el scroll viven fuera del
+       shell de la intro): deben correr aunque no exista #app-content. */
     document.body.removeAttribute("data-intro");
     const navContainer = $("#nav-container") as HTMLElement | null;
     if (navContainer) navContainer.style.display = "block";
+
+    if (!hasIntroShell) {
+        /* Página interior: sin overlay ni animaciones del homepage.
+           Solo desbloquear scroll y revelar el navbar (con su cascada). */
+        document.documentElement.classList.remove("no-scroll");
+        document.body.classList.remove("no-scroll");
+        (document.documentElement as HTMLElement).style.removeProperty("overflow-y");
+        document.body.style.removeProperty("overflow-y");
+
+        const navItems = document.querySelectorAll("#navBase .animate, #navBase .animate > *");
+        waitFontsReady(() => {
+            if (document.querySelector("#navBase > *")) {
+                gsap.set("#navBase > *", { opacity: 1, y: 0 });
+            }
+            if (!prefersReduced && doCascade && navItems.length) {
+                gsap.set(navItems, { y: 40, opacity: 0 });
+                gsap.to(navItems, {
+                    y: 0,
+                    opacity: 1,
+                    duration: 0.8,
+                    ease: "power4.out",
+                    stagger: 0.08,
+                    delay: cascadeDelay,
+                });
+            }
+            if (emitEvent) {
+                requestAnimationFrame(() => window.dispatchEvent(new CustomEvent("intro:finished")));
+            }
+            requestAnimationFrame(() => ScrollTrigger?.refresh());
+        });
+        return;
+    }
 
     const overlay = $("#intro-overlay") as HTMLElement | null;
     const content = $("#app-content") as HTMLElement | null;

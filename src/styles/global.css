@@ -16,9 +16,25 @@
     --color-white: var(--bg-white);
     --color-black: var(--bg-black);
     --ease-in-out-cubic: var(--ease-in-out-cubic);
+
+    /* Batucada Popular: azul del logo del proyecto y crema atenuada para
+       texto secundario sobre tinta (≈12:1). Genera bg-bp-blue, text-bp-dim… */
+    --color-bp-blue: #29aae1;
+    --color-bp-dim: #cdc6ba;
+    --font-bp: "Special Gothic Expanded One", "Aristotelica Pro Display", sans-serif;
+    /* Envolventes de golpe/rebote del sistema batucada → ease-bp-hit / ease-bp-rebound */
+    --ease-bp-hit: cubic-bezier(0.19, 1, 0.22, 1);
+    --ease-bp-rebound: cubic-bezier(0.34, 1.35, 0.4, 1);
 }
 
 :root {
+    /* Texturas batucada referenciadas desde clases arbitrarias
+       ([background-image:var(--bp-noise)], [mask-image:var(--bp-noise)]…):
+       un data-URI con comas no puede vivir dentro de un valor arbitrario. */
+    --bp-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E");
+    --bp-rings-tr: repeating-radial-gradient(circle at 88% -12%, transparent 0 34px, rgb(10 8 1 / 0.05) 34px 37px);
+    --bp-rings-br: repeating-radial-gradient(circle at 108% 118%, transparent 0 34px, rgb(10 8 1 / 0.06) 34px 37px);
+
     --text: #0a0801;
     --bg-black: #0a0801;
     --bg-white: #FFF6E5;

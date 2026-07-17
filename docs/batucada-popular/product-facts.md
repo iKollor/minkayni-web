@@ -17,5 +17,10 @@
 
 ## Regla editorial
 
-La página no usará cifras de participantes porque las fuentes públicas consultadas presentan valores distintos según fecha y alcance. Se conservarán únicamente 2020 y 13 territorios, datos explícitos en el PDF más reciente.
+> Actualizada el 16 de julio de 2026 por decisión de la fundadora (Johanna).
+
+- Cifras oficiales del sitio: **12 sectores** (lista definitiva provista por la fundadora, la misma del mapa) y **"más de 300" integrantes** (rango 300–320 según la historia institucional 2026). Se conserva **2020** como año de inicio.
+- La historia pública incluye el origen completo según la entrevista de 2026 (pandemia, iniciativa familiar, la protesta por el presupuesto universitario y la detención, Batambá, prevención de reclutamiento y contranarrativas frente a los GDO).
+- **No se publica** la pérdida violenta de la integrante (junio de 2025) ni montos de financiamiento puntuales.
+- Reconocimientos publicables: Resilience Fund de GI-TOC 2024 (10 de ~500 en el mundo, URL verificada), ONU Mujeres «Construimos Paz» 2025 (selección, no premio formal), y presea «Rosa Borja Febres-Cordero de Icaza» al Mérito en Servicio Social (preseas cívicas 2026 — verificado en Expreso). **Centro Ana Frank Argentina: sin fuente pública — no publicar hasta que la fundación aporte respaldo.**
 

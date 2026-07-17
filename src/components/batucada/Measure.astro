@@ -1,0 +1,24 @@
+---
+/* Cabecera de compás: número de movimiento + etiqueta + 8 tiempos.
+   El acento (amarillo) cae en el último tiempo lleno = "estás aquí".
+   La info real vive en el texto; la tira de tiempos es decorativa. */
+interface Props {
+    num: string;
+    label: string;
+    filled: number;
+    /* color del número según el fondo: text-primary (crema), text-bp-blue
+       (tinta), text-white (morado) */
+    numClass?: string;
+}
+
+const { num, label, filled, numClass = "text-primary" } = Astro.props;
+const states = Array.from({ length: 8 }, (_, i) => (i === filled - 1 ? "accent" : i < filled ? "on" : "off"));
+---
+
+<header class="mb-[clamp(2.25rem,4.5vw,3.5rem)] flex items-baseline gap-x-5 gap-y-4 border-b-[3px] border-current pb-4" data-bp-hit>
+    <span class:list={["font-bp text-[clamp(2.2rem,3.4vw,3.6rem)] leading-[0.9]", numClass]} aria-hidden="true">{num}</span>
+    <p class="text-[0.78rem] font-black uppercase tracking-[0.14em]">{label}</p>
+    <div class="ml-auto flex items-end gap-[0.4rem] self-center" data-bp-beats aria-hidden="true">
+        {states.map((state) => <i class:list={["aspect-square w-[clamp(0.6rem,1vw,0.85rem)] border-2 border-current", state === "on" ? "bg-bp-blue" : state === "accent" ? "scale-125 bg-accent" : "opacity-35"]} />)}
+    </div>
+</header>

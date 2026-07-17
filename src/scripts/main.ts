@@ -3,18 +3,28 @@ import { ScrollSmoother, ScrollTrigger, TextPlugin, SplitText, DrawSVGPlugin, Sc
 
 gsap.registerPlugin(ScrollSmoother, ScrollTrigger, TextPlugin, SplitText, DrawSVGPlugin, ScrollToPlugin, MotionPathPlugin, Draggable, InertiaPlugin);
 
-// Utilidad: esperar a que las fuentes estén listas (evita warnings de SplitText)
-const fontsReady: Promise<void> = (() => {
-    // @ts-ignore
-    const fonts = (typeof document !== "undefined" && (document as any).fonts) || null;
-    if (fonts?.ready && typeof fonts.ready.then === "function") {
-        return fonts.ready.then(() => void 0).catch(() => void 0);
-    }
-    return Promise.resolve();
-})();
+// Solicitar primero las variantes que usa SplitText. `document.fonts.ready`
+// por sí solo puede resolverse antes de que el contenido oculto pida su fuente.
+const fontsReady: Promise<void> = (async () => {
+    if (typeof document === "undefined" || !document.fonts) return;
+
+    const descriptors = [
+        '400 16px "Aristotelica Pro Text"',
+        '700 16px "Aristotelica Pro Text"',
+        '400 16px "Aristotelica Pro Display"',
+        '700 16px "Aristotelica Pro Display"',
+        '900 16px "Aristotelica Pro Display"',
+        '400 16px "Sao Torpes"',
+    ];
+
+    await Promise.allSettled(descriptors.map((descriptor) => document.fonts.load(descriptor)));
+    await document.fonts.ready;
+})().catch(() => void 0);
 
 const waitForFontsReady = (cb: () => void) => {
-    fontsReady.then(() => requestAnimationFrame(cb));
+    fontsReady.then(() => {
+        requestAnimationFrame(() => requestAnimationFrame(cb));
+    });
 };
 
 // --- Eliminado injectNoOverflowXCSS: usar CSS global en su lugar ---
