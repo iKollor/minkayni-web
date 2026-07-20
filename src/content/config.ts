@@ -121,7 +121,7 @@ const timelineSelection = `id chip period title text accent imageAlt image { ${u
 const cardSelection = `id title description showIcon cta icon { ${uploadFileSelection} }`;
 const pressItemSelection = `id outlet year title href logo { ${uploadFileSelection} }`;
 const seoSelection = `id metaTitle metaDescription shareImage { ${uploadFileSelection} }`;
-const metricGroupSelection = `id title metrics { ${listItemSelection} }`;
+const metricGroupSelection = `id title metrics(pagination: { limit: 100 }) { ${listItemSelection} }`;
 const projectCardSelection = `id anchor category categoryLabel type title summary detail imageAlt href linkText external accent image { ${uploadFileSelection} }`;
 const featuredProjectSelection = `id title body logo { ${uploadFileSelection} } photo { ${uploadFileSelection} } button { ${buttonSelection} }`;
 
@@ -136,7 +136,7 @@ const entryMetaSelection = `
 const homepageSelection = `
     documentId
     legend
-    Testimonials {
+    Testimonials(pagination: { limit: 100 }) {
         id
         author_quote { id author body }
         organization
@@ -144,7 +144,7 @@ const homepageSelection = `
         age
         author_role
     }
-    Teams {
+    Teams(pagination: { limit: 100 }) {
         id
         full_name
         role
@@ -172,7 +172,7 @@ const footerSelection = `
     Copyright { id legalname yearStart autoYear yearOverride extraText }
     partnersGallery {
         id
-        files { ${uploadFileSelection} }
+        files(pagination: { limit: 100 }) { ${uploadFileSelection} }
     }
     partnersTitle
     joinTitle
@@ -188,22 +188,22 @@ const footerSelection = `
 const aboutPageSelection = `
     ${entryMetaSelection}
     intro { ${headingSelection} }
-    actionLines { ${cardSelection} }
+    actionLines(pagination: { limit: 100 }) { ${cardSelection} }
     historyHeading { ${headingSelection} }
-    timeline { ${timelineSelection} }
+    timeline(pagination: { limit: 100 }) { ${timelineSelection} }
     mission { ${cardSelection} }
     vision { ${cardSelection} }
     ecosystemHeading { ${headingSelection} }
-    ecosystemCards { ${orgCardSelection} }
+    ecosystemCards(pagination: { limit: 100 }) { ${orgCardSelection} }
     ecosystemLink { ${linkSelection} }
     teamHeading { ${headingSelection} }
-    teamMembers { ${cardSelection} }
+    teamMembers(pagination: { limit: 100 }) { ${cardSelection} }
     teamNote
     transparencyHeading { ${headingSelection} }
-    policies { ${listItemSelection} }
+    policies(pagination: { limit: 100 }) { ${listItemSelection} }
     transparencyNote
     pressHeading { ${headingSelection} }
-    pressLinks { ${pressItemSelection} }
+    pressLinks(pagination: { limit: 100 }) { ${pressItemSelection} }
     pressCta { ${linkSelection} }
     contactHeading { ${headingSelection} }
     contactButton { ${buttonSelection} }
@@ -214,23 +214,23 @@ const aboutPageSelection = `
 const impactPageSelection = `
     ${entryMetaSelection}
     intro { ${headingSelection} }
-    sectionNav { ${linkSelection} }
-    stats { ${statSelection} }
+    sectionNav(pagination: { limit: 100 }) { ${linkSelection} }
+    stats(pagination: { limit: 100 }) { ${statSelection} }
     statsNote
     resultsHeading { ${headingSelection} }
     resultsQuote
     resultsQuoteCite
     resultsLink { ${linkSelection} }
-    results { ${statSelection} }
+    results(pagination: { limit: 100 }) { ${statSelection} }
     otherProcessesTitle
-    otherProcesses { ${metricGroupSelection} }
+    otherProcesses(pagination: { limit: 100 }) { ${metricGroupSelection} }
     awardsHeading { ${headingSelection} }
-    awards { ${awardSelection} }
+    awards(pagination: { limit: 100 }) { ${awardSelection} }
     awardsNote
     pressHeading { ${headingSelection} }
-    pressItems { ${pressItemSelection} }
+    pressItems(pagination: { limit: 100 }) { ${pressItemSelection} }
     journeyHeading { ${headingSelection} }
-    journeyCards { ${linkCardSelection} }
+    journeyCards(pagination: { limit: 100 }) { ${linkCardSelection} }
     ctaHeading { ${headingSelection} }
     ctaButton { ${buttonSelection} }
     seo { ${seoSelection} }
@@ -240,15 +240,15 @@ const projectsPageSelection = `
     ${entryMetaSelection}
     intro { ${headingSelection} }
     explorerHeading { ${headingSelection} }
-    filters { ${listItemSelection} }
-    projects { ${projectCardSelection} }
+    filters(pagination: { limit: 100 }) { ${listItemSelection} }
+    projects(pagination: { limit: 100 }) { ${projectCardSelection} }
     methodHeading { ${headingSelection} }
-    methodSteps { ${stepSelection} }
+    methodSteps(pagination: { limit: 100 }) { ${stepSelection} }
     methodLink { ${linkSelection} }
     horizonHeading { ${headingSelection} }
-    horizonCards { ${cardSelection} }
+    horizonCards(pagination: { limit: 100 }) { ${cardSelection} }
     alliancesHeading { ${headingSelection} }
-    allies { ${listItemSelection} }
+    allies(pagination: { limit: 100 }) { ${listItemSelection} }
     alliancesNote
     ctaButton { ${buttonSelection} }
     ctaSecondary { ${linkSelection} }
@@ -266,26 +266,26 @@ const batucadaPageSelection = `
     heroImage { ${uploadFileSelection} }
     introHeading { ${headingSelection} }
     introBody
-    figures { ${statSelection} }
+    figures(pagination: { limit: 100 }) { ${statSelection} }
     originTitle
-    originItems { ${timelineSelection} }
+    originItems(pagination: { limit: 100 }) { ${timelineSelection} }
     originLink { ${linkSelection} }
     pulseHeading { ${headingSelection} }
     pulseHighlight
     pulseImage { ${uploadFileSelection} }
     methodHeading { ${headingSelection} }
-    methodSteps { ${stepSelection} }
+    methodSteps(pagination: { limit: 100 }) { ${stepSelection} }
     methodNote
     territoryHeading { ${headingSelection} }
-    sectors { ${sectorSelection} }
+    sectors(pagination: { limit: 100 }) { ${sectorSelection} }
     territoryHint
     actionHeading { ${headingSelection} }
-    communityActions { ${listItemSelection} }
+    communityActions(pagination: { limit: 100 }) { ${listItemSelection} }
     ecoHeading { ${headingSelection} }
-    ecosystemTags { ${listItemSelection} }
+    ecosystemTags(pagination: { limit: 100 }) { ${listItemSelection} }
     ecoLink { ${linkSelection} }
     awardsHeading { ${headingSelection} }
-    awards { ${awardSelection} }
+    awards(pagination: { limit: 100 }) { ${awardSelection} }
     awardsNote
     rightsHeading { ${headingSelection} }
     rightsBodyLeft
@@ -301,13 +301,13 @@ const batucadaEcosystemPageSelection = `
     ${entryMetaSelection}
     backLink { ${linkSelection} }
     hero { ${headingSelection} }
-    pulseline { ${listItemSelection} }
+    pulseline(pagination: { limit: 100 }) { ${listItemSelection} }
     organismsHeading { ${headingSelection} }
-    organisms { ${orgCardSelection} }
+    organisms(pagination: { limit: 100 }) { ${orgCardSelection} }
     horizonsHeading { ${headingSelection} }
-    horizons { ${cardSelection} }
+    horizons(pagination: { limit: 100 }) { ${cardSelection} }
     alliesHeading { ${headingSelection} }
-    allies { ${listItemSelection} }
+    allies(pagination: { limit: 100 }) { ${listItemSelection} }
     ctaHeading { ${headingSelection} }
     ctaPrimary { ${linkSelection} }
     ctaSecondary { ${linkSelection} }
@@ -318,9 +318,9 @@ const batucadaHistoryPageSelection = `
     ${entryMetaSelection}
     backLink { ${linkSelection} }
     hero { ${headingSelection} }
-    pulseline { ${listItemSelection} }
+    pulseline(pagination: { limit: 100 }) { ${listItemSelection} }
     timelineHeading { ${headingSelection} }
-    timeline { ${timelineSelection} }
+    timeline(pagination: { limit: 100 }) { ${timelineSelection} }
     senseHeading { ${headingSelection} }
     senseHighlight
     senseImage { ${uploadFileSelection} }
@@ -330,22 +330,25 @@ const batucadaHistoryPageSelection = `
     seo { ${seoSelection} }
 `;
 
-/* Subpáginas del constructor: dynamic zone discriminada por __typename. */
+/* Subpáginas del constructor: dynamic zone discriminada por __typename.
+   Los campos heading/cards/items llevan ALIAS únicos por fragmento: GraphQL
+   rechaza el mismo nombre con nulabilidad distinta entre tipos de la unión.
+   BlockRenderer los normaliza de vuelta a heading/cards/items. */
 const builderSectionsSelection = `
     sections {
         __typename
-        ... on ComponentBlocksIntro { id heading { ${headingSelection} } }
+        ... on ComponentBlocksIntro { id introHeading: heading { ${headingSelection} } }
         ... on ComponentBlocksRichText { id body }
         ... on ComponentBlocksMedia { id caption image { ${uploadFileSelection} } }
         ... on ComponentBlocksQuote { id text cite }
-        ... on ComponentBlocksStats { id heading { ${headingSelection} } stats { ${statSelection} } }
-        ... on ComponentBlocksCardGrid { id heading { ${headingSelection} } cards { ${cardSelection} } }
-        ... on ComponentBlocksTimeline { id heading { ${headingSelection} } items { ${timelineSelection} } }
-        ... on ComponentBlocksAwards { id heading { ${headingSelection} } awards { ${awardSelection} } note }
-        ... on ComponentBlocksPressList { id heading { ${headingSelection} } items { ${pressItemSelection} } }
-        ... on ComponentBlocksLinkCards { id heading { ${headingSelection} } cards { ${linkCardSelection} } }
-        ... on ComponentBlocksAllies { id heading { ${headingSelection} } items { ${listItemSelection} } }
-        ... on ComponentBlocksCta { id heading { ${headingSelection} } button { ${buttonSelection} } secondary { ${linkSelection} } }
+        ... on ComponentBlocksStats { id statsHeading: heading { ${headingSelection} } stats(pagination: { limit: 100 }) { ${statSelection} } }
+        ... on ComponentBlocksCardGrid { id gridHeading: heading { ${headingSelection} } gridCards: cards(pagination: { limit: 100 }) { ${cardSelection} } }
+        ... on ComponentBlocksTimeline { id timelineHeading: heading { ${headingSelection} } timelineItems: items(pagination: { limit: 100 }) { ${timelineSelection} } }
+        ... on ComponentBlocksAwards { id awardsHeading: heading { ${headingSelection} } awards(pagination: { limit: 100 }) { ${awardSelection} } note }
+        ... on ComponentBlocksPressList { id pressHeading: heading { ${headingSelection} } pressItems: items(pagination: { limit: 100 }) { ${pressItemSelection} } }
+        ... on ComponentBlocksLinkCards { id linksHeading: heading { ${headingSelection} } linkCards: cards(pagination: { limit: 100 }) { ${linkCardSelection} } }
+        ... on ComponentBlocksAllies { id alliesHeading: heading { ${headingSelection} } allyItems: items(pagination: { limit: 100 }) { ${listItemSelection} } }
+        ... on ComponentBlocksCta { id ctaHeading: heading { ${headingSelection} } button { ${buttonSelection} } secondary { ${linkSelection} } }
         ... on Error { code message }
     }
 `;
@@ -367,7 +370,7 @@ const globalSelection = `
     contactEmail
     whatsappUrl
     menuLabel
-    pageNav { ${linkSelection} }
+    pageNav(pagination: { limit: 100 }) { ${linkSelection} }
 `;
 
 const posts = defineCollection({

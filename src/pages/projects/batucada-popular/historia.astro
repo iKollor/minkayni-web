@@ -6,7 +6,7 @@ import CmsImage from "@/components/CmsImage.astro";
 import { bp } from "@/components/batucada/tokens";
 import { batucadaHistoriaFallback } from "@/data/pages/batucada-historia";
 import { loadPageContent } from "@/utils/page-content";
-import { formatTitle } from "@/utils/rich-title";
+import { formatTitle, splitParagraphs } from "@/utils/rich-title";
 
 /* Contenido: single type `batucada-history-page` en Strapi, con fallback local. */
 const d = await loadPageContent("batucadaHistoryPage", batucadaHistoriaFallback);
@@ -38,7 +38,9 @@ const timeline = d.timeline;
                                 <span class="mr-[0.6rem] text-primary">{item.period}</span>
                                 {item.title}
                             </h3>
-                            <p class="mt-[0.6rem] leading-[1.6]">{item.text}</p>
+                            {splitParagraphs(item.text ?? "").map((paragraph) => (
+                                <p class="mt-[0.6rem] leading-[1.6]">{paragraph}</p>
+                            ))}
                         </li>
                     ))
                 }

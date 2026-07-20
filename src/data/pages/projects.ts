@@ -126,7 +126,7 @@ export const projectsFallback = {
             type: "En curso · CESCU–FLACSO",
             title: "Investigar para proteger",
             summary: "Investigación-acción participativa sobre el reclutamiento forzado de niñas, niños, adolescentes y jóvenes en los barrios de Guayaquil.",
-            detail: "Investigadores barriales vinculados a las batucadas estudian 6 barrios (2020–2026) para aportar evidencia a políticas públicas de prevención.",
+            detail: "Bajo la dirección de Camila Martínez, investigadores barriales vinculados a las batucadas estudian 6 barrios (2020–2026) para aportar evidencia a políticas públicas de prevención.",
             image: null as CmsMedia,
             imageAlt: "",
             localImage: undefined as ImageMetadata | undefined,

@@ -16,7 +16,7 @@ export const batucadaEcosistemaFallback = {
         {
             kind: "Investigación",
             name: "CESCU",
-            text: "Organización de derechos con estructura propia, creada para comprender el conflicto que vive Guayaquil desde las experiencias de las juventudes y de las madres precarizadas de los barrios.",
+            text: "Organización de derecho con estructura propia, dirigida por Camila Martínez, creada para comprender el conflicto que vive Guayaquil desde las experiencias de las juventudes y de las madres precarizadas de los barrios, para que el análisis y la data sean contados y entendidos por su propia gente en las comunidades afectadas por la violencia y la inseguridad.",
         },
         {
             kind: "Organización adulta",
@@ -41,7 +41,7 @@ export const batucadaEcosistemaFallback = {
         {
             kind: "Proyección",
             name: "CAIS — Paraíso de la Flor",
-            text: "Centro de Articulación e Innovación Social en proyección: oficinas comunitarias, Radio Sin Paro, comedor popular, huertos, clases de batucada y economía popular en un mismo espacio.",
+            text: "El Centro de Articulación e Innovación Social, proyectado en Paraíso de la Flor, se concibe como un ecosistema territorial para fortalecer la organización comunitaria, ampliar el acceso a servicios y generar respuestas innovadoras frente a las desigualdades sociales, económicas, ambientales y tecnológicas de los barrios populares de Guayaquil. Busca ser un espacio permanente de convergencia entre organizaciones sociales y comunitarias, organismos internacionales, universidades, empresas y los gobiernos nacional y local, con una gobernanza colaborativa.",
         },
     ],
     horizonsHeading: {

@@ -34,12 +34,33 @@ const registry: Record<string, (typeof BlockIntro | typeof BlockRichText)> = {
     ComponentBlocksAllies: BlockAllies,
     ComponentBlocksCta: BlockCta,
 };
+
+/* La consulta GraphQL usa alias únicos por fragmento (introHeading,
+   gridCards, allyItems…); aquí se normalizan a las props que esperan
+   los componentes de bloque (heading/cards/items). */
+const normalize = (block: Record<string, unknown>): Record<string, unknown> => ({
+    ...block,
+    heading:
+        block.heading ??
+        block.introHeading ??
+        block.statsHeading ??
+        block.gridHeading ??
+        block.timelineHeading ??
+        block.awardsHeading ??
+        block.pressHeading ??
+        block.linksHeading ??
+        block.alliesHeading ??
+        block.ctaHeading ??
+        null,
+    cards: block.cards ?? block.gridCards ?? block.linkCards ?? null,
+    items: block.items ?? block.timelineItems ?? block.pressItems ?? block.allyItems ?? null,
+});
 ---
 
 {
     blocks.map((block) => {
         const typeName = typeof block.__typename === "string" ? block.__typename : "";
         const Component = registry[typeName];
-        return Component ? <Component block={block as never} /> : null;
+        return Component ? <Component block={normalize(block) as never} /> : null;
     })
 }

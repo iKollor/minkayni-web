@@ -49,19 +49,19 @@ export const batucadaHistoriaFallback = {
         {
             period: "2020–2021",
             title: "Batambá: la semilla feminista",
-            text: "Junto a Terranueva se impulsan propuestas para vincular a personas en movilidad humana con las comunidades de acogida y prevenir la xenofobia. Nace Batambá, movimiento feminista comunitario. Muchas madres sostenían sus hogares y no podían participar de forma permanente: comenzaron a involucrar a sus hijas e hijos, que se integraron al proceso.",
+            text: "Junto a Terranueva, en el marco del grant con GIZ, se impulsan propuestas para vincular a personas en movilidad humana con las comunidades de acogida y prevenir la xenofobia. Nace Batambá, movimiento feminista comunitario, con varias técnicas del proyecto y compañeras del movimiento feminista de Guayaquil, entre otras; nuestra primera instructora fue Percha, una reconocida compañera argentina. Muchas madres sostenían sus hogares y no podían participar de forma permanente: comenzaron a involucrar a sus hijas e hijos, que se integraron al proceso.",
             accent: false,
         },
         {
             period: "2021–2022",
-            title: "La violencia obliga a profundizar",
-            text: "Guayaquil vive un incremento acelerado de la violencia armada y del riesgo de reclutamiento de niñas, niños y adolescentes. La batucada se fortalece como estrategia comunitaria de prevención, protección y organización juvenil: nuevos referentes frente a los liderazgos del crimen organizado.",
+            title: "La violencia nos obliga a profundizar",
+            text: "Entre 2021 y 2022, Guayaquil atraviesa un rápido deterioro de sus condiciones de seguridad. El aumento de la violencia armada, las disputas por el control territorial y la expansión de los grupos delictivos organizados afectan con mayor fuerza a los barrios populares, donde niñas, niños, adolescentes y jóvenes quedan cada vez más expuestos. La batucada se fortalece como estrategia comunitaria de prevención, protección y organización juvenil: nuevos referentes frente a los liderazgos del crimen organizado.",
             accent: false,
         },
         {
             period: "2022–2023",
             title: "Del taller artístico al proceso territorial",
-            text: "Los ensayos combinan aprendizaje musical, disciplina, liderazgo, acompañamiento socioemocional y educación popular. Las y los participantes asumen responsabilidades y se reconocen como actores de sus comunidades.",
+            text: "En esta etapa comprendimos que la música podía convocar a las juventudes, pero que el verdadero proceso comenzaba después del primer redoble. Los ensayos dejaron de ser únicamente espacios para aprender ritmos y se convirtieron en lugares de encuentro, confianza, escucha y cuidado colectivo.\n\nAprender a tocar juntos también significó aprender a llegar a tiempo, respetar acuerdos, cuidar los instrumentos, escuchar al compañero y comprender que ningún ritmo se construye de manera individual. La disciplina comenzó a trabajarse como una responsabilidad compartida y no como una imposición.\n\nPoco a poco, adolescentes y jóvenes dejaron de verse solamente como participantes de un taller: asumieron responsabilidades y se reconocieron como actores de sus comunidades.",
             accent: false,
         },
         {

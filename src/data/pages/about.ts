@@ -134,7 +134,7 @@ export const aboutFallback = {
         {
             name: "CESCU",
             kind: "Investigación",
-            text: "Centro de estudios que investiga el conflicto urbano desde la experiencia de las juventudes y las madres de los barrios, en articulación con FLACSO.",
+            text: "Centro de estudios dirigido por Camila Martínez, que investiga el conflicto urbano desde la experiencia de las juventudes y las madres de los barrios, en articulación con FLACSO.",
             accentColor: "var(--secondary)",
             dark: false,
         },
