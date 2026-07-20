@@ -1,0 +1,18 @@
+---
+/* Bloque "Cita" — como el blockquote de /impact, adaptado a fondo claro. */
+interface Props {
+    block: { text?: string | null; cite?: string | null };
+}
+const { block } = Astro.props;
+---
+
+{
+    block.text && (
+        <section class="mx-auto w-[90%] max-w-[1280px] py-8" data-reveal>
+            <blockquote class="max-w-[52ch] border-l-2 border-primary pl-5 text-lg italic leading-relaxed text-black/80">
+                {block.text}
+                {block.cite && <cite class="mt-2 block text-sm not-italic text-black/55">{block.cite}</cite>}
+            </blockquote>
+        </section>
+    )
+}

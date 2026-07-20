@@ -1,0 +1,21 @@
+---
+/* Bloque "Imagen" — figura redondeada como las fotos de la línea de tiempo de /about. */
+import CmsImage from "@/components/CmsImage.astro";
+import type { CmsMedia } from "@/data/pages/types";
+
+interface Props {
+    block: { image?: CmsMedia; caption?: string | null };
+}
+const { block } = Astro.props;
+---
+
+{
+    block.image?.url && (
+        <figure class="mx-auto w-[90%] max-w-[1280px] py-8" data-reveal>
+            <div class="overflow-hidden rounded-[2.75rem] shadow-lg">
+                <CmsImage media={block.image} alt={block.image.alternativeText ?? block.caption ?? ""} widths={[720, 1280, 1920]} sizes="(min-width: 80em) 1280px, 90vw" class="h-auto w-full object-cover" />
+            </div>
+            {block.caption && <figcaption class="mt-3 text-sm text-black/60">{block.caption}</figcaption>}
+        </figure>
+    )
+}

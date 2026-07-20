@@ -1,0 +1,41 @@
+---
+/* Bloque "Llamado a la acción" — sección accent como el contacto de /about. */
+import Button from "@/components/Button.astro";
+import { formatTitle } from "@/utils/rich-title";
+
+interface Props {
+    block: {
+        heading?: { eyebrow?: string | null; title?: string | null; body?: string | null } | null;
+        button?: { href?: string | null; defaultText?: string | null; hoverText?: string | null } | null;
+        secondary?: { text?: string | null; href?: string | null } | null;
+    };
+}
+const { block } = Astro.props;
+const heading = block.heading ?? {};
+const isExternal = (href?: string | null) => Boolean(href && /^https?:\/\//.test(href));
+---
+
+<section class="mx-auto my-12 w-[94%] max-w-[1440px] overflow-hidden rounded-[2.75rem] bg-accent px-6 py-16 text-black sm:px-12 lg:rounded-[5rem] lg:px-20 lg:py-20" data-reveal>
+    <div class="grid items-center gap-10 lg:grid-cols-[1fr_auto]">
+        <div class="max-w-[760px]">
+            {heading.eyebrow && <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{heading.eyebrow}</p>}
+            {heading.title && <h2 class="font-display text-5xl font-black leading-[0.95] sm:text-7xl" set:html={formatTitle(heading.title)} />}
+            {heading.body && <p class="mt-6 max-w-[58ch] text-lg leading-relaxed text-black/75">{heading.body}</p>}
+        </div>
+        <div class="flex flex-col items-center gap-4">
+            {block.button?.href && <Button href={block.button.href} defaultText={block.button.defaultText ?? ""} hoverText={block.button.hoverText ?? ""} />}
+            {
+                block.secondary?.href && (
+                    <a
+                        href={block.secondary.href}
+                        target={isExternal(block.secondary.href) ? "_blank" : undefined}
+                        rel={isExternal(block.secondary.href) ? "noopener noreferrer" : undefined}
+                        class="inline-flex min-h-12 items-center justify-center rounded-full bg-black px-7 py-3 text-center font-display font-bold text-white transition hover:-translate-y-1 hover:bg-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black"
+                    >
+                        {block.secondary.text}
+                    </a>
+                )
+            }
+        </div>
+    </div>
+</section>

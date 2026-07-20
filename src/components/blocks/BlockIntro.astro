@@ -1,0 +1,16 @@
+---
+/* Bloque "Intro de página" — mismo estilo que el intro de /about. */
+import { formatTitle } from "@/utils/rich-title";
+
+interface Props {
+    block: { heading?: { eyebrow?: string | null; title?: string | null; body?: string | null } | null };
+}
+const { block } = Astro.props;
+const heading = block.heading ?? {};
+---
+
+<section class="mx-auto w-[90%] max-w-[1280px] pt-16 pb-6 sm:pt-24" data-reveal>
+    {heading.eyebrow && <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{heading.eyebrow}</p>}
+    {heading.title && <h2 class="font-display text-5xl font-black leading-[0.92] tracking-tight text-black sm:text-7xl" set:html={formatTitle(heading.title, "text-secondary-deep")} />}
+    {heading.body && <p class="mt-8 max-w-[62ch] text-lg leading-relaxed text-black/70">{heading.body}</p>}
+</section>

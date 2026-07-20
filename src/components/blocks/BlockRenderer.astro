@@ -1,0 +1,45 @@
+---
+/* Renderiza la dynamic zone de una subpágina del constructor: cada bloque
+   de Strapi (por __typename) se mapea a su sección visual del sitio.
+   Bloques desconocidos se ignoran sin romper la página. */
+import BlockIntro from "./BlockIntro.astro";
+import BlockRichText from "./BlockRichText.astro";
+import BlockMedia from "./BlockMedia.astro";
+import BlockQuote from "./BlockQuote.astro";
+import BlockStats from "./BlockStats.astro";
+import BlockCardGrid from "./BlockCardGrid.astro";
+import BlockTimeline from "./BlockTimeline.astro";
+import BlockAwards from "./BlockAwards.astro";
+import BlockPressList from "./BlockPressList.astro";
+import BlockLinkCards from "./BlockLinkCards.astro";
+import BlockAllies from "./BlockAllies.astro";
+import BlockCta from "./BlockCta.astro";
+
+interface Props {
+    blocks: Array<Record<string, unknown>>;
+}
+const { blocks } = Astro.props;
+
+const registry: Record<string, (typeof BlockIntro | typeof BlockRichText)> = {
+    ComponentBlocksIntro: BlockIntro,
+    ComponentBlocksRichText: BlockRichText,
+    ComponentBlocksMedia: BlockMedia,
+    ComponentBlocksQuote: BlockQuote,
+    ComponentBlocksStats: BlockStats,
+    ComponentBlocksCardGrid: BlockCardGrid,
+    ComponentBlocksTimeline: BlockTimeline,
+    ComponentBlocksAwards: BlockAwards,
+    ComponentBlocksPressList: BlockPressList,
+    ComponentBlocksLinkCards: BlockLinkCards,
+    ComponentBlocksAllies: BlockAllies,
+    ComponentBlocksCta: BlockCta,
+};
+---
+
+{
+    blocks.map((block) => {
+        const typeName = typeof block.__typename === "string" ? block.__typename : "";
+        const Component = registry[typeName];
+        return Component ? <Component block={block as never} /> : null;
+    })
+}

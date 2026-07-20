@@ -1,0 +1,43 @@
+---
+/* Bloque "Prensa" — misma lista de medios que /impact. */
+import { formatTitle } from "@/utils/rich-title";
+
+interface Props {
+    block: {
+        heading?: { eyebrow?: string | null; title?: string | null; body?: string | null } | null;
+        items?: Array<{ outlet?: string | null; year?: string | null; title?: string | null; href?: string | null } | null> | null;
+    };
+}
+const { block } = Astro.props;
+const heading = block.heading ?? {};
+const items = (block.items ?? []).filter((i): i is NonNullable<typeof i> => Boolean(i));
+---
+
+<section class="mx-auto w-[90%] max-w-[1280px] py-12" data-reveal>
+    {
+        (heading.eyebrow || heading.title) && (
+            <div class="max-w-[760px]">
+                {heading.eyebrow && <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{heading.eyebrow}</p>}
+                {heading.title && <h2 class="font-display text-4xl font-black leading-none text-black sm:text-6xl" set:html={formatTitle(heading.title)} />}
+                {heading.body && <p class="mt-6 max-w-[62ch] text-lg leading-relaxed text-black/70">{heading.body}</p>}
+            </div>
+        )
+    }
+    <ul class="mt-8 divide-y divide-black/10">
+        {
+            items.map((p) => (
+                <li>
+                    <a href={p.href} target="_blank" rel="noopener noreferrer" class="group flex items-baseline justify-between gap-4 py-4 transition hover:text-primary">
+                        <span class="leading-snug">
+                            <span class="font-display font-bold">{p.title}</span>
+                            <span class="ml-2 whitespace-nowrap text-sm text-black/60">
+                                {p.outlet}{p.year ? ` · ${p.year}` : ""}
+                            </span>
+                        </span>
+                        <span class="text-primary opacity-0 transition group-hover:opacity-100" aria-hidden="true">↗</span>
+                    </a>
+                </li>
+            ))
+        }
+    </ul>
+</section>

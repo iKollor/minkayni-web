@@ -1,0 +1,47 @@
+---
+/* Bloque "Reconocimientos" — mismas tarjetas que la sección de /impact. */
+import { formatTitle } from "@/utils/rich-title";
+
+interface Props {
+    block: {
+        heading?: { eyebrow?: string | null; title?: string | null; body?: string | null } | null;
+        awards?: Array<{ year?: string | null; org?: string | null; title?: string | null; text?: string | null; href?: string | null; linkText?: string | null } | null> | null;
+        note?: string | null;
+    };
+}
+const { block } = Astro.props;
+const heading = block.heading ?? {};
+const awards = (block.awards ?? []).filter((a): a is NonNullable<typeof a> => Boolean(a));
+---
+
+<section class="mx-auto w-[90%] max-w-[1280px] py-12">
+    {
+        (heading.eyebrow || heading.title) && (
+            <div class="mb-12 max-w-[760px]" data-reveal>
+                {heading.eyebrow && <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{heading.eyebrow}</p>}
+                {heading.title && <h2 class="font-display text-4xl font-black leading-none text-primary sm:text-6xl" set:html={formatTitle(heading.title)} />}
+                {heading.body && <p class="mt-6 max-w-[62ch] text-lg leading-relaxed text-black/70">{heading.body}</p>}
+            </div>
+        )
+    }
+    <div class="grid gap-5 md:grid-cols-2" data-reveal-group>
+        {
+            awards.map((r) => (
+                <article class="flex flex-col rounded-[2.25rem] bg-[#dedbd4] p-8 transition duration-300 hover:-translate-y-2 sm:p-10">
+                    <div class="flex flex-wrap items-center gap-2">
+                        {r.year && <span class="rounded-full bg-primary px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-white">{r.year}</span>}
+                        {r.org && <span class="rounded-full bg-black/10 px-3 py-1 text-xs font-bold text-black">{r.org}</span>}
+                    </div>
+                    <h3 class="mt-6 font-display text-3xl font-bold text-black">{r.title}</h3>
+                    <p class="mt-3 leading-relaxed text-black/75">{r.text}</p>
+                    {r.href && (
+                        <a href={r.href} target="_blank" rel="noopener noreferrer" class="mt-auto pt-6 text-sm font-bold text-primary underline underline-offset-4 transition hover:text-secondary-deep">
+                            {r.linkText ?? "Ver la fuente"} ↗
+                        </a>
+                    )}
+                </article>
+            ))
+        }
+    </div>
+    {block.note && <p class="mt-6 max-w-[80ch] text-sm text-black/60" data-reveal>{block.note}</p>}
+</section>

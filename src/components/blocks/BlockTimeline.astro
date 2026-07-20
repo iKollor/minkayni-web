@@ -1,0 +1,49 @@
+---
+/* Bloque "Línea de tiempo" — versión estática del timeline de /about
+   (línea + puntos), sin el panel pineado que requiere script propio. */
+import CmsImage from "@/components/CmsImage.astro";
+import { formatTitle } from "@/utils/rich-title";
+import type { CmsMedia } from "@/data/pages/types";
+
+interface Props {
+    block: {
+        heading?: { eyebrow?: string | null; title?: string | null; body?: string | null } | null;
+        items?: Array<{ chip?: string | null; period?: string | null; title?: string | null; text?: string | null; image?: CmsMedia; imageAlt?: string | null } | null> | null;
+    };
+}
+const { block } = Astro.props;
+const heading = block.heading ?? {};
+const items = (block.items ?? []).filter((i): i is NonNullable<typeof i> => Boolean(i));
+---
+
+<section class="mx-auto w-[94%] max-w-[1440px] my-12 rounded-[2.75rem] bg-[#dedbd4] px-4 py-14 sm:px-8 lg:rounded-[5rem] lg:px-14 lg:py-20">
+    {
+        (heading.eyebrow || heading.title) && (
+            <div class="mb-10 max-w-[760px]" data-reveal>
+                {heading.eyebrow && <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{heading.eyebrow}</p>}
+                {heading.title && <h2 class="font-display text-4xl font-black leading-none text-black sm:text-6xl" set:html={formatTitle(heading.title)} />}
+                {heading.body && <p class="mt-6 max-w-[62ch] text-lg leading-relaxed text-black/70">{heading.body}</p>}
+            </div>
+        )
+    }
+    <ol class="relative">
+        <div class="absolute bottom-2 left-[11px] top-2 w-[3px] rounded-full bg-primary/25" aria-hidden="true"></div>
+        {
+            items.map((item, index) => (
+                <li class="relative mb-14 pl-12 last:mb-0 sm:pl-14" data-reveal>
+                    <span class="absolute left-0 top-1 flex h-[25px] w-[25px] items-center justify-center rounded-full border-[3px] border-primary bg-[#dedbd4]" aria-hidden="true">
+                        <span class="h-2 w-2 rounded-full bg-primary" />
+                    </span>
+                    {(item.period || item.chip) && <p class="font-display text-sm font-bold uppercase tracking-[0.18em] text-primary">{item.period ?? item.chip}</p>}
+                    <h3 class="mt-1 font-display text-2xl font-bold text-black sm:text-3xl">{item.title}</h3>
+                    <p class="mt-2 max-w-[66ch] leading-relaxed text-black/70">{item.text}</p>
+                    {item.image?.url && (
+                        <figure class={`mt-6 w-full max-w-[440px] overflow-hidden rounded-[1.75rem] shadow-lg ${index % 2 === 0 ? "rotate-[1.5deg]" : "rotate-[-1.5deg]"}`}>
+                            <CmsImage media={item.image} alt={item.imageAlt ?? ""} widths={[440, 880]} sizes="(min-width: 40em) 440px, 100vw" class="h-auto w-full object-cover transition duration-700 hover:scale-[1.04]" />
+                        </figure>
+                    )}
+                </li>
+            ))
+        }
+    </ol>
+</section>

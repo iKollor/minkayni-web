@@ -1,0 +1,45 @@
+---
+/* Bloque "Tarjetas" — como las líneas de acción de /about (colores rotativos). */
+import { formatTitle } from "@/utils/rich-title";
+
+interface Props {
+    block: {
+        heading?: { eyebrow?: string | null; title?: string | null; body?: string | null } | null;
+        cards?: Array<{ title?: string | null; description?: string | null } | null> | null;
+    };
+}
+const { block } = Astro.props;
+const heading = block.heading ?? {};
+const cards = (block.cards ?? []).filter((c): c is NonNullable<typeof c> => Boolean(c));
+
+const cardStyles = [
+    { card: "bg-primary text-white", dim: "text-white/75" },
+    { card: "bg-secondary text-black", dim: "text-black/65" },
+    { card: "bg-accent text-black", dim: "text-black/65" },
+];
+---
+
+<section class="mx-auto w-[90%] max-w-[1280px] py-12">
+    {
+        (heading.eyebrow || heading.title) && (
+            <div class="mb-10 max-w-[760px]" data-reveal>
+                {heading.eyebrow && <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{heading.eyebrow}</p>}
+                {heading.title && <h2 class="font-display text-4xl font-black leading-none text-black sm:text-6xl" set:html={formatTitle(heading.title)} />}
+                {heading.body && <p class="mt-6 max-w-[62ch] text-lg leading-relaxed text-black/70">{heading.body}</p>}
+            </div>
+        )
+    }
+    <div class="grid gap-5 md:grid-cols-3" data-reveal-group>
+        {
+            cards.map((card, index) => {
+                const style = cardStyles[index % cardStyles.length];
+                return (
+                    <div class={`rounded-[2.25rem] p-8 transition duration-300 hover:-translate-y-2 sm:p-10 ${style.card}`}>
+                        <h3 class="mb-3 font-display text-2xl font-bold">{card.title}</h3>
+                        <p class={`leading-relaxed ${style.dim}`}>{card.description}</p>
+                    </div>
+                );
+            })
+        }
+    </div>
+</section>

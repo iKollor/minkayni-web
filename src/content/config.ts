@@ -17,6 +17,7 @@ import {
   BatucadaPageSchema,
   BatucadaEcosystemPageSchema,
   BatucadaHistoryPageSchema,
+  BuilderPageSchema,
   GlobalSettingsSchema,
   FeaturedProjectSchema,
   ActionButtonSchema,
@@ -329,6 +330,35 @@ const batucadaHistoryPageSelection = `
     seo { ${seoSelection} }
 `;
 
+/* Subpáginas del constructor: dynamic zone discriminada por __typename. */
+const builderSectionsSelection = `
+    sections {
+        __typename
+        ... on ComponentBlocksIntro { id heading { ${headingSelection} } }
+        ... on ComponentBlocksRichText { id body }
+        ... on ComponentBlocksMedia { id caption image { ${uploadFileSelection} } }
+        ... on ComponentBlocksQuote { id text cite }
+        ... on ComponentBlocksStats { id heading { ${headingSelection} } stats { ${statSelection} } }
+        ... on ComponentBlocksCardGrid { id heading { ${headingSelection} } cards { ${cardSelection} } }
+        ... on ComponentBlocksTimeline { id heading { ${headingSelection} } items { ${timelineSelection} } }
+        ... on ComponentBlocksAwards { id heading { ${headingSelection} } awards { ${awardSelection} } note }
+        ... on ComponentBlocksPressList { id heading { ${headingSelection} } items { ${pressItemSelection} } }
+        ... on ComponentBlocksLinkCards { id heading { ${headingSelection} } cards { ${linkCardSelection} } }
+        ... on ComponentBlocksAllies { id heading { ${headingSelection} } items { ${listItemSelection} } }
+        ... on ComponentBlocksCta { id heading { ${headingSelection} } button { ${buttonSelection} } secondary { ${linkSelection} } }
+        ... on Error { code message }
+    }
+`;
+
+const builderPageSelection = `
+    ${entryMetaSelection}
+    title
+    slug
+    description
+    ${builderSectionsSelection}
+    seo { ${seoSelection} }
+`;
+
 const globalSelection = `
     ${entryMetaSelection}
     siteName
@@ -438,6 +468,20 @@ const batucadaHistoryPage = definePageSingle(
 );
 const globalSettings = definePageSingle("global", globalSelection, GlobalSettingsSchema());
 
+/* Subpáginas del constructor (collection type `page` en Strapi). */
+const builderPages = defineCollection({
+  loader: strapiConfigured
+    ? strapiLoader({
+        mode: "collection",
+        rootField: "pages",
+        selection: builderPageSelection,
+        client: clientHeaders,
+        cacheDurationInMs: contentCacheMs,
+      })
+    : preserveCachedContent("pages"),
+  schema: BuilderPageSchema(),
+});
+
 export const collections = {
   posts,
   homepage,
@@ -450,4 +494,5 @@ export const collections = {
   batucadaEcosystemPage,
   batucadaHistoryPage,
   globalSettings,
+  builderPages,
 };

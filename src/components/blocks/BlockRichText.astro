@@ -1,0 +1,19 @@
+---
+/* Bloque "Texto" — Markdown con la tipografía del sitio. */
+import { Markdown } from "@astropub/md";
+
+interface Props {
+    block: { body?: string | null };
+}
+const { block } = Astro.props;
+---
+
+{
+    block.body && (
+        <section class="mx-auto w-[90%] max-w-[1280px] py-8" data-reveal>
+            <div class="prose max-w-[70ch] text-lg leading-relaxed text-black/75 [&_a]:font-bold [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-secondary-deep [&_strong]:text-black [&_h3]:font-display [&_h3]:text-2xl [&_h3]:font-bold [&_h3]:text-black">
+                <Markdown of={block.body} />
+            </div>
+        </section>
+    )
+}

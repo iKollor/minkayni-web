@@ -341,6 +341,20 @@ export const BatucadaHistoryPageSchema = () =>
     });
 export type BatucadaHistoryPage = z.infer<ReturnType<typeof BatucadaHistoryPageSchema>>;
 
+/* Subpáginas del constructor (collection type `page` con dynamic zone).
+   Las secciones se validan de forma laxa: cada bloque se discrimina en el
+   renderer por __typename. */
+export const BuilderPageSchema = () =>
+    z.object({
+        ...entryBase,
+        title: z.string().nullish(),
+        slug: z.string().nullish(),
+        description: z.string().nullish(),
+        sections: z.array(z.any()).nullish(),
+        seo: SeoSchema().nullish(),
+    });
+export type BuilderPage = z.infer<ReturnType<typeof BuilderPageSchema>>;
+
 export const GlobalSettingsSchema = () =>
     z.object({
         ...entryBase,

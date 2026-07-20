@@ -1,0 +1,114 @@
+---
+/* Subpáginas del constructor de Strapi (collection type `page`).
+   Cada entrada publicada genera la ruta /<slug> en build; las rutas
+   estáticas del sitio tienen prioridad y además se filtran por seguridad.
+   Reveals y odómetro usan el mismo patrón que /about e /impact. */
+import PageLayout from "@/layouts/PageLayout.astro";
+import BlockRenderer from "@/components/blocks/BlockRenderer.astro";
+import { getCollection } from "astro:content";
+import { getData } from "@/utils/i18n";
+import type { BuilderPage } from "@/schemas/pages.zod";
+
+export async function getStaticPaths() {
+    /* Rutas propias del sitio que una subpágina jamás debe pisar. */
+    const RESERVED = new Set(["", "about", "impact", "projects", "batucada-popular", "index", "admin", "api", "media", "batucada"]);
+
+    let entries: Awaited<ReturnType<typeof getCollection<"builderPages">>> = [];
+    try {
+        entries = await getCollection("builderPages");
+    } catch {
+        entries = [];
+    }
+
+    return entries
+        .map((entry) => getData(entry, "es") as BuilderPage)
+        .filter((page): page is BuilderPage & { slug: string } => {
+            const slug = page?.slug?.trim();
+            return Boolean(slug) && !RESERVED.has(slug as string) && Boolean(page.publishedAt);
+        })
+        .map((page) => ({ params: { slug: page.slug }, props: { page } }));
+}
+
+interface Props {
+    page: BuilderPage;
+}
+const { page } = Astro.props;
+const blocks = (page.sections ?? []).filter((section): section is Record<string, unknown> => Boolean(section));
+---
+
+<PageLayout title={page.title ?? ""} navbarThreshold={0.5}>
+    <div class="pb-32 md:pb-64">
+        <BlockRenderer {blocks} />
+    </div>
+</PageLayout>
+
+<script>
+    import { gsap, ScrollTrigger } from "../scripts/main";
+    import { initBatucadaAnchors } from "../scripts/batucada/motion";
+
+    const initBuilderPage = () => {
+        const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        // Anclas internas con offset por navbar fija (mismo helper que impact)
+        initBatucadaAnchors();
+
+        if (reduced) return;
+
+        // Odómetro (mismo patrón que impact.astro: el HTML ya trae el valor final)
+        const fmt = new Intl.NumberFormat("es-EC");
+        document.querySelectorAll<HTMLElement>("[data-count]").forEach((el) => {
+            const target = Number(el.dataset.count ?? "");
+            if (!Number.isFinite(target) || target <= 0) return;
+            const prefix = el.dataset.countPrefix ?? "";
+            const suffix = el.dataset.countSuffix ?? "";
+            const state = { val: 0 };
+            ScrollTrigger.create({
+                trigger: el,
+                start: "top 88%",
+                once: true,
+                onEnter: () => {
+                    gsap.to(state, {
+                        val: target,
+                        duration: 1.7,
+                        ease: "power3.out",
+                        onUpdate: () => {
+                            el.textContent = prefix + fmt.format(Math.round(state.val)) + suffix;
+                        },
+                    });
+                },
+            });
+        });
+
+        // Reveals al hacer scroll (mismo patrón que about/impact)
+        document.querySelectorAll<HTMLElement>("[data-reveal]").forEach((el) => {
+            if (el.dataset.revealReady) return;
+            el.dataset.revealReady = "1";
+            gsap.set(el, { opacity: 0, y: 44 });
+            ScrollTrigger.create({
+                trigger: el,
+                start: "top 88%",
+                once: true,
+                onEnter: () => gsap.to(el, { opacity: 1, y: 0, duration: 0.9, ease: "power2.out", delay: parseFloat(el.dataset.revealDelay || "0") }),
+            });
+        });
+
+        document.querySelectorAll<HTMLElement>("[data-reveal-group]").forEach((group) => {
+            if (group.dataset.revealReady) return;
+            group.dataset.revealReady = "1";
+            const kids = Array.from(group.children) as HTMLElement[];
+            gsap.set(kids, { opacity: 0, y: 44 });
+            ScrollTrigger.create({
+                trigger: group,
+                start: "top 85%",
+                once: true,
+                onEnter: () => gsap.to(kids, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out", stagger: 0.12 }),
+            });
+        });
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initBuilderPage, { once: true });
+    } else {
+        initBuilderPage();
+    }
+</script>

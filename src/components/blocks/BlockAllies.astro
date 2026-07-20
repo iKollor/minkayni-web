@@ -1,0 +1,25 @@
+---
+/* Bloque "Aliados" — sección con degradado morado y chips, como Alianzas de /projects. */
+import { formatTitle } from "@/utils/rich-title";
+
+interface Props {
+    block: {
+        heading?: { eyebrow?: string | null; title?: string | null; body?: string | null } | null;
+        items?: Array<{ text?: string | null } | null> | null;
+    };
+}
+const { block } = Astro.props;
+const heading = block.heading ?? {};
+const items = (block.items ?? []).filter((i): i is NonNullable<typeof i> => Boolean(i?.text));
+---
+
+<section class="mx-auto my-12 w-[94%] max-w-[1440px] overflow-hidden rounded-[2.75rem] bg-[linear-gradient(130deg,var(--primary),#410063)] px-6 py-16 text-white sm:px-12 lg:rounded-[5rem] lg:px-20 lg:py-24" data-reveal>
+    <div class="max-w-[760px]">
+        {heading.eyebrow && <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">{heading.eyebrow}</p>}
+        {heading.title && <h2 class="font-display text-4xl font-black leading-[0.95] sm:text-6xl" set:html={formatTitle(heading.title)} />}
+        {heading.body && <p class="mt-6 max-w-[62ch] text-lg leading-relaxed text-white/75">{heading.body}</p>}
+    </div>
+    <ul class="mt-8 flex flex-wrap gap-2">
+        {items.map((item) => <li class="rounded-full bg-white/10 px-4 py-2 text-sm font-bold backdrop-blur">{item.text}</li>)}
+    </ul>
+</section>
