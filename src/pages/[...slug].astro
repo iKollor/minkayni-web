@@ -43,67 +43,13 @@ const blocks = (page.sections ?? []).filter((section): section is Record<string,
 </PageLayout>
 
 <script>
-    import { gsap, ScrollTrigger } from "../scripts/main";
     import { initBatucadaAnchors } from "../scripts/batucada/motion";
+    import { initReveals, initCounters } from "../scripts/reveals";
 
     const initBuilderPage = () => {
-        const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-        // Anclas internas con offset por navbar fija (mismo helper que impact)
-        initBatucadaAnchors();
-
-        if (reduced) return;
-
-        // Odómetro (mismo patrón que impact.astro: el HTML ya trae el valor final)
-        const fmt = new Intl.NumberFormat("es-EC");
-        document.querySelectorAll<HTMLElement>("[data-count]").forEach((el) => {
-            const target = Number(el.dataset.count ?? "");
-            if (!Number.isFinite(target) || target <= 0) return;
-            const prefix = el.dataset.countPrefix ?? "";
-            const suffix = el.dataset.countSuffix ?? "";
-            const state = { val: 0 };
-            ScrollTrigger.create({
-                trigger: el,
-                start: "top 88%",
-                once: true,
-                onEnter: () => {
-                    gsap.to(state, {
-                        val: target,
-                        duration: 1.7,
-                        ease: "power3.out",
-                        onUpdate: () => {
-                            el.textContent = prefix + fmt.format(Math.round(state.val)) + suffix;
-                        },
-                    });
-                },
-            });
-        });
-
-        // Reveals al hacer scroll (mismo patrón que about/impact)
-        document.querySelectorAll<HTMLElement>("[data-reveal]").forEach((el) => {
-            if (el.dataset.revealReady) return;
-            el.dataset.revealReady = "1";
-            gsap.set(el, { opacity: 0, y: 44 });
-            ScrollTrigger.create({
-                trigger: el,
-                start: "top 88%",
-                once: true,
-                onEnter: () => gsap.to(el, { opacity: 1, y: 0, duration: 0.9, ease: "power2.out", delay: parseFloat(el.dataset.revealDelay || "0") }),
-            });
-        });
-
-        document.querySelectorAll<HTMLElement>("[data-reveal-group]").forEach((group) => {
-            if (group.dataset.revealReady) return;
-            group.dataset.revealReady = "1";
-            const kids = Array.from(group.children) as HTMLElement[];
-            gsap.set(kids, { opacity: 0, y: 44 });
-            ScrollTrigger.create({
-                trigger: group,
-                start: "top 85%",
-                once: true,
-                onEnter: () => gsap.to(kids, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out", stagger: 0.12 }),
-            });
-        });
+        initBatucadaAnchors(); // anclas internas con offset por navbar fija
+        initCounters();
+        initReveals();
     };
 
     if (document.readyState === "loading") {

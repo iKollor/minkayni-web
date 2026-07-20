@@ -1,0 +1,193 @@
+---
+/* Línea de tiempo inmersiva (layout de /about, reutilizable):
+   chips para saltar de época, panel de año pineado en desktop, línea de
+   progreso y hitos con imagen opcional (editable desde Strapi).
+   Correcciones de animación: anticipatePin en el pin, refresh de
+   ScrollTrigger al cargar imágenes y sin flash en elementos ya visibles. */
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+import CmsImage from "./CmsImage.astro";
+import type { CmsMedia } from "../data/pages/types";
+import { splitParagraphs } from "../utils/rich-title";
+import flor from "../assets/SVG/misc/flor.svg";
+
+export interface TimelineEntry {
+    chip?: string | null;
+    period?: string | null;
+    title?: string | null;
+    text?: string | null;
+    image?: CmsMedia;
+    imageAlt?: string | null;
+    localImage?: ImageMetadata;
+}
+
+interface Props {
+    items: TimelineEntry[];
+    ariaLabel?: string;
+}
+
+const { items, ariaLabel = "Línea de tiempo" } = Astro.props;
+const chipOf = (item: TimelineEntry) => item.chip ?? item.period ?? "";
+---
+
+<div data-timeline aria-label={ariaLabel}>
+    <nav class="mb-14 flex flex-wrap gap-2" aria-label="Saltar a una época" data-reveal>
+        {
+            items.map((item, index) => (
+                <button
+                    type="button"
+                    data-tl-jump={index}
+                    class="min-h-11 rounded-full border border-black/15 px-4 py-2 font-display text-sm font-bold transition hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                >
+                    {chipOf(item)}
+                </button>
+            ))
+        }
+    </nav>
+
+    <div class="lg:grid lg:grid-cols-[300px_1fr] lg:gap-14">
+        <!-- Panel fijo (desktop) -->
+        <div class="hidden lg:block">
+            <div data-tl-panel class="flex flex-col gap-2 pt-2">
+                <p class="overflow-hidden font-display text-6xl font-black leading-none text-primary xl:text-7xl" aria-hidden="true"><span class="block" data-tl-year>{chipOf(items[0] ?? {})}</span></p>
+                <p class="font-display text-lg font-bold uppercase tracking-[0.18em] text-black/60" data-tl-period>{items[0]?.period ?? ""}</p>
+                <p class="font-display text-sm font-bold text-black/40" data-tl-count>01 / {String(items.length).padStart(2, "0")}</p>
+                <div class="mt-8 h-24 w-24 opacity-60" data-float aria-hidden="true"><Image src={flor} alt="" class="h-full w-full object-cover" /></div>
+            </div>
+        </div>
+
+        <!-- Hitos -->
+        <ol class="relative" data-tl-list>
+            <div class="absolute bottom-2 left-[11px] top-2 w-[3px] rounded-full bg-primary/15" aria-hidden="true">
+                <span data-tl-progress class="absolute inset-0 origin-top scale-y-0 rounded-full bg-primary"></span>
+            </div>
+            {
+                items.map((item, index) => (
+                    <li class="tl-item relative mb-16 pl-12 last:mb-0 sm:pl-14" data-tl-item data-chip={chipOf(item)} data-period={item.period ?? ""}>
+                        <span class="tl-dot absolute left-0 top-1 flex h-[25px] w-[25px] items-center justify-center rounded-full border-[3px] border-primary bg-[#dedbd4] transition-all duration-300" aria-hidden="true">
+                            <span class="tl-dot-core h-2 w-2 scale-0 rounded-full bg-primary transition-transform duration-300" />
+                        </span>
+                        <p class="font-display text-sm font-bold uppercase tracking-[0.18em] text-primary lg:hidden">{item.period}</p>
+                        <h3 class="mt-1 font-display text-2xl font-bold text-black sm:text-3xl">{item.title}</h3>
+                        {splitParagraphs(item.text ?? "").map((paragraph) => (
+                            <p class="mt-2 max-w-[66ch] leading-relaxed text-black/70">{paragraph}</p>
+                        ))}
+                        {(item.image?.url || item.localImage) && (
+                            <figure class={`mt-6 w-full max-w-[440px] overflow-hidden rounded-[1.75rem] shadow-lg ${index % 2 === 0 ? "rotate-[1.5deg]" : "rotate-[-1.5deg]"}`}>
+                                <CmsImage
+                                    media={item.image}
+                                    fallback={item.localImage}
+                                    alt={item.imageAlt ?? ""}
+                                    widths={[440, 880]}
+                                    sizes="(min-width: 40em) 440px, 100vw"
+                                    class="h-auto w-full object-cover transition duration-700 hover:scale-[1.04]"
+                                />
+                            </figure>
+                        )}
+                    </li>
+                ))
+            }
+        </ol>
+    </div>
+</div>
+
+<script>
+    import { gsap, ScrollTrigger, ScrollSmoother } from "../scripts/main";
+
+    const initTimeline = () => {
+        const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        const list = document.querySelector<HTMLElement>("[data-tl-list]");
+        if (!list || list.dataset.tlReady) return;
+        list.dataset.tlReady = "1";
+
+        const items = Array.from(list.querySelectorAll<HTMLElement>("[data-tl-item]"));
+        const yearEl = document.querySelector<HTMLElement>("[data-tl-year]");
+        const periodEl = document.querySelector<HTMLElement>("[data-tl-period]");
+        const countEl = document.querySelector<HTMLElement>("[data-tl-count]");
+        const progressEl = list.querySelector<HTMLElement>("[data-tl-progress]");
+        const panel = document.querySelector<HTMLElement>("[data-tl-panel]");
+        let current = -1;
+
+        const setPanel = (i: number) => {
+            if (i === current || !items[i]) return;
+            current = i;
+            if (yearEl) yearEl.textContent = items[i].dataset.chip ?? "";
+            if (periodEl) periodEl.textContent = items[i].dataset.period ?? "";
+            if (countEl) countEl.textContent = `${String(i + 1).padStart(2, "0")} / ${String(items.length).padStart(2, "0")}`;
+            if (yearEl && !reduced) gsap.fromTo(yearEl, { yPercent: 30, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.45, ease: "power2.out" });
+        };
+        setPanel(0);
+
+        if (progressEl && !reduced) {
+            gsap.fromTo(
+                progressEl,
+                { scaleY: 0 },
+                { scaleY: 1, ease: "none", scrollTrigger: { trigger: list, start: "top 62%", end: "bottom 58%", scrub: 0.5 } }
+            );
+        }
+
+        items.forEach((item, i) => {
+            ScrollTrigger.create({
+                trigger: item,
+                start: "top 58%",
+                end: "bottom 58%",
+                onToggle: (self) => {
+                    item.classList.toggle("tl-active", self.isActive);
+                    if (self.isActive) setPanel(i);
+                },
+            });
+        });
+
+        /* Panel pineado en desktop. anticipatePin suaviza la entrada del pin
+           (evita el salto de un frame al fijarse). */
+        if (panel && window.matchMedia("(min-width: 1024px)").matches) {
+            ScrollTrigger.create({ trigger: list, start: "top 25%", end: "bottom 70%", pin: panel, pinSpacing: false, anticipatePin: 1 });
+        }
+
+        // Chips: saltar a una época
+        document.querySelectorAll<HTMLElement>("[data-tl-jump]").forEach((chip) => {
+            chip.addEventListener("click", () => {
+                const target = items[Number(chip.dataset.tlJump)];
+                if (!target) return;
+                const smoother = ScrollSmoother.get();
+                if (smoother) smoother.scrollTo(target, !reduced, "top 35%");
+                else gsap.to(window, { scrollTo: { y: target, offsetY: window.innerHeight * 0.35 }, duration: reduced ? 0 : 0.8, ease: "power2.inOut" });
+            });
+        });
+
+        /* Las imágenes cargan después del cálculo inicial de posiciones:
+           refrescar al terminar evita saltos y triggers desalineados. */
+        window.addEventListener("load", () => ScrollTrigger.refresh(), { once: true });
+        list.querySelectorAll("img").forEach((img) => {
+            if (!img.complete) img.addEventListener("load", () => ScrollTrigger.refresh(), { once: true });
+        });
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initTimeline, { once: true });
+    } else {
+        initTimeline();
+    }
+</script>
+
+<style>
+    .tl-item .tl-dot {
+        background-color: #dedbd4;
+    }
+    .tl-item.tl-active .tl-dot {
+        border-color: var(--primary);
+        background-color: var(--accent);
+        transform: scale(1.25);
+        box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 30%, transparent);
+    }
+    .tl-item.tl-active .tl-dot-core {
+        transform: scale(1);
+    }
+    .tl-item h3 {
+        transition: color 0.3s ease;
+    }
+    .tl-item.tl-active h3 {
+        color: var(--primary);
+    }
+</style>

@@ -3,10 +3,11 @@ import PageLayout from "@/layouts/PageLayout.astro";
 import Pulseline from "@/components/batucada/Pulseline.astro";
 import Torn from "@/components/batucada/Torn.astro";
 import CmsImage from "@/components/CmsImage.astro";
+import ImmersiveTimeline from "@/components/ImmersiveTimeline.astro";
 import { bp } from "@/components/batucada/tokens";
 import { batucadaHistoriaFallback } from "@/data/pages/batucada-historia";
 import { loadPageContent } from "@/utils/page-content";
-import { formatTitle, splitParagraphs } from "@/utils/rich-title";
+import { formatTitle } from "@/utils/rich-title";
 
 /* Contenido: single type `batucada-history-page` en Strapi, con fallback local. */
 const d = await loadPageContent("batucadaHistoryPage", batucadaHistoriaFallback);
@@ -25,26 +26,12 @@ const timeline = d.timeline;
 
         <Pulseline items={d.pulseline.map((item) => item.text ?? "")} />
 
-        <section class={bp.block} aria-label="Línea de tiempo de la Batucada Popular" data-bp-scene>
-            <p class:list={[bp.eyebrow, "text-primary"]} data-bp-hit>{d.timelineHeading.eyebrow}</p>
-            <h2 class:list={[bp.h2]} data-bp-hit set:html={formatTitle(d.timelineHeading.title)} />
-            <ol class="relative mt-[clamp(2rem,4.5vw,3.5rem)] grid gap-[clamp(1.6rem,3vw,2.4rem)]" data-bp-clave>
-                <span class="absolute bottom-2 top-2 left-[calc(0.65rem-1px)] border-l-[3px] border-dashed border-black/35" aria-hidden="true"></span>
-                {
-                    timeline.map((item) => (
-                        <li class="relative max-w-[68ch] pl-[2.6rem] lg:pl-[3.2rem]">
-                            <span class:list={["absolute left-0 top-[0.45rem] aspect-square w-[1.3rem] rotate-45 border-2 border-black", item.accent ? "bg-accent" : "bg-bp-blue"]} aria-hidden="true" />
-                            <h3 class="font-bp text-[clamp(1.15rem,1.6vw,1.5rem)] uppercase tracking-[0.01em]">
-                                <span class="mr-[0.6rem] text-primary">{item.period}</span>
-                                {item.title}
-                            </h3>
-                            {splitParagraphs(item.text ?? "").map((paragraph) => (
-                                <p class="mt-[0.6rem] leading-[1.6]">{paragraph}</p>
-                            ))}
-                        </li>
-                    ))
-                }
-            </ol>
+        <section class="mx-auto my-[clamp(2.25rem,5vw,4.5rem)] w-[94%] max-w-[1440px] rounded-[2.75rem] bg-[#dedbd4] px-4 py-14 sm:px-8 lg:rounded-[5rem] lg:px-14 lg:py-20" aria-label="Línea de tiempo de la Batucada Popular" data-bp-scene>
+            <div class="mb-10 max-w-[760px]">
+                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary" data-bp-hit>{d.timelineHeading.eyebrow}</p>
+                <h2 class="font-display text-4xl font-black leading-none text-black sm:text-6xl" data-bp-hit set:html={formatTitle(d.timelineHeading.title)} />
+            </div>
+            <ImmersiveTimeline items={timeline} ariaLabel="Línea de tiempo de la Batucada Popular" />
         </section>
 
         <Torn color="var(--bg-white)" border={2} field="none" />

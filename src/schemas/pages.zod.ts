@@ -71,6 +71,7 @@ export const AwardSchema = () =>
         id: z.string().nullish(),
         year: z.string().nullish(),
         org: z.string().nullish(),
+        recipient: z.string().nullish(),
         title: z.string().nullish(),
         text: z.string().nullish(),
         href: z.string().nullish(),
@@ -95,6 +96,8 @@ export const OrgCardSchema = () =>
         text: z.string().nullish(),
         accentColor: z.string().nullish(),
         dark: z.boolean().nullish(),
+        logo: media(),
+        instagramUrl: z.string().nullish(),
     });
 
 export const SectorSchema = () =>

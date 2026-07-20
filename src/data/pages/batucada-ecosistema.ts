@@ -20,7 +20,7 @@ export const batucadaEcosistemaFallback = {
         },
         {
             kind: "Organización adulta",
-            name: "Movimiento de Barrios Organizados por la Dignidad y la Seguridad",
+            name: "Movimiento de Barrios Organizados",
             text: "Articula a madres vinculadas a las batucadas, lideresas reconocidas y nuevas mujeres. Discute las necesidades de la ciudad desde los propios barrios, con autonomía frente a las agendas político-electorales y de la cooperación.",
         },
         {

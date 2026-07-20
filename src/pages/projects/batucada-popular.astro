@@ -288,11 +288,30 @@ const sectorsJson = JSON.stringify(sectors.map(({ name, lat, lng }) => ({ name, 
                 {
                     awards.map((award, index) => (
                         <li class:list={["grid content-start gap-[0.9rem] border-[3px] border-black bg-white p-[clamp(1.4rem,2.4vw,2rem)] shadow-[5px_5px_0_rgba(10,8,1,0.85)]", index % 2 ? "rotate-[0.7deg]" : "-rotate-[0.7deg]"]}>
-                            <span class="font-bp -rotate-2 justify-self-start border-2 border-current px-[0.55rem] py-[0.2rem] text-base text-primary" aria-hidden="true">
-                                {award.year}
+                            <span class="flex flex-wrap items-center gap-2">
+                                {award.year && (
+                                    <span class="font-bp -rotate-2 border-2 border-current px-[0.55rem] py-[0.2rem] text-base text-primary" aria-hidden="true">
+                                        {award.year}
+                                    </span>
+                                )}
+                                {award.recipient && (
+                                    <span class="rounded-[3px_8px_4px_7px] border-2 border-black bg-bp-blue px-2 py-[0.2rem] text-[0.68rem] font-black uppercase tracking-[0.08em] text-black">
+                                        {award.recipient}
+                                    </span>
+                                )}
                             </span>
                             <h3 class="text-[1.15rem] font-black leading-[1.3]">{award.title}</h3>
                             <p class="text-[0.95rem] leading-[1.55]">{award.text}</p>
+                            {award.href && (
+                                <a
+                                    href={award.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="mt-1 inline-flex w-fit items-center gap-2 border-b-2 border-current pb-0.5 text-[0.78rem] font-black uppercase tracking-[0.14em] text-primary transition hover:text-black focus-visible:outline-[3px] focus-visible:outline-offset-4 focus-visible:outline-primary"
+                                >
+                                    {award.linkText ?? "Ver la fuente"} <span aria-hidden="true">↗</span>
+                                </a>
+                            )}
                         </li>
                     ))
                 }

@@ -134,7 +134,8 @@ const statStyles = [
                 d.awards.map((r) => (
                     <article class="flex flex-col rounded-[2.25rem] bg-[#dedbd4] p-8 transition duration-300 hover:-translate-y-2 sm:p-10">
                         <div class="flex flex-wrap items-center gap-2">
-                            <span class="rounded-full bg-primary px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-white">{r.year}</span>
+                            {r.year && <span class="rounded-full bg-primary px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-white">{r.year}</span>}
+                            {r.recipient && <span class="rounded-full bg-accent px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-black">{r.recipient}</span>}
                             {r.org && <span class="rounded-full bg-black/10 px-3 py-1 text-xs font-bold text-black">{r.org}</span>}
                         </div>
                         <h3 class="mt-6 font-display text-3xl font-bold text-black">{r.title}</h3>
@@ -232,73 +233,13 @@ const statStyles = [
 </PageLayout>
 
 <script>
-    import { gsap, ScrollTrigger } from "../scripts/main";
     import { initBatucadaAnchors } from "../scripts/batucada/motion";
+    import { initReveals, initCounters } from "../scripts/reveals";
 
     const initImpact = () => {
-        const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-        // Anclas internas con offset por navbar fija (compartido con batucada)
-        initBatucadaAnchors();
-
-        /* Odómetro: el HTML ya trae el valor final renderizado (SSR), así que
-           sin JS o con reduced-motion no se pierde nada. El tween se crea al
-           entrar en viewport, nunca pre-creado. */
-        if (!reduced) {
-            const fmt = new Intl.NumberFormat("es-EC");
-            document.querySelectorAll<HTMLElement>("[data-count]").forEach((el) => {
-                const target = Number(el.dataset.count ?? "");
-                if (!Number.isFinite(target) || target <= 0) return;
-                const prefix = el.dataset.countPrefix ?? "";
-                const suffix = el.dataset.countSuffix ?? "";
-                const state = { val: 0 };
-                ScrollTrigger.create({
-                    trigger: el,
-                    start: "top 88%",
-                    once: true,
-                    onEnter: () => {
-                        gsap.to(state, {
-                            val: target,
-                            duration: 1.7,
-                            ease: "power3.out",
-                            onUpdate: () => {
-                                el.textContent = prefix + fmt.format(Math.round(state.val)) + suffix;
-                            },
-                        });
-                    },
-                });
-            });
-
-            // Reveals al hacer scroll (mismo patrón que about.astro)
-            document.querySelectorAll<HTMLElement>("[data-reveal]").forEach((el) => {
-                if (el.dataset.revealReady) return;
-                el.dataset.revealReady = "1";
-                gsap.set(el, { opacity: 0, y: 44 });
-                ScrollTrigger.create({
-                    trigger: el,
-                    start: "top 88%",
-                    once: true,
-                    onEnter: () => gsap.to(el, { opacity: 1, y: 0, duration: 0.9, ease: "power2.out", delay: parseFloat(el.dataset.revealDelay || "0") }),
-                });
-            });
-
-            document.querySelectorAll<HTMLElement>("[data-reveal-group]").forEach((group) => {
-                if (group.dataset.revealReady) return;
-                group.dataset.revealReady = "1";
-                const kids = Array.from(group.children) as HTMLElement[];
-                gsap.set(kids, { opacity: 0, y: 44 });
-                ScrollTrigger.create({
-                    trigger: group,
-                    start: "top 85%",
-                    once: true,
-                    onEnter: () => gsap.to(kids, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out", stagger: 0.12 }),
-                });
-            });
-
-            document.querySelectorAll<HTMLElement>("[data-float]").forEach((el, i) => {
-                gsap.to(el, { y: -12, rotation: "+=4", duration: 2.8 + (i % 3) * 0.5, ease: "sine.inOut", yoyo: true, repeat: -1 });
-            });
-        }
+        initBatucadaAnchors(); // anclas internas con offset por navbar fija
+        initCounters();
+        initReveals();
     };
 
     if (document.readyState === "loading") {

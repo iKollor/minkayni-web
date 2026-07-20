@@ -101,18 +101,35 @@ export const batucadaFallback = {
     awards: [
         {
             year: "2024",
+            recipient: "Batucada Popular",
             title: "Resilience Fund — Global Initiative Against Transnational Organized Crime",
             text: "Fellowship que reconoció a la Batucada Popular como una de las diez iniciativas seleccionadas en el mundo, entre alrededor de quinientas propuestas.",
-        },
-        {
-            year: "2025",
-            title: "ONU Mujeres — Construimos Paz",
-            text: "Una de las seis organizaciones que transforman Guayaquil con arte y cultura de paz dentro del programa Construimos Paz.",
+            href: "https://resiliencefund.globalinitiative.net/batucadas-populares-fellowship-2024-ecuador/",
+            linkText: "Ver el fellowship",
         },
         {
             year: "2026",
+            recipient: "Batucada Popular",
             title: "Presea «Rosa Borja Febres-Cordero de Icaza»",
             text: "Mérito en Servicio Social de las preseas cívicas del Municipio de Guayaquil, a una de las mejores iniciativas populares de la ciudad.",
+            href: "https://www.expreso.ec/guayaquil/municipio-guayaquil-revela-lista-ganadores-preseas-civicas-2026-289040.html",
+            linkText: "Leer en Expreso",
+        },
+        {
+            year: "",
+            recipient: "Batucada Popular",
+            title: "Premio Ana Frank de Jóvenes",
+            text: "Reconocimiento del Centro Ana Frank Argentina para América Latina a proyectos liderados por jóvenes que promueven la convivencia y la inclusión.",
+            href: "https://centroanafrank.com.ar/premio-premio-ana-frank-de-jovenes/",
+            linkText: "Conoce el premio",
+        },
+        {
+            year: "2025",
+            recipient: "Fundación MINKAYNI",
+            title: "ONU Mujeres — Construimos Paz",
+            text: "Una de las seis organizaciones que transforman Guayaquil con arte y cultura de paz dentro del programa Construimos Paz.",
+            href: "https://ecuador.unwomen.org/es/stories/noticia/2025/06/liderazgos-comunitarios-transforman-guayaquil-a-traves-del-arte-y-la-cultura-de-paz-en-el-marco-de-construimos-paz",
+            linkText: "Leer en ONU Mujeres",
         },
     ],
     awardsNote:
