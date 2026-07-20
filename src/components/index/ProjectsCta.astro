@@ -22,29 +22,27 @@ const exploreHref = d.button.href || "/projects";
 ---
 
 <section class="mx-auto mb-16 w-[94%] max-w-[1440px] overflow-hidden rounded-[2.75rem] bg-accent px-6 py-14 text-black sm:px-12 md:mb-24 lg:rounded-[5rem] lg:px-20 lg:py-20" aria-labelledby="projects-cta-title">
-    <div class="grid items-center gap-10 lg:grid-cols-[1fr_auto]">
-        <div class="max-w-[820px]">
-            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.heading.eyebrow}</p>
-            <h2 id="projects-cta-title" class="title font-display text-4xl font-black leading-[0.95] sm:text-6xl" set:html={formatTitle(d.heading.title, "text-primary")} />
-            <p class="mt-6 max-w-[58ch] text-lg leading-relaxed text-black/75">{d.heading.body}</p>
-            {
-                tags.length > 0 && (
-                    <ul class="mt-8 flex flex-wrap gap-2" aria-label="Líneas de acción">
-                        {tags.map((tag) => (
-                            <li>
-                                <a
-                                    href={`${exploreHref.split("#")[0]}#project-explorer`}
-                                    class="inline-flex rounded-full bg-black/10 px-4 py-2 text-sm font-bold transition hover:-translate-y-0.5 hover:bg-primary hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                                >
-                                    {tag.text}
-                                </a>
-                            </li>
-                        ))}
-                    </ul>
-                )
-            }
-        </div>
-        <div class="justify-self-start lg:justify-self-end">
+    <div class="mx-auto flex max-w-[900px] flex-col items-center text-center">
+        <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.heading.eyebrow}</p>
+        <h2 id="projects-cta-title" class="title font-display text-5xl font-black leading-[0.95] sm:text-7xl" set:html={formatTitle(d.heading.title, "text-primary")} />
+        <p class="mt-6 max-w-[58ch] text-lg leading-relaxed text-black/75">{d.heading.body}</p>
+        {
+            tags.length > 0 && (
+                <ul class="mt-8 flex flex-wrap justify-center gap-2" aria-label="Líneas de acción">
+                    {tags.map((tag) => (
+                        <li>
+                            <a
+                                href={`${exploreHref.split("#")[0]}#project-explorer`}
+                                class="inline-flex rounded-full bg-black/10 px-4 py-2 text-sm font-bold transition hover:-translate-y-0.5 hover:bg-primary hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                            >
+                                {tag.text}
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            )
+        }
+        <div class="mt-10">
             <Button href={d.button.href} defaultText={d.button.defaultText} hoverText={d.button.hoverText} />
         </div>
     </div>

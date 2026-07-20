@@ -4,9 +4,23 @@
         {
             "name": "astro-dev",
             "runtimeExecutable": "pnpm",
-            "runtimeArgs": ["run", "dev"],
+            "runtimeArgs": [
+                "run",
+                "dev"
+            ],
             "port": 4321,
             "autoPort": true
+        },
+        {
+            "name": "static-dist",
+            "runtimeExecutable": "npx",
+            "runtimeArgs": [
+                "serve",
+                "dist",
+                "-l",
+                "4399"
+            ],
+            "port": 4399
         }
     ]
 }

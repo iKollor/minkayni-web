@@ -52,23 +52,29 @@ const bodyParagraphs = splitParagraphs(d.body ?? "");
         <div id="featured-project-panel" class="relative flex flex-col justify-center overflow-hidden p-8 text-white sm:p-12 lg:p-16">
             <Image src={flor} alt="" class="pointer-events-none absolute -bottom-16 -right-14 h-64 w-64 rotate-12 opacity-10" aria-hidden="true" />
 
-            <div class="relative flex flex-col items-start gap-7">
-                <h2 class="featured-title text-sm font-bold uppercase tracking-[0.26em] text-secondary">{d.title}</h2>
+            <div class="relative flex flex-col items-start gap-6">
+                <h2 class="featured-title flex items-center gap-3 text-sm font-bold uppercase tracking-[0.26em] text-secondary">
+                    <span class="h-[3px] w-8 rounded-full bg-secondary" aria-hidden="true"></span>
+                    {d.title}
+                </h2>
 
                 <CmsImage
                     media={d.logo}
                     fallback={logoSrc}
                     alt="Batucada Popular"
-                    class="batucada-wordmark h-40 w-auto select-none drop-shadow-[0_10px_30px_rgba(0,0,0,0.35)] sm:h-52 lg:h-60"
+                    class="batucada-wordmark h-32 w-auto select-none drop-shadow-[0_10px_30px_rgba(0,0,0,0.35)] sm:h-40 lg:h-48"
                     loading="eager"
                     widths={[320, 640]}
                 />
 
-                <div class="featured-body flex max-w-[52ch] flex-col gap-4 text-base leading-relaxed text-white/85 lg:text-lg">
-                    {bodyParagraphs.map((paragraph) => <p>{paragraph}</p>)}
+                <div class="featured-body flex flex-col gap-5">
+                    {bodyParagraphs[0] && <p class="max-w-[48ch] text-lg leading-relaxed text-white sm:text-xl">{bodyParagraphs[0]}</p>}
+                    {bodyParagraphs.slice(1).map((paragraph) => <p class="max-w-[52ch] border-l-2 border-secondary/60 pl-4 text-base leading-relaxed text-white/75">{paragraph}</p>)}
                 </div>
 
-                <Button href={d.button.href} defaultText={d.button.defaultText} hoverText={d.button.hoverText} />
+                <div class="pt-2">
+                    <Button href={d.button.href} defaultText={d.button.defaultText} hoverText={d.button.hoverText} />
+                </div>
             </div>
         </div>
     </div>
