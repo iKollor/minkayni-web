@@ -62,14 +62,30 @@ const submenuButtons = buttons
         submenuButtons.map(({ button, index }) => (
             <nav
                 id={`navbar-submenu-${index}`}
-                class="navbar-submenu absolute top-[68px] min-w-60 rounded-2xl border border-primary/15 bg-[var(--bg-white)] p-2 text-primary opacity-0 invisible pointer-events-none -translate-y-2 shadow-[0_18px_45px_rgba(35,15,55,0.18)] transition-[opacity,transform,visibility] duration-200"
+                class="navbar-submenu absolute top-[68px] min-w-64 rounded-[1.5rem] border border-black/10 bg-[var(--bg-white)] p-3 text-black opacity-0 invisible pointer-events-none -translate-y-2 shadow-[0_24px_60px_rgba(35,15,55,0.22)] transition-[opacity,transform,visibility] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
                 aria-label={`Submenú de ${button.title}`}
             >
+                <p class="px-4 pb-2 pt-2 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-primary/70" aria-hidden="true">{button.title}</p>
                 <ul>
-                    {button.items?.map((item) => (
+                    {button.items?.map((item, itemIndex) => (
                         <li>
-                            <a href={item.path} class="block rounded-xl px-4 py-3 font-display font-bold text-base hover:bg-primary hover:text-white focus-visible:bg-primary focus-visible:text-white focus-visible:outline-none">
-                                {item.title}
+                            <a
+                                href={item.path}
+                                class="group flex items-baseline gap-3 rounded-xl px-4 py-3 transition-colors duration-200 hover:bg-primary/5 focus-visible:bg-primary/5 focus-visible:outline-none"
+                            >
+                                <span class="font-display text-[0.7rem] font-bold text-black/35 transition-colors duration-200 group-hover:text-primary group-focus-visible:text-primary" aria-hidden="true">
+                                    0{itemIndex + 1}
+                                </span>
+                                <span class="relative overflow-hidden pb-0.5 font-display text-base font-bold text-black transition-colors duration-200 group-hover:text-primary group-focus-visible:text-primary">
+                                    {item.title}
+                                    <span
+                                        class="pointer-events-none absolute bottom-0 left-0 h-[1.5px] w-full rounded-full bg-primary -translate-x-[101%] transition-transform duration-300 ease-out group-hover:translate-x-0 group-focus-visible:translate-x-0"
+                                        aria-hidden="true"
+                                    />
+                                </span>
+                                <span class="ml-auto text-sm text-primary opacity-0 -translate-x-1 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0 group-focus-visible:opacity-100 group-focus-visible:translate-x-0" aria-hidden="true">
+                                    ↗
+                                </span>
                             </a>
                         </li>
                     ))}

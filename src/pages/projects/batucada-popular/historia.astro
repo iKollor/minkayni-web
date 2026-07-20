@@ -1,105 +1,33 @@
 ---
-import { Image } from "astro:assets";
 import PageLayout from "@/layouts/PageLayout.astro";
 import Pulseline from "@/components/batucada/Pulseline.astro";
 import Torn from "@/components/batucada/Torn.astro";
+import CmsImage from "@/components/CmsImage.astro";
 import { bp } from "@/components/batucada/tokens";
-import MarchPhoto from "@/assets/batucada-popular/marcha.webp";
+import { batucadaHistoriaFallback } from "@/data/pages/batucada-historia";
+import { loadPageContent } from "@/utils/page-content";
+import { formatTitle } from "@/utils/rich-title";
 
-/* Línea de tiempo condensada desde la historia institucional y la
-   entrevista a las personas fundadoras (2026). */
-const timeline = [
-    {
-        period: "2010–2015",
-        title: "Primeros aprendizajes comunitarios",
-        text: "Quienes después impulsarían MINKAYNI trabajan con poblaciones de sectores populares de Guayaquil: niñez en situación de calle, personas adultas mayores, madres solteras, personas con discapacidad. Ahí se aprende organización barrial y educación popular.",
-    },
-    {
-        period: "2016–2019",
-        title: "Trabajo territorial desde Terranueva",
-        text: "La experiencia continúa junto a Fundación Terranueva, con mujeres, juventudes y liderazgos comunitarios. Una certeza se consolida: los barrios ya tienen capacidades, conocimientos y redes para sostener respuestas propias.",
-    },
-    {
-        period: "2019",
-        title: "Palos, baldes y ritmo",
-        text: "Johanna Chévez y Xavier Moreira impulsan los primeros ensayos con instrumentos improvisados: palos, baldes, barriles y materiales reciclados. El ritmo convoca, genera confianza y abre espacios de encuentro.",
-        accent: true,
-    },
-    {
-        period: "2020",
-        title: "Nace en pandemia, como familia",
-        text: "Frente al miedo que rodeó la pandemia, la batucada surge primero como una iniciativa familiar. Ese mismo año se constituye jurídicamente la Fundación MINKAYNI, que acompaña y sostiene el proceso.",
-    },
-    {
-        period: "2020",
-        title: "La protesta de los baldes",
-        text: "En una época en que la gente temía salir, las batucadas salieron con baldes, junto a jóvenes y niños muy pequeños, a reclamar por la reducción presupuestaria de las universidades. Fuimos apresados — y esa experiencia nos convenció aún más de organizar a adolescentes y jóvenes para defender pacíficamente sus derechos conquistados.",
-        accent: true,
-    },
-    {
-        period: "2020–2021",
-        title: "Batambá: la semilla feminista",
-        text: "Junto a Terranueva se impulsan propuestas para vincular a personas en movilidad humana con las comunidades de acogida y prevenir la xenofobia. Nace Batambá, movimiento feminista comunitario. Muchas madres sostenían sus hogares y no podían participar de forma permanente: comenzaron a involucrar a sus hijas e hijos, que se integraron al proceso.",
-    },
-    {
-        period: "2021–2022",
-        title: "La violencia obliga a profundizar",
-        text: "Guayaquil vive un incremento acelerado de la violencia armada y del riesgo de reclutamiento de niñas, niños y adolescentes. La batucada se fortalece como estrategia comunitaria de prevención, protección y organización juvenil: nuevos referentes frente a los liderazgos del crimen organizado.",
-    },
-    {
-        period: "2022–2023",
-        title: "Del taller artístico al proceso territorial",
-        text: "Los ensayos combinan aprendizaje musical, disciplina, liderazgo, acompañamiento socioemocional y educación popular. Las y los participantes asumen responsabilidades y se reconocen como actores de sus comunidades.",
-    },
-    {
-        period: "2023–2024",
-        title: "Expansión hacia nuevos barrios",
-        text: "La experiencia llega a Socio Vivienda, Suburbio (Cisne 1 y 2), Sergio Toral 1 y 2, Nigeria, Trinipuerto, Guasmo, Mapasingue, Bastión Popular, Nueva Prosperina y Paraíso de la Flor, con presencias que varían según los periodos y las condiciones de cada sector.",
-    },
-    {
-        period: "2024",
-        title: "El mundo empieza a escuchar",
-        text: "El Resilience Fund de la Global Initiative Against Transnational Organized Crime selecciona a la Batucada entre diez iniciativas del mundo, de unas quinientas propuestas.",
-        accent: true,
-    },
-    {
-        period: "2025",
-        title: "Comunicación popular y pensamiento propio",
-        text: "Nace Radio Sin Paro y se fortalecen las campañas juveniles. ONU Mujeres integra a la Batucada entre las seis organizaciones de «Construimos Paz», y FLACSO acoge el conversatorio «Batucada Popular de Guayaquil: arte y violencia». La red territorial se acerca a las 300 personas.",
-    },
-    {
-        period: "2026",
-        title: "Una metodología propia",
-        text: "La Batucada Popular se consolida como metodología territorial de MINKAYNI: percusión, educación popular, liderazgo juvenil, comunicación comunitaria, formación en derechos y economía circular, con el ciclo DAARR como eje.",
-    },
-    {
-        period: "2026",
-        title: "Presea de la ciudad",
-        text: "El Municipio de Guayaquil otorga a la Batucada Popular la presea «Rosa Borja Febres-Cordero de Icaza» al Mérito en Servicio Social. En las calles, el mensaje se vuelve consigna: «Más tambores, menos armas».",
-        accent: true,
-    },
-    {
-        period: "Hoy",
-        title: "Y el redoble sigue",
-        text: "Más de 300 integrantes en 12 sectores, una red de liderazgos juveniles en formación y la proyección de conectar iniciativas de Colombia, Ecuador, Brasil, México y El Salvador: una red latinoamericana de barrios que previenen la violencia con arte y organización.",
-    },
-];
+/* Contenido: single type `batucada-history-page` en Strapi, con fallback local. */
+const d = await loadPageContent("batucadaHistoryPage", batucadaHistoriaFallback);
+
+const timeline = d.timeline;
 ---
 
 <PageLayout title="Historia — Batucada Popular" showHero={false} linkColor="text-white" navbarThreshold={0.5}>
     <article class="overflow-clip bg-white text-black">
         <header class:list={[bp.edge, bp.fieldBlue, "pt-[calc(90px+clamp(2.25rem,5vw,4.5rem))] pb-[clamp(2.25rem,5vw,4.5rem)]"]} aria-labelledby="historia-title">
-            <a class="inline-flex min-h-11 items-center gap-2 border-b-2 border-current text-[0.78rem] font-black uppercase tracking-[0.14em] focus-visible:outline-[3px] focus-visible:outline-offset-4 focus-visible:outline-black" href="/projects/batucada-popular/" data-bp-hero><span aria-hidden="true">←</span> Batucada Popular</a>
-            <p class:list={[bp.eyebrow, "mt-[clamp(1rem,2.5vw,2rem)]"]} data-bp-hero>La historia</p>
-            <h1 id="historia-title" class:list={[bp.riso, "font-bp mt-[clamp(1rem,2.5vw,2rem)] max-w-[14ch] text-balance text-[clamp(2.4rem,5.4vw,5.8rem)] uppercase leading-[0.94] tracking-[-0.03em]"]} data-bp-hero>Del miedo al redoble.</h1>
-            <p class:list={[bp.body, "mt-7 max-w-[56ch]"]} data-bp-hero>La Batucada Popular nace durante la pandemia y recoge experiencias de muchos años atrás: una historia de barrios que aprendieron a responder juntos, contada al ritmo de sus tambores.</p>
+            <a class="inline-flex min-h-11 items-center gap-2 border-b-2 border-current text-[0.78rem] font-black uppercase tracking-[0.14em] focus-visible:outline-[3px] focus-visible:outline-offset-4 focus-visible:outline-black" href={d.backLink.href} data-bp-hero><span aria-hidden="true">←</span> {d.backLink.text}</a>
+            <p class:list={[bp.eyebrow, "mt-[clamp(1rem,2.5vw,2rem)]"]} data-bp-hero>{d.hero.eyebrow}</p>
+            <h1 id="historia-title" class:list={[bp.riso, "font-bp mt-[clamp(1rem,2.5vw,2rem)] max-w-[14ch] text-balance text-[clamp(2.4rem,5.4vw,5.8rem)] uppercase leading-[0.94] tracking-[-0.03em]"]} data-bp-hero set:html={formatTitle(d.hero.title)} />
+            <p class:list={[bp.body, "mt-7 max-w-[56ch]"]} data-bp-hero>{d.hero.body}</p>
         </header>
 
-        <Pulseline items={["2019 · Palos y baldes", "2020 · Nace en pandemia", "Hoy · 12 sectores"]} />
+        <Pulseline items={d.pulseline.map((item) => item.text ?? "")} />
 
         <section class={bp.block} aria-label="Línea de tiempo de la Batucada Popular" data-bp-scene>
-            <p class:list={[bp.eyebrow, "text-primary"]} data-bp-hit>2010 → hoy</p>
-            <h2 class:list={[bp.h2]} data-bp-hit>Cada etapa dejó un aprendizaje.</h2>
+            <p class:list={[bp.eyebrow, "text-primary"]} data-bp-hit>{d.timelineHeading.eyebrow}</p>
+            <h2 class:list={[bp.h2]} data-bp-hit set:html={formatTitle(d.timelineHeading.title)} />
             <ol class="relative mt-[clamp(2rem,4.5vw,3.5rem)] grid gap-[clamp(1.6rem,3vw,2.4rem)]" data-bp-clave>
                 <span class="absolute bottom-2 top-2 left-[calc(0.65rem-1px)] border-l-[3px] border-dashed border-black/35" aria-hidden="true"></span>
                 {
@@ -117,26 +45,33 @@ const timeline = [
             </ol>
         </section>
 
-        <Torn color="var(--bg-white)" border={2} />
+        <Torn color="var(--bg-white)" border={2} field="none" />
 
         <section class:list={[bp.edge, bp.fieldPurple, "grid items-center gap-[clamp(2.25rem,5vw,4.5rem)] py-[clamp(2.25rem,5vw,4.5rem)] lg:grid-cols-[minmax(0,1.02fr)_minmax(26rem,0.98fr)]"]} aria-labelledby="sentido-title" data-bp-scene>
             <figure class={bp.visual}>
                 <span class:list={[bp.echoPlate, "bg-bp-blue"]} aria-hidden="true"></span>
                 <div class:list={[bp.frame, "aspect-[5/4] border-white"]} data-bp-photo>
                     <span class:list={[bp.tape, bp.tapeTL]} aria-hidden="true"></span>
-                    <Image class={bp.frameImg} src={MarchPhoto} alt="Jóvenes de Batucada Popular marchando con sus tambores en una calle de Guayaquil" widths={[640, 960, 1072]} sizes="(min-width: 64em) 46vw, 100vw" />
+                    <CmsImage
+                        media={d.senseImage}
+                        fallback={d.senseLocalImage}
+                        alt={d.senseImageAlt}
+                        class={bp.frameImg}
+                        widths={[640, 960, 1072]}
+                        sizes="(min-width: 64em) 46vw, 100vw"
+                    />
                     <span class:list={[bp.tape, bp.tapeBR]} aria-hidden="true"></span>
                 </div>
             </figure>
             <div class="min-w-0">
-                <p class={bp.eyebrow} data-bp-hit>El sentido de esta historia</p>
-                <h2 id="sentido-title" class="font-bp mt-4 max-w-[12ch] text-balance text-[clamp(2.1rem,3.4vw,3.9rem)] uppercase leading-[0.96] tracking-[-0.03em]" data-bp-hit>El dolor se volvió organización colectiva.</h2>
-                <p class:list={[bp.body, "mt-7 max-w-[46ch]"]} data-bp-hit>La violencia obligó a profundizar el propósito: los ensayos se convirtieron en espacios de protección; los grupos, en redes de cuidado; los instrumentos, en medios para ocupar el espacio público; y las juventudes, en protagonistas de una narrativa diferente sobre los barrios populares.</p>
-                <p class:list={[bp.body, "mt-7 max-w-[46ch] border-t-[3px] border-accent pt-6 font-black"]} data-bp-hit>Desde los barrios también se producen conocimientos, respuestas y caminos para defender la vida.</p>
+                <p class={bp.eyebrow} data-bp-hit>{d.senseHeading.eyebrow}</p>
+                <h2 id="sentido-title" class="font-bp mt-4 max-w-[12ch] text-balance text-[clamp(2.1rem,3.4vw,3.9rem)] uppercase leading-[0.96] tracking-[-0.03em]" data-bp-hit set:html={formatTitle(d.senseHeading.title)} />
+                <p class:list={[bp.body, "mt-7 max-w-[46ch]"]} data-bp-hit>{d.senseHeading.body}</p>
+                <p class:list={[bp.body, "mt-7 max-w-[46ch] border-t-[3px] border-accent pt-6 font-black"]} data-bp-hit>{d.senseHighlight}</p>
             </div>
         </section>
 
-        <Torn color="var(--primary)" border={1} flip />
+        <Torn color="var(--primary)" border={1} flip field="purple" />
 
         <section
             class:list={[bp.block, bp.fieldBlue, bp.predome, "grid items-center gap-[clamp(2.25rem,5vw,4.5rem)]", "[background-image:url(/batucada/semitono-soft.webp),var(--bp-rings-br)] [background-size:cover,auto] [background-blend-mode:multiply,normal]"]}
@@ -144,12 +79,12 @@ const timeline = [
             data-bp-scene
         >
             <div>
-                <p class={bp.eyebrow} data-bp-hit>Sigue el recorrido</p>
-                <h2 id="historia-cta-title" class:list={[bp.riso, "font-bp mt-4 max-w-[12ch] text-balance text-[clamp(2.4rem,4.6vw,5.4rem)] uppercase leading-[0.96] tracking-[-0.03em]"]} data-bp-hit>La batucada no suena sola.</h2>
+                <p class={bp.eyebrow} data-bp-hit>{d.ctaHeading.eyebrow}</p>
+                <h2 id="historia-cta-title" class:list={[bp.riso, "font-bp mt-4 max-w-[12ch] text-balance text-[clamp(2.4rem,4.6vw,5.4rem)] uppercase leading-[0.96] tracking-[-0.03em]"]} data-bp-hit set:html={formatTitle(d.ctaHeading.title)} />
             </div>
             <div class="flex flex-col flex-wrap items-stretch gap-x-6 gap-y-4 text-center sm:flex-row sm:items-center sm:text-left" data-bp-hit>
-                <a class:list={[bp.button, bp.buttonInk, "focus-visible:outline-black"]} href="/projects/batucada-popular/ecosistema/">Conoce el ecosistema</a>
-                <a class:list={[bp.textLink, "justify-center focus-visible:outline-black"]} href="/projects/batucada-popular/">Volver al proyecto <span class={bp.textLinkArrow} aria-hidden="true">↖</span></a>
+                <a class:list={[bp.button, bp.buttonInk, "focus-visible:outline-black"]} href={d.ctaPrimary.href}>{d.ctaPrimary.text}</a>
+                <a class:list={[bp.textLink, "justify-center focus-visible:outline-black"]} href={d.ctaSecondary.href}>{d.ctaSecondary.text} <span class={bp.textLinkArrow} aria-hidden="true">↖</span></a>
             </div>
         </section>
     </article>

@@ -7,13 +7,14 @@ import { strapiMediaUrl } from "../../utils/media-url";
 
 interface Props {
     testimonials: ComponentSectionsTestimonial[];
+    title?: string;
 }
-const { testimonials } = Astro.props;
+const { testimonials, title = "Historias de cambio" } = Astro.props;
 const STRAPI_URL = import.meta.env.STRAPI_URL;
 ---
 
 <div class="flex items-center justify-center">
-    <h1 class="title font-bold font-display text-secondary mt-20 md:mt-32 lg:mt-40 text-4xl md:text-6xl lg:text-8xl">Historias de cambio</h1>
+    <h1 class="title font-bold font-display text-secondary mt-20 md:mt-32 lg:mt-40 text-4xl md:text-6xl lg:text-8xl">{title}</h1>
 </div>
 
 <div id="testimonials" class="t-pin-section relative w-full h-screen overflow-hidden" data-pin>

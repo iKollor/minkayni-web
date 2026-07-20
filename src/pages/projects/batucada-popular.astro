@@ -4,63 +4,26 @@ import PageLayout from "@/layouts/PageLayout.astro";
 import Measure from "@/components/batucada/Measure.astro";
 import Pulseline from "@/components/batucada/Pulseline.astro";
 import Torn from "@/components/batucada/Torn.astro";
+import CmsImage from "@/components/CmsImage.astro";
+import { Markdown } from "@astropub/md";
 import { bp } from "@/components/batucada/tokens";
-import HeroPhoto from "@/assets/FOTO_BATUCADA.webp";
-import CommunityPhoto from "@/assets/batucada-popular/comunidad.webp";
 import BatucadaLogo from "@/assets/batucada-popular/logo-batucada-popular.svg";
+import { batucadaFallback } from "@/data/pages/batucada";
+import { loadPageContent } from "@/utils/page-content";
+import { formatTitle, splitParagraphs } from "@/utils/rich-title";
 
-const methodSteps = [
-    { number: "01", title: "Diagnóstico", text: "Identificamos necesidades y fortalezas del territorio." },
-    { number: "02", title: "Acción de aprendizaje", text: "Desarrollamos talleres y actividades formativas mediante el arte." },
-    { number: "03", title: "Acompañamiento", text: "Damos seguimiento y fortalecemos el proceso de cada participante." },
-    { number: "04", title: "Revisión", text: "Evaluamos resultados, avances y aspectos por mejorar." },
-    { number: "05", title: "Reflexión", text: "Analizamos aprendizajes y proyectamos nuevas acciones comunitarias." },
-];
+/* Contenido: single type `batucada-page` en Strapi, con fallback local. */
+const d = await loadPageContent("batucadaPage", batucadaFallback);
 
-/* Debe coincidir en orden con SECTORS en scripts/batucada/map.ts:
-   el índice enlaza la lista con los pines del mapa. */
-const sectors = [
-    "Socio Vivienda",
-    "Mapasingue",
-    "Trinipuerto",
-    "Nigeria",
-    "Sergio Toral 1",
-    "Sergio Toral 2",
-    "Bastión Popular, Bloque 2",
-    "Suburbio, Cisne 1",
-    "Suburbio, Cisne 2",
-    "Guasmo Sur",
-    "Nueva Prosperina",
-    "Paraíso de la Flor",
-];
-
-const communityActions = ["Encuentros barriales", "Procesos de memoria", "Campañas comunitarias", "Comunicación popular"];
-
-const awards = [
-    {
-        year: "2024",
-        title: "Resilience Fund — Global Initiative Against Transnational Organized Crime",
-        text: "Fellowship que reconoció a la Batucada Popular como una de las diez iniciativas seleccionadas en el mundo, entre alrededor de quinientas propuestas.",
-    },
-    {
-        year: "2025",
-        title: "ONU Mujeres — Construimos Paz",
-        text: "Una de las seis organizaciones que transforman Guayaquil con arte y cultura de paz dentro del programa Construimos Paz.",
-    },
-    {
-        year: "2026",
-        title: "Presea «Rosa Borja Febres-Cordero de Icaza»",
-        text: "Mérito en Servicio Social de las preseas cívicas del Municipio de Guayaquil, a una de las mejores iniciativas populares de la ciudad.",
-    },
-];
-
-const ecosystem = ["CESCU", "Movimiento de Barrios", "Radio Sin Paro", "Escuela de Líderes Jóvenes", "Batambá"];
-
-const figures = [
-    { sr: "+300", target: 300, prefix: "+", label: "integrantes" },
-    { sr: "12", target: 12, prefix: "", label: "sectores" },
-    { sr: "2020", target: 0, prefix: "", label: "desde" },
-];
+const methodSteps = d.methodSteps;
+/* El orden de `sectors` enlaza la lista con los pines del mapa (data-bp-sectors). */
+const sectors = d.sectors;
+const communityActions = d.communityActions;
+const awards = d.awards;
+const ecosystem = d.ecosystemTags;
+const figures = d.figures;
+const introParagraphs = splitParagraphs(d.introBody ?? "");
+const sectorsJson = JSON.stringify(sectors.map(({ name, lat, lng }) => ({ name, lat, lng })));
 ---
 
 <PageLayout title="Batucada Popular" showHero={false} linkColor="text-white" navbarThreshold={0.85}>
@@ -77,28 +40,40 @@ const figures = [
         >
             <div class="flex min-w-0 flex-col items-start justify-center">
                 <p class:list={[bp.eyebrow, "mb-[clamp(1rem,2.5vw,2rem)] flex w-full flex-wrap justify-between gap-x-6 gap-y-1 border-b-2 border-current pb-3"]} data-bp-hero>
-                    <span>Guayaquil, Ecuador</span> <span>Desde 2020</span>
+                    <span>{d.heroMetaLeft}</span> <span>{d.heroMetaRight}</span>
                 </p>
                 <p class="relative my-[clamp(1rem,2.5vw,2rem)] inline-block -rotate-2 border-[3px] border-black bg-white px-[1.1rem] py-[0.9rem]" data-bp-hero>
                     <span class:list={[bp.tape, bp.tapeTL]} aria-hidden="true"></span>
                     <Image class="h-auto w-[clamp(7rem,12vw,10.5rem)]" src={BatucadaLogo} alt="Batucada Popular" loading="eager" />
                     <span class:list={[bp.tape, bp.tapeBR]} aria-hidden="true"></span>
                 </p>
-                <h1 id="bp-title" class:list={[bp.h1, bp.riso, "max-w-[14ch] text-black"]} data-bp-hero>El barrio suena, se organiza y se transforma.</h1>
+                <h1 id="bp-title" class:list={[bp.h1, bp.riso, "max-w-[14ch] text-black"]} data-bp-hero set:html={formatTitle(d.heroTitle ?? "")} />
                 <div class="mt-[clamp(1.75rem,4vw,3rem)] flex flex-wrap items-center gap-x-6 gap-y-4" data-bp-hero>
-                    <a class:list={[bp.button, bp.buttonYellow, "focus-visible:outline-black"]} href="#historia">Conoce el proceso</a>
-                    <a class:list={[bp.textLink, "focus-visible:outline-black"]} href="#metodologia">Ver metodología <span class={bp.textLinkArrow} aria-hidden="true">↘</span></a>
+                    <a class:list={[bp.button, bp.buttonYellow, "focus-visible:outline-black"]} href={d.heroPrimary.href}>{d.heroPrimary.text}</a>
+                    <a class:list={[bp.textLink, "focus-visible:outline-black"]} href={d.heroSecondary.href}>{d.heroSecondary.text} <span class={bp.textLinkArrow} aria-hidden="true">↘</span></a>
                 </div>
             </div>
 
-            <figure class:list={[bp.visual, "min-w-0 lg:flex lg:flex-col lg:justify-center lg:self-stretch"]}>
-                <span class:list={[bp.echoPlate, "bg-black"]} aria-hidden="true"></span>
-                <div class:list={[bp.frame, "aspect-[4/3] lg:aspect-auto lg:min-h-96 lg:flex-1"]} data-bp-photo>
-                    <span class:list={[bp.tape, bp.tapeTL]} aria-hidden="true"></span>
-                    <Image class={bp.frameImg} src={HeroPhoto} alt="Jóvenes de Batucada Popular tocando tambores durante una presentación" loading="eager" widths={[720, 1080, 1600, 2200]} sizes="(min-width: 64em) 48vw, 100vw" />
-                    <span class:list={[bp.tape, bp.tapeBR]} aria-hidden="true"></span>
+            <figure class="min-w-0 lg:flex lg:flex-col lg:justify-center lg:self-stretch">
+                {/* el eco vive en su propio contenedor relativo: cubre solo la
+                    imagen, nunca el figcaption (que queda fuera) */}
+                <div class:list={[bp.visual, "lg:flex lg:flex-1 lg:flex-col"]}>
+                    <span class:list={[bp.echoPlate, "bg-black"]} aria-hidden="true"></span>
+                    <div class:list={[bp.frame, "aspect-[4/3] lg:aspect-auto lg:min-h-96 lg:flex-1"]} data-bp-photo>
+                        <span class:list={[bp.tape, bp.tapeTL]} aria-hidden="true"></span>
+                        <CmsImage
+                            media={d.heroImage}
+                            fallback={d.heroLocalImage}
+                            alt={d.heroImageAlt}
+                            class={bp.frameImg}
+                            loading="eager"
+                            widths={[720, 1080, 1600, 2200]}
+                            sizes="(min-width: 64em) 48vw, 100vw"
+                        />
+                        <span class:list={[bp.tape, bp.tapeBR]} aria-hidden="true"></span>
+                    </div>
                 </div>
-                <figcaption class="mt-[calc(1rem+clamp(0.75rem,1.5vw,1.25rem))] max-w-[34ch] text-[0.78rem] font-black uppercase tracking-[0.14em] lg:self-end lg:text-right">Arte, organización y transformación comunitaria.</figcaption>
+                <figcaption class="mt-4 max-w-[34ch] text-[0.78rem] font-black uppercase tracking-[0.14em] lg:self-end lg:text-right">{d.heroCaption}</figcaption>
             </figure>
         </header>
 
@@ -108,31 +83,33 @@ const figures = [
         <section id="historia" class:list={[bp.block, "scroll-mt-[92px]"]} aria-labelledby="intro-title" data-bp-scene>
             <Measure num="01" label="Quiénes somos" filled={2} />
 
-            <p class:list={[bp.eyebrow]} data-bp-hit>Un proceso construido desde los territorios</p>
-            <h2 id="intro-title" class:list={[bp.h2, "max-w-[13ch] text-[clamp(2.4rem,5vw,5.4rem)]"]} data-bp-hit>
-                Cuando el tambor convoca, la comunidad <em class="not-italic text-primary underline decoration-bp-blue decoration-[0.08em] underline-offset-[0.12em]">responde</em>.
-            </h2>
+            <p class:list={[bp.eyebrow]} data-bp-hit>{d.introHeading.eyebrow}</p>
+            <h2
+                id="intro-title"
+                class:list={[bp.h2, "max-w-[13ch] text-[clamp(2.4rem,5vw,5.4rem)]"]}
+                data-bp-hit
+                set:html={formatTitle(d.introHeading.title, "text-primary underline decoration-bp-blue decoration-[0.08em] underline-offset-[0.12em]")}
+            />
 
             <div class="mt-[clamp(2rem,4.5vw,3.5rem)] grid items-start gap-[clamp(2.25rem,5vw,4.5rem)] lg:grid-cols-[minmax(0,1.05fr)_minmax(24rem,0.95fr)]">
                 <div>
                     <div class:list={[bp.body, "grid max-w-[60ch] gap-[clamp(1rem,2.5vw,2rem)]"]} data-bp-clave>
-                        <p>Batucada Popular es un colectivo juvenil comunitario y territorial que desarrolla procesos de organización, formación y participación con niñas, niños, adolescentes y jóvenes de sectores populares de Guayaquil.</p>
-                        <p>A través de la percusión, la educación popular y la acción comunitaria, el arte se convierte en una herramienta para fortalecer la convivencia, el liderazgo juvenil y la defensa de los derechos humanos — y para prevenir la captación y el reclutamiento forzado en los barrios.</p>
+                        {introParagraphs.map((paragraph) => <p>{paragraph}</p>)}
                     </div>
                     <ul class="mt-[clamp(1.75rem,3.5vw,2.75rem)] flex flex-wrap gap-x-[1.6rem] gap-y-[1.1rem]" data-bp-clave>
                         {
                             figures.map((figure, index) => (
                                 <li class:list={["grid gap-[0.2rem] rounded-[4px_8px_5px_7px] border-[3px] border-black bg-white px-[1.2rem] py-[0.85rem]", index % 2 ? "rotate-[1.2deg] shadow-[4px_4px_0_var(--accent)]" : "-rotate-1 shadow-[4px_4px_0_var(--color-bp-blue)]"]}>
                                     <strong class="font-bp text-[clamp(1.6rem,2.4vw,2.4rem)] leading-none [font-variant-numeric:tabular-nums]">
-                                        {figure.target > 0 ? (
+                                        {(figure.target ?? 0) > 0 ? (
                                             <>
-                                                <span class="sr-only">{figure.sr}</span>
-                                                <span aria-hidden="true" data-bp-count={figure.target} data-bp-prefix={figure.prefix}>
-                                                    {figure.sr}
+                                                <span class="sr-only">{figure.value}</span>
+                                                <span aria-hidden="true" data-bp-count={figure.target} data-bp-prefix={figure.prefix ?? ""}>
+                                                    {figure.value}
                                                 </span>
                                             </>
                                         ) : (
-                                            figure.sr
+                                            figure.value
                                         )}
                                     </strong>
                                     <small class="text-[0.78rem] font-black uppercase tracking-[0.12em]">{figure.label}</small>
@@ -144,15 +121,10 @@ const figures = [
 
                 <aside class={bp.note} data-bp-hit aria-labelledby="origen-title">
                     <span class:list={[bp.tape, bp.tapeTL]} aria-hidden="true"></span>
-                    <h3 id="origen-title" class:list={[bp.h3, "tracking-[0.02em]"]}>De dónde venimos</h3>
+                    <h3 id="origen-title" class:list={[bp.h3, "tracking-[0.02em]"]}>{d.originTitle}</h3>
                     <ol class="mt-6 grid gap-[1.15rem]">
                         {
-                            [
-                                { period: "2019–20", title: "Palos y baldes.", text: "La batucada nace en pandemia como una iniciativa familiar frente al miedo, con instrumentos improvisados." },
-                                { period: "2020", title: "La protesta.", text: "Salimos con baldes, junto a jóvenes y niños, a reclamar por el presupuesto de las universidades. Fuimos apresados — y esa experiencia nos convenció de organizar a las juventudes para defender sus derechos de forma pacífica." },
-                                { period: "2020–21", title: "Batambá.", text: "La semilla feminista: las madres que sostenían la vida de los barrios integraron a sus hijas e hijos al proceso." },
-                                { period: "Hoy", title: "Un referente.", text: "Una red juvenil que moviliza a la ciudad para exigir derechos de manera pacífica y no violenta." },
-                            ].map((item) => (
+                            d.originItems.map((item) => (
                                 <li class="grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-[0.9rem] text-base leading-[1.55]">
                                     <span class="font-bp whitespace-nowrap text-[0.95rem] text-primary">{item.period}</span>
                                     <p>
@@ -163,13 +135,13 @@ const figures = [
                             ))
                         }
                     </ol>
-                    <a class:list={[bp.textLink, "mt-7 focus-visible:outline-primary"]} href="/projects/batucada-popular/historia/">Lee la historia completa <span class={bp.textLinkArrow} aria-hidden="true">↘</span></a>
+                    <a class:list={[bp.textLink, "mt-7 focus-visible:outline-primary"]} href={d.originLink.href}>{d.originLink.text} <span class={bp.textLinkArrow} aria-hidden="true">↘</span></a>
                     <span class:list={[bp.tape, bp.tapeBR]} aria-hidden="true"></span>
                 </aside>
             </div>
         </section>
 
-        <Torn color="var(--bg-white)" border={1} />
+        <Torn color="var(--bg-white)" border={1} field="none" />
 
         <!-- ============ INTERLUDIO · EL PULSO ============ -->
         <section class:list={[bp.edge, bp.fieldBlue, "grid items-center gap-[clamp(2.25rem,5vw,4.5rem)] py-[clamp(2.25rem,5vw,4.5rem)] lg:grid-cols-[minmax(0,1.02fr)_minmax(26rem,0.98fr)]"]} aria-labelledby="pulse-title" data-bp-scene>
@@ -177,26 +149,33 @@ const figures = [
                 <span class:list={[bp.echoPlate, "bg-primary"]} aria-hidden="true"></span>
                 <div class:list={[bp.frame, "aspect-[5/4]"]} data-bp-photo>
                     <span class:list={[bp.tape, bp.tapeTL]} aria-hidden="true"></span>
-                    <Image class={bp.frameImg} src={CommunityPhoto} alt="Integrantes de Batucada Popular compartiendo juntas después de una presentación" widths={[640, 960, 1400, 1800]} sizes="(min-width: 64em) 46vw, 100vw" />
+                    <CmsImage
+                        media={d.pulseImage}
+                        fallback={d.pulseLocalImage}
+                        alt={d.pulseImageAlt}
+                        class={bp.frameImg}
+                        widths={[640, 960, 1400, 1800]}
+                        sizes="(min-width: 64em) 46vw, 100vw"
+                    />
                     <span class:list={[bp.tape, bp.tapeBR]} aria-hidden="true"></span>
                 </div>
             </figure>
             <div class="min-w-0">
-                <p class={bp.eyebrow} data-bp-hit>El corazón del proyecto</p>
-                <h2 id="pulse-title" class="font-bp mt-4 max-w-[12ch] text-balance text-[clamp(2.1rem,3.4vw,3.9rem)] uppercase leading-[0.96] tracking-[-0.03em]" data-bp-hit>La percusión es un pretexto para encontrarnos y organizarnos.</h2>
-                <p class:list={[bp.body, "mt-7 max-w-[46ch]"]} data-bp-hit>Los ensayos permanentes son espacios seguros donde las juventudes fortalecen sus capacidades artísticas, desarrollan disciplina, construyen vínculos solidarios y se reconocen como protagonistas del cambio social.</p>
-                <p class:list={[bp.body, "mt-7 max-w-[46ch] border-t-[3px] border-black pt-6 font-black"]} data-bp-hit>No se trata solo de aprender música. Se trata de pertenecer.</p>
+                <p class={bp.eyebrow} data-bp-hit>{d.pulseHeading.eyebrow}</p>
+                <h2 id="pulse-title" class="font-bp mt-4 max-w-[12ch] text-balance text-[clamp(2.1rem,3.4vw,3.9rem)] uppercase leading-[0.96] tracking-[-0.03em]" data-bp-hit set:html={formatTitle(d.pulseHeading.title)} />
+                <p class:list={[bp.body, "mt-7 max-w-[46ch]"]} data-bp-hit>{d.pulseHeading.body}</p>
+                <p class:list={[bp.body, "mt-7 max-w-[46ch] border-t-[3px] border-black pt-6 font-black"]} data-bp-hit>{d.pulseHighlight}</p>
             </div>
         </section>
 
-        <Torn color="#29aae1" border={2} flip />
+        <Torn color="#29aae1" border={2} flip field="blue" />
 
         <!-- ============ 02 · METODOLOGÍA ============ -->
         <section id="metodologia" class:list={[bp.block, bp.fieldInk, "scroll-mt-[92px]"]} aria-labelledby="method-title" data-bp-scene>
             <Measure num="02" label="Cómo trabajamos" filled={4} numClass="text-bp-blue" />
 
-            <p class:list={[bp.eyebrow, "text-bp-blue"]} data-bp-hit>Metodología DAARR</p>
-            <h2 id="method-title" class:list={[bp.h2, "max-w-[14ch]"]} data-bp-hit>Escuchar. Hacer. Acompañar. Aprender de nuevo.</h2>
+            <p class:list={[bp.eyebrow, "text-bp-blue"]} data-bp-hit>{d.methodHeading.eyebrow}</p>
+            <h2 id="method-title" class:list={[bp.h2, "max-w-[14ch]"]} data-bp-hit set:html={formatTitle(d.methodHeading.title)} />
 
             <ol class="mt-[clamp(2rem,4.5vw,3.5rem)] border-t-[3px] border-white" data-bp-clave>
                 {
@@ -211,54 +190,52 @@ const figures = [
                     ))
                 }
             </ol>
-            <p class="mt-[clamp(2rem,4.5vw,3.5rem)] max-w-[56ch] border-l-4 border-accent pl-5 font-black leading-[1.55]" data-bp-hit>Los propios jóvenes se trasladan a otros territorios para enseñar percusión y facilitar procesos sobre derechos, salud sexual y reproductiva y nuevas masculinidades: el ciclo forma liderazgos que se multiplican.</p>
+            <p class="mt-[clamp(2rem,4.5vw,3.5rem)] max-w-[56ch] border-l-4 border-accent pl-5 font-black leading-[1.55]" data-bp-hit>{d.methodNote}</p>
         </section>
 
-        <Torn color="var(--bg-black)" border={3} />
+        <Torn color="var(--bg-black)" border={3} field="ink" />
 
         <!-- ============ 03 · TERRITORIO (mapa) ============ -->
         <section id="territorio" class:list={[bp.block, bp.fieldPurple, "scroll-mt-[92px]"]} aria-labelledby="territory-title" data-bp-scene>
             <Measure num="03" label="Dónde suena" filled={6} numClass="text-white" />
 
-            <p class={bp.eyebrow} data-bp-hit>Presencia activa</p>
-            <h2 id="territory-title" class:list={[bp.h2, "max-w-[14ch]"]} data-bp-hit>
-                <strong class="text-accent [font-weight:inherit]">12 sectores</strong> conectados por una red juvenil que se organiza desde adentro.
-            </h2>
+            <p class={bp.eyebrow} data-bp-hit>{d.territoryHeading.eyebrow}</p>
+            <h2 id="territory-title" class:list={[bp.h2, "max-w-[14ch]"]} data-bp-hit set:html={formatTitle(d.territoryHeading.title, "text-accent")} />
 
             <div class="mt-[clamp(2rem,4.5vw,3.5rem)] grid items-stretch gap-[clamp(2.25rem,5vw,4.5rem)] lg:grid-cols-[minmax(24rem,0.9fr)_minmax(0,1.1fr)]">
                 <div>
-                    <p class:list={[bp.body, "max-w-[52ch]"]} data-bp-hit>Más de 300 niñas, niños, adolescentes y jóvenes integran las batucadas en los barrios populares de Guayaquil. La presencia territorial permite responder a las necesidades de cada sector y fortalecer liderazgos e incidencia social desde las propias comunidades.</p>
+                    <p class:list={[bp.body, "max-w-[52ch]"]} data-bp-hit>{d.territoryHeading.body}</p>
                     <ol class="mt-[clamp(1.75rem,3vw,2.5rem)] grid grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] gap-x-5 gap-y-2" data-bp-clave>
                         {
-                            sectors.map((name, index) => (
+                            sectors.map((sector, index) => (
                                 <li>
                                     <button type="button" class="group relative flex w-full cursor-pointer items-center py-2 pl-[2.8rem] text-left font-bold text-white focus-visible:outline-[3px] focus-visible:outline-offset-4 focus-visible:outline-white" data-bp-sector>
                                         <span class="absolute left-[0.3rem] top-1/2 aspect-square w-[1.9rem] -translate-y-1/2 rotate-45 border-2 border-black bg-bp-blue transition-[scale,background-color] duration-[180ms] ease-bp-rebound group-hover:scale-[1.15] group-hover:bg-accent group-data-[active]:scale-[1.15] group-data-[active]:bg-accent motion-reduce:transition-none" aria-hidden="true" />
                                         <span class="font-display absolute left-[0.3rem] top-1/2 grid w-[1.9rem] -translate-y-1/2 place-items-center text-[0.72rem] font-black text-black" aria-hidden="true">
                                             {String(index + 1).padStart(2, "0")}
                                         </span>
-                                        {name}
+                                        {sector.name}
                                     </button>
                                 </li>
                             ))
                         }
                     </ol>
-                    <p class="mt-6 text-[0.9rem] text-white/80" data-bp-hit>Haz clic en un sector para acercarte a su barrio. Los puntos señalan sectores, no direcciones; la presencia varía según los periodos y las condiciones de cada barrio.</p>
+                    <p class="mt-6 text-[0.9rem] text-white/80" data-bp-hit>{d.territoryHint}</p>
                 </div>
 
                 <div class="relative aspect-[4/3] border-[3px] border-white bg-[#e8e0d3] lg:aspect-auto lg:min-h-[clamp(26rem,62vh,40rem)]">
-                    <div id="bp-map" class="peer absolute inset-0 z-0" role="application" aria-label="Mapa de Guayaquil con los 12 sectores donde trabaja Batucada Popular" aria-describedby="bp-map-status" aria-busy="true" data-state="idle"></div>
+                    <div id="bp-map" class="peer absolute inset-0 z-0" role="application" aria-label={`Mapa de Guayaquil con los ${sectors.length} sectores donde trabaja Batucada Popular`} aria-describedby="bp-map-status" aria-busy="true" data-state="idle" data-bp-sectors={sectorsJson}></div>
                     <p id="bp-map-status" class="pointer-events-none absolute inset-x-0 bottom-3 z-[1] text-center text-[0.78rem] font-black uppercase tracking-[0.14em] text-black/70 peer-data-[state=ready]:hidden" data-bp-map-status role="status">Cargando mapa de los sectores…</p>
                     <button
                         type="button"
                         class="absolute bottom-3 left-3 z-[2] hidden -rotate-1 cursor-pointer border-2 border-black bg-accent px-3 py-[0.45rem] text-[0.7rem] font-black uppercase tracking-[0.08em] text-black shadow-[3px_3px_0_rgba(10,8,1,0.6)] transition-transform duration-[180ms] ease-bp-rebound hover:-translate-y-[2px] focus-visible:outline-[3px] focus-visible:outline-offset-4 focus-visible:outline-white peer-data-[state=ready]:inline-flex motion-reduce:transition-none"
-                        data-bp-map-reset>Ver los 12 sectores</button
+                        data-bp-map-reset>Ver los {sectors.length} sectores</button
                     >
                 </div>
             </div>
         </section>
 
-        <Torn color="var(--primary)" border={4} />
+        <Torn color="var(--primary)" border={4} field="purple" />
 
         <!-- ============ 04 · ACCIÓN COMUNITARIA ============ -->
         <section class={bp.block} aria-labelledby="action-title" data-bp-scene>
@@ -266,8 +243,8 @@ const figures = [
 
             <div class="grid items-center gap-[clamp(2.25rem,5vw,4.5rem)] lg:grid-cols-[minmax(0,1.05fr)_minmax(20rem,0.95fr)]">
                 <div>
-                    <p class={bp.eyebrow} data-bp-hit>Acción comunitaria en los barrios</p>
-                    <h2 id="action-title" class:list={[bp.h2, "max-w-[12ch]"]} data-bp-hit>El ritmo también recupera memoria, espacio público y voz.</h2>
+                    <p class={bp.eyebrow} data-bp-hit>{d.actionHeading.eyebrow}</p>
+                    <h2 id="action-title" class:list={[bp.h2, "max-w-[12ch]"]} data-bp-hit set:html={formatTitle(d.actionHeading.title)} />
                 </div>
                 <ol class="border-t-[3px] border-black" data-bp-clave>
                     {
@@ -276,7 +253,7 @@ const figures = [
                                 <span class="grid aspect-square w-[2.6rem] place-items-center border-2 border-black bg-bp-blue text-[0.9rem] font-black text-black transition-transform duration-[180ms] ease-bp-rebound group-hover:-rotate-[8deg] group-hover:scale-[1.08] motion-reduce:transition-none" aria-hidden="true">
                                     0{index + 1}
                                 </span>
-                                <p class="text-[clamp(1.15rem,1.8vw,1.7rem)] font-black">{action}</p>
+                                <p class="text-[clamp(1.15rem,1.8vw,1.7rem)] font-black">{action.text}</p>
                             </li>
                         ))
                     }
@@ -286,27 +263,27 @@ const figures = [
 
         <!-- ============ INTERLUDIO · ECOSISTEMA ============ -->
         <section class:list={[bp.block, bp.fieldInk]} aria-labelledby="eco-title" data-bp-scene>
-            <p class:list={[bp.eyebrow, "text-bp-blue"]} data-bp-hit>El ecosistema</p>
-            <h2 id="eco-title" class:list={[bp.h2, "max-w-[12ch]"]} data-bp-hit>La batucada no suena sola.</h2>
-            <p class:list={[bp.body, "mt-7 max-w-[56ch]"]} data-bp-hit>Alrededor del proceso crecieron una organización de investigación, un movimiento de barrios, una radio juvenil y una escuela de líderes: contranarrativas que disputan la forma de contar a los barrios populares.</p>
+            <p class:list={[bp.eyebrow, "text-bp-blue"]} data-bp-hit>{d.ecoHeading.eyebrow}</p>
+            <h2 id="eco-title" class:list={[bp.h2, "max-w-[12ch]"]} data-bp-hit set:html={formatTitle(d.ecoHeading.title)} />
+            <p class:list={[bp.body, "mt-7 max-w-[56ch]"]} data-bp-hit>{d.ecoHeading.body}</p>
             <ul class="mt-[clamp(1.75rem,3.5vw,2.75rem)] flex flex-wrap gap-x-[1.1rem] gap-y-4" data-bp-clave>
                 {
-                    ecosystem.map((name, index) => (
-                        <li class:list={["rounded-[3px_8px_4px_7px] border-2 px-4 py-[0.55rem] text-[0.85rem] font-black uppercase tracking-[0.08em]", index % 2 ? "rotate-[1deg] border-bp-blue text-bp-blue" : "-rotate-[1.2deg] border-white text-white"]}>{name}</li>
+                    ecosystem.map((item, index) => (
+                        <li class:list={["rounded-[3px_8px_4px_7px] border-2 px-4 py-[0.55rem] text-[0.85rem] font-black uppercase tracking-[0.08em]", index % 2 ? "rotate-[1deg] border-bp-blue text-bp-blue" : "-rotate-[1.2deg] border-white text-white"]}>{item.text}</li>
                     ))
                 }
             </ul>
             <div class="mt-[clamp(1.75rem,4vw,3rem)] flex flex-wrap items-center gap-x-6 gap-y-4" data-bp-hit>
-                <a class:list={[bp.textLink, "focus-visible:outline-bp-blue"]} href="/projects/batucada-popular/ecosistema/">Conoce el ecosistema <span class={bp.textLinkArrow} aria-hidden="true">↘</span></a>
+                <a class:list={[bp.textLink, "focus-visible:outline-bp-blue"]} href={d.ecoLink.href}>{d.ecoLink.text} <span class={bp.textLinkArrow} aria-hidden="true">↘</span></a>
             </div>
         </section>
 
-        <Torn color="var(--bg-black)" border={1} flip />
+        <Torn color="var(--bg-black)" border={1} flip field="ink" />
 
         <!-- ============ RECONOCIMIENTOS ============ -->
         <section class={bp.block} aria-labelledby="awards-title" data-bp-scene>
-            <p class:list={[bp.eyebrow, "text-primary"]} data-bp-hit>Reconocimientos</p>
-            <h2 id="awards-title" class:list={[bp.h2, "max-w-[13ch]"]} data-bp-hit>El mundo empieza a escuchar.</h2>
+            <p class:list={[bp.eyebrow, "text-primary"]} data-bp-hit>{d.awardsHeading.eyebrow}</p>
+            <h2 id="awards-title" class:list={[bp.h2, "max-w-[13ch]"]} data-bp-hit set:html={formatTitle(d.awardsHeading.title)} />
             <ol class="mt-[clamp(2rem,4.5vw,3.5rem)] grid grid-cols-[repeat(auto-fill,minmax(min(19rem,100%),1fr))] gap-[clamp(1.5rem,2.5vw,2.25rem)]" data-bp-clave>
                 {
                     awards.map((award, index) => (
@@ -320,27 +297,28 @@ const figures = [
                     ))
                 }
             </ol>
-            <p class="mt-[clamp(2.25rem,5vw,4.5rem)] border-t-2 border-black pt-5 text-[0.95rem] [&_a]:font-black [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-[0.18em] [&_a:hover]:text-black" data-bp-hit>
-                También nos han contado <a href="https://planv.com.ec/historias/batucada-popular-guayaquil/" target="_blank" rel="noopener noreferrer">Plan V</a>, el
-                <a href="https://www.undp.org/es/ecuador/historias/jonathan-y-la-batucada-resistencia-juventud-y-paz-en-los-barrios-de-guayaquil" target="_blank" rel="noopener noreferrer">PNUD</a> y
-                <a href="https://ecuador.unwomen.org/es/stories/noticia/2025/06/liderazgos-comunitarios-transforman-guayaquil-a-traves-del-arte-y-la-cultura-de-paz-en-el-marco-de-construimos-paz" target="_blank" rel="noopener noreferrer">ONU Mujeres</a>.
-            </p>
+            <div class="mt-[clamp(2.25rem,5vw,4.5rem)] border-t-2 border-black pt-5 text-[0.95rem] [&_a]:font-black [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-[0.18em] [&_a:hover]:text-black" data-bp-hit>
+                <Markdown of={d.awardsNote} />
+            </div>
         </section>
 
         <!-- ============ CODA · DERECHOS ============ -->
         <section class:list={[bp.block, bp.fieldInk]} aria-labelledby="rights-title" data-bp-scene>
-            <p class:list={[bp.eyebrow, "text-bp-blue"]} data-bp-hit>Enfoque de derechos</p>
-            <h2 id="rights-title" class:list={[bp.mega, "mt-5 [text-shadow:0.04em_0.04em_0_rgba(41,170,225,0.28)]"]} data-bp-hit>
-                Participar.<br />Crear.<br /><em class="not-italic text-bp-blue [text-shadow:none]">Vivir sin violencia.</em>
-            </h2>
+            <p class:list={[bp.eyebrow, "text-bp-blue"]} data-bp-hit>{d.rightsHeading.eyebrow}</p>
+            <h2
+                id="rights-title"
+                class:list={[bp.mega, "mt-5 [text-shadow:0.04em_0.04em_0_rgba(41,170,225,0.28)]"]}
+                data-bp-hit
+                set:html={formatTitle(d.rightsHeading.title, "text-bp-blue [text-shadow:none]")}
+            />
             <div class:list={[bp.body, "ml-auto mt-[clamp(2.25rem,5vw,4.5rem)] grid max-w-[880px] gap-x-8 gap-y-[clamp(1rem,2.5vw,2rem)] border-t-[3px] border-bp-blue pt-7 sm:grid-cols-2"]} data-bp-clave>
-                <p>El proyecto promueve el acceso a la cultura, la educación, la convivencia pacífica, la igualdad, la inclusión y el respeto a la diversidad.</p>
-                <p>Así, las juventudes no son espectadoras: lideran, cuentan sus historias y se convierten en agentes de paz en sus territorios.</p>
+                <p>{d.rightsBodyLeft}</p>
+                <p>{d.rightsBodyRight}</p>
             </div>
-            <p class:list={[bp.stamp, "mt-[clamp(2.25rem,5vw,4.5rem)] text-[clamp(0.95rem,1.4vw,1.25rem)] text-accent"]} data-bp-hit>Más tambores, menos armas</p>
+            <p class:list={[bp.stamp, "mt-[clamp(2.25rem,5vw,4.5rem)] text-[clamp(0.95rem,1.4vw,1.25rem)] text-accent"]} data-bp-hit>{d.rightsStamp}</p>
         </section>
 
-        <Torn color="var(--bg-black)" border={2} />
+        <Torn color="var(--bg-black)" border={2} field="ink" />
 
         <!-- ============ CTA ============ -->
         <section
@@ -355,12 +333,12 @@ const figures = [
             data-bp-scene
         >
             <div>
-                <p class={bp.eyebrow} data-bp-hit>Haz que el ritmo llegue más lejos</p>
-                <h2 id="cta-title" class:list={[bp.riso, "font-bp mt-4 max-w-[12ch] text-balance text-[clamp(2.4rem,4.6vw,5.4rem)] uppercase leading-[0.96] tracking-[-0.03em]"]} data-bp-hit>Dale ritmo a tus proyectos y trabaja con nosotros.</h2>
+                <p class={bp.eyebrow} data-bp-hit>{d.ctaHeading.eyebrow}</p>
+                <h2 id="cta-title" class:list={[bp.riso, "font-bp mt-4 max-w-[12ch] text-balance text-[clamp(2.4rem,4.6vw,5.4rem)] uppercase leading-[0.96] tracking-[-0.03em]"]} data-bp-hit set:html={formatTitle(d.ctaHeading.title)} />
             </div>
             <div class="flex flex-col flex-wrap items-stretch gap-x-6 gap-y-4 text-center sm:flex-row sm:items-center sm:text-left" data-bp-hit>
-                <a class:list={[bp.button, bp.buttonInk, "focus-visible:outline-black"]} href="https://wa.me/593985261647" target="_blank" rel="noopener noreferrer">Escríbenos por WhatsApp</a>
-                <a class:list={[bp.textLink, "justify-center focus-visible:outline-black"]} href="https://www.instagram.com/batucada_popular_/" target="_blank" rel="noopener noreferrer">Ver la Batucada en acción <span class={bp.textLinkArrow} aria-hidden="true">↗</span></a>
+                <a class:list={[bp.button, bp.buttonInk, "focus-visible:outline-black"]} href={d.ctaPrimary.href} target="_blank" rel="noopener noreferrer">{d.ctaPrimary.text}</a>
+                <a class:list={[bp.textLink, "justify-center focus-visible:outline-black"]} href={d.ctaSecondary.href} target="_blank" rel="noopener noreferrer">{d.ctaSecondary.text} <span class={bp.textLinkArrow} aria-hidden="true">↗</span></a>
             </div>
         </section>
     </article>

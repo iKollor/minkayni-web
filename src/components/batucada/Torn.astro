@@ -3,27 +3,34 @@
    enmascarada con uno de los grunge borders (assets/SVG, rasterizados con alfa
    en public/batucada). El margen negativo la hace "rasgar" sobre la sección
    siguiente y la escala 1.3 la desborda a propósito (el contenedor recorta).
-   Sin soporte de máscaras queda oculto: corte recto, nunca roto. */
+   Sin soporte de máscaras queda oculto: corte recto, nunca roto.
+
+   `field` = el overlay del campo cuyo color comparte (la sección de arriba).
+   El grano/overlay vive DENTRO del rasgado, así que la franja no es un parche
+   plano encima del overlay de la sección: es su misma capa, opaca y sin
+   transparencia. Blanco = sin overlay (las secciones crema no lo llevan). */
 interface Props {
     color?: string;
     border?: 1 | 2 | 3 | 4;
     flip?: boolean;
+    field?: "blue" | "ink" | "purple" | "none";
 }
 
-const { color = "var(--bg-white)", border = 1, flip = false } = Astro.props;
+const { color = "var(--bg-white)", border = 1, flip = false, field = "none" } = Astro.props;
+
+const FIELD_OVERLAY: Record<NonNullable<Props["field"]>, string> = {
+    blue: "[background-image:url(/batucada/semitono-soft.webp),var(--bp-noise)] [background-size:cover,auto] [background-blend-mode:multiply,soft-light]",
+    ink: "[background-image:url(/batucada/grunge-inv-soft.webp),var(--bp-noise)] [background-size:cover,auto] [background-position:right_center,left_top] [background-blend-mode:screen,soft-light]",
+    purple: "[background-image:url(/batucada/grunge-soft.webp),var(--bp-noise)] [background-size:cover,auto] [background-position:right_center,left_top] [background-blend-mode:multiply,soft-light]",
+    none: "",
+};
 ---
 
 <div
     class:list={[
-        "pointer-events-none relative z-[2] opacity-90",
-        "h-[clamp(34px,6vw,84px)] mb-[calc(clamp(34px,6vw,84px)*-1)]",
+        "pointer-events-none relative z-[2] h-[clamp(34px,6vw,84px)] mb-[calc(clamp(34px,6vw,84px)*-1)]",
         "[mask-image:var(--torn-mask)] [mask-size:100%_100%] [mask-repeat:no-repeat]",
-        /* el grano de papel también vive en la tira: sin esto es un parche
-           plano y liso que desentona contra las secciones texturizadas.
-           En bases oscuras soft-light apenas aclara (se pierde), por eso
-           además baja la opacidad general: nunca lee como calcomanía 100%
-           sólida — siempre dejar asomar algo de lo que hay debajo. */
-        "[background-image:var(--bp-noise)] [background-blend-mode:soft-light]",
+        FIELD_OVERLAY[field],
         "hidden supports-[mask-size:100%_100%]:block",
         flip ? "[scale:-1.3_1.3]" : "[scale:1.3]",
     ]}

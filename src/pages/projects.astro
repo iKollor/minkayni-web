@@ -1,125 +1,24 @@
 ---
 import PageLayout from "@/layouts/PageLayout.astro";
 import Button from "@/components/Button.astro";
+import { Markdown } from "@astropub/md";
 import ProjectExplorer, { type ProjectItem } from "@/components/projects/ProjectExplorer.astro";
-import BatucadaPhoto from "@/assets/FOTO_BATUCADA.webp";
+import { projectsFallback } from "@/data/pages/projects";
+import { loadPageContent } from "@/utils/page-content";
+import { formatTitle } from "@/utils/rich-title";
 
-const projects: ProjectItem[] = [
-    {
-        id: "batucada-popular",
-        category: "musica",
-        categoryLabel: "Música comunitaria",
-        type: "Proyecto insignia",
-        title: "Batucada Popular",
-        summary: "El tambor abre la puerta a un proceso de formación artística, liderazgo juvenil, derechos y prevención del reclutamiento forzado.",
-        detail: "Más de 300 niñas, niños, adolescentes y jóvenes en 12 sectores de Guayaquil. Reconocida por el Resilience Fund de GI-TOC y el Municipio de Guayaquil.",
-        image: BatucadaPhoto,
-        href: "/projects/batucada-popular/",
-        linkText: "Conoce el proyecto",
-        external: false,
-        accent: "accent",
-    },
-    {
-        id: "sin-paro-radio",
-        category: "comunicacion",
-        categoryLabel: "Comunicación popular",
-        type: "En ejecución · SERPAZ (UE–GIZ)",
-        title: "Sin Paro: cuando los barrios hablan",
-        summary: "Radio y contenidos audiovisuales producidos por jóvenes de Paraíso de la Flor para disputar la narrativa que reduce los barrios a la violencia.",
-        detail: "36 episodios radiales, 20 jóvenes formados en producción sonora y ganadores de la convocatoria Radio Activa de la Casa de la Cultura Ecuatoriana.",
-        href: "https://www.instagram.com/batucada_popular_/",
-        linkText: "Escucha a los barrios",
-        external: true,
-        accent: "primary",
-    },
-    {
-        id: "escuela-de-lideres",
-        category: "liderazgo",
-        categoryLabel: "Liderazgo juvenil",
-        type: "Ejecutado · Fondo Ágil y GI-TOC",
-        title: "Campamentos y Escuela de Líderes",
-        summary: "Jóvenes de las batucadas se forman como facilitadores y vuelven a sus barrios a enseñar percusión, derechos y nuevas masculinidades.",
-        detail: "40 líderes formados con 100% de permanencia, 6 campamentos (Olón, Pichincha, Cotopaxi y Guayaquil) y brigadas que enseñan en los 12 sectores de la red.",
-        href: "/impact",
-        linkText: "Mira los resultados",
-        accent: "secondary",
-    },
-    {
-        id: "del-residuo-al-ritmo",
-        category: "economia",
-        categoryLabel: "Economía circular",
-        type: "Propuesta · Unión Europea",
-        title: "Del residuo al ritmo",
-        summary: "Instrumentos musicales fabricados con impresión 3D a partir de residuos plásticos, para que la falta de tambores nunca frene la experiencia.",
-        detail: "Consorcio MINKAYNI + Mangle Inc. + ESPOL: 100 jóvenes formados como “mini luthiers digitales”, con salida a empleo y certificación técnica.",
-        href: "/about#contacto",
-        linkText: "Súmate a esta apuesta",
-        accent: "accent",
-    },
-    {
-        id: "guayaquil-suena",
-        category: "comunidad",
-        categoryLabel: "Protección comunitaria",
-        type: "Propuesta · UNICEF",
-        title: "Guayaquil Suena y se Cuida",
-        summary: "Comunidades protectoras desde el arte, la organización juvenil y la comunicación popular en 12 sectores de la ciudad.",
-        detail: "Una brigada de 20 jóvenes líderes con capacidad de réplica permanente, más de 300 participantes directos y 1.200 indirectos, con metodología propia DAARR.",
-        href: "/about#contacto",
-        linkText: "Conoce la propuesta",
-        accent: "primary",
-    },
-    {
-        id: "eps-movilidad-humana",
-        category: "economia",
-        categoryLabel: "Economía popular",
-        type: "En ejecución · JRS Ecuador",
-        title: "Emprender sin fronteras",
-        summary: "Formación en economía popular y solidaria para emprendedores en movilidad humana y sus comunidades de acogida en Guayaquil.",
-        detail: "Con el Servicio Jesuita a Refugiados: planes de negocio, ferias de emprendimiento y énfasis en mujeres jefas de hogar.",
-        href: "https://ecu.jrs.net/",
-        linkText: "Conoce a JRS Ecuador",
-        external: true,
-        accent: "secondary",
-    },
-    {
-        id: "investigacion-cescu",
-        category: "investigacion",
-        categoryLabel: "Investigación",
-        type: "En curso · CESCU–FLACSO",
-        title: "Investigar para proteger",
-        summary: "Investigación-acción participativa sobre el reclutamiento forzado de niñas, niños, adolescentes y jóvenes en los barrios de Guayaquil.",
-        detail: "Investigadores barriales vinculados a las batucadas estudian 6 barrios (2020–2026) para aportar evidencia a políticas públicas de prevención.",
-        href: "https://www.flacso.edu.ec/prog_investigacion_reproduccion_ampliada/?p=1328",
-        linkText: "Ver el diálogo con FLACSO",
-        external: true,
-        accent: "primary",
-    },
-    {
-        id: "ritmos-que-transforman",
-        category: "musica",
-        categoryLabel: "Música comunitaria",
-        type: "Ejecutado · Misión Alianza y Terranueva",
-        title: "Ritmos que transforman",
-        summary: "Apertura y consolidación de nuevos núcleos de batucada en Bastión Popular, Flor de Bastión, Socio Vivienda y Sergio Toral.",
-        detail: "Talleres de percusión, liderazgo y convivencia pacífica, presentaciones comunitarias y fabricación de instrumentos con material reciclado.",
-        href: "https://misionalianza.org/es/",
-        linkText: "Conoce a Misión Alianza",
-        external: true,
-        accent: "accent",
-    },
-    {
-        id: "agenda-juventudes",
-        category: "comunidad",
-        categoryLabel: "Incidencia",
-        type: "Ejecutado · PNUD",
-        title: "Agenda de Juventudes de Guayaquil",
-        summary: "Mapeo de organizaciones sociales de paz y co-creación del plan estratégico de juventudes de la ciudad, desde los propios territorios.",
-        detail: "Línea base en Sergio Toral, Flor de Bastión e Isla Trinitaria; mesas de encuentro y articulación con el proyecto Construimos Paz.",
-        href: "https://www.undp.org/es/ecuador/historias/jonathan-y-la-batucada-resistencia-juventud-y-paz-en-los-barrios-de-guayaquil",
-        linkText: "Lee la historia en PNUD",
-        external: true,
-        accent: "secondary",
-    },
+/* Contenido: single type `projects-page` en Strapi, con fallback local. */
+const d = await loadPageContent("projectsPage", projectsFallback);
+
+const projects = d.projects as unknown as ProjectItem[];
+
+/* Estilos por posición de los pasos DAARR (presentacional). */
+const stepStyles = [
+    { card: "bg-primary text-white", number: "text-secondary", dim: "text-white/75", offset: "" },
+    { card: "bg-secondary text-black", number: "text-primary", dim: "text-black/65", offset: "lg:translate-y-6" },
+    { card: "bg-accent text-black", number: "text-primary", dim: "text-black/65", offset: "lg:translate-y-12" },
+    { card: "bg-primary text-white", number: "text-secondary", dim: "text-white/75", offset: "lg:translate-y-6" },
+    { card: "bg-secondary text-black", number: "text-primary", dim: "text-black/65", offset: "" },
 ];
 ---
 
@@ -127,139 +26,85 @@ const projects: ProjectItem[] = [
     <section class="mx-auto w-[90%] max-w-[1280px] py-20 sm:py-28" aria-labelledby="projects-intro-title">
         <div class="grid items-end gap-10 lg:grid-cols-[0.8fr_1.2fr]">
             <div>
-                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">Arte que se organiza</p>
-                <h2 id="projects-intro-title" class="font-display text-5xl font-black leading-[0.92] tracking-tight text-black sm:text-7xl">
-                    Un tambor.<br /><span class="text-secondary">Un ecosistema</span> de proyectos.
-                </h2>
+                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.intro.eyebrow}</p>
+                <h2 id="projects-intro-title" class="font-display text-5xl font-black leading-[0.92] tracking-tight text-black sm:text-7xl" set:html={formatTitle(d.intro.title, "text-secondary-deep")} />
             </div>
             <div class="max-w-[62ch] text-lg leading-relaxed text-black/70 lg:pb-2 lg:text-xl">
-                <p>
-                    La Batucada Popular es el corazón de nuestro trabajo. A su alrededor crecen proyectos de comunicación popular, liderazgo, economía circular, investigación y
-                    protección comunitaria, ejecutados junto a la cooperación internacional, la academia y el sector empresarial.
-                </p>
+                <p>{d.intro.body}</p>
             </div>
         </div>
     </section>
 
-    <ProjectExplorer {projects} />
+    <ProjectExplorer {projects} filters={d.filters} eyebrow={d.explorerHeading.eyebrow} title={d.explorerHeading.title} />
 
     <section id="metodologia" class="mx-auto w-[90%] max-w-[1280px] py-24 sm:py-32" aria-labelledby="method-title">
         <div class="mb-12 max-w-[760px]">
-            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">Metodología DAARR</p>
-            <h2 id="method-title" class="font-display text-5xl font-black leading-none text-primary sm:text-7xl">El tambor convoca. La comunidad sostiene.</h2>
-            <p class="mt-6 max-w-[62ch] text-lg leading-relaxed text-black/70">
-                Todos nuestros proyectos aplican DAARR, la metodología territorial propia de MINKAYNI, nacida de más de quince años de educación popular en los barrios de Guayaquil.
-            </p>
+            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{d.methodHeading.eyebrow}</p>
+            <h2 id="method-title" class="font-display text-5xl font-black leading-none text-primary sm:text-7xl" set:html={formatTitle(d.methodHeading.title)} />
+            <p class="mt-6 max-w-[62ch] text-lg leading-relaxed text-black/70">{d.methodHeading.body}</p>
         </div>
 
         <ol class="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
-            <li class="rounded-[2rem] bg-primary p-7 text-white">
-                <span class="mb-8 block font-display text-5xl font-black text-secondary">01</span>
-                <h3 class="mb-3 font-display text-2xl font-bold">Diagnóstico</h3>
-                <p class="leading-relaxed text-white/75">Partimos de las realidades, necesidades y capacidades que ya existen en cada barrio.</p>
-            </li>
-            <li class="rounded-[2rem] bg-secondary p-7 text-black lg:translate-y-6">
-                <span class="mb-8 block font-display text-5xl font-black text-primary">02</span>
-                <h3 class="mb-3 font-display text-2xl font-bold">Acciones de aprendizaje</h3>
-                <p class="leading-relaxed text-black/65">Percusión, educación popular, derechos y liderazgo en ensayos y talleres permanentes.</p>
-            </li>
-            <li class="rounded-[2rem] bg-accent p-7 text-black lg:translate-y-12">
-                <span class="mb-8 block font-display text-5xl font-black text-primary">03</span>
-                <h3 class="mb-3 font-display text-2xl font-bold">Acompañamiento</h3>
-                <p class="leading-relaxed text-black/65">Cercanía socioemocional con cada participante, sus familias y los liderazgos comunitarios.</p>
-            </li>
-            <li class="rounded-[2rem] bg-primary p-7 text-white lg:translate-y-6">
-                <span class="mb-8 block font-display text-5xl font-black text-secondary">04</span>
-                <h3 class="mb-3 font-display text-2xl font-bold">Revisión</h3>
-                <p class="leading-relaxed text-white/75">Medimos resultados con nuestro sistema MEAL y escuchamos a las poblaciones participantes.</p>
-            </li>
-            <li class="rounded-[2rem] bg-secondary p-7 text-black">
-                <span class="mb-8 block font-display text-5xl font-black text-primary">05</span>
-                <h3 class="mb-3 font-display text-2xl font-bold">Reflexión</h3>
-                <p class="leading-relaxed text-black/65">Lo aprendido vuelve al proceso: nuevas brigadas, nuevos barrios, nuevas contranarrativas.</p>
-            </li>
+            {
+                d.methodSteps.map((step, index) => {
+                    const style = stepStyles[index % stepStyles.length];
+                    return (
+                        <li class={`rounded-[2rem] p-7 ${style.card} ${style.offset}`}>
+                            <span class={`mb-8 block font-display text-5xl font-black ${style.number}`}>{step.number}</span>
+                            <h3 class="mb-3 font-display text-2xl font-bold">{step.title}</h3>
+                            <p class={`leading-relaxed ${style.dim}`}>{step.text}</p>
+                        </li>
+                    );
+                })
+            }
         </ol>
+        <a href={d.methodLink.href} class="mt-10 inline-flex items-center gap-2 font-display font-bold text-primary underline-offset-4 transition hover:text-secondary-deep hover:underline">
+            {d.methodLink.text} <span aria-hidden="true">→</span>
+        </a>
     </section>
 
     <section class="mx-auto w-[90%] max-w-[1280px] pb-24" aria-labelledby="horizon-title">
         <div class="mb-12 max-w-[760px]">
-            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">Hacia dónde vamos</p>
-            <h2 id="horizon-title" class="font-display text-4xl font-black leading-none text-black sm:text-6xl">El horizonte de los próximos cinco años.</h2>
+            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.horizonHeading.eyebrow}</p>
+            <h2 id="horizon-title" class="font-display text-4xl font-black leading-none text-black sm:text-6xl" set:html={formatTitle(d.horizonHeading.title)} />
         </div>
         <div class="grid gap-5 md:grid-cols-3">
-            <div class="rounded-[2.25rem] bg-[#dedbd4] p-8 sm:p-10">
-                <h3 class="font-display text-2xl font-bold text-primary">Red latinoamericana</h3>
-                <p class="mt-3 leading-relaxed text-black/70">
-                    Conectar iniciativas juveniles de Colombia, Ecuador, Brasil, México y El Salvador para intercambiar metodologías de prevención de violencia y producir conocimiento
-                    desde los barrios.
-                </p>
-            </div>
-            <div class="rounded-[2.25rem] bg-[#dedbd4] p-8 sm:p-10">
-                <h3 class="font-display text-2xl font-bold text-primary">Centro de Articulación e Innovación Social</h3>
-                <p class="mt-3 leading-relaxed text-black/70">
-                    Un espacio comunitario en Paraíso de la Flor con Radio Sin Paro, comedor popular, huertos, clases de batucada y procesos de economía popular, junto a Misión Alianza.
-                </p>
-            </div>
-            <div class="rounded-[2.25rem] bg-[#dedbd4] p-8 sm:p-10">
-                <h3 class="font-display text-2xl font-bold text-primary">Movilidad social</h3>
-                <p class="mt-3 leading-relaxed text-black/70">
-                    Becas de educación superior para líderes de la Batucada Popular, formación digital con la Universidad de Guayaquil y emprendimientos juveniles que superen la
-                    economía de emergencia.
-                </p>
-            </div>
+            {
+                d.horizonCards.map((card) => (
+                    <div class="rounded-[2.25rem] bg-[#dedbd4] p-8 sm:p-10">
+                        <h3 class="font-display text-2xl font-bold text-primary">{card.title}</h3>
+                        <p class="mt-3 leading-relaxed text-black/70">{card.description}</p>
+                    </div>
+                ))
+            }
         </div>
     </section>
 
     <section id="alianzas" class="mx-auto mb-44 md:mb-80 mt-4 w-[94%] max-w-[1440px] overflow-hidden rounded-[2.75rem] bg-[linear-gradient(130deg,var(--primary),#410063)] px-6 py-16 text-white sm:px-12 lg:rounded-[5rem] lg:px-20 lg:py-24" aria-labelledby="alliances-title">
         <div class="grid items-center gap-10 lg:grid-cols-[1fr_auto]">
             <div class="max-w-[760px]">
-                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">Alianzas que amplifican</p>
-                <h2 id="alliances-title" class="font-display text-5xl font-black leading-[0.95] sm:text-7xl">Hagamos que el ritmo llegue más lejos.</h2>
-                <p class="mt-6 max-w-[58ch] text-lg leading-relaxed text-white/75">
-                    Hemos trabajado con la cooperación internacional, agencias de Naciones Unidas, universidades y empresas. Cada alianza abre un nuevo espacio, sostiene un proceso
-                    formativo o conecta a las juventudes con oportunidades concretas.
-                </p>
+                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">{d.alliancesHeading.eyebrow}</p>
+                <h2 id="alliances-title" class="font-display text-5xl font-black leading-[0.95] sm:text-7xl" set:html={formatTitle(d.alliancesHeading.title)} />
+                <p class="mt-6 max-w-[58ch] text-lg leading-relaxed text-white/75">{d.alliancesHeading.body}</p>
                 <ul class="mt-8 flex flex-wrap gap-2" aria-label="Aliados y financiadores">
-                    {
-                        [
-                            "GIZ · SERPAZ (UE)",
-                            "PNUD",
-                            "ONU Mujeres",
-                            "OIM",
-                            "Misión Alianza",
-                            "Fundación Terranueva",
-                            "Servicio Jesuita a Refugiados",
-                            "Resilience Fund · GI-TOC",
-                            "Fondo Ágil",
-                            "FLACSO",
-                            "ESPOL",
-                            "Universidad de las Artes",
-                            "Universidad de Guayaquil",
-                            "Universidad Casa Grande",
-                            "Casa de la Cultura Ecuatoriana",
-                        ].map((ally) => <li class="rounded-full bg-white/10 px-4 py-2 text-sm font-bold backdrop-blur">{ally}</li>)
-                    }
+                    {d.allies.map((ally) => <li class="rounded-full bg-white/10 px-4 py-2 text-sm font-bold backdrop-blur">{ally.text}</li>)}
                 </ul>
             </div>
             <div class="flex flex-col items-center gap-4">
-                <Button href="/about#contacto" defaultText="Conversemos 🥁" hoverText="Hagamos minka 💜" />
+                <Button href={d.ctaButton.href} defaultText={d.ctaButton.defaultText} hoverText={d.ctaButton.hoverText} />
                 <a
-                    href="https://www.instagram.com/batucada_popular_/"
+                    href={d.ctaSecondary.href}
                     target="_blank"
                     rel="noopener noreferrer"
                     class="inline-flex min-h-14 items-center justify-center rounded-full bg-white/10 px-7 py-4 text-center font-display text-lg font-bold text-white backdrop-blur transition hover:-translate-y-1 hover:bg-white hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
                 >
-                    Síguenos en Instagram
+                    {d.ctaSecondary.text}
                 </a>
             </div>
         </div>
 
-        <p class="mt-12 text-sm text-white/55">
-            Cifras actualizadas a 2026 según el registro institucional de Fundación MINKAYNI y el perfil publicado por
-            <a class="underline underline-offset-4 hover:text-secondary" href="https://www.vistazo.com/actualidad/nacional/2026-03-08-historia-mujer-convirtio-tambores-refugio-jovenes-violencia-guayaquil-GG10707818" target="_blank" rel="noopener noreferrer">Vistazo</a>; contexto territorial documentado por
-            <a class="underline underline-offset-4 hover:text-secondary" href="https://www.eluniverso.com/noticias/informes/con-la-batucada-despejo-la-mente-y-me-alejo-de-robar-plan-de-serpaz-busca-que-los-jovenes-no-sean-reclutados-por-las-bandas-nota/" target="_blank" rel="noopener noreferrer">El Universo</a>
-            y
-            <a class="underline underline-offset-4 hover:text-secondary" href="https://planv.com.ec/historias/batucada-popular-guayaquil/" target="_blank" rel="noopener noreferrer">Plan V</a>.
-        </p>
+        <div class="mt-12 text-sm text-white/65 [&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-secondary">
+            <Markdown of={d.alliancesNote} />
+        </div>
     </section>
 </PageLayout>

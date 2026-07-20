@@ -10,6 +10,8 @@ import { getData } from "../utils/i18n";
 import Head from "./lib/head.astro";
 import type { LinkColor, UnderlineColor } from "@/components/NavButton.astro";
 import { fallbackFooter, fallbackNavigation, withBatucadaProject } from "../data/site";
+import { globalFallback } from "../data/pages/global";
+import { loadPageContent } from "../utils/page-content";
 
 interface Props {
     title: string;
@@ -25,6 +27,7 @@ const navigationEntry = await getEntry("navigationHeader", "navigation:header:es
 const footerEntry = await getEntry("footer", "footer");
 const navHeader = withBatucadaProject(navigationEntry ? getData(navigationEntry) : fallbackNavigation);
 const footer = footerEntry ? getData(footerEntry, "es") : fallbackFooter;
+const site = await loadPageContent("globalSettings", globalFallback);
 const { title, showHero = true, linkColor = "text-white", underlineColor, buttonClassName = "", enableMixBlend, navbarThreshold } = Astro.props;
 ---
 
@@ -32,7 +35,7 @@ const { title, showHero = true, linkColor = "text-white", underlineColor, button
     <SiteGrain />
 
     <Navbar buttons={navHeader} linkColor={linkColor} underlineColor={underlineColor} buttonClassName={buttonClassName} enableMixBlend={enableMixBlend} threshold={navbarThreshold} />
-    <Menu buttons={navHeader} socials={footer.Socials} />
+    <Menu buttons={navHeader} socials={footer.Socials} menuLabel={site.menuLabel} contactEmail={site.contactEmail} />
 
     <div id="smooth-wrapper" class="overflow-x-hidden">
         <div id="smooth-content" class="flex flex-col min-h-screen">

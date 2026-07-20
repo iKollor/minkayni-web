@@ -12,7 +12,10 @@ const reps = 3;
 const cells = Array.from({ length: reps }, () => items).flat();
 ---
 
-<div class="-my-px -rotate-[1.1deg] scale-[1.02] overflow-hidden border-y-[3px] border-black bg-black text-white" data-bp-pulseline role="img" aria-label={items.join(" · ")}>
+<!-- Sube la franja hacia la sección de arriba: al ir rotada -1.1°, la esquina
+     superior-izquierda cae y dejaría ver el fondo del artículo. El solape
+     escala con el ancho (a más ancho, más desplaza la rotación). -->
+<div class="-mt-[clamp(8px,1vw,20px)] -mb-px -rotate-[1.1deg] scale-[1.02] overflow-hidden border-y-[3px] border-black bg-black text-white" data-bp-pulseline role="img" aria-label={items.join(" · ")}>
     <div class="relative h-[52px]">
         {
             [0, 1].map(() => (

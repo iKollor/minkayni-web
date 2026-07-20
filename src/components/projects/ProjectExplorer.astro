@@ -1,50 +1,71 @@
 ---
 import { Image } from "astro:assets";
 import type { ImageMetadata } from "astro";
+import CmsImage from "../CmsImage.astro";
+import type { CmsMedia } from "../../data/pages/types";
 import flor from "../../assets/SVG/misc/flor.svg";
 
 export interface ProjectItem {
-    id: string;
-    category: "musica" | "liderazgo" | "comunicacion" | "comunidad" | "economia" | "investigacion";
-    categoryLabel: string;
-    type: string;
+    /** id del elemento en la página (para anclas #proyecto) */
+    anchor: string;
+    category: string;
+    categoryLabel?: string | null;
+    type?: string | null;
     title: string;
-    summary: string;
-    detail: string;
-    image?: ImageMetadata;
+    summary?: string | null;
+    detail?: string | null;
+    /** imagen del CMS (opcional) con asset local de respaldo */
+    image?: CmsMedia;
+    localImage?: ImageMetadata;
+    imageAlt?: string | null;
     href: string;
-    linkText: string;
-    external?: boolean;
-    accent: "primary" | "secondary" | "accent";
+    linkText?: string | null;
+    external?: boolean | null;
+    accent: string;
+}
+
+export interface ProjectFilter {
+    /** clave de categoría ("all" muestra todo) */
+    meta?: string | null;
+    text: string;
 }
 
 interface Props {
     projects: ProjectItem[];
+    filters?: ProjectFilter[];
+    eyebrow?: string;
+    title?: string;
 }
 
-const { projects } = Astro.props;
-const filters = [
-    { id: "all", label: "Todos" },
-    { id: "musica", label: "Música" },
-    { id: "liderazgo", label: "Liderazgo" },
-    { id: "comunicacion", label: "Comunicación" },
-    { id: "comunidad", label: "Comunidad" },
-    { id: "economia", label: "Economía" },
-    { id: "investigacion", label: "Investigación" },
-] as const;
+const {
+    projects,
+    filters = [
+        { meta: "all", text: "Todos" },
+        { meta: "musica", text: "Música" },
+        { meta: "liderazgo", text: "Liderazgo" },
+        { meta: "comunicacion", text: "Comunicación" },
+        { meta: "comunidad", text: "Comunidad" },
+        { meta: "economia", text: "Economía" },
+        { meta: "investigacion", text: "Investigación" },
+    ],
+    eyebrow = "Explora el ecosistema",
+    title = "Proyectos y líneas de acción",
+} = Astro.props;
 
-const accentStyles = {
+const accentStyles: Record<string, string> = {
     primary: "var(--primary)",
     secondary: "var(--secondary)",
     accent: "var(--accent)",
 };
+const accentOf = (project: ProjectItem) => accentStyles[project.accent] ?? accentStyles.primary;
+const hasImage = (project: ProjectItem) => Boolean(project.image?.url || project.localImage);
 ---
 
 <section id="project-explorer" class="mx-auto w-[94%] max-w-[1440px] rounded-[2.75rem] bg-[#dedbd4] px-4 py-10 sm:px-8 sm:py-14 lg:rounded-[5rem] lg:px-14 lg:py-20" aria-labelledby="explorer-title">
     <div class="mb-10 flex flex-col gap-6 border-b border-black/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
         <div>
-            <p class="mb-3 text-sm font-bold uppercase tracking-[0.22em] text-primary">Explora el ecosistema</p>
-            <h2 id="explorer-title" class="font-display text-4xl font-black text-black sm:text-6xl">Proyectos y líneas de acción</h2>
+            <p class="mb-3 text-sm font-bold uppercase tracking-[0.22em] text-primary">{eyebrow}</p>
+            <h2 id="explorer-title" class="font-display text-4xl font-black text-black sm:text-6xl">{title}</h2>
         </div>
 
         <div class="flex flex-wrap gap-2" role="group" aria-label="Filtrar proyectos y líneas de acción">
@@ -53,10 +74,10 @@ const accentStyles = {
                     <button
                         type="button"
                         class="project-filter min-h-11 rounded-full border border-black/15 px-4 py-2 text-sm font-bold transition hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary aria-pressed:bg-primary aria-pressed:text-white"
-                        data-project-filter={filter.id}
+                        data-project-filter={filter.meta ?? "all"}
                         aria-pressed={index === 0 ? "true" : "false"}
                     >
-                        {filter.label}
+                        {filter.text}
                     </button>
                 ))
             }
@@ -69,37 +90,44 @@ const accentStyles = {
         {
             projects.map((project, index) => (
                 <article
-                    id={project.id}
-                    class={`project-card group relative min-h-[520px] overflow-hidden rounded-[2.25rem] ${project.image ? "lg:col-span-2 lg:min-h-[640px]" : ""}`}
+                    id={project.anchor}
+                    class={`project-card group relative min-h-[520px] overflow-hidden rounded-[2.25rem] ${hasImage(project) ? "lg:col-span-2 lg:min-h-[640px]" : ""}`}
                     data-project-card
                     data-category={project.category}
                 >
-                    {project.image ? (
+                    {hasImage(project) ? (
                         <>
-                            <Image src={project.image} alt="Ensayo y presentación de Batucada Popular" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.03]" loading="lazy" />
+                            <CmsImage
+                                media={project.image}
+                                fallback={project.localImage}
+                                alt={project.imageAlt ?? project.title}
+                                widths={[720, 1280, 1920]}
+                                sizes="100vw"
+                                class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.03]"
+                            />
                             <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(10,8,1,0.88)_0%,rgba(10,8,1,0.63)_45%,rgba(10,8,1,0.1)_100%)]" aria-hidden="true"></div>
                         </>
                     ) : (
-                        <div class="absolute inset-0" style={`background: ${accentStyles[project.accent]};`} aria-hidden="true">
+                        <div class="absolute inset-0" style={`background: ${accentOf(project)};`} aria-hidden="true">
                             <Image src={flor} alt="" class="absolute -bottom-16 -right-14 h-72 w-72 rotate-12 opacity-15 transition duration-700 group-hover:rotate-45 group-hover:scale-110" />
                             <span class="absolute right-8 top-5 font-display text-[10rem] font-black leading-none text-black/8">0{index + 1}</span>
                         </div>
                     )}
 
-                    <div class={`relative z-10 flex h-full max-w-[760px] flex-col justify-end p-7 sm:p-10 lg:p-14 ${project.image || project.accent === "primary" ? "text-white" : "text-black"}`}>
+                    <div class={`relative z-10 flex h-full max-w-[760px] flex-col justify-end p-7 sm:p-10 lg:p-14 ${hasImage(project) || project.accent === "primary" ? "text-white" : "text-black"}`}>
                         <div class="mb-auto flex flex-wrap items-center gap-2">
-                            <span class={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] ${project.image || project.accent === "primary" ? "bg-white/15 text-white backdrop-blur" : "bg-black/10 text-black"}`}>{project.type}</span>
-                            <span class={`rounded-full px-3 py-1 text-xs font-bold ${project.image || project.accent === "primary" ? "bg-accent text-black" : "bg-white/60 text-black"}`}>{project.categoryLabel}</span>
+                            <span class={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] ${hasImage(project) || project.accent === "primary" ? "bg-white/15 text-white backdrop-blur" : "bg-black/10 text-black"}`}>{project.type}</span>
+                            <span class={`rounded-full px-3 py-1 text-xs font-bold ${hasImage(project) || project.accent === "primary" ? "bg-accent text-black" : "bg-white/60 text-black"}`}>{project.categoryLabel}</span>
                         </div>
 
                         <h3 class="mt-16 max-w-[14ch] font-display text-5xl font-black leading-[0.94] sm:text-6xl">{project.title}</h3>
-                        <p class={`mt-5 max-w-[58ch] text-lg leading-relaxed ${project.image || project.accent === "primary" ? "text-white/85" : "text-black/70"}`}>{project.summary}</p>
-                        <p class={`mt-3 max-w-[58ch] text-sm leading-relaxed ${project.image || project.accent === "primary" ? "text-white/65" : "text-black/55"}`}>{project.detail}</p>
+                        <p class={`mt-5 max-w-[58ch] text-lg leading-relaxed ${hasImage(project) || project.accent === "primary" ? "text-white/85" : "text-black/70"}`}>{project.summary}</p>
+                        <p class={`mt-3 max-w-[58ch] text-sm leading-relaxed ${hasImage(project) || project.accent === "primary" ? "text-white/65" : "text-black/55"}`}>{project.detail}</p>
                         <a
                             href={project.href}
                             target={project.external ? "_blank" : undefined}
                             rel={project.external ? "noopener noreferrer" : undefined}
-                            class={`mt-7 inline-flex w-fit min-h-12 items-center rounded-full px-5 py-3 font-display font-bold transition hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 ${project.image || project.accent === "primary" ? "bg-white text-primary focus-visible:outline-white" : "bg-black text-white focus-visible:outline-black"}`}
+                            class={`mt-7 inline-flex w-fit min-h-12 items-center rounded-full px-5 py-3 font-display font-bold transition hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 ${hasImage(project) || project.accent === "primary" ? "bg-white text-primary focus-visible:outline-white" : "bg-black text-white focus-visible:outline-black"}`}
                         >
                             {project.linkText}
                             <span class="ml-2" aria-hidden="true">↗</span>

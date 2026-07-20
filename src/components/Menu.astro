@@ -8,9 +8,13 @@ import type { SocialItem } from "../scripts/components/socials";
 interface Props {
     buttons: NavTree;
     socials?: Footer["Socials"] | null;
+    /** Etiqueta superior del menú (single type `global` en Strapi) */
+    menuLabel?: string;
+    /** Email de contacto (single type `global` en Strapi) */
+    contactEmail?: string;
 }
 
-const { buttons, socials } = Astro.props;
+const { buttons, socials, menuLabel = "Fundación MINKAYNI", contactEmail = "xavier.moreira@minkayni.org" } = Astro.props;
 
 const hasHome = buttons.some((b) => b.path === "/");
 const navButtons = hasHome
@@ -28,18 +32,22 @@ const navButtons = hasHome
 
     <!-- menu -->
     <div
-        class="opacity-0 content-overlay fixed top-0 w-screen h-screen flex justify-start items-center gap-[5em] bg-[var(--primary)] text-white z-[10] pointer-events-none pt-32"
+        class="opacity-0 content-overlay fixed top-0 w-screen h-screen bg-[var(--primary)] text-white z-[10] pointer-events-none"
     >
-        <div class="nav-links w-[80%] mx-auto">
+        <div class="nav-links mx-auto flex h-full w-[86%] max-w-[1100px] flex-col justify-center gap-[clamp(0.4rem,1.6vh,1.2rem)] pt-[max(5.5rem,env(safe-area-inset-top))] pb-[max(1.75rem,env(safe-area-inset-bottom))]">
+            <p class="nav-reveal mb-[clamp(0.5rem,2vh,1.5rem)] text-[0.68rem] font-bold uppercase tracking-[0.3em] text-white/40">
+                {menuLabel}
+            </p>
             {
                 navButtons.map((button, index) => (
-                    <div class="flex relative">
-                        <div
-                            class={`nav-link flex relative ${button.items != null && "peer"}`}
-                        >
+                    <div class="nav-reveal">
+                        <div class="nav-link flex items-baseline gap-[clamp(0.9rem,2vw,1.5rem)]">
+                            <span class="w-[2ch] shrink-0 font-display text-[clamp(0.8rem,1.6vh,1rem)] font-bold text-white/35" aria-hidden="true">
+                                0{index + 1}
+                            </span>
                             <a
                                 href={button.path}
-                                class="px-0 py-2 text-2xl font-[800] text-white/70 tracking-wide peer font-display"
+                                class="py-[0.15em] font-display text-[clamp(2rem,6.5vh,3.75rem)] font-[800] leading-[1.05] tracking-wide text-white/70"
                             >
                                 <span
                                     data-text={button.title}
@@ -48,54 +56,62 @@ const navButtons = hasHome
                                     {button.title}
                                 </span>
                             </a>
-                            <span class="absolute text-white top-[0.3em] text-base -order-1 peer-hover:opacity-100 opacity-0 peer-hover:-left-6 left-0 transition-all duration-500 ease-in-out mr-2 pointer-events-none">
-                                0{index + 1}
-                            </span>
                         </div>
-                        {button.items && (
-                            <>
-                                <div class="submenu pl-32 ml-20 flex-col flex pointer-events-none gap-2 peer-hover:pointer-events-auto justify-end hover:pointer-events-auto z-30 absolute top-[calc(50%-12px)] peer opacity-0 peer-hover:opacity-100 hover:opacity-100 delay-1000 ease-in-out duration-500">
-                                    {button.items.map((subbutton) => (
-                                        <a
-                                            href={subbutton.path}
-                                            class="opacity-70 hover:opacity-100"
-                                        >
+                        {button.items && button.items.length > 0 && (
+                            <div class="ml-[calc(2ch+clamp(0.9rem,2vw,1.5rem))] mt-1 flex flex-wrap items-baseline gap-x-6 gap-y-1 pl-[2px]">
+                                {button.items.map((subbutton) => (
+                                    <a
+                                        href={subbutton.path}
+                                        class="group inline-flex items-baseline gap-2 py-1 font-display text-[clamp(1rem,2.4vh,1.35rem)] font-bold text-white/55 transition-colors duration-300 hover:text-white focus-visible:text-white"
+                                    >
+                                        <span class="text-[0.75em] text-white/35 transition-colors duration-300 group-hover:text-white/80" aria-hidden="true">↘</span>
+                                        <span class="relative overflow-hidden pb-0.5">
                                             {subbutton.title}
-                                        </a>
-                                    ))}
-                                </div>
-                                <span class="w-0 h-[1px] absolute top-1/2 left-32 peer-hover:w-16 bg-white transition-all duration-500 ease-in-out delay-500" />
-                            </>
+                                            <span class="pointer-events-none absolute bottom-0 left-0 h-px w-full rounded-full bg-white -translate-x-[101%] transition-transform duration-300 ease-out group-hover:translate-x-0 group-focus-visible:translate-x-0" aria-hidden="true" />
+                                        </span>
+                                    </a>
+                                ))}
+                            </div>
                         )}
                     </div>
                 ))
             }
-            {
-                (() => {
-                    const items: SocialItem[] = buildSocialItems(socials);
-                    if (items.length === 0) return null;
-                    return (
-                        <div class="nav-link flex gap-5 mt-2">
-                            {items.map((i) => (
-                                <a
-                                    href={i.href}
-                                    class="opacity-70 hover:opacity-100"
-                                    aria-label={i.label}
-                                    title={i.label}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    <Icon
-                                        name={i.icon}
-                                        width={20}
-                                        height={20}
-                                    />
-                                </a>
-                            ))}
-                        </div>
-                    );
-                })()
-            }
+            <div class="nav-reveal mt-[clamp(1rem,4vh,2.5rem)] border-t border-white/15 pt-[clamp(0.9rem,2.5vh,1.5rem)]">
+                <div class="flex flex-wrap items-center justify-between gap-x-8 gap-y-4">
+                    {
+                        (() => {
+                            const items: SocialItem[] = buildSocialItems(socials);
+                            if (items.length === 0) return null;
+                            return (
+                                <div class="flex items-center gap-6">
+                                    {items.map((i) => (
+                                        <a
+                                            href={i.href}
+                                            class="text-white/60 transition-all duration-300 hover:-translate-y-0.5 hover:text-white"
+                                            aria-label={i.label}
+                                            title={i.label}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            <Icon
+                                                name={i.icon}
+                                                width={22}
+                                                height={22}
+                                            />
+                                        </a>
+                                    ))}
+                                </div>
+                            );
+                        })()
+                    }
+                    <a
+                        href={`mailto:${contactEmail}`}
+                        class="font-display text-sm font-bold text-white/60 transition-colors duration-300 hover:text-white"
+                    >
+                        {contactEmail}
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -269,6 +285,30 @@ const navButtons = hasHome
                             prevScroll = window.scrollY;
                             document.documentElement.classList.add("no-scroll");
                             smoother?.paused(true);
+                            // revelado en cascada de los enlaces (respeta reduced-motion)
+                            const reduced = window.matchMedia(
+                                "(prefers-reduced-motion: reduce)",
+                            ).matches;
+                            const reveals = menu
+                                ? (menu as HTMLElement).querySelectorAll(
+                                      ".nav-reveal",
+                                  )
+                                : [];
+                            if (!reduced && reveals.length) {
+                                gsap.fromTo(
+                                    reveals,
+                                    { y: 26, autoAlpha: 0 },
+                                    {
+                                        y: 0,
+                                        autoAlpha: 1,
+                                        duration: 0.55,
+                                        ease: "power2.out",
+                                        stagger: 0.055,
+                                        delay: 0.05,
+                                        clearProps: "all",
+                                    },
+                                );
+                            }
                         })
                         .to(squares, {
                             opacity: 0,

@@ -11,6 +11,9 @@
     --font-OI: "Sao Torpes", system-ui, sans-serif;
     --color-primary: var(--primary);
     --color-secondary: var(--secondary);
+    /* Azul de marca oscurecido para texto sobre fondos claros (≥4:1 sobre crema);
+       el celeste #3fa9f5 queda para fondos y texto sobre tinta. */
+    --color-secondary-deep: #1b7fc4;
     --color-accent: var(--accent);
     --color-background: var(--bg-white);
     --color-white: var(--bg-white);

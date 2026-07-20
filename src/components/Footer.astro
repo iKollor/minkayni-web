@@ -11,12 +11,20 @@ import { formatCopyright } from "../scripts/components/Copyright";
 import { buildSocialItems } from "../scripts/components/socials";
 import Button from "./Button.astro";
 
+/** Campos añadidos al single type `footer` (textos de aliados y CTA). */
+type FooterTexts = {
+    partnersTitle?: string | null;
+    joinTitle?: string | null;
+    joinSubtitle?: string | null;
+    joinButton?: { href?: string | null; defaultText?: string | null; hoverText?: string | null } | null;
+};
+
 interface Props {
     /** Árbol de navegación completo (generalmente desde Strapi) */
     primaryLinks?: NavTree;
     /** Título/nombre del grupo a extraer como navegación secundaria */
     secondaryLinks?: string;
-    footer: Footer;
+    footer: Footer & FooterTexts;
     /** URL a donde apunta el logo */
     logoLinkHref?: string;
     /** Fuente del logo (astro:assets) */
@@ -44,6 +52,16 @@ function getNavGroupItemsByTitle(tree?: NavTree, title?: string): NavItem[] {
 
 // Desestructuración de props con alias internos más claros
 const { primaryLinks: navigationTree, secondaryLinks } = Astro.props as Props;
+
+/* Textos editables del footer (single type `footer` en Strapi) con fallback local. */
+import { footerTextsFallback } from "../data/pages/global";
+import { withFallback } from "../utils/content";
+const texts = withFallback(footerTextsFallback, {
+    partnersTitle: (Astro.props as Props).footer?.partnersTitle,
+    joinTitle: (Astro.props as Props).footer?.joinTitle,
+    joinSubtitle: (Astro.props as Props).footer?.joinSubtitle,
+    joinButton: (Astro.props as Props).footer?.joinButton,
+});
 
 const secondaryNavItems: NavItem[] = getNavGroupItemsByTitle(navigationTree as NavTree, secondaryLinks);
 
@@ -75,7 +93,7 @@ const partnerImages = await partners();
 <footer id="footer" role="contentinfo">
     <section class="relative" aria-labelledby="allies-title">
         <DomeSeparator>
-            <h2 id="allies-title" class="font-display font-[900] tracking-tight text-2xl md:text-6xl text-primary">Nuestros Aliados</h2>
+            <h2 id="allies-title" class="font-display font-[900] tracking-tight text-2xl md:text-6xl text-primary">{texts.partnersTitle}</h2>
         </DomeSeparator>
 
         <!-- Carrusel -->
@@ -85,13 +103,13 @@ const partnerImages = await partners();
     <section class="relative pt-10">
         <DomeSeparator isAbsolute={false} className="bg-primary" showDecoration={false}>
             <div class="text-center">
-                <h2 id="join-title" class="font-display font-[900] tracking-tight text-2xl md:text-6xl text-white">¿Quieres ser nuestro aliado?</h2>
-                <p class="text-white">Juntos construyamos nuevas oportunidades</p>
+                <h2 id="join-title" class="font-display font-[900] tracking-tight text-2xl md:text-6xl text-white">{texts.joinTitle}</h2>
+                <p class="text-white">{texts.joinSubtitle}</p>
             </div>
         </DomeSeparator>
         <div class="w-full bg-primary py-5">
             <div class="w-fit mx-auto">
-                <Button defaultText="Quiero unirme 💜" hoverText="a cambiar vidas ✨" href="/about#contacto" />
+                <Button defaultText={texts.joinButton.defaultText} hoverText={texts.joinButton.hoverText} href={texts.joinButton.href} />
             </div>
         </div>
     </section>

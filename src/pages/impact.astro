@@ -2,96 +2,23 @@
 import PageLayout from "../layouts/PageLayout.astro";
 import Button from "../components/Button.astro";
 import { Image } from "astro:assets";
+import { Markdown } from "@astropub/md";
 import flor from "../assets/SVG/misc/flor.svg";
 import MaskFlor from "../components/MaskFlor.astro";
 import foto from "../assets/FOTO_BATUCADA.webp";
+import { impactFallback } from "../data/pages/impact";
+import { loadPageContent } from "../utils/page-content";
+import { formatTitle } from "../utils/rich-title";
 
-const stats = [
-    { value: "+300", label: "Niñas, niños, adolescentes y jóvenes", detail: "integran hoy las Batucadas Populares de forma activa." },
-    { value: "12", label: "Sectores populares de Guayaquil", detail: "desde Socio Vivienda hasta Isla Trinitaria, Sergio Toral y Paraíso de la Flor." },
-    { value: "+40", label: "Líderes juveniles formados", detail: "que replican la metodología en brigadas y enseñan percusión a nuevas generaciones." },
-    { value: "+1.200", label: "Familiares y actores comunitarios", detail: "alcanzados indirectamente por los procesos en cada barrio." },
-];
+/* Contenido: single type `impact-page` en Strapi, con fallback local. */
+const d = await loadPageContent("impactPage", impactFallback);
 
-const resultados = [
-    { value: "78%", text: "de las y los jóvenes participantes mejoró sus habilidades de liderazgo y comunicación." },
-    { value: "74%", text: "fortaleció su capacidad de resolución pacífica de conflictos." },
-    { value: "76%", text: "identifica los tipos de violencia basada en género y las rutas de denuncia." },
-    { value: "100%", text: "de permanencia de los 40 jóvenes líderes durante el proceso formativo." },
-];
-
-const reconocimientos = [
-    {
-        year: "2024",
-        org: "Resilience Fund · GI-TOC (Ginebra)",
-        title: "Fellowship internacional",
-        text: "El Fondo de Resiliencia de la Global Initiative Against Transnational Organized Crime seleccionó a Batucadas Populares para su fellowship 2024, como respuesta comunitaria frente al crimen organizado.",
-        href: "https://resiliencefund.globalinitiative.net/batucadas-populares-fellowship-2024-ecuador/",
-        linkText: "Ver en resiliencefund.globalinitiative.net",
-    },
-    {
-        year: "2025",
-        org: "ONU Mujeres Ecuador",
-        title: "Construimos Paz",
-        text: "Fuimos una de las seis organizaciones del proyecto Iniciativas Artísticas para la Paz, con la obra “Sueños que suenan. Batucada que transforma”, presentada en Guayaquil.",
-        href: "https://ecuador.unwomen.org/es/stories/noticia/2025/06/liderazgos-comunitarios-transforman-guayaquil-a-traves-del-arte-y-la-cultura-de-paz-en-el-marco-de-construimos-paz",
-        linkText: "Leer en onumujeres.org",
-    },
-    {
-        year: "2025",
-        org: "FLACSO Ecuador",
-        title: "Arte y violencia: la academia escucha",
-        text: "El conversatorio “Batucada Popular de Guayaquil: arte y violencia. La resistencia habla mientras el barrio toca” analizó nuestra experiencia como una respuesta comunitaria de cuidado y seguridad.",
-        href: "https://www.flacso.edu.ec/prog_investigacion_reproduccion_ampliada/?p=1328",
-        linkText: "Ver en flacso.edu.ec",
-    },
-    {
-        year: "2026",
-        org: "Municipio de Guayaquil",
-        title: "Presea Rosa Borja Febres-Cordero de Icaza",
-        text: "La ciudad reconoció a la Batucada Popular con la presea al Mérito del Servicio Social, en el marco de los 491 años de fundación de Guayaquil.",
-        href: "https://www.expreso.ec/guayaquil/municipio-guayaquil-revela-lista-ganadores-preseas-civicas-2026-289040.html",
-        linkText: "Leer en expreso.ec",
-    },
-];
-
-const prensa = [
-    {
-        medio: "Plan V",
-        year: "2024",
-        title: "Tambores que protegen a las chicas de Guayaquil contra las mafias",
-        href: "https://planv.com.ec/historias/batucada-popular-guayaquil/",
-    },
-    {
-        medio: "El Universo",
-        year: "2025",
-        title: "“Con la batucada despejo la mente y me alejo de robar”",
-        href: "https://www.eluniverso.com/noticias/informes/con-la-batucada-despejo-la-mente-y-me-alejo-de-robar-plan-de-serpaz-busca-que-los-jovenes-no-sean-reclutados-por-las-bandas-nota/",
-    },
-    {
-        medio: "PNUD Ecuador",
-        year: "2025",
-        title: "Jonathan y la batucada: resistencia, juventud y paz en los barrios",
-        href: "https://www.undp.org/es/ecuador/historias/jonathan-y-la-batucada-resistencia-juventud-y-paz-en-los-barrios-de-guayaquil",
-    },
-    {
-        medio: "Vistazo",
-        year: "2026",
-        title: "La mujer que convirtió los tambores en refugio para jóvenes",
-        href: "https://www.vistazo.com/actualidad/nacional/2026-03-08-historia-mujer-convirtio-tambores-refugio-jovenes-violencia-guayaquil-GG10707818",
-    },
-    {
-        medio: "Extra",
-        year: "2024",
-        title: "La música como alternativa al reclutamiento de bandas criminales",
-        href: "https://www.extra.ec/noticia/actualidad/batucada-popular-refugio-medio-reclutamientos-gdo-colegios-guayaquil-117381.html",
-    },
-    {
-        medio: "Expreso",
-        year: "2023",
-        title: "Batucada para alejarse de los riesgos",
-        href: "https://www.expreso.ec/guayaquil/batucada-alejarse-riesgos-183560.html",
-    },
+/* Estilos por posición de las tarjetas de cifras (presentacional). */
+const statStyles = [
+    { bg: "bg-primary text-white", dim: "text-white/75" },
+    { bg: "bg-secondary text-black", dim: "text-black/70" },
+    { bg: "bg-accent text-black", dim: "text-black/70" },
+    { bg: "bg-black text-white", dim: "text-white/70" },
 ];
 ---
 
@@ -99,59 +26,95 @@ const prensa = [
     <!-- Intro -->
     <section class="mx-auto w-[90%] max-w-[1280px] py-20 sm:py-28" aria-labelledby="impact-intro-title">
         <div class="grid items-end gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-            <div>
-                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">Nuestro impacto</p>
-                <h2 id="impact-intro-title" class="font-display text-5xl font-black leading-[0.92] tracking-tight text-black sm:text-7xl">
-                    Más tambores.<br /><span class="text-secondary">Menos armas.</span>
-                </h2>
+            <div data-reveal>
+                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.intro.eyebrow}</p>
+                <h2 id="impact-intro-title" class="font-display text-5xl font-black leading-[0.92] tracking-tight text-black sm:text-7xl" set:html={formatTitle(d.intro.title, "text-secondary-deep")} />
             </div>
-            <div class="max-w-[62ch] text-lg leading-relaxed text-black/70 lg:pb-2">
-                <p>
-                    En barrios donde el reclutamiento forzado de niñas, niños y adolescentes es una amenaza cotidiana, la Batucada Popular construye espacios seguros, referentes
-                    positivos y organización comunitaria. Este es el impacto que medimos, documentamos y rendimos ante las comunidades y nuestros aliados.
-                </p>
+            <div class="max-w-[62ch] text-lg leading-relaxed text-black/75 lg:pb-2" data-reveal data-reveal-delay="0.1">
+                <p>{d.intro.body}</p>
             </div>
         </div>
 
-        <!-- Cifras -->
-        <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <nav class="mt-10 flex flex-wrap gap-2" aria-label="Secciones de esta página" data-reveal data-reveal-delay="0.15">
             {
-                stats.map((stat, index) => (
-                    <div class={`rounded-[2.25rem] p-8 ${index % 2 === 0 ? "bg-primary text-white" : "bg-secondary text-black"}`}>
-                        <p class="font-display text-6xl font-black">{stat.value}</p>
-                        <p class="mt-3 font-display text-lg font-bold leading-snug">{stat.label}</p>
-                        <p class={`mt-2 text-sm leading-relaxed ${index % 2 === 0 ? "text-white/70" : "text-black/60"}`}>{stat.detail}</p>
-                    </div>
+                d.sectionNav.map((s) => (
+                    <a
+                        href={s.href}
+                        class="min-h-11 rounded-full border border-black/15 px-5 py-2.5 font-display text-sm font-bold text-black/80 transition hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    >
+                        {s.text}
+                    </a>
                 ))
             }
+        </nav>
+
+        <!-- Cifras -->
+        <div id="cifras" class="mt-14 grid gap-5 scroll-mt-28 sm:grid-cols-2 lg:grid-cols-4" data-reveal-group>
+            {
+                d.stats.map((stat, index) => {
+                    const style = statStyles[index % statStyles.length];
+                    return (
+                        <div class={`rounded-[2.25rem] p-8 transition duration-300 hover:-translate-y-2 ${style.bg}`}>
+                            <p class="font-display text-6xl font-black tabular-nums">
+                                <span data-count={stat.target} data-count-prefix={stat.prefix ?? ""} data-count-suffix={stat.suffix ?? ""}>{stat.value}</span>
+                            </p>
+                            <p class="mt-3 font-display text-lg font-bold leading-snug">{stat.label}</p>
+                            <p class={`mt-2 text-sm leading-relaxed ${style.dim}`}>{stat.detail}</p>
+                        </div>
+                    );
+                })
+            }
         </div>
-        <p class="mt-6 text-sm text-black/50">
-            Cifras del registro institucional 2026 de Fundación MINKAYNI, consistentes con el perfil publicado por
-            <a class="underline underline-offset-4 hover:text-primary" href="https://www.vistazo.com/actualidad/nacional/2026-03-08-historia-mujer-convirtio-tambores-refugio-jovenes-violencia-guayaquil-GG10707818" target="_blank" rel="noopener noreferrer">Vistazo (2026)</a>.
-        </p>
+        <div class="mt-6 text-sm text-black/60 [&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-primary" data-reveal>
+            <Markdown of={d.statsNote} />
+        </div>
     </section>
 
     <!-- Resultados medidos -->
-    <section class="mx-auto w-[94%] max-w-[1440px] rounded-[2.75rem] bg-[linear-gradient(130deg,var(--primary),#410063)] px-6 py-16 text-white sm:px-12 lg:rounded-[5rem] lg:px-20 lg:py-24" aria-labelledby="results-title">
+    <section
+        id="resultados"
+        class="mx-auto w-[94%] max-w-[1440px] scroll-mt-28 rounded-[2.75rem] bg-[linear-gradient(130deg,var(--primary),#410063)] px-6 py-16 text-white sm:px-12 lg:rounded-[5rem] lg:px-20 lg:py-24"
+        aria-labelledby="results-title"
+    >
         <div class="grid gap-12 lg:grid-cols-[0.9fr_1.1fr]">
-            <div>
-                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">Resultados que se verifican</p>
-                <h2 id="results-title" class="font-display text-4xl font-black leading-[0.95] sm:text-6xl">Lo que cambia cuando un barrio suena.</h2>
-                <p class="mt-6 max-w-[58ch] text-lg leading-relaxed text-white/75">
-                    Nuestro proyecto de campamentos juveniles con el Fondo Ágil (2025) formó a 40 jóvenes líderes de las Batucadas Populares e involucró a 250 personas en procesos
-                    formativos. La evaluación final, levantada con nuestro sistema de monitoreo, midió estos cambios:
-                </p>
-                <p class="mt-6 max-w-[58ch] text-sm leading-relaxed text-white/55">
-                    Desde 2026 contamos con un Manual Institucional MEAL (monitoreo, evaluación, aprendizaje y rendición de cuentas) y aplicamos la metodología propia DAARR:
-                    Diagnóstico, Acciones de Aprendizaje, Acompañamiento, Revisión y Reflexión.
-                </p>
+            <div data-reveal>
+                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">{d.resultsHeading.eyebrow}</p>
+                <h2 id="results-title" class="font-display text-4xl font-black leading-[0.95] sm:text-6xl" set:html={formatTitle(d.resultsHeading.title)} />
+                <p class="mt-6 max-w-[58ch] text-lg leading-relaxed text-white/80">{d.resultsHeading.body}</p>
+                <blockquote class="mt-8 max-w-[52ch] border-l-2 border-secondary pl-5 text-lg italic leading-relaxed text-white/85">
+                    {d.resultsQuote}
+                    <cite class="mt-2 block text-sm not-italic text-white/60">{d.resultsQuoteCite}</cite>
+                </blockquote>
+                <a href={d.resultsLink.href} class="mt-8 inline-flex items-center gap-2 font-display font-bold text-secondary underline-offset-4 transition hover:text-white hover:underline">
+                    {d.resultsLink.text} <span aria-hidden="true">→</span>
+                </a>
             </div>
-            <div class="grid gap-4 sm:grid-cols-2">
+            <div class="grid gap-4 sm:grid-cols-2" data-reveal-group>
                 {
-                    resultados.map((r) => (
+                    d.results.map((r) => (
                         <div class="rounded-[1.75rem] bg-white/10 p-6 backdrop-blur sm:p-8">
-                            <p class="font-display text-5xl font-black text-secondary">{r.value}</p>
-                            <p class="mt-3 leading-relaxed text-white/80">{r.text}</p>
+                            <p class="font-display text-5xl font-black tabular-nums text-secondary">
+                                <span data-count={r.target} data-count-prefix={r.prefix ?? ""} data-count-suffix={r.suffix ?? "%"}>{r.value}</span>
+                            </p>
+                            <p class="mt-3 leading-relaxed text-white/85">{r.detail}</p>
+                        </div>
+                    ))
+                }
+            </div>
+        </div>
+
+        <div class="mt-14 border-t border-white/15 pt-10">
+            <p class="mb-6 text-sm font-bold uppercase tracking-[0.22em] text-white/60">{d.otherProcessesTitle}</p>
+            <div class="grid gap-4 lg:grid-cols-2" data-reveal-group>
+                {
+                    d.otherProcesses.map((p) => (
+                        <div class="rounded-[1.75rem] bg-white/5 p-6 sm:p-8">
+                            <h3 class="font-display text-lg font-bold text-white">{p.title}</h3>
+                            <ul class="mt-4 flex flex-wrap gap-2">
+                                {(p.metrics ?? []).map((m) => (
+                                    <li class="rounded-full bg-white/10 px-4 py-1.5 text-sm text-white/85">{m?.text}</li>
+                                ))}
+                            </ul>
                         </div>
                     ))
                 }
@@ -160,60 +123,59 @@ const prensa = [
     </section>
 
     <!-- Reconocimientos -->
-    <section class="mx-auto w-[90%] max-w-[1280px] py-24" aria-labelledby="awards-title">
-        <div class="mb-12 max-w-[760px]">
-            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">Reconocimientos</p>
-            <h2 id="awards-title" class="font-display text-4xl font-black leading-none text-primary sm:text-6xl">De los barrios de Guayaquil al mundo.</h2>
+    <section id="reconocimientos" class="mx-auto w-[90%] max-w-[1280px] scroll-mt-28 py-24" aria-labelledby="awards-title">
+        <div class="mb-12 max-w-[760px]" data-reveal>
+            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{d.awardsHeading.eyebrow}</p>
+            <h2 id="awards-title" class="font-display text-4xl font-black leading-none text-primary sm:text-6xl" set:html={formatTitle(d.awardsHeading.title)} />
         </div>
 
-        <div class="grid gap-5 md:grid-cols-2">
+        <div class="grid gap-5 md:grid-cols-2" data-reveal-group>
             {
-                reconocimientos.map((r) => (
-                    <article class="flex flex-col rounded-[2.25rem] bg-[#dedbd4] p-8 sm:p-10">
+                d.awards.map((r) => (
+                    <article class="flex flex-col rounded-[2.25rem] bg-[#dedbd4] p-8 transition duration-300 hover:-translate-y-2 sm:p-10">
                         <div class="flex flex-wrap items-center gap-2">
                             <span class="rounded-full bg-primary px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-white">{r.year}</span>
-                            <span class="rounded-full bg-black/10 px-3 py-1 text-xs font-bold text-black">{r.org}</span>
+                            {r.org && <span class="rounded-full bg-black/10 px-3 py-1 text-xs font-bold text-black">{r.org}</span>}
                         </div>
                         <h3 class="mt-6 font-display text-3xl font-bold text-black">{r.title}</h3>
-                        <p class="mt-3 leading-relaxed text-black/70">{r.text}</p>
-                        <a
-                            href={r.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="mt-auto pt-6 text-sm font-bold text-primary underline underline-offset-4 transition hover:text-secondary"
-                        >
-                            {r.linkText} ↗
-                        </a>
+                        <p class="mt-3 leading-relaxed text-black/75">{r.text}</p>
+                        {r.href && (
+                            <a
+                                href={r.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="mt-auto pt-6 text-sm font-bold text-primary underline underline-offset-4 transition hover:text-secondary-deep"
+                            >
+                                {r.linkText ?? "Ver la fuente"} ↗
+                            </a>
+                        )}
                     </article>
                 ))
             }
         </div>
-        <p class="mt-6 max-w-[80ch] text-sm text-black/50">
-            La Batucada Popular también ganó la convocatoria Radio Activa de la Casa de la Cultura Ecuatoriana, entre más de 200 iniciativas nacionales, con un espacio de emisión para
-            Radio Sin Paro en 2026.
-        </p>
+        <p class="mt-6 max-w-[80ch] text-sm text-black/60" data-reveal>{d.awardsNote}</p>
     </section>
 
-    <!-- Historia humana + prensa -->
-    <section class="mx-auto w-[90%] max-w-[1280px] pb-28" aria-labelledby="press-impact-title">
+    <!-- Prensa -->
+    <section id="prensa" class="mx-auto w-[90%] max-w-[1280px] scroll-mt-28 pb-28" aria-labelledby="press-impact-title">
         <div class="grid items-center gap-10 lg:grid-cols-[auto_1fr]">
-            <div class="relative mx-auto hidden items-center justify-center lg:flex">
-                <div class="absolute -right-6 -top-8 h-28 w-28" aria-hidden="true"><Image src={flor} alt="" class="h-full w-full object-cover" /></div>
-                <div class="absolute -bottom-6 -left-8 h-24 w-24" aria-hidden="true"><Image src={flor} alt="" class="h-full w-full object-cover" /></div>
+            <div class="relative mx-auto hidden items-center justify-center lg:flex" data-reveal>
+                <div class="absolute -right-6 -top-8 h-28 w-28" data-float aria-hidden="true"><Image src={flor} alt="" class="h-full w-full object-cover" /></div>
+                <div class="absolute -bottom-6 -left-8 h-24 w-24" data-float aria-hidden="true"><Image src={flor} alt="" class="h-full w-full object-cover" /></div>
                 <MaskFlor src={foto} alt="Integrantes de Batucada Popular en presentación" className="h-72 w-72 shadow-lg xl:h-96 xl:w-96" />
             </div>
-            <div>
-                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">El impacto contado por otros</p>
-                <h2 id="press-impact-title" class="font-display text-4xl font-black leading-none text-black sm:text-6xl">La prensa y la cooperación documentan el proceso.</h2>
+            <div data-reveal data-reveal-delay="0.1">
+                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.pressHeading.eyebrow}</p>
+                <h2 id="press-impact-title" class="font-display text-4xl font-black leading-none text-black sm:text-6xl" set:html={formatTitle(d.pressHeading.title)} />
                 <ul class="mt-8 divide-y divide-black/10">
                     {
-                        prensa.map((p) => (
+                        d.pressItems.map((p) => (
                             <li>
                                 <a href={p.href} target="_blank" rel="noopener noreferrer" class="group flex items-baseline justify-between gap-4 py-4 transition hover:text-primary">
                                     <span class="leading-snug">
                                         <span class="font-display font-bold">{p.title}</span>
-                                        <span class="ml-2 whitespace-nowrap text-sm text-black/50">
-                                            {p.medio} · {p.year}
+                                        <span class="ml-2 whitespace-nowrap text-sm text-black/60">
+                                            {p.outlet} · {p.year}
                                         </span>
                                     </span>
                                     <span class="text-primary opacity-0 transition group-hover:opacity-100" aria-hidden="true">
@@ -228,17 +190,120 @@ const prensa = [
         </div>
     </section>
 
+    <!-- Sigue el recorrido -->
+    <section class="mx-auto w-[90%] max-w-[1280px] pb-24" aria-labelledby="journey-title">
+        <div class="mb-10 max-w-[760px]" data-reveal>
+            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{d.journeyHeading.eyebrow}</p>
+            <h2 id="journey-title" class="font-display text-4xl font-black leading-none text-black sm:text-5xl" set:html={formatTitle(d.journeyHeading.title)} />
+        </div>
+        <div class="grid gap-5 md:grid-cols-3" data-reveal-group>
+            {
+                d.journeyCards.map((item) => (
+                    <a
+                        href={item.href}
+                        class="group flex flex-col rounded-[2.25rem] border border-black/10 p-8 transition duration-300 hover:-translate-y-2 hover:border-primary/40 hover:shadow-[0_24px_50px_rgba(35,15,55,0.12)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary sm:p-10"
+                    >
+                        <p class="text-xs font-bold uppercase tracking-[0.22em] text-black/50 transition group-hover:text-primary">{item.eyebrow}</p>
+                        <h3 class="mt-4 font-display text-2xl font-bold text-black transition group-hover:text-primary">{item.title}</h3>
+                        <p class="mt-3 leading-relaxed text-black/70">{item.text}</p>
+                        <span class="mt-auto pt-6 font-display font-bold text-primary opacity-70 transition group-hover:opacity-100" aria-hidden="true">
+                            Seguir leyendo →
+                        </span>
+                    </a>
+                ))
+            }
+        </div>
+    </section>
+
     <!-- CTA -->
-    <section class="mx-auto mb-44 md:mb-80 w-[94%] max-w-[1440px] overflow-hidden rounded-[2.75rem] bg-accent px-6 py-16 text-black sm:px-12 lg:rounded-[5rem] lg:px-20 lg:py-20" aria-labelledby="impact-cta-title">
+    <section
+        class="mx-auto mb-44 md:mb-80 w-[94%] max-w-[1440px] overflow-hidden rounded-[2.75rem] bg-accent px-6 py-16 text-black sm:px-12 lg:rounded-[5rem] lg:px-20 lg:py-20"
+        aria-labelledby="impact-cta-title"
+    >
         <div class="grid items-center gap-10 lg:grid-cols-[1fr_auto]">
-            <div class="max-w-[760px]">
-                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">Invierte en comunidad</p>
-                <h2 id="impact-cta-title" class="font-display text-5xl font-black leading-[0.95] sm:text-7xl">Cuando un barrio suena, también se organiza y se cuida.</h2>
-                <p class="mt-6 max-w-[58ch] text-lg leading-relaxed text-black/70">
-                    Gran parte de este impacto se ha sostenido con voluntariado juvenil. Cada aliado nuevo permite que el proceso llegue a más barrios sin depender de un solo proyecto.
-                </p>
+            <div class="max-w-[760px]" data-reveal>
+                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.ctaHeading.eyebrow}</p>
+                <h2 id="impact-cta-title" class="font-display text-5xl font-black leading-[0.95] sm:text-7xl" set:html={formatTitle(d.ctaHeading.title)} />
+                <p class="mt-6 max-w-[58ch] text-lg leading-relaxed text-black/75">{d.ctaHeading.body}</p>
             </div>
-            <Button href="/about#contacto" defaultText="Hagamos minka 💜" hoverText="Invierte en comunidad ✨" />
+            <Button href={d.ctaButton.href} defaultText={d.ctaButton.defaultText} hoverText={d.ctaButton.hoverText} />
         </div>
     </section>
 </PageLayout>
+
+<script>
+    import { gsap, ScrollTrigger } from "../scripts/main";
+    import { initBatucadaAnchors } from "../scripts/batucada/motion";
+
+    const initImpact = () => {
+        const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        // Anclas internas con offset por navbar fija (compartido con batucada)
+        initBatucadaAnchors();
+
+        /* Odómetro: el HTML ya trae el valor final renderizado (SSR), así que
+           sin JS o con reduced-motion no se pierde nada. El tween se crea al
+           entrar en viewport, nunca pre-creado. */
+        if (!reduced) {
+            const fmt = new Intl.NumberFormat("es-EC");
+            document.querySelectorAll<HTMLElement>("[data-count]").forEach((el) => {
+                const target = Number(el.dataset.count ?? "");
+                if (!Number.isFinite(target) || target <= 0) return;
+                const prefix = el.dataset.countPrefix ?? "";
+                const suffix = el.dataset.countSuffix ?? "";
+                const state = { val: 0 };
+                ScrollTrigger.create({
+                    trigger: el,
+                    start: "top 88%",
+                    once: true,
+                    onEnter: () => {
+                        gsap.to(state, {
+                            val: target,
+                            duration: 1.7,
+                            ease: "power3.out",
+                            onUpdate: () => {
+                                el.textContent = prefix + fmt.format(Math.round(state.val)) + suffix;
+                            },
+                        });
+                    },
+                });
+            });
+
+            // Reveals al hacer scroll (mismo patrón que about.astro)
+            document.querySelectorAll<HTMLElement>("[data-reveal]").forEach((el) => {
+                if (el.dataset.revealReady) return;
+                el.dataset.revealReady = "1";
+                gsap.set(el, { opacity: 0, y: 44 });
+                ScrollTrigger.create({
+                    trigger: el,
+                    start: "top 88%",
+                    once: true,
+                    onEnter: () => gsap.to(el, { opacity: 1, y: 0, duration: 0.9, ease: "power2.out", delay: parseFloat(el.dataset.revealDelay || "0") }),
+                });
+            });
+
+            document.querySelectorAll<HTMLElement>("[data-reveal-group]").forEach((group) => {
+                if (group.dataset.revealReady) return;
+                group.dataset.revealReady = "1";
+                const kids = Array.from(group.children) as HTMLElement[];
+                gsap.set(kids, { opacity: 0, y: 44 });
+                ScrollTrigger.create({
+                    trigger: group,
+                    start: "top 85%",
+                    once: true,
+                    onEnter: () => gsap.to(kids, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out", stagger: 0.12 }),
+                });
+            });
+
+            document.querySelectorAll<HTMLElement>("[data-float]").forEach((el, i) => {
+                gsap.to(el, { y: -12, rotation: "+=4", duration: 2.8 + (i % 3) * 0.5, ease: "sine.inOut", yoyo: true, repeat: -1 });
+            });
+        }
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initImpact, { once: true });
+    } else {
+        initImpact();
+    }
+</script>

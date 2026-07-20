@@ -1,0 +1,57 @@
+---
+/* Imagen editable desde el CMS con fallback local.
+   - Si el campo media de Strapi tiene URL → <img> vía proxy /media con srcset.
+   - Si no → renderiza el asset local optimizado por astro:assets (fallback).
+   Así cada foto del sitio puede reemplazarse desde Strapi sin perder el
+   diseño cuando el campo aún está vacío. */
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+import { strapiMediaUrl, strapiMediaSrcSet } from "@/utils/media-url";
+
+type MediaLike = {
+    url?: string | null;
+    alternativeText?: string | null;
+    width?: number | null;
+    height?: number | null;
+} | null | undefined;
+
+interface Props {
+    media?: MediaLike;
+    fallback?: ImageMetadata;
+    alt?: string;
+    class?: string;
+    widths?: number[];
+    sizes?: string;
+    loading?: "lazy" | "eager";
+}
+
+const { media, fallback, alt = "", class: className, widths = [480, 960, 1600], sizes, loading = "lazy" } = Astro.props;
+
+const STRAPI_BASE = (import.meta.env.STRAPI_URL ?? "").trim();
+const url = media?.url ?? "";
+const cmsSrc = url ? strapiMediaUrl(url, STRAPI_BASE, widths[widths.length - 1]) : "";
+const cmsSrcSet = url ? strapiMediaSrcSet(url, STRAPI_BASE, widths) : "";
+const resolvedAlt = alt || media?.alternativeText || "";
+---
+
+{
+    cmsSrc ? (
+        <img
+            src={cmsSrc}
+            srcset={cmsSrcSet || undefined}
+            sizes={cmsSrcSet ? sizes : undefined}
+            alt={resolvedAlt}
+            class={className}
+            width={media?.width ?? undefined}
+            height={media?.height ?? undefined}
+            loading={loading}
+            decoding="async"
+        />
+    ) : fallback ? (
+        fallback.format === "svg" ? (
+            <Image src={fallback} alt={resolvedAlt} class={className} loading={loading} />
+        ) : (
+            <Image src={fallback} alt={resolvedAlt} class={className} loading={loading} widths={widths.filter((w) => w <= fallback.width)} sizes={sizes} />
+        )
+    ) : null
+}

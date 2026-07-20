@@ -30,6 +30,26 @@ export const initBatucadaMap = () => {
     const status = document.querySelector<HTMLElement>("[data-bp-map-status]");
     if (!el || el.dataset.state === "loading" || el.dataset.state === "ready") return;
 
+    /* Los sectores llegan serializados desde la página (contenido de Strapi
+       vía data-bp-sectors); SECTORS queda como respaldo si faltan o son
+       inválidos. El orden enlaza la lista de la página con los pines. */
+    type Sector = { name: string; lat: number; lng: number };
+    let sectors: readonly Sector[] = SECTORS;
+    try {
+        const raw = el.dataset.bpSectors;
+        if (raw) {
+            const parsed: unknown = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+                const clean = parsed.filter(
+                    (s): s is Sector => !!s && typeof s.name === "string" && Number.isFinite(s.lat) && Number.isFinite(s.lng)
+                );
+                if (clean.length) sectors = clean;
+            }
+        }
+    } catch {
+        /* JSON inválido → se usa el respaldo local */
+    }
+
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const setState = (state: "loading" | "ready" | "error", message?: string) => {
@@ -55,7 +75,7 @@ export const initBatucadaMap = () => {
                 minZoom: 10,
             }).addTo(map);
 
-            const bounds = L.latLngBounds(SECTORS.map((sector) => [sector.lat, sector.lng]));
+            const bounds = L.latLngBounds(sectors.map((sector) => [sector.lat, sector.lng]));
 
             /* Pin rombo en utilidades Tailwind (los .ts entran en la detección
                de contenido). El número va en span interno con display:block —
@@ -66,7 +86,7 @@ export const initBatucadaMap = () => {
             const PIN =
                 "bp-pin grid place-items-center w-full h-full rotate-45 bg-bp-blue border-2 border-black text-black font-black text-[0.68rem] shadow-[2px_2px_0_rgba(10,8,1,0.35)] transition-[scale,background-color] duration-[180ms] ease-bp-rebound group-hover:scale-125 group-hover:bg-accent motion-reduce:transition-none cursor-pointer";
 
-            const markers = SECTORS.map((sector, index) => {
+            const markers = sectors.map((sector, index) => {
                 const icon = L.divIcon({
                     className: "group",
                     html: `<span class="${PIN}"><span class="block -rotate-45">${String(index + 1).padStart(2, "0")}</span></span>`,
@@ -96,7 +116,7 @@ export const initBatucadaMap = () => {
             const cardCaption = card.querySelector("figcaption") as HTMLElement;
 
             const showCard = (index: number) => {
-                const sector = SECTORS[index];
+                const sector = sectors[index];
                 cardImg.src = HOVER_PHOTOS[index % HOVER_PHOTOS.length];
                 cardCaption.textContent = `${String(index + 1).padStart(2, "0")} · ${sector.name}`;
                 const point = map.latLngToContainerPoint([sector.lat, sector.lng]);
@@ -132,7 +152,7 @@ export const initBatucadaMap = () => {
             ];
 
             const showGallery = (index: number) => {
-                const point = map.latLngToContainerPoint([SECTORS[index].lat, SECTORS[index].lng]);
+                const point = map.latLngToContainerPoint([sectors[index].lat, sectors[index].lng]);
                 /* dos delays: entrada (rebote) y flotado continuo que arranca
                    cuando la entrada ya terminó — ambos animan transform, así
                    que el flotado no puede solaparse con la entrada */
@@ -156,7 +176,7 @@ export const initBatucadaMap = () => {
             };
 
             const focusSector = (index: number) => {
-                const sector = SECTORS[index];
+                const sector = sectors[index];
                 const target = L.latLng(sector.lat, sector.lng);
                 /* si ya estamos aterrizados en este sector, mostrar directo:
                    sin movimiento no habría moveend y el once() quedaría colgado */

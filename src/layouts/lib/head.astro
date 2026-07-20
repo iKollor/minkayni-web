@@ -2,6 +2,9 @@
 import faviconSrc from "/public/favicon.png";
 import faviconSvgSrc from "/public/favicon.svg";
 import { getImage } from "astro:assets";
+import { globalFallback } from "../../data/pages/global";
+import { loadPageContent } from "../../utils/page-content";
+
 interface Props {
     title: string;
     description?: string;
@@ -13,8 +16,21 @@ const appleTouchIcon = await getImage({
     format: "png",
 });
 const faviconSvg = await getImage({ src: faviconSvgSrc, format: "svg" });
-const { title, description = "Fundación Minkayni transforma comunidades a través del arte, el liderazgo juvenil y la cultura de paz en Guayaquil." } = Astro.props;
-const strapiOrigin = new URL(import.meta.env.STRAPI_URL).origin;
+
+/* SEO por defecto editable (single type `global` en Strapi). */
+const site = await loadPageContent("globalSettings", globalFallback);
+const { title, description = site.defaultSeo.metaDescription } = Astro.props;
+const siteTitle = site.defaultSeo.metaTitle || site.siteName;
+const fullTitle = title ? `${title} ${site.titleSuffix}` : siteTitle;
+
+/* preconnect a Strapi solo si la URL está configurada y es válida */
+const strapiOrigin = (() => {
+    try {
+        return new URL(import.meta.env.STRAPI_URL ?? "").origin;
+    } catch {
+        return "";
+    }
+})();
 ---
 
 <!doctype html>
@@ -40,9 +56,9 @@ const strapiOrigin = new URL(import.meta.env.STRAPI_URL).origin;
         <meta name="mobile-web-app-capable" content="yes" />
         <!-- black-translucent permite que el fondo de la página se vea detrás de la barra de estado -->
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <link rel="preconnect" href={strapiOrigin} />
+        {strapiOrigin && <link rel="preconnect" href={strapiOrigin} />}
 
-        <title>{title ? `${title} • Fundación Minkayni` : "Fundación Minkayni"}</title>
+        <title>{fullTitle}</title>
         <style>
             body[data-grain="off"] #grain-layer {
                 display: none;

@@ -9,6 +9,18 @@ import {
   HomepageSchema,
   FooterSchema,
 } from "../schemas/strapi.graphql.zod";
+import { z } from "zod";
+import {
+  AboutPageSchema,
+  ImpactPageSchema,
+  ProjectsPageSchema,
+  BatucadaPageSchema,
+  BatucadaEcosystemPageSchema,
+  BatucadaHistoryPageSchema,
+  GlobalSettingsSchema,
+  FeaturedProjectSchema,
+  ActionButtonSchema,
+} from "../schemas/pages.zod";
 import { NavigationTreeSchema } from "../schemas/navigation";
 
 const STRAPI_BASE = (import.meta.env.STRAPI_URL ?? "").trim();
@@ -93,6 +105,33 @@ const postSelection = `
     publishedAt
 `;
 
+/* ── Selecciones GraphQL reutilizables (componentes de página) ─────────── */
+const headingSelection = `id eyebrow title body`;
+const linkSelection = `id text href`;
+const buttonSelection = `id href defaultText hoverText`;
+const listItemSelection = `id text meta`;
+const statSelection = `id value target prefix suffix label detail`;
+const stepSelection = `id number title text`;
+const awardSelection = `id year org title text href linkText`;
+const orgCardSelection = `id kind name text accentColor dark`;
+const sectorSelection = `id name lat lng`;
+const linkCardSelection = `id eyebrow title text href linkText external`;
+const timelineSelection = `id chip period title text accent imageAlt image { ${uploadFileSelection} }`;
+const cardSelection = `id title description showIcon cta icon { ${uploadFileSelection} }`;
+const pressItemSelection = `id outlet year title href logo { ${uploadFileSelection} }`;
+const seoSelection = `id metaTitle metaDescription shareImage { ${uploadFileSelection} }`;
+const metricGroupSelection = `id title metrics { ${listItemSelection} }`;
+const projectCardSelection = `id anchor category categoryLabel type title summary detail imageAlt href linkText external accent image { ${uploadFileSelection} }`;
+const featuredProjectSelection = `id title body logo { ${uploadFileSelection} } photo { ${uploadFileSelection} } button { ${buttonSelection} }`;
+
+const entryMetaSelection = `
+    documentId
+    createdAt
+    updatedAt
+    publishedAt
+    locale
+`;
+
 const homepageSelection = `
     documentId
     legend
@@ -115,6 +154,9 @@ const homepageSelection = `
         age
         phone_number
     }
+    testimonialsTitle
+    teamTitle
+    featuredProject { ${featuredProjectSelection} }
     createdAt
     updatedAt
     publishedAt
@@ -131,10 +173,171 @@ const footerSelection = `
         id
         files { ${uploadFileSelection} }
     }
+    partnersTitle
+    joinTitle
+    joinSubtitle
+    joinButton { ${buttonSelection} }
     createdAt
     updatedAt
     publishedAt
     locale
+`;
+
+/* ── Selecciones de los single types de página ─────────────────────────── */
+const aboutPageSelection = `
+    ${entryMetaSelection}
+    intro { ${headingSelection} }
+    actionLines { ${cardSelection} }
+    historyHeading { ${headingSelection} }
+    timeline { ${timelineSelection} }
+    mission { ${cardSelection} }
+    vision { ${cardSelection} }
+    ecosystemHeading { ${headingSelection} }
+    ecosystemCards { ${orgCardSelection} }
+    ecosystemLink { ${linkSelection} }
+    teamHeading { ${headingSelection} }
+    teamMembers { ${cardSelection} }
+    teamNote
+    transparencyHeading { ${headingSelection} }
+    policies { ${listItemSelection} }
+    transparencyNote
+    pressHeading { ${headingSelection} }
+    pressLinks { ${pressItemSelection} }
+    pressCta { ${linkSelection} }
+    contactHeading { ${headingSelection} }
+    contactButton { ${buttonSelection} }
+    contactSecondary { ${linkSelection} }
+    seo { ${seoSelection} }
+`;
+
+const impactPageSelection = `
+    ${entryMetaSelection}
+    intro { ${headingSelection} }
+    sectionNav { ${linkSelection} }
+    stats { ${statSelection} }
+    statsNote
+    resultsHeading { ${headingSelection} }
+    resultsQuote
+    resultsQuoteCite
+    resultsLink { ${linkSelection} }
+    results { ${statSelection} }
+    otherProcessesTitle
+    otherProcesses { ${metricGroupSelection} }
+    awardsHeading { ${headingSelection} }
+    awards { ${awardSelection} }
+    awardsNote
+    pressHeading { ${headingSelection} }
+    pressItems { ${pressItemSelection} }
+    journeyHeading { ${headingSelection} }
+    journeyCards { ${linkCardSelection} }
+    ctaHeading { ${headingSelection} }
+    ctaButton { ${buttonSelection} }
+    seo { ${seoSelection} }
+`;
+
+const projectsPageSelection = `
+    ${entryMetaSelection}
+    intro { ${headingSelection} }
+    explorerHeading { ${headingSelection} }
+    filters { ${listItemSelection} }
+    projects { ${projectCardSelection} }
+    methodHeading { ${headingSelection} }
+    methodSteps { ${stepSelection} }
+    methodLink { ${linkSelection} }
+    horizonHeading { ${headingSelection} }
+    horizonCards { ${cardSelection} }
+    alliancesHeading { ${headingSelection} }
+    allies { ${listItemSelection} }
+    alliancesNote
+    ctaButton { ${buttonSelection} }
+    ctaSecondary { ${linkSelection} }
+    seo { ${seoSelection} }
+`;
+
+const batucadaPageSelection = `
+    ${entryMetaSelection}
+    heroMetaLeft
+    heroMetaRight
+    heroTitle
+    heroCaption
+    heroPrimary { ${linkSelection} }
+    heroSecondary { ${linkSelection} }
+    heroImage { ${uploadFileSelection} }
+    introHeading { ${headingSelection} }
+    introBody
+    figures { ${statSelection} }
+    originTitle
+    originItems { ${timelineSelection} }
+    originLink { ${linkSelection} }
+    pulseHeading { ${headingSelection} }
+    pulseHighlight
+    pulseImage { ${uploadFileSelection} }
+    methodHeading { ${headingSelection} }
+    methodSteps { ${stepSelection} }
+    methodNote
+    territoryHeading { ${headingSelection} }
+    sectors { ${sectorSelection} }
+    territoryHint
+    actionHeading { ${headingSelection} }
+    communityActions { ${listItemSelection} }
+    ecoHeading { ${headingSelection} }
+    ecosystemTags { ${listItemSelection} }
+    ecoLink { ${linkSelection} }
+    awardsHeading { ${headingSelection} }
+    awards { ${awardSelection} }
+    awardsNote
+    rightsHeading { ${headingSelection} }
+    rightsBodyLeft
+    rightsBodyRight
+    rightsStamp
+    ctaHeading { ${headingSelection} }
+    ctaPrimary { ${linkSelection} }
+    ctaSecondary { ${linkSelection} }
+    seo { ${seoSelection} }
+`;
+
+const batucadaEcosystemPageSelection = `
+    ${entryMetaSelection}
+    backLink { ${linkSelection} }
+    hero { ${headingSelection} }
+    pulseline { ${listItemSelection} }
+    organismsHeading { ${headingSelection} }
+    organisms { ${orgCardSelection} }
+    horizonsHeading { ${headingSelection} }
+    horizons { ${cardSelection} }
+    alliesHeading { ${headingSelection} }
+    allies { ${listItemSelection} }
+    ctaHeading { ${headingSelection} }
+    ctaPrimary { ${linkSelection} }
+    ctaSecondary { ${linkSelection} }
+    seo { ${seoSelection} }
+`;
+
+const batucadaHistoryPageSelection = `
+    ${entryMetaSelection}
+    backLink { ${linkSelection} }
+    hero { ${headingSelection} }
+    pulseline { ${listItemSelection} }
+    timelineHeading { ${headingSelection} }
+    timeline { ${timelineSelection} }
+    senseHeading { ${headingSelection} }
+    senseHighlight
+    senseImage { ${uploadFileSelection} }
+    ctaHeading { ${headingSelection} }
+    ctaPrimary { ${linkSelection} }
+    ctaSecondary { ${linkSelection} }
+    seo { ${seoSelection} }
+`;
+
+const globalSelection = `
+    ${entryMetaSelection}
+    siteName
+    titleSuffix
+    defaultSeo { ${seoSelection} }
+    contactEmail
+    whatsappUrl
+    menuLabel
+    pageNav { ${linkSelection} }
 `;
 
 const posts = defineCollection({
@@ -162,7 +365,11 @@ const homepage = defineCollection({
         locale: "es",
       })
     : preserveCachedContent("homepage"),
-  schema: HomepageSchema(),
+  schema: HomepageSchema().extend({
+    testimonialsTitle: z.string().nullish(),
+    teamTitle: z.string().nullish(),
+    featuredProject: FeaturedProjectSchema().nullish(),
+  }),
 });
 
 const footer = defineCollection({
@@ -177,7 +384,12 @@ const footer = defineCollection({
         locale: "es",
       })
     : preserveCachedContent("footer"),
-  schema: FooterSchema(),
+  schema: FooterSchema().extend({
+    partnersTitle: z.string().nullish(),
+    joinTitle: z.string().nullish(),
+    joinSubtitle: z.string().nullish(),
+    joinButton: ActionButtonSchema().nullish(),
+  }),
 });
 
 const navigationHeader = defineCollection({
@@ -193,4 +405,49 @@ const navigationHeader = defineCollection({
   schema: NavigationTreeSchema,
 });
 
-export const collections = { posts, homepage, navigationHeader, footer };
+/* ── Single types de página ────────────────────────────────────────────── */
+const definePageSingle = <S extends z.ZodTypeAny>(rootField: string, selection: string, schema: S) =>
+  defineCollection({
+    loader: strapiConfigured
+      ? strapiLoader({
+          mode: "single",
+          rootField,
+          selection,
+          client: clientHeaders,
+          cacheDurationInMs: contentCacheMs,
+          idResolver: () => rootField,
+          locale: "es",
+        })
+      : preserveCachedContent(rootField),
+    schema,
+  });
+
+const aboutPage = definePageSingle("aboutPage", aboutPageSelection, AboutPageSchema());
+const impactPage = definePageSingle("impactPage", impactPageSelection, ImpactPageSchema());
+const projectsPage = definePageSingle("projectsPage", projectsPageSelection, ProjectsPageSchema());
+const batucadaPage = definePageSingle("batucadaPage", batucadaPageSelection, BatucadaPageSchema());
+const batucadaEcosystemPage = definePageSingle(
+  "batucadaEcosystemPage",
+  batucadaEcosystemPageSelection,
+  BatucadaEcosystemPageSchema()
+);
+const batucadaHistoryPage = definePageSingle(
+  "batucadaHistoryPage",
+  batucadaHistoryPageSelection,
+  BatucadaHistoryPageSchema()
+);
+const globalSettings = definePageSingle("global", globalSelection, GlobalSettingsSchema());
+
+export const collections = {
+  posts,
+  homepage,
+  navigationHeader,
+  footer,
+  aboutPage,
+  impactPage,
+  projectsPage,
+  batucadaPage,
+  batucadaEcosystemPage,
+  batucadaHistoryPage,
+  globalSettings,
+};

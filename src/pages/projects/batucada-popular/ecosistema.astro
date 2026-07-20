@@ -3,60 +3,16 @@ import PageLayout from "@/layouts/PageLayout.astro";
 import Pulseline from "@/components/batucada/Pulseline.astro";
 import Torn from "@/components/batucada/Torn.astro";
 import { bp } from "@/components/batucada/tokens";
+import { batucadaEcosistemaFallback } from "@/data/pages/batucada-ecosistema";
+import { loadPageContent } from "@/utils/page-content";
+import { formatTitle } from "@/utils/rich-title";
 
-const organisms = [
-    {
-        kind: "Investigación",
-        name: "CESCU",
-        text: "Organización de derechos con estructura propia, creada para comprender el conflicto que vive Guayaquil desde las experiencias de las juventudes y de las madres precarizadas de los barrios.",
-    },
-    {
-        kind: "Organización adulta",
-        name: "Movimiento de Barrios Organizados por la Dignidad y la Seguridad",
-        text: "Articula a madres vinculadas a las batucadas, lideresas reconocidas y nuevas mujeres. Discute las necesidades de la ciudad desde los propios barrios, con autonomía frente a las agendas político-electorales y de la cooperación.",
-    },
-    {
-        kind: "Comunicación popular",
-        name: "Radio Sin Paro",
-        text: "Radio juvenil y campañas que disputan los discursos que muestran a los jóvenes de los sectores populares solo como sospechosos o víctimas: contranarrativas contadas desde el talento y la organización.",
-    },
-    {
-        kind: "Formación",
-        name: "Escuela de Líderes Jóvenes",
-        text: "Junto a los campamentos juveniles, forma liderazgos con filosofía, debate y formación política: de los liderazgos totalitarios a formas rotativas, colaborativas y asamblearias.",
-    },
-    {
-        kind: "La semilla",
-        name: "Batambá",
-        text: "Movimiento feminista comunitario que llevó la percusión a los barrios. Las madres que sostenían la vida comunitaria integraron a sus hijas e hijos: ahí empezó el relevo generacional de la batucada.",
-    },
-    {
-        kind: "Proyección",
-        name: "CAIS — Paraíso de la Flor",
-        text: "Centro de Articulación e Innovación Social en proyección: oficinas comunitarias, Radio Sin Paro, comedor popular, huertos, clases de batucada y economía popular en un mismo espacio.",
-    },
-];
+/* Contenido: single type `batucada-ecosystem-page` en Strapi, con fallback local. */
+const d = await loadPageContent("batucadaEcosystemPage", batucadaEcosistemaFallback);
 
-const horizons = [
-    {
-        title: "Una red latinoamericana",
-        text: "Conectar iniciativas juveniles y barriales de Colombia, Ecuador, Brasil, México y El Salvador para investigar juntas, intercambiar aprendizajes y elevar el debate sobre cómo los barrios sobreviven y transitan la violencia.",
-    },
-    {
-        title: "Tambores de plástico reciclado",
-        text: "Propuesta junto a Mangle Inc. y la ESPOL: crear instrumentos musicales a partir de desechos plásticos con impresión 3D, para que la falta de tambores deje de ser una barrera para llegar a más barrios.",
-    },
-    {
-        title: "Tecnología y oportunidades",
-        text: "Formación en redes y herramientas digitales con la Universidad de Guayaquil, y módulos de sostenibilidad y economía circular con el Servicio Jesuita a Refugiados: emprendimientos que superen las economías de emergencia.",
-    },
-    {
-        title: "Guayaquil suena y se cuida",
-        text: "Propuesta de comunidades protectoras desde el arte, la organización juvenil y la comunicación popular: talleres permanentes, campamentos, escuela de líderes, radio juvenil y protocolos de protección.",
-    },
-];
-
-const allies = ["ONU Mujeres", "PNUD", "GIZ", "Misión Alianza", "Fundación Terranueva", "CDH", "Servicio Jesuita a Refugiados", "ESPOL", "Universidad de Guayaquil", "Global Initiative (Resilience Fund)"];
+const organisms = d.organisms;
+const horizons = d.horizons;
+const allies = d.allies;
 
 const cardShadows = ["shadow-[6px_6px_0_var(--color-bp-blue)]", "rotate-[0.6deg] shadow-[6px_6px_0_var(--accent)]", "-rotate-[0.6deg] shadow-[6px_6px_0_var(--primary)]"];
 ---
@@ -64,19 +20,17 @@ const cardShadows = ["shadow-[6px_6px_0_var(--color-bp-blue)]", "rotate-[0.6deg]
 <PageLayout title="Ecosistema — Batucada Popular" showHero={false} linkColor="text-white" navbarThreshold={0.5}>
     <article class="overflow-clip bg-white text-black">
         <header class:list={[bp.edge, bp.fieldInk, "pt-[calc(90px+clamp(2.25rem,5vw,4.5rem))] pb-[clamp(2.25rem,5vw,4.5rem)]"]} aria-labelledby="eco-title">
-            <a class="inline-flex min-h-11 items-center gap-2 border-b-2 border-current text-[0.78rem] font-black uppercase tracking-[0.14em] focus-visible:outline-[3px] focus-visible:outline-offset-4 focus-visible:outline-bp-blue" href="/projects/batucada-popular/" data-bp-hero><span aria-hidden="true">←</span> Batucada Popular</a>
-            <p class:list={[bp.eyebrow, "mt-[clamp(1rem,2.5vw,2rem)] text-bp-blue"]} data-bp-hero>El ecosistema</p>
-            <h1 id="eco-title" class="font-bp mt-[clamp(1rem,2.5vw,2rem)] max-w-[14ch] text-balance text-[clamp(2.4rem,5.4vw,5.8rem)] uppercase leading-[0.94] tracking-[-0.03em]" data-bp-hero>La batucada no suena sola.</h1>
-            <p class:list={[bp.body, "mt-7 max-w-[56ch]"]} data-bp-hero>Alrededor de la percusión creció un ecosistema de organizaciones, medios y escuelas que sostienen el proceso: investigación propia, organización adulta, comunicación popular y formación de nuevos liderazgos.</p>
+            <a class="inline-flex min-h-11 items-center gap-2 border-b-2 border-current text-[0.78rem] font-black uppercase tracking-[0.14em] focus-visible:outline-[3px] focus-visible:outline-offset-4 focus-visible:outline-bp-blue" href={d.backLink.href} data-bp-hero><span aria-hidden="true">←</span> {d.backLink.text}</a>
+            <p class:list={[bp.eyebrow, "mt-[clamp(1rem,2.5vw,2rem)] text-bp-blue"]} data-bp-hero>{d.hero.eyebrow}</p>
+            <h1 id="eco-title" class="font-bp mt-[clamp(1rem,2.5vw,2rem)] max-w-[14ch] text-balance text-[clamp(2.4rem,5.4vw,5.8rem)] uppercase leading-[0.94] tracking-[-0.03em]" data-bp-hero set:html={formatTitle(d.hero.title)} />
+            <p class:list={[bp.body, "mt-7 max-w-[56ch]"]} data-bp-hero>{d.hero.body}</p>
         </header>
 
-        <Pulseline items={["Investigar", "Organizar", "Comunicar", "Formar"]} />
-
-        <Torn color="var(--bg-black)" border={4} />
+        <Pulseline items={d.pulseline.map((item) => item.text ?? "")} />
 
         <section class={bp.block} aria-labelledby="organismos-title" data-bp-scene>
-            <p class:list={[bp.eyebrow, "text-primary"]} data-bp-hit>Quiénes lo componen</p>
-            <h2 id="organismos-title" class:list={[bp.h2, "max-w-[14ch]"]} data-bp-hit>Un mismo pulso, varios cuerpos.</h2>
+            <p class:list={[bp.eyebrow, "text-primary"]} data-bp-hit>{d.organismsHeading.eyebrow}</p>
+            <h2 id="organismos-title" class:list={[bp.h2, "max-w-[14ch]"]} data-bp-hit set:html={formatTitle(d.organismsHeading.title)} />
             <ul class="mt-[clamp(2rem,4.5vw,3.5rem)] grid grid-cols-[repeat(auto-fill,minmax(min(20rem,100%),1fr))] gap-[clamp(1.5rem,2.5vw,2.25rem)]" data-bp-clave>
                 {
                     organisms.map((org, index) => (
@@ -90,12 +44,12 @@ const cardShadows = ["shadow-[6px_6px_0_var(--color-bp-blue)]", "rotate-[0.6deg]
             </ul>
         </section>
 
-        <Torn color="var(--bg-white)" border={1} />
+        <Torn color="var(--bg-white)" border={1} field="none" />
 
         <section class:list={[bp.block, bp.fieldPurple]} aria-labelledby="horizonte-title" data-bp-scene>
-            <p class={bp.eyebrow} data-bp-hit>Hacia dónde vamos</p>
-            <h2 id="horizonte-title" class:list={[bp.h2]} data-bp-hit>El horizonte: tres a cinco años.</h2>
-            <p class:list={[bp.body, "mt-5 max-w-[56ch]"]} data-bp-hit>La aspiración es convertirse en una de las agrupaciones juveniles más fuertes de Latinoamérica. Estos son los caminos en construcción:</p>
+            <p class={bp.eyebrow} data-bp-hit>{d.horizonsHeading.eyebrow}</p>
+            <h2 id="horizonte-title" class:list={[bp.h2]} data-bp-hit set:html={formatTitle(d.horizonsHeading.title)} />
+            <p class:list={[bp.body, "mt-5 max-w-[56ch]"]} data-bp-hit>{d.horizonsHeading.body}</p>
             <ol class="relative mt-[clamp(2rem,4.5vw,3.5rem)] grid gap-[clamp(1.6rem,3vw,2.4rem)]" data-bp-clave>
                 <span class="absolute bottom-2 top-2 left-[calc(0.65rem-1px)] border-l-[3px] border-dashed border-white/40" aria-hidden="true"></span>
                 {
@@ -103,28 +57,28 @@ const cardShadows = ["shadow-[6px_6px_0_var(--color-bp-blue)]", "rotate-[0.6deg]
                         <li class="relative max-w-[68ch] pl-[2.6rem] lg:pl-[3.2rem]">
                             <span class="absolute left-0 top-[0.45rem] aspect-square w-[1.3rem] rotate-45 border-2 border-black bg-bp-blue" aria-hidden="true" />
                             <h3 class="font-bp text-[clamp(1.15rem,1.6vw,1.5rem)] uppercase tracking-[0.01em]">{item.title}</h3>
-                            <p class="mt-[0.6rem] leading-[1.6]">{item.text}</p>
+                            <p class="mt-[0.6rem] leading-[1.6]">{item.description}</p>
                         </li>
                     ))
                 }
             </ol>
         </section>
 
-        <Torn color="var(--primary)" border={3} flip />
+        <Torn color="var(--primary)" border={3} flip field="purple" />
 
         <section class={bp.block} aria-labelledby="alianzas-title" data-bp-scene>
-            <p class:list={[bp.eyebrow, "text-primary"]} data-bp-hit>Alianzas que amplifican</p>
-            <h2 id="alianzas-title" class:list={[bp.h2, "max-w-[12ch]"]} data-bp-hit>Nadie toca solo.</h2>
+            <p class:list={[bp.eyebrow, "text-primary"]} data-bp-hit>{d.alliesHeading.eyebrow}</p>
+            <h2 id="alianzas-title" class:list={[bp.h2, "max-w-[12ch]"]} data-bp-hit set:html={formatTitle(d.alliesHeading.title)} />
             <ul class="mt-[clamp(1.75rem,3.5vw,2.75rem)] flex flex-wrap gap-x-[1.1rem] gap-y-4" data-bp-clave>
                 {
-                    allies.map((name, index) => (
-                        <li class:list={["rounded-[3px_8px_4px_7px] border-2 px-4 py-[0.55rem] text-[0.85rem] font-black uppercase tracking-[0.08em]", index % 2 ? "rotate-[1deg] border-primary text-primary" : "-rotate-[1.2deg] border-black text-black"]}>{name}</li>
+                    allies.map((ally, index) => (
+                        <li class:list={["rounded-[3px_8px_4px_7px] border-2 px-4 py-[0.55rem] text-[0.85rem] font-black uppercase tracking-[0.08em]", index % 2 ? "rotate-[1deg] border-primary text-primary" : "-rotate-[1.2deg] border-black text-black"]}>{ally.text}</li>
                     ))
                 }
             </ul>
         </section>
 
-        <Torn color="var(--bg-white)" border={2} />
+        <Torn color="var(--bg-white)" border={2} field="none" />
 
         <section
             class:list={[bp.block, bp.fieldBlue, bp.predome, "grid items-center gap-[clamp(2.25rem,5vw,4.5rem)]", "[background-image:url(/batucada/semitono-soft.webp),var(--bp-rings-br)] [background-size:cover,auto] [background-blend-mode:multiply,normal]"]}
@@ -132,12 +86,12 @@ const cardShadows = ["shadow-[6px_6px_0_var(--color-bp-blue)]", "rotate-[0.6deg]
             data-bp-scene
         >
             <div>
-                <p class={bp.eyebrow} data-bp-hit>Súmate al ecosistema</p>
-                <h2 id="eco-cta-title" class:list={[bp.riso, "font-bp mt-4 max-w-[12ch] text-balance text-[clamp(2.4rem,4.6vw,5.4rem)] uppercase leading-[0.96] tracking-[-0.03em]"]} data-bp-hit>Hagamos que el ritmo llegue más lejos.</h2>
+                <p class={bp.eyebrow} data-bp-hit>{d.ctaHeading.eyebrow}</p>
+                <h2 id="eco-cta-title" class:list={[bp.riso, "font-bp mt-4 max-w-[12ch] text-balance text-[clamp(2.4rem,4.6vw,5.4rem)] uppercase leading-[0.96] tracking-[-0.03em]"]} data-bp-hit set:html={formatTitle(d.ctaHeading.title)} />
             </div>
             <div class="flex flex-col flex-wrap items-stretch gap-x-6 gap-y-4 text-center sm:flex-row sm:items-center sm:text-left" data-bp-hit>
-                <a class:list={[bp.button, bp.buttonInk, "focus-visible:outline-black"]} href="https://wa.me/593985261647" target="_blank" rel="noopener noreferrer">Escríbenos por WhatsApp</a>
-                <a class:list={[bp.textLink, "justify-center focus-visible:outline-black"]} href="/projects/batucada-popular/">Volver al proyecto <span class={bp.textLinkArrow} aria-hidden="true">↖</span></a>
+                <a class:list={[bp.button, bp.buttonInk, "focus-visible:outline-black"]} href={d.ctaPrimary.href} target="_blank" rel="noopener noreferrer">{d.ctaPrimary.text}</a>
+                <a class:list={[bp.textLink, "justify-center focus-visible:outline-black"]} href={d.ctaSecondary.href}>{d.ctaSecondary.text} <span class={bp.textLinkArrow} aria-hidden="true">↖</span></a>
             </div>
         </section>
     </article>

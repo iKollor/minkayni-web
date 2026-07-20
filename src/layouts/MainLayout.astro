@@ -9,6 +9,8 @@ import { getEntry } from "astro:content";
 import { getData } from "../utils/i18n";
 import Head from "./lib/head.astro";
 import { fallbackFooter, fallbackNavigation, withBatucadaProject } from "../data/site";
+import { globalFallback } from "../data/pages/global";
+import { loadPageContent } from "../utils/page-content";
 
 interface Props {
     title: string;
@@ -18,37 +20,26 @@ const navigationEntry = await getEntry("navigationHeader", "navigation:header:es
 const footerEntry = await getEntry("footer", "footer");
 const navHeader = withBatucadaProject(navigationEntry ? getData(navigationEntry) : fallbackNavigation);
 const footer = footerEntry ? getData(footerEntry, "es") : fallbackFooter;
+const site = await loadPageContent("globalSettings", globalFallback);
+
+/* Config de scroll por ancla (presentacional; el texto/orden viene del CMS). */
+const scrollConfig: Record<string, { scrollAnchor?: "start"; scrollOffset?: number }> = {
+    "#testimonials": { scrollAnchor: "start", scrollOffset: 200 },
+    "#about-us": { scrollAnchor: "start" },
+    "#projects": { scrollAnchor: "start" },
+};
+const pageNavItems = site.pageNav
+    .filter((item) => item?.href && item?.text)
+    .map((item) => ({ href: item.href as string, text: item.text as string, ...(scrollConfig[item.href as string] ?? {}) }));
+
 const { title } = Astro.props;
 ---
 
 <Head title={title}>
     <SiteGrain />
     <Navbar buttons={navHeader} linkColor="text-white" />
-    <Menu buttons={navHeader} socials={footer.Socials} />
-    <PageNavigation
-        items={[
-            {
-                href: "#moments",
-                text: "Momentos",
-            },
-            {
-                href: "#testimonials",
-                text: "Testimonios",
-                scrollAnchor: "start",
-                scrollOffset: 200,
-            },
-            {
-                href: "#about-us",
-                text: "Nosotros",
-                scrollAnchor: "start",
-            },
-            {
-                href: "#projects",
-                text: "Proyectos",
-                scrollAnchor: "start",
-            },
-        ]}
-    />
+    <Menu buttons={navHeader} socials={footer.Socials} menuLabel={site.menuLabel} contactEmail={site.contactEmail} />
+    <PageNavigation items={pageNavItems} />
 
     <div id="smooth-wrapper" class="overflow-hidden">
         <div id="smooth-content" class="overflow-hidden">
