@@ -1,7 +1,13 @@
 ---
+/* Sección "Proyecto destacado" de la portada.
+   Contenido editable desde Strapi (homepage → featuredProject); el logo de
+   Batucada Popular es el protagonista del panel (SVG blanco sobre el
+   degradado morado de marca, carga eager para que siempre esté visible). */
 import type { ImageMetadata } from "astro";
 import BatucadaLogo from "../../assets/SVG/LOGO_BATUCADA_2025.svg";
 import BatucadaPhoto from "../../assets/FOTO_BATUCADA.webp";
+import flor from "../../assets/SVG/misc/flor.svg";
+import { Image } from "astro:assets";
 import Button from "../Button.astro";
 import CmsImage from "../CmsImage.astro";
 import type { CmsMedia } from "../../data/pages/types";
@@ -27,33 +33,42 @@ const d = withFallback({ ...featuredProjectFallback, logo: null as CmsMedia, pho
 const bodyParagraphs = splitParagraphs(d.body ?? "");
 ---
 
-<section id="featured-project" class="relative mx-auto w-full h-auto md:h-[calc(100vh+300px)]">
-    <div id="featured-project-shell" class="relative h-full">
-        <div class="relative grid h-full min-h-0 grid-cols-12 lg:grid-cols-[35%_auto] gap-0 grid-rows-[1fr_1fr] lg:grid-rows-[minmax(0,1fr)] content-stretch items-stretch rounded-t-[50px] md:rounded-t-[100px] overflow-hidden">
-            <div class="featured-img-col relative col-span-12 lg:col-span-1 h-full min-h-0 overflow-hidden">
-                <CmsImage media={d.photo} fallback={photoSrc} alt="Batucada Popular – intervención cultural" class="batucada-photo absolute inset-0 h-full w-full object-cover object-center" widths={[720, 1280, 1920]} sizes="(min-width: 64em) 35vw, 100vw" />
-                <div class="mobile-photo-overlay absolute inset-0 lg:hidden pointer-events-none bg-black/55"></div>
-                <div class="mobile-wordmark-wrapper lg:hidden absolute inset-0 flex items-center justify-center p-4">
-                    <CmsImage media={d.logo} fallback={logoSrc} alt="Logo Batucada Popular" class="mobile-wordmark w-[62%] max-w-[320px] h-auto max-h-full object-contain drop-shadow-[0_2px_14px_rgba(0,0,0,0.55)]" widths={[320, 640]} />
-                </div>
-            </div>
+<section id="featured-project" class="relative mx-auto my-16 w-[94%] max-w-[1440px] md:my-24">
+    <div class="grid overflow-hidden rounded-[2.75rem] bg-[linear-gradient(135deg,#4a0073_0%,#6e00a3_65%,#4a0073_100%)] lg:grid-cols-[1.05fr_0.95fr] lg:rounded-[5rem]">
+        <!-- Foto -->
+        <figure class="featured-img-col relative min-h-[300px] overflow-hidden sm:min-h-[380px] lg:min-h-[620px]">
+            <CmsImage
+                media={d.photo}
+                fallback={photoSrc}
+                alt="Batucada Popular – intervención cultural en Guayaquil"
+                class="batucada-photo absolute inset-0 h-full w-full object-cover object-center transition duration-700 hover:scale-[1.03]"
+                widths={[720, 1280, 1920]}
+                sizes="(min-width: 64em) 52vw, 94vw"
+            />
+            <div class="pointer-events-none absolute inset-0 bg-[linear-gradient(0deg,rgba(56,0,88,0.55)_0%,rgba(56,0,88,0)_40%)] lg:bg-[linear-gradient(90deg,rgba(56,0,88,0)_55%,rgba(74,0,115,0.65)_100%)]" aria-hidden="true"></div>
+        </figure>
 
-            <div id="featured-project-panel" class="relative col-span-12 lg:col-span-1 flex h-full pb-[200px] md:pb-0 lg:h-full flex-col p-14 text-white overflow-hidden bg-[linear-gradient(135deg,#4a0073_0%,#6e00a3_65%,#4a0073_100%)] lg:items-end">
-                <div class="relative flex flex-col items-center lg:items-end lg:max-w-[500px] text-center lg:text-right gap-6">
-                    <header class="w-full flex lg:justify-end justify-center">
-                        <h2 class="featured-title font-display font-[900] tracking-tight text-[clamp(3.2rem,4.2vw,5.4rem)] leading-none">{d.title}</h2>
-                    </header>
-                    <div class="featured-body flex flex-col text-base lg:text-xl leading-relaxed max-w-[50ch]">
-                        {bodyParagraphs.map((paragraph) => <p>{paragraph}</p>)}
-                    </div>
-                    <Button href={d.button.href} defaultText={d.button.defaultText} hoverText={d.button.hoverText} />
-                </div>
-            </div>
+        <!-- Panel -->
+        <div id="featured-project-panel" class="relative flex flex-col justify-center overflow-hidden p-8 text-white sm:p-12 lg:p-16">
+            <Image src={flor} alt="" class="pointer-events-none absolute -bottom-16 -right-14 h-64 w-64 rotate-12 opacity-10" aria-hidden="true" />
 
-            <div class="pointer-events-none -translate-y-[calc(50%+150px)] absolute z-10 top-1/2 left-[calc(50%/2)] hidden lg:block">
-                <div class="wordmark-parallax">
-                    <CmsImage media={d.logo} fallback={logoSrc} alt="Logo Batucada Popular" class="batucada-wordmark w-[150px] max-w-[30vw] md:w-[260px] lg:w-[420px] max-h-full select-none drop-shadow-[0_2px_14px_rgba(0,0,0,0.55)]" widths={[420, 840]} />
+            <div class="relative flex flex-col items-start gap-7">
+                <h2 class="featured-title text-sm font-bold uppercase tracking-[0.26em] text-secondary">{d.title}</h2>
+
+                <CmsImage
+                    media={d.logo}
+                    fallback={logoSrc}
+                    alt="Batucada Popular"
+                    class="batucada-wordmark h-40 w-auto select-none drop-shadow-[0_10px_30px_rgba(0,0,0,0.35)] sm:h-52 lg:h-60"
+                    loading="eager"
+                    widths={[320, 640]}
+                />
+
+                <div class="featured-body flex max-w-[52ch] flex-col gap-4 text-base leading-relaxed text-white/85 lg:text-lg">
+                    {bodyParagraphs.map((paragraph) => <p>{paragraph}</p>)}
                 </div>
+
+                <Button href={d.button.href} defaultText={d.button.defaultText} hoverText={d.button.hoverText} />
             </div>
         </div>
     </div>
@@ -69,11 +84,10 @@ const bodyParagraphs = splitParagraphs(d.body ?? "");
 
         const photo = section.querySelector(".batucada-photo");
         const wordmark = section.querySelector(".batucada-wordmark");
-        const mobileWordmark = section.querySelector(".mobile-wordmark");
-        const title = section.querySelector<HTMLElement>(".featured-title");
         const body = section.querySelector<HTMLElement>(".featured-body");
+        const title = section.querySelector<HTMLElement>(".featured-title");
         const button = section.querySelector("[data-magic-btn]");
-        const animated = [photo, wordmark, mobileWordmark, title, body, button].filter(Boolean);
+        const animated = [photo, wordmark, title, body, button].filter(Boolean);
 
         if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
             gsap.set(animated, { clearProps: "all" });
@@ -81,10 +95,8 @@ const bodyParagraphs = splitParagraphs(d.body ?? "");
         }
 
         waitForFontsReady(() => {
-            let titleSplit: SplitText | undefined;
             let bodySplit: SplitText | undefined;
             try {
-                if (title) titleSplit = new SplitText(title, { type: "words,chars", wordsClass: "word", charsClass: "char" });
                 if (body) bodySplit = new SplitText(body, { type: "lines", linesClass: "line" });
 
                 const timeline = gsap.timeline({
@@ -98,23 +110,20 @@ const bodyParagraphs = splitParagraphs(d.body ?? "");
 
                 timeline
                     .from(photo, { scale: 1.15, duration: 1.2 }, 0)
-                    .from(wordmark, { yPercent: -10, rotate: -2, duration: 0.9 }, 0.2)
-                    .from(mobileWordmark, { scale: 0.9, duration: 0.6 }, 0.25);
+                    .from(title, { y: 24, opacity: 0, duration: 0.5 }, 0.15)
+                    .from(wordmark, { y: 34, opacity: 0, rotate: -2, duration: 0.9 }, 0.25);
 
-                if (titleSplit?.chars.length) timeline.from(titleSplit.chars, { yPercent: 120, opacity: 0, stagger: { each: 0.02, from: "center" }, duration: 0.65 }, 0.22);
-                if (bodySplit?.lines.length) timeline.from(bodySplit.lines, { yPercent: 40, opacity: 0, stagger: 0.09, duration: 0.6 }, 0.4);
-                if (button) timeline.from(button, { y: 30, opacity: 0, duration: 0.5 }, 0.55);
+                if (bodySplit?.lines.length) timeline.from(bodySplit.lines, { yPercent: 40, opacity: 0, stagger: 0.09, duration: 0.6 }, 0.45);
+                if (button) timeline.from(button, { y: 30, opacity: 0, duration: 0.5 }, 0.6);
 
                 const revealFallback = window.setTimeout(() => gsap.set(animated, { clearProps: "opacity,visibility" }), 1800);
                 window.addEventListener("pagehide", () => {
                     window.clearTimeout(revealFallback);
                     timeline.kill();
-                    titleSplit?.revert();
                     bodySplit?.revert();
                 }, { once: true });
             } catch {
                 gsap.set(animated, { clearProps: "all" });
-                titleSplit?.revert();
                 bodySplit?.revert();
             }
         });

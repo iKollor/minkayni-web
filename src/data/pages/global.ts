@@ -39,3 +39,14 @@ export const featuredProjectFallback = {
     body: "Nuestro proyecto estrella es la Batucada Popular, una iniciativa cultural y social que utiliza la música —especialmente los tambores y la percusión— como herramienta de transformación comunitaria y protección de jóvenes en contextos vulnerables.\n\nAl promover Derechos Humanos, convivencia pacífica y resistencia cultural, la Batucada crea un refugio comunitario y fortalece redes de apoyo barrial.",
     button: { href: "/projects/batucada-popular/", defaultText: "Descubre más 🚀", hoverText: "Y siente su impacto 🔥" },
 };
+
+/* Sección CTA hacia /projects en la portada (campos projectsCta* de homepage). */
+export const projectsCtaFallback = {
+    heading: {
+        eyebrow: "Más allá del proyecto insignia",
+        title: "Un tambor.\n*Un ecosistema* de proyectos.",
+        body: "Comunicación popular, liderazgo juvenil, economía circular, investigación y protección comunitaria: explora todo lo que crece alrededor de la Batucada Popular.",
+    },
+    tags: [{ text: "Música" }, { text: "Liderazgo" }, { text: "Comunicación" }, { text: "Comunidad" }, { text: "Economía" }, { text: "Investigación" }],
+    button: { href: "/projects", defaultText: "Explora los proyectos 🥁", hoverText: "Y todo el ecosistema ✨" },
+};

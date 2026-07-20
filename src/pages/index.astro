@@ -15,6 +15,7 @@ import { getEntry } from "astro:content";
 
 import { getData } from "../utils/i18n";
 import Projects from "../components/index/Projects.astro";
+import ProjectsCta from "../components/index/ProjectsCta.astro";
 import { fallbackLegend } from "../data/site";
 import { homepageTextsFallback } from "../data/pages/global";
 
@@ -26,6 +27,13 @@ const legend = getData(homepage, "legend", "es", fallbackLegend);
 const testimonialsTitle = getData(homepage, "testimonialsTitle", "es", homepageTextsFallback.testimonialsTitle) || homepageTextsFallback.testimonialsTitle;
 const teamTitle = getData(homepage, "teamTitle", "es", homepageTextsFallback.teamTitle) || homepageTextsFallback.teamTitle;
 const featuredProject = homepage ? getData(homepage, "featuredProject", "es", null) : null;
+const projectsCta = homepage
+    ? {
+          heading: getData(homepage, "projectsCtaHeading", "es", null),
+          tags: getData(homepage, "projectsCtaTags", "es", []),
+          button: getData(homepage, "projectsCtaButton", "es", null),
+      }
+    : null;
 ---
 
 <MainLayout title="">
@@ -149,6 +157,7 @@ const featuredProject = homepage ? getData(homepage, "featuredProject", "es", nu
         </section>
         <section id="projects">
             <Projects content={featuredProject} />
+            <ProjectsCta content={projectsCta} />
         </section>
     </div>
     <script>

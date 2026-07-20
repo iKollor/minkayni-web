@@ -21,6 +21,8 @@ import {
   GlobalSettingsSchema,
   FeaturedProjectSchema,
   ActionButtonSchema,
+  SectionHeadingSchema,
+  ListItemSchema,
 } from "../schemas/pages.zod";
 import { NavigationTreeSchema } from "../schemas/navigation";
 
@@ -158,6 +160,9 @@ const homepageSelection = `
     testimonialsTitle
     teamTitle
     featuredProject { ${featuredProjectSelection} }
+    projectsCtaHeading { ${headingSelection} }
+    projectsCtaTags(pagination: { limit: 100 }) { ${listItemSelection} }
+    projectsCtaButton { ${buttonSelection} }
     createdAt
     updatedAt
     publishedAt
@@ -402,6 +407,9 @@ const homepage = defineCollection({
     testimonialsTitle: z.string().nullish(),
     teamTitle: z.string().nullish(),
     featuredProject: FeaturedProjectSchema().nullish(),
+    projectsCtaHeading: SectionHeadingSchema().nullish(),
+    projectsCtaTags: z.array(ListItemSchema().nullable()).nullish(),
+    projectsCtaButton: ActionButtonSchema().nullish(),
   }),
 });
 
