@@ -125,7 +125,7 @@ const pressItemSelection = `id outlet year title href logo { ${uploadFileSelecti
 const seoSelection = `id metaTitle metaDescription shareImage { ${uploadFileSelection} }`;
 const metricGroupSelection = `id title metrics(pagination: { limit: 100 }) { ${listItemSelection} }`;
 const projectCardSelection = `id anchor category categoryLabel type title summary detail imageAlt href linkText external accent image { ${uploadFileSelection} }`;
-const featuredProjectSelection = `id title body logo { ${uploadFileSelection} } photo { ${uploadFileSelection} } button { ${buttonSelection} }`;
+const featuredProjectSelection = `id title headline body logo { ${uploadFileSelection} } photo { ${uploadFileSelection} } button { ${buttonSelection} } stats(pagination: { limit: 100 }) { ${statSelection} }`;
 
 const entryMetaSelection = `
     documentId

@@ -36,7 +36,13 @@ export const homepageTextsFallback = {
 /* Bloque "Proyecto destacado" de la portada (componente sections.featured-project). */
 export const featuredProjectFallback = {
     title: "Proyecto destacado",
-    body: "Nuestro proyecto estrella es la Batucada Popular, una iniciativa cultural y social que utiliza la música —especialmente los tambores y la percusión— como herramienta de transformación comunitaria y protección de jóvenes en contextos vulnerables.\n\nAl promover Derechos Humanos, convivencia pacífica y resistencia cultural, la Batucada crea un refugio comunitario y fortalece redes de apoyo barrial.",
+    headline: "Más que música: *un refugio* que suena.",
+    body: "Nuestro proyecto estrella es la Batucada Popular, una iniciativa cultural y social que utiliza la música —especialmente los tambores y la percusión— como herramienta de transformación comunitaria y protección de jóvenes en contextos vulnerables.\n\nAl promover Derechos Humanos, convivencia pacífica y resistencia cultural, la Batucada crea un refugio comunitario y fortalece redes de apoyo barrial: los ensayos son espacios seguros donde las juventudes aprenden disciplina, lideran procesos y se reconocen como protagonistas del cambio social.\n\nLo que empezó en pandemia con palos y baldes es hoy una red juvenil con metodología propia, reconocida por el Resilience Fund de GI-TOC y premiada por la ciudad de Guayaquil.",
+    stats: [
+        { value: "+300", target: 300, prefix: "+", label: "integrantes" },
+        { value: "12", target: 12, prefix: "", label: "sectores" },
+        { value: "2020", target: 0, prefix: "", label: "desde" },
+    ],
     button: { href: "/projects/batucada-popular/", defaultText: "Descubre más 🚀", hoverText: "Y siente su impacto 🔥" },
 };
 

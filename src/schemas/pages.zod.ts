@@ -165,10 +165,12 @@ export const FeaturedProjectSchema = () =>
     z.object({
         id: z.string().nullish(),
         title: z.string().nullish(),
+        headline: z.string().nullish(),
         body: z.string().nullish(),
         logo: media(),
         photo: media(),
         button: ActionButtonSchema().nullish(),
+        stats: z.array(StatSchema().nullable()).nullish(),
     });
 
 export const SeoSchema = () =>
