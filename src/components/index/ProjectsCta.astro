@@ -21,7 +21,7 @@ const tags = d.tags.filter((tag) => tag?.text);
 const exploreHref = d.button.href || "/projects";
 ---
 
-<section class="mx-auto mb-16 w-[94%] max-w-[1440px] overflow-hidden rounded-[2.75rem] bg-accent px-6 py-14 text-black sm:px-12 md:mb-24 lg:rounded-[5rem] lg:px-20 lg:py-20" aria-labelledby="projects-cta-title">
+<section class="mx-auto mb-44 mt-16 w-[94%] max-w-[1440px] overflow-hidden rounded-[2.75rem] bg-accent px-6 py-14 text-black sm:px-12 md:mb-80 md:mt-24 lg:rounded-[5rem] lg:px-20 lg:py-20" aria-labelledby="projects-cta-title">
     <div class="mx-auto flex max-w-[900px] flex-col items-center text-center">
         <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.heading.eyebrow}</p>
         <h2 id="projects-cta-title" class="title font-display text-5xl font-black leading-[0.95] sm:text-7xl" set:html={formatTitle(d.heading.title, "text-primary")} />

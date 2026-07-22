@@ -33,23 +33,23 @@ const d = withFallback({ ...featuredProjectFallback, logo: null as CmsMedia, pho
 const bodyParagraphs = splitParagraphs(d.body ?? "");
 ---
 
-<section id="featured-project" class="relative mx-auto my-16 w-[94%] max-w-[1440px] md:my-24">
-    <div class="grid overflow-hidden rounded-[2.75rem] bg-[linear-gradient(135deg,#4a0073_0%,#6e00a3_65%,#4a0073_100%)] lg:grid-cols-[1.05fr_0.95fr] lg:rounded-[5rem]">
+<section id="featured-project" class="relative mt-16 w-full md:mt-24">
+    <div class="grid overflow-hidden rounded-t-[50px] bg-[linear-gradient(135deg,#4a0073_0%,#6e00a3_65%,#4a0073_100%)] md:rounded-t-[100px] lg:grid-cols-[1.05fr_0.95fr]">
         <!-- Foto -->
-        <figure class="featured-img-col relative min-h-[300px] overflow-hidden sm:min-h-[380px] lg:min-h-[620px]">
+        <figure class="featured-img-col relative min-h-[320px] overflow-hidden sm:min-h-[420px] lg:min-h-svh">
             <CmsImage
                 media={d.photo}
                 fallback={photoSrc}
                 alt="Batucada Popular – intervención cultural en Guayaquil"
                 class="batucada-photo absolute inset-0 h-full w-full object-cover object-center transition duration-700 hover:scale-[1.03]"
                 widths={[720, 1280, 1920]}
-                sizes="(min-width: 64em) 52vw, 94vw"
+                sizes="(min-width: 64em) 55vw, 100vw"
             />
             <div class="pointer-events-none absolute inset-0 bg-[linear-gradient(0deg,rgba(56,0,88,0.55)_0%,rgba(56,0,88,0)_40%)] lg:bg-[linear-gradient(90deg,rgba(56,0,88,0)_55%,rgba(74,0,115,0.65)_100%)]" aria-hidden="true"></div>
         </figure>
 
         <!-- Panel -->
-        <div id="featured-project-panel" class="relative flex flex-col justify-center overflow-hidden p-8 text-white sm:p-12 lg:p-16">
+        <div id="featured-project-panel" class="relative flex flex-col justify-center overflow-hidden p-8 text-white sm:p-12 lg:p-16 xl:px-24">
             <Image src={flor} alt="" class="pointer-events-none absolute -bottom-16 -right-14 h-64 w-64 rotate-12 opacity-10" aria-hidden="true" />
 
             <div class="relative flex flex-col items-start gap-6">
