@@ -140,7 +140,10 @@ const entryMetaSelection = `
 /* Testimonios y Equipo viven en sus propios collection types
    (colecciones `testimonials` y `teamMembers` más abajo). */
 const testimonialSelection = `
-    ${entryMetaSelection}
+    documentId
+    createdAt
+    updatedAt
+    publishedAt
     author_quote { id author body }
     organization
     picture { ${uploadFileSelection} }
@@ -150,7 +153,10 @@ const testimonialSelection = `
 `;
 
 const teamMemberSelection = `
-    ${entryMetaSelection}
+    documentId
+    createdAt
+    updatedAt
+    publishedAt
     full_name
     role
     organization
