@@ -23,6 +23,8 @@ import {
   ActionButtonSchema,
   SectionHeadingSchema,
   ListItemSchema,
+  TestimonialEntrySchema,
+  TeamMemberEntrySchema,
 } from "../schemas/pages.zod";
 import { NavigationTreeSchema } from "../schemas/navigation";
 
@@ -135,28 +137,34 @@ const entryMetaSelection = `
     locale
 `;
 
+/* Testimonios y Equipo viven en sus propios collection types
+   (colecciones `testimonials` y `teamMembers` más abajo). */
+const testimonialSelection = `
+    ${entryMetaSelection}
+    author_quote { id author body }
+    organization
+    picture { ${uploadFileSelection} }
+    age
+    author_role
+    sort
+`;
+
+const teamMemberSelection = `
+    ${entryMetaSelection}
+    full_name
+    role
+    organization
+    about
+    picture { ${uploadFileSelection} }
+    email
+    age
+    phone_number
+    sort
+`;
+
 const homepageSelection = `
     documentId
     legend
-    Testimonials(pagination: { limit: 100 }) {
-        id
-        author_quote { id author body }
-        organization
-        picture { ${uploadFileSelection} }
-        age
-        author_role
-    }
-    Teams(pagination: { limit: 100 }) {
-        id
-        full_name
-        role
-        organization
-        about
-        picture { ${uploadFileSelection} }
-        email
-        age
-        phone_number
-    }
     testimonialsTitle
     teamTitle
     featuredProject { ${featuredProjectSelection} }
@@ -479,6 +487,33 @@ const batucadaHistoryPage = definePageSingle(
 );
 const globalSettings = definePageSingle("global", globalSelection, GlobalSettingsSchema());
 
+/* Testimonios y Equipo (collection types en Strapi, orden por campo sort). */
+const testimonials = defineCollection({
+  loader: strapiConfigured
+    ? strapiLoader({
+        mode: "collection",
+        rootField: "testimonials",
+        selection: testimonialSelection,
+        client: clientHeaders,
+        cacheDurationInMs: contentCacheMs,
+      })
+    : preserveCachedContent("testimonials"),
+  schema: TestimonialEntrySchema(),
+});
+
+const teamMembers = defineCollection({
+  loader: strapiConfigured
+    ? strapiLoader({
+        mode: "collection",
+        rootField: "teamMembers",
+        selection: teamMemberSelection,
+        client: clientHeaders,
+        cacheDurationInMs: contentCacheMs,
+      })
+    : preserveCachedContent("teamMembers"),
+  schema: TeamMemberEntrySchema(),
+});
+
 /* Subpáginas del constructor (collection type `page` en Strapi). */
 const builderPages = defineCollection({
   loader: strapiConfigured
@@ -498,6 +533,8 @@ export const collections = {
   homepage,
   navigationHeader,
   footer,
+  testimonials,
+  teamMembers,
   aboutPage,
   impactPage,
   projectsPage,

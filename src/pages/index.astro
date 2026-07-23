@@ -11,7 +11,7 @@ import { BubbleBackground } from "@/components/animate-ui/components/backgrounds
 
 import { Markdown } from "@astropub/md";
 
-import { getEntry } from "astro:content";
+import { getCollection, getEntry } from "astro:content";
 
 import { getData } from "../utils/i18n";
 import Projects from "../components/index/Projects.astro";
@@ -21,8 +21,13 @@ import { homepageTextsFallback } from "../data/pages/global";
 
 const homepage = await getEntry("homepage", "homepage");
 
-const testimonials = getData(homepage, "Testimonials", "es", []);
-const teams = getData(homepage, "Teams", "es", []);
+/* Testimonios y Equipo: collection types en Strapi, ordenados por `sort`
+   (menor primero) y luego por fecha de creación. */
+const bySort = (a: { sort?: number | null; createdAt?: string | null }, b: { sort?: number | null; createdAt?: string | null }) =>
+    (a.sort ?? 0) - (b.sort ?? 0) || String(a.createdAt ?? "").localeCompare(String(b.createdAt ?? ""));
+
+const testimonials = (await getCollection("testimonials")).map((entry) => entry.data).sort(bySort);
+const teams = (await getCollection("teamMembers")).map((entry) => entry.data).sort(bySort);
 const legend = getData(homepage, "legend", "es", fallbackLegend);
 const testimonialsTitle = getData(homepage, "testimonialsTitle", "es", homepageTextsFallback.testimonialsTitle) || homepageTextsFallback.testimonialsTitle;
 const teamTitle = getData(homepage, "teamTitle", "es", homepageTextsFallback.teamTitle) || homepageTextsFallback.teamTitle;

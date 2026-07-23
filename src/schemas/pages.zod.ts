@@ -360,6 +360,40 @@ export const BuilderPageSchema = () =>
     });
 export type BuilderPage = z.infer<ReturnType<typeof BuilderPageSchema>>;
 
+/* Testimonios y Equipo (collection types; antes componentes de homepage). */
+export const TestimonialEntrySchema = () =>
+    z.object({
+        ...entryBase,
+        author_quote: z
+            .object({
+                id: z.string().nullish(),
+                author: z.string().nullish(),
+                body: z.any().nullish(),
+            })
+            .nullish(),
+        organization: z.string().nullish(),
+        picture: media(),
+        age: z.number().nullish(),
+        author_role: z.string().nullish(),
+        sort: z.number().nullish(),
+    });
+export type TestimonialEntry = z.infer<ReturnType<typeof TestimonialEntrySchema>>;
+
+export const TeamMemberEntrySchema = () =>
+    z.object({
+        ...entryBase,
+        full_name: z.string().nullish(),
+        role: z.string().nullish(),
+        organization: z.string().nullish(),
+        about: z.any().nullish(),
+        picture: media(),
+        email: z.string().nullish(),
+        age: z.number().nullish(),
+        phone_number: z.string().nullish(),
+        sort: z.number().nullish(),
+    });
+export type TeamMemberEntry = z.infer<ReturnType<typeof TeamMemberEntrySchema>>;
+
 export const GlobalSettingsSchema = () =>
     z.object({
         ...entryBase,
