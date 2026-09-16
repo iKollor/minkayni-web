@@ -3,8 +3,16 @@
 declare global {
     interface Window {
         __SMOOTH_CREATED__?: boolean;
+        /** Guarda anti-doble-inicialización de la animación de #moments. */
+        __MOMENTS_ANIM__?: boolean;
         toggleGrain?: () => void;
     }
+    /** Eventos propios del sitio, para que addEventListener los tipe. */
+    interface WindowEventMap {
+        /** Emitido por Menu.astro cuando el menú se abre o se cierra. */
+        "menu:state": CustomEvent<{ open: boolean }>;
+    }
+
     interface ImportMetaEnv {
         readonly STRAPI_URL: string;
         readonly STRAPI_TOKEN: string;
@@ -14,46 +22,6 @@ declare global {
 
     interface ImportMeta {
         readonly env: ImportMetaEnv;
-    }
-
-    interface StrapiMediaFormat {
-        name: string;
-        hash: string;
-        ext: string;
-        mime: string;
-        width: number;
-        height: number;
-        size: number;
-        path: string | null;
-        url: string;
-    }
-
-    interface StrapiMediaData {
-        id: number;
-        documentId: string;
-        name: string;
-        alternativeText: string;
-        caption: string;
-        width: number;
-        height: number;
-        formats: {
-            thumbnail?: StrapiMediaFormat;
-            medium?: StrapiMediaFormat;
-            small?: StrapiMediaFormat;
-            [key: string]: StrapiMediaFormat | undefined;
-        };
-        hash: string;
-        ext: string;
-        mime: string;
-        size: number;
-        url: string;
-        createdAt: string;
-        updatedAt: string;
-        [key: string]: any; // Para otros campos opcionales
-    }
-
-    interface StrapiMediaField {
-        data: StrapiMediaData | null;
     }
 }
 

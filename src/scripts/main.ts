@@ -35,7 +35,7 @@ const enforceNoOverflowX = () => {
 
 const isIOS = () => {
     const ua = navigator.userAgent || "";
-    const platform = (navigator as any).platform || "";
+    const platform = navigator.platform || "";
     const iOSDevice = /iPad|iPhone|iPod/.test(ua) || /iPad|iPhone|iPod/.test(platform);
     const touchMac = /Mac/.test(platform) && "ontouchend" in document;
     return iOSDevice || touchMac;

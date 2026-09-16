@@ -1,4 +1,33 @@
 import { gsap, ScrollTrigger } from "../../scripts/main";
+
+/* El estado vive en el propio elemento (no en el módulo) para que sobreviva a
+   una segunda ejecución del script: `init` es la guarda anti-doble-init. Un
+   único cast con nombre sustituye a los doce `as any` que había repartidos. */
+interface SliderState {
+    init: boolean;
+    isDesktop: boolean;
+    desktopIntroPlaying: boolean;
+    fadeDesktop: boolean;
+    enteredMobile: boolean;
+    mobileIntroPlaying: boolean;
+    mobileDesaligned: boolean;
+}
+
+interface SliderSection extends HTMLElement {
+    _sliderState?: SliderState;
+}
+
+const readState = (el: HTMLElement): SliderState =>
+    ((el as SliderSection)._sliderState ??= {
+        init: false,
+        isDesktop: false,
+        desktopIntroPlaying: false,
+        fadeDesktop: false,
+        enteredMobile: false,
+        mobileIntroPlaying: false,
+        mobileDesaligned: false,
+    });
+
 (() => {
     if (typeof window === "undefined") return;
     const $ = (s: string, r: ParentNode | Document = document) => r.querySelector(s) as HTMLElement | null,
@@ -10,8 +39,10 @@ import { gsap, ScrollTrigger } from "../../scripts/main";
             } catch { }
         };
     const section = $(".team-hscroll");
-    if (!section || (section as any)._init) return;
-    (section as any)._init = true;
+    if (!section) return;
+    const state = readState(section);
+    if (state.init) return;
+    state.init = true;
     const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (/Mac/.test(navigator.userAgent) && "ontouchend" in document),
         isMobile = () => matchMedia("(max-width: 767px)").matches;
     const startIdx = +(section.dataset.start || 0),
@@ -146,7 +177,7 @@ import { gsap, ScrollTrigger } from "../../scripts/main";
         if (i === currentIndex) return;
         const el = cards[i];
         if (!el) return;
-        if ((section as any)._isDesktop && (section as any)._desktopIntroPlaying) return;
+        if (state.isDesktop && state.desktopIntroPlaying) return;
         nameSw?.swap(el.dataset.name || "");
         roleSw?.swap(el.dataset.role || "");
         dots.forEach((d, k) => d.classList.toggle("is-active", k === i));
@@ -218,8 +249,8 @@ import { gsap, ScrollTrigger } from "../../scripts/main";
                 },
             }
         );
-        if (!(section as any)._fadeDesktop) {
-            (section as any)._fadeDesktop = true;
+        if (!state.fadeDesktop) {
+            state.fadeDesktop = true;
             const textEls = [infoName, infoRole, aboutWrap].filter(Boolean) as HTMLElement[];
             const setInitial = () => {
                 gsap.set(cards, { opacity: 0 });
@@ -230,12 +261,10 @@ import { gsap, ScrollTrigger } from "../../scripts/main";
             const introTl = gsap.timeline({
                 paused: true,
                 onStart: () => {
-                    (section as any)._desktopFading = true;
-                    (section as any)._desktopIntroPlaying = true;
+                    state.desktopIntroPlaying = true;
                 },
                 onComplete: () => {
-                    (section as any)._desktopFading = false;
-                    (section as any)._desktopIntroPlaying = false;
+                    state.desktopIntroPlaying = false;
                     const st = ScrollTrigger.getById("cards-st");
                     if (st) {
                         const n = cards.length - 1;
@@ -244,19 +273,19 @@ import { gsap, ScrollTrigger } from "../../scripts/main";
                 },
             });
             introTl.to(cards, { opacity: 1, duration: 0.6, stagger: 0.1, ease: "power2.out" }).addLabel("cardsDone").to(textEls, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out", stagger: 0.08 }, "cardsDone+=0.1").to(dots, { opacity: 1, duration: 0.4, ease: "power2.out", stagger: 0.04 }, "cardsDone+=0.05");
-            (section as any)._isDesktop = true;
+            state.isDesktop = true;
             ScrollTrigger.create({
                 trigger: section,
                 start: "top 78%",
                 end: "bottom top",
                 onEnter: () => {
-                    if ((section as any)._desktopIntroPlaying) return;
+                    if (state.desktopIntroPlaying) return;
                     introTl.restart();
                 },
                 onLeaveBack: () => {
                     introTl.pause(0);
                     setInitial();
-                    (section as any)._desktopFading = (section as any)._desktopIntroPlaying = false;
+                    state.desktopIntroPlaying = false;
                 },
             });
         }
@@ -437,8 +466,8 @@ import { gsap, ScrollTrigger } from "../../scripts/main";
         );
         const first = ordered()[0];
         first && setActive(+first.dataset.idx!);
-        if (!(section as any)._enteredMobile) {
-            (section as any)._enteredMobile = true;
+        if (!state.enteredMobile) {
+            state.enteredMobile = true;
             const uiEls = [infoName, infoRole, aboutWrap, ...dots].filter(Boolean) as HTMLElement[];
             const setInit = () => {
                 const seq = ordered();
@@ -446,13 +475,13 @@ import { gsap, ScrollTrigger } from "../../scripts/main";
                 seq.forEach((c, i) => gsap.set(c, { opacity: 0, rotation: 0, x: 0, y: 0, scale: 1, zIndex: 300 - i }));
                 gsap.set(uiEls, { opacity: 0, y: 18 });
                 isEntering = true;
-                (section as any)._mobileIntroPlaying = (section as any)._mobileDesaligned = false;
+                state.mobileIntroPlaying = state.mobileDesaligned = false;
             };
             setInit();
             const runIntro = () => {
                 const seq = ordered();
-                if ((section as any)._mobileIntroPlaying) return;
-                (section as any)._mobileIntroPlaying = true;
+                if (state.mobileIntroPlaying) return;
+                state.mobileIntroPlaying = true;
                 isEntering = true;
                 gsap.to(seq, { opacity: 1, duration: 0.4, ease: "power2.out" });
                 gsap.to(uiEls, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out", delay: 0.05, stagger: 0.06 });
@@ -465,8 +494,8 @@ import { gsap, ScrollTrigger } from "../../scripts/main";
                     });
                     gsap.delayedCall(0.2, () => {
                         isEntering = false;
-                        (section as any)._mobileIntroPlaying = false;
-                        (section as any)._mobileDesaligned = true;
+                        state.mobileIntroPlaying = false;
+                        state.mobileDesaligned = true;
                     });
                 });
             };
@@ -476,7 +505,7 @@ import { gsap, ScrollTrigger } from "../../scripts/main";
                 end: "bottom top",
                 onEnter: runIntro,
                 onLeaveBack: () => {
-                    if ((section as any)._mobileIntroPlaying) return;
+                    if (state.mobileIntroPlaying) return;
                     const seq = ordered(),
                         fadeTargets = [...seq, ...uiEls];
                     gsap.killTweensOf(fadeTargets);
@@ -495,7 +524,7 @@ import { gsap, ScrollTrigger } from "../../scripts/main";
             setAboutMinHeight();
             nameSw?.remount(nameSamples);
             roleSw?.remount(roleSamples);
-            if ((section as any)._mobileDesaligned) relayout(false);
+            if (state.mobileDesaligned) relayout(false);
         };
         new ResizeObserver(rebuild).observe(section);
         addEventListener("load", rebuild);

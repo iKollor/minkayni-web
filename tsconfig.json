@@ -22,6 +22,18 @@
     ],
     "noEmit": true,
     "strict": true,
+    /* Subconjunto de `strictest` que caza errores reales sin obligar a sembrar
+       `!` por todo el código. Se dejan fuera a propósito
+       `noUncheckedIndexedAccess` y `exactOptionalPropertyTypes`: producen ~147
+       avisos, casi todos en bucles de animación donde el índice es válido por
+       construcción, y silenciarlos uno a uno empeoraría la legibilidad. */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
     "verbatimModuleSyntax": false,
     "jsx": "react-jsx",
     "jsxImportSource": "react",

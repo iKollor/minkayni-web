@@ -390,7 +390,7 @@ export const init = () => {
                 trigger: items[0].parentNode as Element,
                 type: "x",
                 onPressInit() {
-                    const x = (this as any).x as number;
+                    const x = this.x as number;
                     gsap.killTweensOf(tl);
                     wasPlaying = !tl.paused();
                     tl.pause();
@@ -412,7 +412,7 @@ export const init = () => {
                 overshootTolerance: 0,
                 snap(value: number) {
                     // Corregir caso de release durante throw (velocidad alta)
-                    if (Math.abs(startProgress / -ratio - (this as any).x) < 10) {
+                    if (Math.abs(startProgress / -ratio - this.x) < 10) {
                         return lastSnap + initChangeX;
                     }
                     const time = -(value * ratio) * tl.duration();

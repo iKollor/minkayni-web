@@ -53,13 +53,13 @@
         }
 
         // Escuchar cambios de estado emitidos desde Menu.astro
-        function onMenuState(ev: CustomEvent<{ open: boolean }>) {
+        // (el evento se declara en WindowEventMap, ver src/env.d.ts)
+        function onMenuState(ev: WindowEventMap["menu:state"]) {
             try {
                 const detail = ev && ev.detail ? ev.detail : { open: false };
                 setOpen(!!detail.open);
             } catch {}
         }
-        // @ts-ignore - registramos como Event pero manejamos CustomEvent internamente
         window.addEventListener("menu:state", onMenuState);
     });
 </script>

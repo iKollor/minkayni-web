@@ -26,9 +26,9 @@ export function buildSocialItems(socials: Footer["Socials"] | undefined | null):
     const networks: ReadonlyArray<SocialNetwork> = ["facebook", "instagram", "twitter", "tiktok"] as const;
 
     return networks
-        .filter((net) => Boolean((socials as any)[net]))
+        .filter((net) => Boolean(socials[net]))
         .map((net) => {
-            const href = String((socials as any)[net]);
+            const href = String(socials[net]);
             const icon = SOCIAL_ICON_BY_NETWORK[net];
             const label = net === "twitter" ? "X (Twitter)" : net.charAt(0).toUpperCase() + net.slice(1);
             return { href, icon, label } satisfies SocialItem;

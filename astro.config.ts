@@ -16,6 +16,16 @@ export default defineConfig({
        la organización) y cualquier generador de sitemap/feed. Sin esto los
        verificadores externos no ven una URL canónica declarada. */
     site: "https://minkayni.org",
+    /* Estático puro, declarado explícitamente en lugar de heredar el valor por
+       defecto. Se evaluó pasar a adaptador Node (híbrido o servidor) y no
+       compensa: no hay endpoints, formularios, cookies, sesión ni middleware,
+       y todo el contenido de Strapi se resuelve en build vía content loaders.
+       Un adaptador añadiría un proceso Node y TTFB de render donde hoy nginx
+       sirve un fichero ya hecho, sin ganar nada en SEO: el HTML pre-renderizado
+       ya es lo óptimo para los rastreadores. El coste real de este modelo es
+       que un cambio en el CMS exige rebuild; se resuelve con un webhook de
+       Strapi hacia el despliegue, no cambiando de modo de salida. */
+    output: "static",
     // Permite que herramientas (p. ej. previews) asignen puerto vía PORT
     server: process.env.PORT ? { port: Number(process.env.PORT) } : undefined,
     integrations: [

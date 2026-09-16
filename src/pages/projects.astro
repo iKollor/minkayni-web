@@ -10,7 +10,16 @@ import { formatTitle } from "@/utils/rich-title";
 /* Contenido: single type `projects-page` en Strapi, con fallback local. */
 const d = await loadPageContent("projectsPage", projectsFallback);
 
-const projects = d.projects as unknown as ProjectItem[];
+/* El CMS declara anchor/category/title/href/accent como nullables, pero
+   ProjectExplorer los necesita presentes: en vez de forzar el tipo con un
+   doble cast, se descartan las tarjetas incompletas. Así una entrada a medio
+   llenar en Strapi no acaba pintando `undefined` en el DOM. */
+const projects: ProjectItem[] = (d.projects ?? []).flatMap((card) => {
+    if (!card) return [];
+    const { anchor, category, title, href, accent } = card;
+    if (!anchor || !category || !title || !href || !accent) return [];
+    return [{ ...card, anchor, category, title, href, accent } as ProjectItem];
+});
 
 /* Estilos por posición de los pasos DAARR (presentacional). */
 const stepStyles = [

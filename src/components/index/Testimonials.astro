@@ -205,13 +205,15 @@ const STRAPI_URL = import.meta.env.STRAPI_URL;
                     anticipatePin: 1,
                     animation: tl,
                     snap: {
-                        snapTo: (value: number, self: any) => {
+                        snapTo: (value: number, self) => {
                             const dur = tl.duration();
                             const labels = Object.values(tl.labels)
                                 .map((t: number) => t / dur)
                                 .sort((a: number, b: number) => a - b);
                             const eps = 1e-3;
-                            if (self.direction > 0) {
+                            /* GSAP declara `self` opcional: sin él no se conoce la
+                               dirección del scroll, así que se avanza hacia delante. */
+                            if ((self?.direction ?? 1) > 0) {
                                 for (let i = 0; i < labels.length; i++) if (labels[i] - value > eps) return labels[i];
                                 return 1; // última etiqueta
                             } else {

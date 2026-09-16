@@ -9,8 +9,11 @@ const toArr = <T>(v?: T | T[]) => (v == null ? [] : Array.isArray(v) ? v : [v]);
 const uniq = <T>(xs: T[]) => Array.from(new Set(xs));
 
 /* -------------------- reglas por atributo -------------------- */
+/** Valor admitido por una propiedad hast (ver `Properties` en @types/hast). */
+export type PropertyValue = boolean | number | string | null | undefined | Array<string | number>;
+
 export type AttrRule = {
-    value?: any; // undefined/null => elimina atributo
+    value?: PropertyValue; // undefined/null => elimina atributo
     onlyIfMissing?: boolean; // aplica solo si no existe
     onlyIfExists?: boolean; // aplica solo si ya existe
     protect?: boolean; // no tocar si existe
@@ -83,8 +86,8 @@ function applyAttributes(props: Properties, rules?: Record<string, AttrRule>) {
         if (r.onlyIfMissing && exists) continue;
         if (r.onlyIfExists && !exists) continue;
 
-        if (r.value === undefined || r.value === null) delete (props as any)[key];
-        else (props as any)[key] = r.value;
+        if (r.value === undefined || r.value === null) delete props[key];
+        else props[key] = r.value;
     }
 }
 
@@ -104,33 +107,55 @@ function applyClasses(props: Properties, rule?: ClassRule) {
     props.className = uniq(cur.filter((c) => !rm.includes(c)).concat(add));
 }
 
+/* hast guarda `style` como texto CSS (`"color:red;font-size:2px"`), no como
+   objeto. Se parsea a un diccionario para poder aplicar set/remove por clave y
+   se vuelve a serializar; antes se asignaba el objeto tal cual, lo que habría
+   producido style="[object Object]" en el HTML de salida. */
+function parseStyle(value: Properties[string]): Dict<string> {
+    if (typeof value !== "string" || !value.trim()) return {};
+    const out: Dict<string> = {};
+    for (const decl of value.split(";")) {
+        const sep = decl.indexOf(":");
+        if (sep < 0) continue;
+        const key = decl.slice(0, sep).trim();
+        const val = decl.slice(sep + 1).trim();
+        if (key && val) out[key] = val;
+    }
+    return out;
+}
+
+const serializeStyle = (decls: Dict<string>) =>
+    Object.entries(decls)
+        .map(([k, v]) => `${k}:${v}`)
+        .join(";");
+
 function applyStyle(props: Properties, rule?: StyleRule) {
     if (!rule) return;
-    const current: Dict<string | number> = typeof props.style === "object" && props.style ? (props.style as any) : {};
+    const current = parseStyle(props.style);
 
     if (rule.set) {
         for (const [k, v] of Object.entries(rule.set)) {
             if (v === undefined || v === null) delete current[k];
-            else current[k] = v as any;
+            else current[k] = String(v);
         }
     }
     for (const key of toArr(rule.remove)) delete current[key];
 
-    if (Object.keys(current).length) props.style = current as any;
-    else delete (props as any).style;
+    if (Object.keys(current).length) props.style = serializeStyle(current);
+    else delete props.style;
 }
 
 function applyDataset(props: Properties, rules?: Record<string, DataRule>) {
     if (!rules) return;
     for (const [k, r] of Object.entries(rules)) {
         const key = `data-${k}`;
-        const exists = (props as any)[key] != null;
+        const exists = props[key] != null;
         if (r.protect && exists) continue;
         if (r.onlyIfMissing && exists) continue;
         if (r.onlyIfExists && !exists) continue;
 
-        if (r.value === undefined || r.value === null) delete (props as any)[key];
-        else (props as any)[key] = String(r.value);
+        if (r.value === undefined || r.value === null) delete props[key];
+        else props[key] = String(r.value);
     }
 }
 
@@ -212,11 +237,11 @@ export default function rehypeModular(config: ModularConfig = {}) {
                         };
                         node.tagName = wrapper.tagName;
                         node.properties = wrapper.properties;
-                        node.children = wrapper.children as any;
+                        node.children = wrapper.children;
                     }
 
                     if (unwrap) {
-                        const child = node.children?.[0] as any;
+                        const child = node.children?.[0];
                         if (child?.type === "element") {
                             node.tagName = child.tagName;
                             node.properties = child.properties ?? {};
