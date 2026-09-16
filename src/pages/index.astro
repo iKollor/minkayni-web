@@ -86,6 +86,27 @@ const projectsCta = homepage
             contain: paint;
             will-change: background;
         }
+
+        /* Altura final del hero. Vive aquí y la lee `intro.ts` para animar hasta
+           el mismo valor: antes el 70svh estaba escrito por duplicado (clase
+           `pt-[70svh]` y tres literales en el script), y cualquier cambio en uno
+           dejaba el texto pegado al degradado o flotando lejos de él. */
+        :root {
+            --hero-h: 70svh;
+            /* Separación entre el degradado y la leyenda. En móvil el texto va
+               debajo y necesita aire; en escritorio va al costado y no. */
+            --hero-gap: 2.5rem;
+        }
+
+        @media (min-width: 768px) {
+            :root {
+                --hero-gap: 0px;
+            }
+        }
+
+        header .bottom__section__container {
+            padding-top: calc(var(--hero-h) + var(--hero-gap));
+        }
     </style>
 
     <IntroVideo />
@@ -111,7 +132,7 @@ const projectsCta = homepage
                     </BubbleBackground>
                 </div>
                 <div class="bottom__section__container w-full md:w-[90%] min-h-[100svh] flex flex-col-reverse md:flex-row mx-auto pt-[70svh] justify-end items-center">
-                    <div class="prose w-full md:w-1/2 h-[80%] text-[color:var(--text)] opacity-80 text-lg md:text-base max-w-[90%] md:max-w-[50%] text-center md:text-left leading-relaxed pt-5 md:pt-0" id="foundation-text">
+                    <div class="prose w-full md:w-1/2 text-[color:var(--text)] opacity-80 text-lg md:text-base max-w-[90%] md:max-w-[50%] text-center md:text-left leading-[1.55]" id="foundation-text">
                         <Markdown of={legend} />
                     </div>
                 </div>
@@ -151,7 +172,7 @@ const projectsCta = homepage
                         <div>
                             <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">Quiénes somos</p>
                             <h2 class="max-w-[14ch] font-display text-5xl font-black leading-[0.92] text-primary sm:text-7xl">Un equipo que cree en el trabajo compartido.</h2>
-                            <p class="mt-6 max-w-[54ch] text-lg leading-relaxed text-black/65">Educación, arte y organización comunitaria se encuentran para acompañar a las juventudes y sostener procesos que nacen desde el territorio.</p>
+                            <p class="mt-6 max-w-[54ch] text-lg leading-[1.55] text-black/65">Educación, arte y organización comunitaria se encuentran para acompañar a las juventudes y sostener procesos que nacen desde el territorio.</p>
                         </div>
                         <a href="/about" class="inline-flex min-h-14 items-center justify-center rounded-full bg-primary px-7 py-4 font-display text-lg font-bold text-white transition hover:-translate-y-1 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">Conoce a Minkayni</a>
                     </div>

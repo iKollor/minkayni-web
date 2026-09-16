@@ -74,6 +74,12 @@ const animateNavAndParagraph = (
  * @param opts.radius Radio de borde final del contenedor (por defecto "30px").
  * @param opts.emitEvent Si debe emitir el evento "intro:finished" (true por defecto).
  */
+/** Altura final del hero. La define `--hero-h` en index.astro, para que el
+    texto de la leyenda pueda calcular su desplazamiento a partir del mismo
+    valor en lugar de repetirlo. */
+const heroHeight = (): string =>
+    getComputedStyle(document.documentElement).getPropertyValue("--hero-h").trim() || "70svh";
+
 export const showContentNoIntro = (opts?: {
     prefersReduced?: boolean;
     height?: string;
@@ -94,7 +100,7 @@ export const showContentNoIntro = (opts?: {
             "matchMedia" in window &&
             window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 
-    const targetHeight = opts?.height ?? "70svh";
+    const targetHeight = opts?.height ?? heroHeight();
     const targetRadius = opts?.radius ?? "30px";
     const emitEvent = opts?.emitEvent ?? true;
     const doCascade = opts?.cascade ?? true;
@@ -226,7 +232,7 @@ export const initIntro = (prefersReduced: boolean): void => {
         document.body.removeAttribute("data-intro");
         overlay?.remove();
         content?.classList.replace("opacity-0", "opacity-100");
-        setHeights("70svh");
+        setHeights(heroHeight());
         setRadius("30px");
         document.documentElement.classList.remove("no-scroll");
         document.body.classList.remove("no-scroll");
@@ -278,7 +284,7 @@ export const initIntro = (prefersReduced: boolean): void => {
             .to(
                 ".bg__container, .bg__container__logo",
                 {
-                    height: "70svh",
+                    height: heroHeight(),
                     duration: 1,
                     ease: "bounce.out",
                     onStart: () => {

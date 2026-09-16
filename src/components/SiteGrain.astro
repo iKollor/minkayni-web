@@ -4,10 +4,16 @@ import paperTexture from "../assets/overlay/noise.webm";
 import noisePoster from "../assets/overlay/noise-poster.webp";
 ---
 
-<div id="grain-layer" aria-hidden="true" class="fixed inset-0 z-1000 pointer-events-none">
+<!-- El contenedor es `fixed inset-0`, así que YA tiene el tamaño del viewport
+     visible y lo sigue de forma estable en iOS. Los hijos se dimensionan contra
+     él (`absolute inset-0`) y no con unidades de viewport: `dvh` se recalcula en
+     cada frame mientras la barra de Safari se recoge, lo que hacía que la capa
+     de grano se redimensionara continuamente al desplazarse, y `vh`/`h-screen`
+     es el viewport GRANDE, más alto que el área visible. -->
+<div id="grain-layer" aria-hidden="true" class="fixed inset-0 z-1000 pointer-events-none overflow-hidden">
     <video
         id="grain-video"
-        class="w-full h-dvh object-cover mix-blend-soft-light opacity-20 contrast-125 brightness-95 will-change-[opacity] dark:mix-blend-overlay dark:opacity-20"
+        class="absolute inset-0 h-full w-full object-cover mix-blend-soft-light opacity-20 contrast-125 brightness-95 will-change-[opacity] dark:mix-blend-overlay dark:opacity-20"
         autoplay
         muted
         loop
@@ -18,7 +24,7 @@ import noisePoster from "../assets/overlay/noise-poster.webp";
     >
         <source src={paperTexture} type="video/webm" />
     </video>
-    <Image src={noisePoster} alt="" class="still-noise fixed top-0 left-0 w-screen h-screen object-cover z-1000 mix-blend-overlay pointer-events-none object-center opacity-5" />
+    <Image src={noisePoster} alt="" class="still-noise absolute inset-0 h-full w-full object-cover mix-blend-overlay pointer-events-none object-center opacity-5" />
 </div>
 
 <script>
@@ -65,6 +71,14 @@ import noisePoster from "../assets/overlay/noise-poster.webp";
 </script>
 
 <style is:global>
+    /* Capa de composición propia: sin esto la superposición se repinta junto con
+       la página durante el scroll elástico de iOS y produce parpadeos. */
+    #grain-layer {
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+
     .grain-still-fallback #grain-layer .still-noise {
         opacity: 0.1 !important;
     }

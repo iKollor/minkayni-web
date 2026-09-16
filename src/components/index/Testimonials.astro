@@ -17,7 +17,7 @@ const STRAPI_URL = import.meta.env.STRAPI_URL;
     <h1 class="title font-bold font-display text-secondary mt-20 md:mt-32 lg:mt-40 text-4xl md:text-6xl lg:text-8xl">{title}</h1>
 </div>
 
-<div id="testimonials" class="t-pin-section relative w-full h-screen overflow-hidden" data-pin>
+<div id="testimonials" class="t-pin-section relative w-full h-[100svh] overflow-hidden" data-pin>
     <div class="t-slides relative h-full w-[80%] mx-auto" data-slides>
         {
             testimonials.map((t, i) => {
@@ -39,7 +39,7 @@ const STRAPI_URL = import.meta.env.STRAPI_URL;
                         </div>
                         <div class={"t-copy relative w-1/2 " + (leftAlign ? "text-right" : "text-left")} data-copy>
                             <Icon name="oui:quote" class={"t-quote absolute -top-8 " + (leftAlign ? "right-0" : "left-0")} data-icon style="opacity:.08; pointer-events:none;" scale={5} />
-                            <div class="t-body text-xl leading-relaxed" data-body>
+                            <div class="t-body text-xl leading-[1.55]" data-body>
                                 <StrapiBlocks class="max-w-3xl" data={t?.author_quote?.body} />
                             </div>
                             <p class="t-author mt-4 font-bold text-xl text-secondary hidden md:block" data-author>
@@ -112,7 +112,10 @@ const STRAPI_URL = import.meta.env.STRAPI_URL;
         }
         .t-body {
             font-size: 1rem !important;
-            line-height: 1.7 !important;
+            /* Mismo ritmo de lectura que el resto de párrafos de la portada.
+               Este bloque gana a las utilidades por especificidad, así que el
+               valor tiene que cambiarse aquí y no en la clase del marcado. */
+            line-height: 1.55 !important;
             max-width: 48rem;
             margin: 0.5rem auto 0 auto;
             text-align: center;
