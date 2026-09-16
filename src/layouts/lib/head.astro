@@ -171,6 +171,13 @@ const strapiOrigin = (() => {
                 transform: translateY(16px);
             }
         </style>
+        {/* Cortina entre páginas: si se llegó desde otra página del sitio, tapar
+            antes del primer pintado. Ver PixelCurtain.tsx y global.css. */}
+        <script is:inline>
+            try {
+                if (sessionStorage.getItem("pixel-curtain") === "1") document.documentElement.dataset.curtain = "covered";
+            } catch (e) {}
+        </script>
     </head>
     <body class="bg-background text-black">
         <slot />

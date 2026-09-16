@@ -76,7 +76,7 @@ const stats = (d.stats ?? []).filter((stat) => stat?.value && stat?.label);
                     {d.title}
                 </p>
 
-                {d.headline && <h2 class="featured-headline max-w-[16ch] font-display text-4xl font-black leading-[0.95] sm:text-5xl xl:text-6xl" set:html={formatTitle(d.headline, "text-secondary")} />}
+                {d.headline && <h2 data-scroll-float class="featured-headline max-w-[16ch] font-display text-4xl font-black leading-[0.95] sm:text-5xl xl:text-6xl" set:html={formatTitle(d.headline, "text-secondary")} />}
 
                 <div class="featured-body flex max-w-[58ch] flex-col gap-4 text-lg leading-[1.55] text-white/85">
                     {bodyParagraphs.map((paragraph) => <p>{paragraph}</p>)}

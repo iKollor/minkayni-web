@@ -34,7 +34,7 @@ const cardShadows = ["shadow-[6px_6px_0_var(--color-bp-blue)]", "rotate-[0.6deg]
 
         <section class={bp.block} aria-labelledby="organismos-title" data-bp-scene>
             <p class:list={[bp.eyebrow, "text-primary"]} data-bp-hit>{d.organismsHeading.eyebrow}</p>
-            <h2 id="organismos-title" class:list={[bp.h2, "max-w-[14ch]"]} data-bp-hit set:html={formatTitle(d.organismsHeading.title)} />
+            <h2 data-scroll-float id="organismos-title" class:list={[bp.h2, "max-w-[14ch]"]} data-bp-hit set:html={formatTitle(d.organismsHeading.title)} />
             <ul class="mt-[clamp(2rem,4.5vw,3.5rem)] grid grid-cols-[repeat(auto-fill,minmax(min(20rem,100%),1fr))] gap-[clamp(1.5rem,2.5vw,2.25rem)]" data-bp-clave>
                 {
                     organisms.map((org, index) => (
@@ -65,7 +65,7 @@ const cardShadows = ["shadow-[6px_6px_0_var(--color-bp-blue)]", "rotate-[0.6deg]
 
         <section class:list={[bp.block, bp.fieldPurple]} aria-labelledby="horizonte-title" data-bp-scene>
             <p class={bp.eyebrow} data-bp-hit>{d.horizonsHeading.eyebrow}</p>
-            <h2 id="horizonte-title" class:list={[bp.h2]} data-bp-hit set:html={formatTitle(d.horizonsHeading.title)} />
+            <h2 data-scroll-float id="horizonte-title" class:list={[bp.h2]} data-bp-hit set:html={formatTitle(d.horizonsHeading.title)} />
             <p class:list={[bp.body, "mt-5 max-w-[56ch]"]} data-bp-hit>{d.horizonsHeading.body}</p>
             <ol class="relative mt-[clamp(2rem,4.5vw,3.5rem)] grid gap-[clamp(1.6rem,3vw,2.4rem)]" data-bp-clave>
                 <span class="absolute bottom-2 top-2 left-[calc(0.65rem-1px)] border-l-[3px] border-dashed border-white/40" aria-hidden="true"></span>
@@ -85,7 +85,7 @@ const cardShadows = ["shadow-[6px_6px_0_var(--color-bp-blue)]", "rotate-[0.6deg]
 
         <section class={bp.block} aria-labelledby="alianzas-title" data-bp-scene>
             <p class:list={[bp.eyebrow, "text-primary"]} data-bp-hit>{d.alliesHeading.eyebrow}</p>
-            <h2 id="alianzas-title" class:list={[bp.h2, "max-w-[12ch]"]} data-bp-hit set:html={formatTitle(d.alliesHeading.title)} />
+            <h2 data-scroll-float id="alianzas-title" class:list={[bp.h2, "max-w-[12ch]"]} data-bp-hit set:html={formatTitle(d.alliesHeading.title)} />
             <ul class="mt-[clamp(1.75rem,3.5vw,2.75rem)] flex flex-wrap gap-x-[1.1rem] gap-y-4" data-bp-clave>
                 {
                     allies.map((ally, index) => (
@@ -104,7 +104,7 @@ const cardShadows = ["shadow-[6px_6px_0_var(--color-bp-blue)]", "rotate-[0.6deg]
         >
             <div>
                 <p class={bp.eyebrow} data-bp-hit>{d.ctaHeading.eyebrow}</p>
-                <h2 id="eco-cta-title" class:list={[bp.riso, "font-bp mt-4 max-w-[12ch] text-balance text-[clamp(2.4rem,4.6vw,5.4rem)] uppercase leading-[0.96] tracking-[-0.03em]"]} data-bp-hit set:html={formatTitle(d.ctaHeading.title)} />
+                <h2 data-scroll-float id="eco-cta-title" class:list={[bp.riso, "font-bp mt-4 max-w-[12ch] text-balance text-[clamp(2.4rem,4.6vw,5.4rem)] uppercase leading-[0.96] tracking-[-0.03em]"]} data-bp-hit set:html={formatTitle(d.ctaHeading.title)} />
             </div>
             <div class="flex flex-col flex-wrap items-stretch gap-x-6 gap-y-4 text-center sm:flex-row sm:items-center sm:text-left" data-bp-hit>
                 <a class:list={[bp.button, bp.buttonInk, "focus-visible:outline-black"]} href={d.ctaPrimary.href} target="_blank" rel="noopener noreferrer">{d.ctaPrimary.text}</a>

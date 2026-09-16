@@ -11,6 +11,6 @@ const { data = [], title = "Conoce a nuestro equipo" } = Astro.props;
 ---
 
 <div class="flex items-center justify-center">
-    <h2 class="title text-center font-bold font-display text-secondary mt-20 md:mt-32 lg:mt-40 text-4xl md:text-6xl lg:text-8xl">{title}</h2>
+    <h2 data-scroll-float class="title text-center font-bold font-display text-secondary mt-20 md:mt-32 lg:mt-40 text-4xl md:text-6xl lg:text-8xl">{title}</h2>
 </div>
 <CustomSlider members={data} />

@@ -31,6 +31,13 @@ export const ui = {
         "nav.hide": "Ocultar navegación",
         "nav.show": "Mostrar navegación",
 
+        /* Menú (panel escalonado y megamenú) */
+        "menu.open": "Menú",
+        "menu.close": "Cerrar",
+        "menu.allProjects": "Ver todos los proyectos",
+        "menu.socials": "Síguenos",
+        "menu.language": "Idioma",
+
         /* Selector de idioma */
         "lang.label": "Cambiar idioma",
         "lang.es": "Español",
@@ -166,6 +173,13 @@ export const ui = {
         "nav.toggle": "Toggle navigation",
         "nav.hide": "Hide navigation",
         "nav.show": "Show navigation",
+
+        /* Menu (staggered panel and mega menu) */
+        "menu.open": "Menu",
+        "menu.close": "Close",
+        "menu.allProjects": "See all projects",
+        "menu.socials": "Follow us",
+        "menu.language": "Language",
 
         /* Language switcher */
         "lang.label": "Change language",

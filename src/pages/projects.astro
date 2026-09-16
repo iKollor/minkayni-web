@@ -39,7 +39,7 @@ const stepStyles = [
         <div class="grid items-end gap-10 lg:grid-cols-[0.8fr_1.2fr]">
             <div>
                 <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.intro.eyebrow}</p>
-                <h2 id="projects-intro-title" class="font-display text-5xl font-black leading-[0.92] tracking-tight text-black sm:text-7xl" set:html={formatTitle(d.intro.title, "text-secondary-deep")} />
+                <h2 data-scroll-float id="projects-intro-title" class="font-display text-5xl font-black leading-[0.92] tracking-tight text-black sm:text-7xl" set:html={formatTitle(d.intro.title, "text-secondary-deep")} />
             </div>
             <div class="max-w-[62ch] text-lg leading-relaxed text-black/70 lg:pb-2 lg:text-xl">
                 <p>{d.intro.body}</p>
@@ -52,7 +52,7 @@ const stepStyles = [
     <section id="metodologia" class="mx-auto w-[90%] max-w-[1280px] py-24 sm:py-32" aria-labelledby="method-title">
         <div class="mb-12 max-w-[760px]">
             <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{d.methodHeading.eyebrow}</p>
-            <h2 id="method-title" class="font-display text-5xl font-black leading-none text-primary sm:text-7xl" set:html={formatTitle(d.methodHeading.title)} />
+            <h2 data-scroll-float id="method-title" class="font-display text-5xl font-black leading-none text-primary sm:text-7xl" set:html={formatTitle(d.methodHeading.title)} />
             <p class="mt-6 max-w-[62ch] text-lg leading-relaxed text-black/70">{d.methodHeading.body}</p>
         </div>
 
@@ -78,7 +78,7 @@ const stepStyles = [
     <section class="mx-auto w-[90%] max-w-[1280px] pb-24" aria-labelledby="horizon-title">
         <div class="mb-12 max-w-[760px]">
             <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.horizonHeading.eyebrow}</p>
-            <h2 id="horizon-title" class="font-display text-4xl font-black leading-none text-black sm:text-6xl" set:html={formatTitle(d.horizonHeading.title)} />
+            <h2 data-scroll-float id="horizon-title" class="font-display text-4xl font-black leading-none text-black sm:text-6xl" set:html={formatTitle(d.horizonHeading.title)} />
         </div>
         <div class="grid gap-5 md:grid-cols-3">
             {
@@ -96,7 +96,7 @@ const stepStyles = [
         <div class="grid items-center gap-10 lg:grid-cols-[1fr_auto]">
             <div class="max-w-[760px]">
                 <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">{d.alliancesHeading.eyebrow}</p>
-                <h2 id="alliances-title" class="font-display text-5xl font-black leading-[0.95] sm:text-7xl" set:html={formatTitle(d.alliancesHeading.title)} />
+                <h2 data-scroll-float id="alliances-title" class="font-display text-5xl font-black leading-[0.95] sm:text-7xl" set:html={formatTitle(d.alliancesHeading.title)} />
                 <p class="mt-6 max-w-[58ch] text-lg leading-relaxed text-white/75">{d.alliancesHeading.body}</p>
                 <ul class="mt-8 flex flex-wrap gap-2" aria-label={t("projects.alliesAndFunders")}>
                     {d.allies.map((ally) => <li class="rounded-full bg-white/10 px-4 py-2 text-sm font-bold backdrop-blur">{ally.text}</li>)}

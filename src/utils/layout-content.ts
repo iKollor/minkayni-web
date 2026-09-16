@@ -19,6 +19,7 @@ import {
     withBatucadaProject,
 } from "../data/site";
 import { globalFallback } from "../data/pages/global";
+import { projectsFallback } from "../data/pages/projects";
 import { defaultLocale, type Locale } from "../i18n";
 import { localizeLinks } from "./localize-links";
 import type { NavTree } from "../schemas/navigation";
@@ -66,11 +67,13 @@ const loadFooter = async (locale: Locale): Promise<Footer> => {
 };
 
 export async function loadLayoutContent(locale: Locale) {
-    const [navHeader, footer, site] = await Promise.all([
+    const [navHeader, footer, site, projectsPage] = await Promise.all([
         loadNavigation(locale),
         loadFooter(locale),
         loadPageContent("globalSettings", globalFallback, locale),
+        /* Los proyectos alimentan el megamenú de «Proyectos» en todas las páginas. */
+        loadPageContent("projectsPage", projectsFallback, locale),
     ]);
 
-    return { navHeader, footer, site };
+    return { navHeader, footer, site, projects: projectsPage.projects };
 }

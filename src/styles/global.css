@@ -441,3 +441,16 @@ body {
     font-size: clamp(1.75rem, min(9.2cqi, 5.4rem), 5.4rem);
     overflow-wrap: anywhere;
 }
+
+/* ── Cortina de píxeles entre páginas ─────────────────────────────────────
+   Un script inline en el <head> marca `data-curtain="covered"` cuando se
+   llega desde otra página del sitio. Esta regla tapa el documento desde el
+   primer pintado; la isla PixelCurtain la sustituye por sus píxeles al
+   hidratar y retira la marca. Sin JavaScript la marca nunca se pone. */
+html[data-curtain="covered"] body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    background: var(--primary);
+}

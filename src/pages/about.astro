@@ -40,7 +40,7 @@ const actionCardStyles = [
         <div class="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr]">
             <div data-reveal>
                 <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.intro.eyebrow}</p>
-                <h2 id="about-intro-title" class="font-display text-5xl font-black leading-[0.92] tracking-tight text-black sm:text-7xl" set:html={formatTitle(d.intro.title, "text-secondary-deep")} />
+                <h2 data-scroll-float id="about-intro-title" class="font-display text-5xl font-black leading-[0.92] tracking-tight text-black sm:text-7xl" set:html={formatTitle(d.intro.title, "text-secondary-deep")} />
                 <p class="mt-8 max-w-[62ch] text-lg leading-relaxed text-black/70" set:html={formatTitle(d.intro.body ?? "", "italic")} />
             </div>
 
@@ -72,7 +72,7 @@ const actionCardStyles = [
     <section class="mx-auto w-[94%] max-w-[1440px] rounded-[2.75rem] bg-[#dedbd4] px-4 py-14 sm:px-8 lg:rounded-[5rem] lg:px-14 lg:py-20" aria-labelledby="history-title">
         <div class="mb-10 max-w-[760px]" data-reveal>
             <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.historyHeading.eyebrow}</p>
-            <h2 id="history-title" class="font-display text-4xl font-black leading-none text-black sm:text-6xl" set:html={formatTitle(d.historyHeading.title)} />
+            <h2 data-scroll-float id="history-title" class="font-display text-4xl font-black leading-none text-black sm:text-6xl" set:html={formatTitle(d.historyHeading.title)} />
         </div>
 
         <ImmersiveTimeline items={timeline} ariaLabel={t("about.historyTimeline")} />
@@ -98,7 +98,7 @@ const actionCardStyles = [
     <section class="mx-auto w-[90%] max-w-[1280px] pb-24" aria-labelledby="ecosystem-title">
         <div class="mb-12 max-w-[760px]" data-reveal>
             <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{d.ecosystemHeading.eyebrow}</p>
-            <h2 id="ecosystem-title" class="font-display text-4xl font-black leading-none text-primary sm:text-6xl" set:html={formatTitle(d.ecosystemHeading.title)} />
+            <h2 data-scroll-float id="ecosystem-title" class="font-display text-4xl font-black leading-none text-primary sm:text-6xl" set:html={formatTitle(d.ecosystemHeading.title)} />
             <p class="mt-6 max-w-[62ch] text-lg leading-relaxed text-black/70">{d.ecosystemHeading.body}</p>
         </div>
 
@@ -148,7 +148,7 @@ const actionCardStyles = [
             </div>
             <div data-reveal data-reveal-delay="0.1">
                 <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.teamHeading.eyebrow}</p>
-                <h2 id="team-title" class="font-display text-4xl font-black leading-none text-black sm:text-6xl" set:html={formatTitle(d.teamHeading.title)} />
+                <h2 data-scroll-float id="team-title" class="font-display text-4xl font-black leading-none text-black sm:text-6xl" set:html={formatTitle(d.teamHeading.title)} />
                 <div class="mt-8 grid gap-6 sm:grid-cols-2">
                     {
                         d.teamMembers.map((member) => (
@@ -168,7 +168,7 @@ const actionCardStyles = [
     <section class="mx-auto w-[94%] max-w-[1440px] rounded-[2.75rem] bg-[linear-gradient(130deg,var(--primary),#410063)] px-6 py-16 text-white sm:px-12 lg:rounded-[5rem] lg:px-20 lg:py-24" aria-labelledby="transparency-title">
         <div class="mb-12 max-w-[760px]" data-reveal>
             <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">{d.transparencyHeading.eyebrow}</p>
-            <h2 id="transparency-title" class="font-display text-4xl font-black leading-[0.95] sm:text-6xl" set:html={formatTitle(d.transparencyHeading.title)} />
+            <h2 data-scroll-float id="transparency-title" class="font-display text-4xl font-black leading-[0.95] sm:text-6xl" set:html={formatTitle(d.transparencyHeading.title)} />
             <p class="mt-6 max-w-[62ch] text-lg leading-relaxed text-white/75">{d.transparencyHeading.body}</p>
         </div>
 
@@ -191,7 +191,7 @@ const actionCardStyles = [
         <div class="grid items-center gap-10 lg:grid-cols-[1fr_auto]">
             <div data-reveal>
                 <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{d.pressHeading.eyebrow}</p>
-                <h2 id="press-title" class="font-display text-4xl font-black leading-none text-primary sm:text-6xl" set:html={formatTitle(d.pressHeading.title)} />
+                <h2 data-scroll-float id="press-title" class="font-display text-4xl font-black leading-none text-primary sm:text-6xl" set:html={formatTitle(d.pressHeading.title)} />
                 <p class="mt-6 max-w-[62ch] text-lg leading-relaxed text-black/70">{d.pressHeading.body}</p>
                 <a href={d.pressCta.href} class="mt-8 inline-flex items-center gap-2 font-display font-bold text-primary underline-offset-4 transition hover:text-secondary-deep hover:underline">
                     {d.pressCta.text} <span aria-hidden="true">→</span>
@@ -220,7 +220,7 @@ const actionCardStyles = [
         <div class="grid items-center gap-12 lg:grid-cols-[1fr_auto]">
             <div class="max-w-[760px]" data-reveal>
                 <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.contactHeading.eyebrow}</p>
-                <h2 id="contact-title" class="font-display text-5xl font-black leading-[0.95] sm:text-7xl" set:html={formatTitle(d.contactHeading.title)} />
+                <h2 data-scroll-float id="contact-title" class="font-display text-5xl font-black leading-[0.95] sm:text-7xl" set:html={formatTitle(d.contactHeading.title)} />
                 <p class="mt-6 max-w-[58ch] text-lg leading-relaxed text-black/70">{d.contactHeading.body}</p>
                 <div class="mt-10 flex flex-wrap items-center gap-5">
                     <Button href={d.contactButton.href} defaultText={d.contactButton.defaultText} hoverText={d.contactButton.hoverText} />

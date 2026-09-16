@@ -8,6 +8,8 @@ import tailwindcss from "@tailwindcss/vite";
 
 import icon from "astro-icon";
 
+import react from "@astrojs/react";
+
 import { unified } from "@astrojs/markdown-remark";
 import { rehypePlugins } from "./src/utils/markdown-pipeline";
 
@@ -82,6 +84,10 @@ export default defineConfig({
     server: process.env.PORT ? { port: Number(process.env.PORT) } : undefined,
     integrations: [
         icon(),
+        /* React vuelve, pero solo como islas: los componentes de menú, contador,
+           logos, títulos y transición se hidratan uno a uno con `client:*`; el
+           resto del sitio sigue siendo HTML sin runtime. */
+        react(),
         sitemap({
             /* Las páginas `noindex` no pertenecen al sitemap: 404 no es un
                destino real y /transparencia se enlaza desde el footer. */

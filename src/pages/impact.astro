@@ -31,7 +31,7 @@ const statStyles = [
         <div class="grid items-end gap-10 lg:grid-cols-[1.1fr_0.9fr]">
             <div data-reveal>
                 <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.intro.eyebrow}</p>
-                <h2 id="impact-intro-title" class="font-display text-5xl font-black leading-[0.92] tracking-tight text-black sm:text-7xl" set:html={formatTitle(d.intro.title, "text-secondary-deep")} />
+                <h2 data-scroll-float id="impact-intro-title" class="font-display text-5xl font-black leading-[0.92] tracking-tight text-black sm:text-7xl" set:html={formatTitle(d.intro.title, "text-secondary-deep")} />
             </div>
             <div class="max-w-[62ch] text-lg leading-relaxed text-black/75 lg:pb-2" data-reveal data-reveal-delay="0.1">
                 <p>{d.intro.body}</p>
@@ -82,7 +82,7 @@ const statStyles = [
         <div class="grid gap-12 lg:grid-cols-[0.9fr_1.1fr]">
             <div data-reveal>
                 <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">{d.resultsHeading.eyebrow}</p>
-                <h2 id="results-title" class="font-display text-4xl font-black leading-[0.95] sm:text-6xl" set:html={formatTitle(d.resultsHeading.title)} />
+                <h2 data-scroll-float id="results-title" class="font-display text-4xl font-black leading-[0.95] sm:text-6xl" set:html={formatTitle(d.resultsHeading.title)} />
                 <p class="mt-6 max-w-[58ch] text-lg leading-relaxed text-white/80">{d.resultsHeading.body}</p>
                 <blockquote class="mt-8 max-w-[52ch] border-l-2 border-secondary pl-5 text-lg italic leading-relaxed text-white/85">
                     {d.resultsQuote}
@@ -129,7 +129,7 @@ const statStyles = [
     <section id="reconocimientos" class="mx-auto w-[90%] max-w-[1280px] scroll-mt-28 py-24" aria-labelledby="awards-title">
         <div class="mb-12 max-w-[760px]" data-reveal>
             <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{d.awardsHeading.eyebrow}</p>
-            <h2 id="awards-title" class="font-display text-4xl font-black leading-none text-primary sm:text-6xl" set:html={formatTitle(d.awardsHeading.title)} />
+            <h2 data-scroll-float id="awards-title" class="font-display text-4xl font-black leading-none text-primary sm:text-6xl" set:html={formatTitle(d.awardsHeading.title)} />
         </div>
 
         <div class="grid gap-5 md:grid-cols-2" data-reveal-group>
@@ -170,7 +170,7 @@ const statStyles = [
             </div>
             <div data-reveal data-reveal-delay="0.1">
                 <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.pressHeading.eyebrow}</p>
-                <h2 id="press-impact-title" class="font-display text-4xl font-black leading-none text-black sm:text-6xl" set:html={formatTitle(d.pressHeading.title)} />
+                <h2 data-scroll-float id="press-impact-title" class="font-display text-4xl font-black leading-none text-black sm:text-6xl" set:html={formatTitle(d.pressHeading.title)} />
                 <ul class="mt-8 divide-y divide-black/10">
                     {
                         d.pressItems.map((p) => (
@@ -198,7 +198,7 @@ const statStyles = [
     <section class="mx-auto w-[90%] max-w-[1280px] pb-24" aria-labelledby="journey-title">
         <div class="mb-10 max-w-[760px]" data-reveal>
             <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{d.journeyHeading.eyebrow}</p>
-            <h2 id="journey-title" class="font-display text-4xl font-black leading-none text-black sm:text-5xl" set:html={formatTitle(d.journeyHeading.title)} />
+            <h2 data-scroll-float id="journey-title" class="font-display text-4xl font-black leading-none text-black sm:text-5xl" set:html={formatTitle(d.journeyHeading.title)} />
         </div>
         <div class="grid gap-5 md:grid-cols-3" data-reveal-group>
             {
@@ -227,7 +227,7 @@ const statStyles = [
         <div class="grid items-center gap-10 lg:grid-cols-[1fr_auto]">
             <div class="max-w-[760px]" data-reveal>
                 <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.ctaHeading.eyebrow}</p>
-                <h2 id="impact-cta-title" class="font-display text-5xl font-black leading-[0.95] sm:text-7xl" set:html={formatTitle(d.ctaHeading.title)} />
+                <h2 data-scroll-float id="impact-cta-title" class="font-display text-5xl font-black leading-[0.95] sm:text-7xl" set:html={formatTitle(d.ctaHeading.title)} />
                 <p class="mt-6 max-w-[58ch] text-lg leading-relaxed text-black/75">{d.ctaHeading.body}</p>
             </div>
             <Button href={d.ctaButton.href} defaultText={d.ctaButton.defaultText} hoverText={d.ctaButton.hoverText} />
@@ -237,11 +237,10 @@ const statStyles = [
 
 <script>
     import { initBatucadaAnchors } from "../scripts/batucada/motion";
-    import { initReveals, initCounters } from "../scripts/reveals";
+    import { initReveals } from "../scripts/reveals";
 
     const initImpact = () => {
         initBatucadaAnchors(); // anclas internas con offset por navbar fija
-        initCounters();
         initReveals();
     };
 

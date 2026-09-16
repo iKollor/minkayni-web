@@ -35,7 +35,7 @@ const telHref = d.phone ? `tel:${d.phone.replace(/[^+\d]/g, "")}` : "";
     <section class="mx-auto w-[90%] max-w-[1100px] py-16 sm:py-24" aria-labelledby="legal-identity-title">
         <header class="max-w-[70ch]" data-reveal>
             <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.eyebrow}</p>
-            <h2 id="legal-identity-title" class="font-display text-4xl font-black leading-[0.95] text-black sm:text-6xl">{d.title}</h2>
+            <h2 data-scroll-float id="legal-identity-title" class="font-display text-4xl font-black leading-[0.95] text-black sm:text-6xl">{d.title}</h2>
             <p class="mt-6 text-lg leading-relaxed text-black/75">{d.intro}</p>
         </header>
 
@@ -53,7 +53,7 @@ const telHref = d.phone ? `tel:${d.phone.replace(/[^+\d]/g, "")}` : "";
 
     <!-- Domicilio, contacto y verificación pública -->
     <section class="mx-auto w-[94%] max-w-[1200px] rounded-[2.5rem] bg-primary px-6 py-14 text-white sm:px-12 lg:rounded-[4rem] lg:px-16 lg:py-20" aria-labelledby="legal-contact-title">
-        <h2 id="legal-contact-title" class="font-display text-3xl font-black leading-tight sm:text-5xl">{t("transparency.address")}</h2>
+        <h2 data-scroll-float id="legal-contact-title" class="font-display text-3xl font-black leading-tight sm:text-5xl">{t("transparency.address")}</h2>
 
         <div class="mt-10 grid gap-10 lg:grid-cols-2">
             <address class="space-y-5 not-italic">
@@ -134,7 +134,7 @@ const telHref = d.phone ? `tel:${d.phone.replace(/[^+\d]/g, "")}` : "";
 
     <!-- Documentos oficiales -->
     <section class="mx-auto mb-44 w-[90%] max-w-[1100px] pb-40 pt-16 sm:pt-24" aria-labelledby="legal-documents-title">
-        <h2 id="legal-documents-title" class="font-display text-3xl font-black leading-tight text-primary sm:text-5xl">Documentos oficiales</h2>
+        <h2 data-scroll-float id="legal-documents-title" class="font-display text-3xl font-black leading-tight text-primary sm:text-5xl">Documentos oficiales</h2>
 
         {
             documents.length > 0 ? (

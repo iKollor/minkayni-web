@@ -18,7 +18,7 @@ const items = (block.items ?? []).filter((i): i is NonNullable<typeof i> => Bool
         (heading.eyebrow || heading.title) && (
             <div class="max-w-[760px]">
                 {heading.eyebrow && <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{heading.eyebrow}</p>}
-                {heading.title && <h2 class="font-display text-4xl font-black leading-none text-black sm:text-6xl" set:html={formatTitle(heading.title)} />}
+                {heading.title && <h2 data-scroll-float class="font-display text-4xl font-black leading-none text-black sm:text-6xl" set:html={formatTitle(heading.title)} />}
                 {heading.body && <p class="mt-6 max-w-[62ch] text-lg leading-relaxed text-black/70">{heading.body}</p>}
             </div>
         )

@@ -93,7 +93,7 @@ const cartoKey = import.meta.env.PUBLIC_CARTO_KEY ?? "";
             <Measure num="01" label={t("batucada.navWhoWeAre")} filled={2} />
 
             <p class:list={[bp.eyebrow]} data-bp-hit>{d.introHeading.eyebrow}</p>
-            <h2
+            <h2 data-scroll-float
                 id="intro-title"
                 class:list={[bp.h2, "max-w-[13ch] text-[clamp(2.4rem,5vw,5.4rem)]"]}
                 data-bp-hit
@@ -171,7 +171,7 @@ const cartoKey = import.meta.env.PUBLIC_CARTO_KEY ?? "";
             </figure>
             <div class="min-w-0">
                 <p class={bp.eyebrow} data-bp-hit>{d.pulseHeading.eyebrow}</p>
-                <h2 id="pulse-title" class="font-bp mt-4 max-w-[12ch] text-balance text-[clamp(2.1rem,3.4vw,3.9rem)] uppercase leading-[0.96] tracking-[-0.03em]" data-bp-hit set:html={formatTitle(d.pulseHeading.title)} />
+                <h2 data-scroll-float id="pulse-title" class="font-bp mt-4 max-w-[12ch] text-balance text-[clamp(2.1rem,3.4vw,3.9rem)] uppercase leading-[0.96] tracking-[-0.03em]" data-bp-hit set:html={formatTitle(d.pulseHeading.title)} />
                 <p class:list={[bp.body, "mt-7 max-w-[46ch]"]} data-bp-hit>{d.pulseHeading.body}</p>
                 <p class:list={[bp.body, "mt-7 max-w-[46ch] border-t-[3px] border-black pt-6 font-black"]} data-bp-hit>{d.pulseHighlight}</p>
             </div>
@@ -184,7 +184,7 @@ const cartoKey = import.meta.env.PUBLIC_CARTO_KEY ?? "";
             <Measure num="02" label={t("batucada.navHowWeWork")} filled={4} numClass="text-bp-blue" />
 
             <p class:list={[bp.eyebrow, "text-bp-blue"]} data-bp-hit>{d.methodHeading.eyebrow}</p>
-            <h2 id="method-title" class:list={[bp.h2, "max-w-[14ch]"]} data-bp-hit set:html={formatTitle(d.methodHeading.title)} />
+            <h2 data-scroll-float id="method-title" class:list={[bp.h2, "max-w-[14ch]"]} data-bp-hit set:html={formatTitle(d.methodHeading.title)} />
 
             <ol class="mt-[clamp(2rem,4.5vw,3.5rem)] border-t-[3px] border-white" data-bp-clave>
                 {
@@ -209,7 +209,7 @@ const cartoKey = import.meta.env.PUBLIC_CARTO_KEY ?? "";
             <Measure num="03" label={t("batucada.navWhereItSounds")} filled={6} numClass="text-white" />
 
             <p class={bp.eyebrow} data-bp-hit>{d.territoryHeading.eyebrow}</p>
-            <h2 id="territory-title" class:list={[bp.h2, "max-w-[14ch]"]} data-bp-hit set:html={formatTitle(d.territoryHeading.title, "text-accent")} />
+            <h2 data-scroll-float id="territory-title" class:list={[bp.h2, "max-w-[14ch]"]} data-bp-hit set:html={formatTitle(d.territoryHeading.title, "text-accent")} />
 
             <div class="mt-[clamp(2rem,4.5vw,3.5rem)] grid items-stretch gap-[clamp(2.25rem,5vw,4.5rem)] lg:grid-cols-[minmax(24rem,0.9fr)_minmax(0,1.1fr)]">
                 <div>
@@ -253,7 +253,7 @@ const cartoKey = import.meta.env.PUBLIC_CARTO_KEY ?? "";
             <div class="grid items-center gap-[clamp(2.25rem,5vw,4.5rem)] lg:grid-cols-[minmax(0,1.05fr)_minmax(20rem,0.95fr)]">
                 <div>
                     <p class={bp.eyebrow} data-bp-hit>{d.actionHeading.eyebrow}</p>
-                    <h2 id="action-title" class:list={[bp.h2, "max-w-[12ch]"]} data-bp-hit set:html={formatTitle(d.actionHeading.title)} />
+                    <h2 data-scroll-float id="action-title" class:list={[bp.h2, "max-w-[12ch]"]} data-bp-hit set:html={formatTitle(d.actionHeading.title)} />
                 </div>
                 <ol class="border-t-[3px] border-black" data-bp-clave>
                     {
@@ -273,7 +273,7 @@ const cartoKey = import.meta.env.PUBLIC_CARTO_KEY ?? "";
         <!-- ============ INTERLUDIO · ECOSISTEMA ============ -->
         <section class:list={[bp.block, bp.fieldInk]} aria-labelledby="eco-title" data-bp-scene>
             <p class:list={[bp.eyebrow, "text-bp-blue"]} data-bp-hit>{d.ecoHeading.eyebrow}</p>
-            <h2 id="eco-title" class:list={[bp.h2, "max-w-[12ch]"]} data-bp-hit set:html={formatTitle(d.ecoHeading.title)} />
+            <h2 data-scroll-float id="eco-title" class:list={[bp.h2, "max-w-[12ch]"]} data-bp-hit set:html={formatTitle(d.ecoHeading.title)} />
             <p class:list={[bp.body, "mt-7 max-w-[56ch]"]} data-bp-hit>{d.ecoHeading.body}</p>
             <ul class="mt-[clamp(1.75rem,3.5vw,2.75rem)] flex flex-wrap gap-x-[1.1rem] gap-y-4" data-bp-clave>
                 {
@@ -292,7 +292,7 @@ const cartoKey = import.meta.env.PUBLIC_CARTO_KEY ?? "";
         <!-- ============ RECONOCIMIENTOS ============ -->
         <section class={bp.block} aria-labelledby="awards-title" data-bp-scene>
             <p class:list={[bp.eyebrow, "text-primary"]} data-bp-hit>{d.awardsHeading.eyebrow}</p>
-            <h2 id="awards-title" class:list={[bp.h2, "max-w-[13ch]"]} data-bp-hit set:html={formatTitle(d.awardsHeading.title)} />
+            <h2 data-scroll-float id="awards-title" class:list={[bp.h2, "max-w-[13ch]"]} data-bp-hit set:html={formatTitle(d.awardsHeading.title)} />
             <ol class="mt-[clamp(2rem,4.5vw,3.5rem)] grid grid-cols-[repeat(auto-fill,minmax(min(19rem,100%),1fr))] gap-[clamp(1.5rem,2.5vw,2.25rem)]" data-bp-clave>
                 {
                     awards.map((award, index) => (
@@ -333,7 +333,7 @@ const cartoKey = import.meta.env.PUBLIC_CARTO_KEY ?? "";
         <!-- ============ CODA · DERECHOS ============ -->
         <section class:list={[bp.block, bp.fieldInk]} aria-labelledby="rights-title" data-bp-scene>
             <p class:list={[bp.eyebrow, "text-bp-blue"]} data-bp-hit>{d.rightsHeading.eyebrow}</p>
-            <h2
+            <h2 data-scroll-float
                 id="rights-title"
                 class:list={[bp.mega, "mt-5 [text-shadow:0.04em_0.04em_0_rgba(41,170,225,0.28)]"]}
                 data-bp-hit
@@ -362,7 +362,7 @@ const cartoKey = import.meta.env.PUBLIC_CARTO_KEY ?? "";
         >
             <div>
                 <p class={bp.eyebrow} data-bp-hit>{d.ctaHeading.eyebrow}</p>
-                <h2 id="cta-title" class:list={[bp.riso, "font-bp mt-4 max-w-[12ch] text-balance text-[clamp(2.4rem,4.6vw,5.4rem)] uppercase leading-[0.96] tracking-[-0.03em]"]} data-bp-hit set:html={formatTitle(d.ctaHeading.title)} />
+                <h2 data-scroll-float id="cta-title" class:list={[bp.riso, "font-bp mt-4 max-w-[12ch] text-balance text-[clamp(2.4rem,4.6vw,5.4rem)] uppercase leading-[0.96] tracking-[-0.03em]"]} data-bp-hit set:html={formatTitle(d.ctaHeading.title)} />
             </div>
             <div class="flex flex-col flex-wrap items-stretch gap-x-6 gap-y-4 text-center sm:flex-row sm:items-center sm:text-left" data-bp-hit>
                 <a class:list={[bp.button, bp.buttonInk, "focus-visible:outline-black"]} href={d.ctaPrimary.href} target="_blank" rel="noopener noreferrer">{d.ctaPrimary.text}</a>

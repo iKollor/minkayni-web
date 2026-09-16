@@ -1,18 +1,20 @@
 ---
 import Reloj from "./Reloj.astro";
 
-import NavButton from "./NavButton.astro";
 import Button from "./Button.astro";
 
 import IsotipoIcon from "../assets/SVG/ISOTIPO_WHITE.svg";
 import LogoIconWhite from "../assets/SVG/LOGO_WHITE.svg";
-import BurgerIcon from "./BurgerIcon.astro";
-import LanguageSwitcher from "./LanguageSwitcher.astro";
+import NavMenu from "./react/NavMenu";
+import MenuToggle from "./react/MenuToggle";
+import type { MenuData } from "./react/menu-types";
 import type { NavTree } from "../schemas/navigation";
 import { defaultLocale, localizePath, useTranslations, type Locale } from "../i18n";
 
 interface Props {
     buttons: NavTree;
+    /** Datos del megamenú y del panel (ver utils/menu-data.ts). */
+    menu: MenuData;
     /** Idioma de la página. Define el texto accesible y el estado del selector. */
     locale?: Locale;
     /** Clase extra para el botón CTA (no lo toca la tinta adaptativa). */
@@ -21,12 +23,11 @@ interface Props {
     enableTheming?: boolean;
 }
 
-const { buttons, buttonClassName = "", enableTheming = true, locale = defaultLocale } = Astro.props;
+const { buttons, menu, buttonClassName = "", enableTheming = true, locale = defaultLocale } = Astro.props;
+/* Enlaces de la barra: los de estilo normal, en su orden. El CTA se pinta aparte. */
+const barItems = menu.items.filter((item) => buttons.some((b) => b.path === item.href && (b.additionalFields?.style ?? "default") === "default"));
 const t = useTranslations(locale);
 const homeHref = localizePath("/", locale);
-const submenuButtons = buttons
-    .map((button, index) => ({ button, index }))
-    .filter(({ button }) => Array.isArray(button.items) && button.items.length > 0);
 ---
 
 <div class="fixed w-full h-[90px] z-50 hidden" id="nav-container" data-nav-theming={enableTheming}>
@@ -37,18 +38,10 @@ const submenuButtons = buttons
                     <a href={homeHref} class="animate" aria-label={t("nav.goHome")}>
                         <IsotipoIcon class="h-10 mr-10" />
                     </a>
-                    {/* La lista mide lo que miden sus enlaces (`shrink-0`, sin partir
-                        palabras) y el reloj se queda con el resto. Antes ambos llevaban
-                        `w-full` y se repartían el hueco al 50%: con las etiquetas
-                        inglesas, más largas, la lista quedaba más estrecha que sus
-                        propios enlaces y «About us» se partía entre 1024 y 1200px. */}
-                    <div class="flex shrink-0 items-center gap-8 whitespace-nowrap animate">
-                        {buttons.map((button, index) => ((button.additionalFields?.style ?? "default") === "default" ? <NavButton button={button} index={index} /> : null))}
-                    </div>
+                    {/* Megamenú de escritorio (Aceternity navbar-menu): enlaces,
+                        desplegable de proyectos y selector de idioma. */}
+                    <NavMenu client:load items={barItems} projectsHref={menu.projectsHref} projects={menu.projects} languages={menu.languages} labels={menu.labels} />
                     <Reloj locale={locale} />
-                    {/* El margen no es decorativo: sin él el selector queda pegado
-                        al CTA y se lee como parte del botón. */}
-                    <LanguageSwitcher locale={locale} class="shrink-0 mr-8 xl:mr-10" />
                     <div class="nav-cta flex items-center">
                         {
                             buttons.map((button) => {
@@ -64,62 +57,13 @@ const submenuButtons = buttons
                     <a href={homeHref} aria-label={t("nav.goHome")}>
                         <LogoIconWhite class="h-10 w-auto" />
                     </a>
-                    {/* Al hacer scroll, y en móvil, esta es la única barra visible:
-                        sin el selector aquí habría que abrir el menú para cambiar
-                        de idioma. Va junto a la hamburguesa, no suelto, para que
-                        `justify-between` no lo mande al centro. */}
-                    <div class="flex items-center gap-4 sm:gap-6">
-                        <LanguageSwitcher locale={locale} class="shrink-0" />
-                        {/* La hamburguesa se dibuja a la mitad de su tamaño
-                            (`scale-50 origin-right`) sobre una caja de 100px, así
-                            que arrastra 50px de espacio muerto a su izquierda. El
-                            margen negativo lo recupera sin tocar el icono: sin él
-                            ese hueco se come el aire del selector y lo pega al
-                            logotipo en pantallas estrechas. */}
-                        <div class="-ml-[50px] flex items-center">
-                            <BurgerIcon />
-                        </div>
-                    </div>
+                    {/* Botón del panel escalonado. El panel vive fuera del navbar
+                        (ver MenuToggle.tsx) y se hablan por eventos. */}
+                    <MenuToggle client:load openLabel={menu.labels.open} closeLabel={menu.labels.close} />
                 </div>
             </div>
         </div>
     </div>
-
-    {
-        submenuButtons.map(({ button, index }) => (
-            <nav
-                id={`navbar-submenu-${index}`}
-                class="navbar-submenu absolute top-[68px] min-w-64 rounded-[1.5rem] border border-black/10 bg-[var(--bg-white)] p-3 text-black opacity-0 invisible pointer-events-none -translate-y-2 shadow-[0_24px_60px_rgba(35,15,55,0.22)] transition-[opacity,transform,visibility] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                aria-label={t("nav.submenuOf", { title: button.title })}
-            >
-                <p class="px-4 pb-2 pt-2 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-primary/70" aria-hidden="true">{button.title}</p>
-                <ul>
-                    {button.items?.map((item, itemIndex) => (
-                        <li>
-                            <a
-                                href={item.path}
-                                class="group flex items-baseline gap-3 rounded-xl px-4 py-3 transition-colors duration-200 hover:bg-primary/5 focus-visible:bg-primary/5 focus-visible:outline-none"
-                            >
-                                <span class="font-display text-[0.7rem] font-bold text-black/35 transition-colors duration-200 group-hover:text-primary group-focus-visible:text-primary" aria-hidden="true">
-                                    0{itemIndex + 1}
-                                </span>
-                                <span class="relative overflow-hidden pb-0.5 font-display text-base font-bold text-black transition-colors duration-200 group-hover:text-primary group-focus-visible:text-primary">
-                                    {item.title}
-                                    <span
-                                        class="pointer-events-none absolute bottom-0 left-0 h-[1.5px] w-full rounded-full bg-primary -translate-x-[101%] transition-transform duration-300 ease-out group-hover:translate-x-0 group-focus-visible:translate-x-0"
-                                        aria-hidden="true"
-                                    />
-                                </span>
-                                <span class="ml-auto text-sm text-primary opacity-0 -translate-x-1 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0 group-focus-visible:opacity-100 group-focus-visible:translate-x-0" aria-hidden="true">
-                                    ↗
-                                </span>
-                            </a>
-                        </li>
-                    ))}
-                </ul>
-            </nav>
-        ))
-    }
 </div>
 
 <style is:global>
@@ -143,7 +87,7 @@ const submenuButtons = buttons
     }
 
     #nav-container :is(#navBase, #navScrolled),
-    #nav-container :is(#navBase, #navScrolled) :is(a, p, span, div, svg):not(.nav-cta):not(.nav-cta *) {
+    #nav-container :is(#navBase, #navScrolled) :is(a, p, span, div, svg, button, nav):not(.nav-cta):not(.nav-cta *) {
         color: var(--nav-ink);
         transition: color 350ms ease;
     }
@@ -360,77 +304,11 @@ const submenuButtons = buttons
         applyTheme();
     };
 
-    const initNavbarSubmenus = () => {
-        const submenuElements = Array.from(document.querySelectorAll<HTMLElement>(".navbar-submenu"));
-        if (submenuElements.length === 0) return;
-
-        let closeTimer: number | undefined;
-
-        const setExpanded = (trigger: HTMLElement, expanded: boolean) => {
-            trigger.querySelector("a")?.setAttribute("aria-expanded", String(expanded));
-        };
-
-        const hideAll = () => {
-            submenuElements.forEach((submenu) => {
-                submenu.classList.add("opacity-0", "invisible", "pointer-events-none", "-translate-y-2");
-                submenu.classList.remove("opacity-100", "visible", "pointer-events-auto", "translate-y-0");
-                const index = submenu.id.replace("navbar-submenu-", "");
-                const trigger = document.getElementById(`nav-button-${index}`);
-                if (trigger) setExpanded(trigger, false);
-            });
-        };
-
-        submenuElements.forEach((submenu) => {
-            const index = submenu.id.replace("navbar-submenu-", "");
-            const trigger = document.getElementById(`nav-button-${index}`);
-            if (!trigger) return;
-
-            const triggerLink = trigger.querySelector("a");
-            triggerLink?.setAttribute("aria-haspopup", "true");
-            triggerLink?.setAttribute("aria-expanded", "false");
-            triggerLink?.setAttribute("aria-controls", submenu.id);
-
-            const show = () => {
-                window.clearTimeout(closeTimer);
-                hideAll();
-
-                const triggerRect = trigger.getBoundingClientRect();
-                const submenuWidth = submenu.offsetWidth || 240;
-                const left = Math.min(Math.max(16, triggerRect.left), window.innerWidth - submenuWidth - 16);
-                submenu.style.left = `${left}px`;
-                submenu.classList.remove("opacity-0", "invisible", "pointer-events-none", "-translate-y-2");
-                submenu.classList.add("opacity-100", "visible", "pointer-events-auto", "translate-y-0");
-                setExpanded(trigger, true);
-            };
-
-            const scheduleHide = () => {
-                window.clearTimeout(closeTimer);
-                closeTimer = window.setTimeout(hideAll, 140);
-            };
-
-            trigger.addEventListener("mouseenter", show);
-            trigger.addEventListener("mouseleave", scheduleHide);
-            trigger.addEventListener("focusin", show);
-            trigger.addEventListener("focusout", scheduleHide);
-            submenu.addEventListener("mouseenter", () => window.clearTimeout(closeTimer));
-            submenu.addEventListener("mouseleave", scheduleHide);
-            submenu.addEventListener("focusin", () => window.clearTimeout(closeTimer));
-            submenu.addEventListener("focusout", scheduleHide);
-        });
-
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "Escape") hideAll();
-        });
-        window.addEventListener("resize", hideAll, { passive: true });
-    };
-
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", () => {
             initNavSwitcher();
-            initNavbarSubmenus();
         }, { once: true });
     } else {
         initNavSwitcher();
-        initNavbarSubmenus();
     }
 </script>

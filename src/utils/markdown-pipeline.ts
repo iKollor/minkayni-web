@@ -18,7 +18,9 @@ import type { RehypePlugins } from "@astrojs/markdown-remark";
 import rehypeModular, { type ModularConfig } from "./rehype-modular";
 
 const modularConfig: ModularConfig = {
-    /* SHORTCODES en texto: {{odometer:150}} → <span id="odometer"><span class="current">150</span></span> */
+    /* SHORTCODES en texto: {{odometer:150}} → <span data-count="150">150</span>.
+       El contador animado (Counter de reactbits) lo monta CounterMount sobre
+       cualquier [data-count] del sitio; aquí solo se deja el número en el HTML. */
     textPatterns: [
         {
             pattern: /{{\s*odometer\s*:\s*(\d{1,6})\s*}}/g,
@@ -27,15 +29,8 @@ const modularConfig: ModularConfig = {
                 return {
                     type: "element",
                     tagName: "span",
-                    properties: { id: "odometer", className: ["tabular-nums", "font-semibold"] },
-                    children: [
-                        {
-                            type: "element",
-                            tagName: "span",
-                            properties: { className: ["current"] },
-                            children: [{ type: "text", value: num }],
-                        },
-                    ],
+                    properties: { "data-count": num, className: ["tabular-nums", "font-semibold"] },
+                    children: [{ type: "text", value: num }],
                 };
             },
         },

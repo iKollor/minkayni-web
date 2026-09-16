@@ -71,7 +71,7 @@ const faq = d.faq.filter((item) => item?.question && item?.answer);
     <section class="mx-auto w-[90%] max-w-[1100px] py-16 sm:py-24" aria-labelledby="donate-intro-title">
         <div class="max-w-[62ch]" data-reveal>
             <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.intro.eyebrow}</p>
-            <h2 id="donate-intro-title" class="font-display text-4xl font-black leading-[0.95] text-black sm:text-6xl" set:html={formatTitle(d.intro.title, "text-secondary-deep")} />
+            <h2 data-scroll-float id="donate-intro-title" class="font-display text-4xl font-black leading-[0.95] text-black sm:text-6xl" set:html={formatTitle(d.intro.title, "text-secondary-deep")} />
             <p class="mt-6 text-lg leading-relaxed text-black/75">{d.intro.body}</p>
         </div>
 
@@ -96,7 +96,7 @@ const faq = d.faq.filter((item) => item?.question && item?.answer);
     <section class="mx-auto w-[94%] max-w-[1200px] rounded-[2.5rem] bg-primary px-6 py-14 text-white sm:px-12 lg:rounded-[4rem] lg:px-16 lg:py-20" aria-labelledby="donate-accounts-title">
         <div class="max-w-[62ch]" data-reveal>
             <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">{d.accountsHeading.eyebrow}</p>
-            <h2 id="donate-accounts-title" class="font-display text-4xl font-black leading-[0.95] sm:text-6xl" set:html={formatTitle(d.accountsHeading.title, "text-secondary")} />
+            <h2 data-scroll-float id="donate-accounts-title" class="font-display text-4xl font-black leading-[0.95] sm:text-6xl" set:html={formatTitle(d.accountsHeading.title, "text-secondary")} />
             <p class="mt-6 text-lg leading-relaxed text-white/80">{d.accountsHeading.body}</p>
         </div>
 
@@ -204,7 +204,7 @@ const faq = d.faq.filter((item) => item?.question && item?.answer);
             <section class="mx-auto w-[90%] max-w-[1200px] py-20 sm:py-28" aria-labelledby="donate-methods-title">
                 <div class="max-w-[62ch]" data-reveal>
                     <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{d.paymentMethodsHeading.eyebrow}</p>
-                    <h2 id="donate-methods-title" class="font-display text-4xl font-black leading-[0.95] text-black sm:text-6xl" set:html={formatTitle(d.paymentMethodsHeading.title, "text-primary")} />
+                    <h2 data-scroll-float id="donate-methods-title" class="font-display text-4xl font-black leading-[0.95] text-black sm:text-6xl" set:html={formatTitle(d.paymentMethodsHeading.title, "text-primary")} />
                     {d.paymentMethodsHeading.body && <p class="mt-6 text-lg leading-relaxed text-black/75">{d.paymentMethodsHeading.body}</p>}
                 </div>
 
@@ -230,7 +230,7 @@ const faq = d.faq.filter((item) => item?.question && item?.answer);
             <section class="mx-auto w-[90%] max-w-[1200px] py-20 sm:py-28" aria-labelledby="donate-apps-title">
                 <div class="max-w-[62ch]" data-reveal>
                     <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{d.transferAppsHeading.eyebrow}</p>
-                    <h2 id="donate-apps-title" class="font-display text-4xl font-black leading-[0.95] text-black sm:text-6xl" set:html={formatTitle(d.transferAppsHeading.title, "text-primary")} />
+                    <h2 data-scroll-float id="donate-apps-title" class="font-display text-4xl font-black leading-[0.95] text-black sm:text-6xl" set:html={formatTitle(d.transferAppsHeading.title, "text-primary")} />
                     {d.transferAppsHeading.body && <p class="mt-6 text-lg leading-relaxed text-black/75">{d.transferAppsHeading.body}</p>}
                 </div>
 
@@ -259,7 +259,7 @@ const faq = d.faq.filter((item) => item?.question && item?.answer);
             <section class="mx-auto w-[90%] max-w-[1100px] pb-20 sm:pb-28" aria-labelledby="donate-faq-title">
                 <div class="max-w-[62ch]" data-reveal>
                     <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.faqHeading.eyebrow}</p>
-                    <h2 id="donate-faq-title" class="font-display text-4xl font-black leading-[0.95] text-black sm:text-6xl" set:html={formatTitle(d.faqHeading.title, "text-secondary-deep")} />
+                    <h2 data-scroll-float id="donate-faq-title" class="font-display text-4xl font-black leading-[0.95] text-black sm:text-6xl" set:html={formatTitle(d.faqHeading.title, "text-secondary-deep")} />
                 </div>
 
                 <ul class="mt-12 space-y-4" data-reveal-group>
@@ -283,7 +283,7 @@ const faq = d.faq.filter((item) => item?.question && item?.answer);
     <section class="mx-auto w-[90%] max-w-[1200px] pb-20 sm:pb-28" aria-labelledby="donate-impact-title">
         <div class="max-w-[62ch]" data-reveal>
             <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{d.impactHeading.eyebrow}</p>
-            <h2 id="donate-impact-title" class="font-display text-4xl font-black leading-[0.95] text-primary sm:text-6xl" set:html={formatTitle(d.impactHeading.title, "text-accent")} />
+            <h2 data-scroll-float id="donate-impact-title" class="font-display text-4xl font-black leading-[0.95] text-primary sm:text-6xl" set:html={formatTitle(d.impactHeading.title, "text-accent")} />
         </div>
 
         <ul class="mt-12 grid gap-5 md:grid-cols-3" data-reveal-group>
@@ -302,7 +302,7 @@ const faq = d.faq.filter((item) => item?.question && item?.answer);
     <section class="mx-auto mb-44 w-[90%] max-w-[1200px] pb-40" aria-labelledby="donate-other-title">
         <div class="max-w-[62ch]" data-reveal>
             <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.otherWaysHeading.eyebrow}</p>
-            <h2 id="donate-other-title" class="font-display text-4xl font-black leading-[0.95] text-black sm:text-6xl" set:html={formatTitle(d.otherWaysHeading.title, "text-secondary-deep")} />
+            <h2 data-scroll-float id="donate-other-title" class="font-display text-4xl font-black leading-[0.95] text-black sm:text-6xl" set:html={formatTitle(d.otherWaysHeading.title, "text-secondary-deep")} />
         </div>
 
         <ul class="mt-12 grid gap-5 md:grid-cols-3" data-reveal-group>

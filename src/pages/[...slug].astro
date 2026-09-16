@@ -30,11 +30,10 @@ const description = page.seo?.metaDescription ?? page.description ?? undefined;
 
 <script>
     import { initBatucadaAnchors } from "../scripts/batucada/motion";
-    import { initReveals, initCounters } from "../scripts/reveals";
+    import { initReveals } from "../scripts/reveals";
 
     const initBuilderPage = () => {
         initBatucadaAnchors(); // anclas internas con offset por navbar fija
-        initCounters();
         initReveals();
     };
 

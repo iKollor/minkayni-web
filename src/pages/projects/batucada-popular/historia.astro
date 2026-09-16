@@ -32,7 +32,7 @@ const timeline = d.timeline;
         <section class="mx-auto my-[clamp(2.25rem,5vw,4.5rem)] w-[94%] max-w-[1440px] rounded-[2.75rem] bg-[#dedbd4] px-4 py-14 sm:px-8 lg:rounded-[5rem] lg:px-14 lg:py-20" aria-label={t("batucada.timeline")} data-bp-scene>
             <div class="mb-10 max-w-[760px]">
                 <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary" data-bp-hit>{d.timelineHeading.eyebrow}</p>
-                <h2 class="font-display text-4xl font-black leading-none text-black sm:text-6xl" data-bp-hit set:html={formatTitle(d.timelineHeading.title)} />
+                <h2 data-scroll-float class="font-display text-4xl font-black leading-none text-black sm:text-6xl" data-bp-hit set:html={formatTitle(d.timelineHeading.title)} />
             </div>
             <ImmersiveTimeline items={timeline} ariaLabel={t("batucada.timeline")} />
         </section>
@@ -57,7 +57,7 @@ const timeline = d.timeline;
             </figure>
             <div class="min-w-0">
                 <p class={bp.eyebrow} data-bp-hit>{d.senseHeading.eyebrow}</p>
-                <h2 id="sentido-title" class="font-bp mt-4 max-w-[12ch] text-balance text-[clamp(2.1rem,3.4vw,3.9rem)] uppercase leading-[0.96] tracking-[-0.03em]" data-bp-hit set:html={formatTitle(d.senseHeading.title)} />
+                <h2 data-scroll-float id="sentido-title" class="font-bp mt-4 max-w-[12ch] text-balance text-[clamp(2.1rem,3.4vw,3.9rem)] uppercase leading-[0.96] tracking-[-0.03em]" data-bp-hit set:html={formatTitle(d.senseHeading.title)} />
                 <p class:list={[bp.body, "mt-7 max-w-[46ch]"]} data-bp-hit>{d.senseHeading.body}</p>
                 <p class:list={[bp.body, "mt-7 max-w-[46ch] border-t-[3px] border-accent pt-6 font-black"]} data-bp-hit>{d.senseHighlight}</p>
             </div>
@@ -72,7 +72,7 @@ const timeline = d.timeline;
         >
             <div>
                 <p class={bp.eyebrow} data-bp-hit>{d.ctaHeading.eyebrow}</p>
-                <h2 id="historia-cta-title" class:list={[bp.riso, "font-bp mt-4 max-w-[12ch] text-balance text-[clamp(2.4rem,4.6vw,5.4rem)] uppercase leading-[0.96] tracking-[-0.03em]"]} data-bp-hit set:html={formatTitle(d.ctaHeading.title)} />
+                <h2 data-scroll-float id="historia-cta-title" class:list={[bp.riso, "font-bp mt-4 max-w-[12ch] text-balance text-[clamp(2.4rem,4.6vw,5.4rem)] uppercase leading-[0.96] tracking-[-0.03em]"]} data-bp-hit set:html={formatTitle(d.ctaHeading.title)} />
             </div>
             <div class="flex flex-col flex-wrap items-stretch gap-x-6 gap-y-4 text-center sm:flex-row sm:items-center sm:text-left" data-bp-hit>
                 <a class:list={[bp.button, bp.buttonInk, "focus-visible:outline-black"]} href={d.ctaPrimary.href}>{d.ctaPrimary.text}</a>

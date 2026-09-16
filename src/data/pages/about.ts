@@ -15,7 +15,7 @@ export const aboutFallback = {
     intro: {
         eyebrow: "Fundación MINKAYNI",
         title: "Desde los barrios\n*también se produce* futuro.",
-        body: "Somos una organización social ecuatoriana, sin fines de lucro, nacida en el Suburbio de Guayaquil. Nuestro nombre viene de la *minka*, la tradición andina de trabajo colectivo: nadie transforma un barrio solo. Con más de quince años de trayectoria territorial de nuestro equipo, acompañamos a niñas, niños, adolescentes, jóvenes y familias mediante el arte, la educación popular y la organización comunitaria.",
+        body: "Somos una organización social ecuatoriana, sin fines de lucro, nacida en el Suburbio de Guayaquil. Nuestro nombre une dos palabras kichwas: *minka*, el trabajo colectivo, y *ayni*, la reciprocidad entre iguales; nadie transforma un barrio solo. Con más de quince años de trayectoria territorial de nuestro equipo, acompañamos a niñas, niños, adolescentes, jóvenes y familias mediante el arte, la educación popular y la organización comunitaria.",
     },
     actionLines: [
         {
@@ -67,7 +67,7 @@ export const aboutFallback = {
             chip: "2020",
             period: "2020",
             title: "Nace la Fundación MINKAYNI",
-            text: "En plena pandemia nos constituimos jurídicamente como fundación sin fines de lucro (Resolución MIES-CZ-8-DDG1-2020-0059-R, 30 de junio de 2020), con domicilio en Guayaquil y alcance nacional. La música ayudó a reencontrarse cuando el miedo vaciaba las calles.",
+            text: "En plena pandemia nos constituimos jurídicamente como fundación sin fines de lucro, con domicilio en Guayaquil y alcance nacional. Tomamos el nombre de dos palabras del kichwa: “minka”, el trabajo colectivo por el bien común, y “ayni”, la reciprocidad de dar y recibir entre iguales. La música ayudó a reencontrarse cuando el miedo vaciaba las calles.",
             image: null as CmsMedia,
             imageAlt: "Niñas y niños de la batucada tocando baldes reciclados como tambores durante la pandemia",
             localImage: pandemia,

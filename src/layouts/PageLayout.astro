@@ -2,7 +2,11 @@
 import "../styles/global.css";
 import Footer from "../components/Footer.astro";
 import Navbar from "../components/Navbar.astro";
-import Menu from "../components/Menu.astro";
+import SiteMenu from "../components/react/SiteMenu";
+import PixelCurtain from "../components/react/PixelCurtain";
+import CounterMount from "../components/react/CounterMount";
+import ScrollFloatTitles from "../components/react/ScrollFloatTitles";
+import { buildMenuData } from "../utils/menu-data";
 import Hero from "../components/Hero.astro";
 import SiteGrain from "../components/SiteGrain.astro";
 import Head from "./lib/head.astro";
@@ -28,15 +32,19 @@ interface Props {
 /* El idioma sale de la URL: `/en/about` es inglés, `/about` español. Así
    ninguna página tiene que acordarse de declararlo. */
 const locale = getLocale(Astro.url);
-const { navHeader, footer, site } = await loadLayoutContent(locale);
+const { navHeader, footer, projects } = await loadLayoutContent(locale);
+const menu = buildMenuData({ locale, navHeader, footer, projects, currentPath: Astro.url.pathname });
 const { title, description, noindex, image, imageAlt, showHero = true, buttonClassName = "", enableNavTheming } = Astro.props;
 ---
 
 <Head title={title} description={description} noindex={noindex} image={image} imageAlt={imageAlt}>
     <SiteGrain />
 
-    <Navbar buttons={navHeader} buttonClassName={buttonClassName} enableTheming={enableNavTheming} locale={locale} />
-    <Menu buttons={navHeader} socials={footer.Socials} menuLabel={site.menuLabel} contactEmail={site.contactEmail} locale={locale} />
+    <Navbar buttons={navHeader} buttonClassName={buttonClassName} enableTheming={enableNavTheming} locale={locale} menu={menu} />
+    <SiteMenu client:load {...menu} />
+    <PixelCurtain client:load />
+    <CounterMount client:idle />
+    <ScrollFloatTitles client:idle />
 
     <div id="smooth-wrapper" class="overflow-x-hidden">
         <div id="smooth-content" class="flex flex-col min-h-svh">
