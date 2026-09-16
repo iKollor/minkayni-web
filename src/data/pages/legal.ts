@@ -62,3 +62,50 @@ export const legalFallback = {
 };
 
 export type LegalContent = typeof legalFallback;
+
+/* Versión en inglés.
+
+   Solo cambia la prosa. Los valores de identidad —razón social, RUC, número
+   de resolución, código SUIOS, dirección— se repiten IGUALES a propósito: son
+   los que constan en los registros del Estado ecuatoriano, y traducirlos haría
+   que no coincidieran con el documento que un verificador tiene delante. Por
+   la misma razón `legalName` sigue siendo FUNDACIÓN MINKAYNI.
+
+   Esta página no existe todavía como documento en Strapi, así que hoy este
+   fallback ES el contenido. Si algún día se crea en el CMS, lo de allí manda. */
+export const legalFallbackEn: LegalContent = {
+    ...legalFallback,
+
+    eyebrow: "Legal transparency",
+    title: "An organisation legally constituted in Ecuador",
+    intro: "Fundación MINKAYNI is a non-governmental, non-profit organisation under private law with a social purpose, granted legal personality by the Ecuadorian State and currently registered in the Unified Information System for Social Organisations (SUIOS).",
+
+    legalForm: "Non-profit foundation (NGO)",
+    legalStatus: "Active — tax status ACTIVE (SRI) and “Registered” in the SUIOS",
+    ministryResolution:
+        "Resolution No. MIES-CZ-8-DDG1-2020-0059-R, of 30 June 2020, issued by the Ministry of Economic and Social Inclusion (MIES)",
+    incorporationDate: "30 June 2020",
+    suiosCode: "0000130796 — Unified System of Social Organisations (SUIOS), Ministry of Government",
+    boardRegistration:
+        "Official letter No. MIES-CZ-8-DDGM-2024-1822-OF, of 18 November 2024 (board registered for the period 3 July 2024 – 3 July 2028)",
+    legalRepresentative: "Héctor Xavier Moreira Flores, President and legal representative",
+    economicActivity: "S94110001 — Activities of non-profit organisations for the development of a given geographical area",
+
+    addressStreet: "Calle 44 ava N.° 817, between Rosendo Avilés and Chambers",
+    addressLocality: "Febres Cordero parish, Guayaquil",
+
+    verificationLinks: [
+        { text: "Check the RUC with the SRI", href: "https://srienlinea.sri.gob.ec/sri-en-linea/SriRucWeb/ConsultaRuc/Consultas/consultaRuc" },
+        { text: "Check the SUIOS registration", href: "https://www.sociedadcivil.gob.ec/" },
+    ],
+
+    note: "The original certificates (RUC, SUIOS registration certificate, board registration and statutes) are available for verification, audit and due diligence processes. Request them at admin@minkayni.org.",
+
+    pageLink: { text: "Legal transparency", href: "/transparencia" },
+
+    seo: {
+        metaTitle: "Legal transparency · Minkayni Foundation",
+        metaDescription:
+            "Verifiable legal data for Fundación MINKAYNI: RUC 0993333182001, resolution MIES-CZ-8-DDG1-2020-0059-R, SUIOS registration 0000130796, registered address and official contact in Guayaquil, Ecuador.",
+    },
+};

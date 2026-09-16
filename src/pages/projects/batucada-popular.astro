@@ -11,9 +11,12 @@ import BatucadaLogo from "@/assets/batucada-popular/logo-batucada-popular.svg";
 import { batucadaFallback } from "@/data/pages/batucada";
 import { loadPageContent } from "@/utils/page-content";
 import { formatTitle, splitParagraphs } from "@/utils/rich-title";
+import { getLocale, useTranslations } from "../../i18n";
 
 /* Contenido: single type `batucada-page` en Strapi, con fallback local. */
-const d = await loadPageContent("batucadaPage", batucadaFallback);
+const locale = getLocale(Astro.url);
+const t = useTranslations(locale);
+const d = await loadPageContent("batucadaPage", batucadaFallback, locale);
 
 const methodSteps = d.methodSteps;
 /* El orden de `sectors` enlaza la lista con los pines del mapa (data-bp-sectors). */
@@ -32,7 +35,7 @@ const sectorsJson = JSON.stringify(sectors.map(({ name, lat, lng }) => ({ name, 
 const cartoKey = import.meta.env.PUBLIC_CARTO_KEY ?? "";
 ---
 
-<PageLayout title="Batucada Popular" showHero={false} description={d.seo.metaDescription}>
+<PageLayout title={t("page.batucada")} showHero={false} description={d.seo.metaDescription}>
     <article class="overflow-clip bg-white text-black">
         <!-- ============ HERO: campo azul de marca ============ -->
         <header
@@ -87,7 +90,7 @@ const cartoKey = import.meta.env.PUBLIC_CARTO_KEY ?? "";
 
         <!-- ============ 01 · QUIÉNES SOMOS + ORIGEN ============ -->
         <section id="historia" class:list={[bp.block, "scroll-mt-[92px]"]} aria-labelledby="intro-title" data-bp-scene>
-            <Measure num="01" label="Quiénes somos" filled={2} />
+            <Measure num="01" label={t("batucada.navWhoWeAre")} filled={2} />
 
             <p class:list={[bp.eyebrow]} data-bp-hit>{d.introHeading.eyebrow}</p>
             <h2
@@ -178,7 +181,7 @@ const cartoKey = import.meta.env.PUBLIC_CARTO_KEY ?? "";
 
         <!-- ============ 02 · METODOLOGÍA ============ -->
         <section id="metodologia" class:list={[bp.block, bp.fieldInk, "scroll-mt-[92px]"]} aria-labelledby="method-title" data-bp-scene>
-            <Measure num="02" label="Cómo trabajamos" filled={4} numClass="text-bp-blue" />
+            <Measure num="02" label={t("batucada.navHowWeWork")} filled={4} numClass="text-bp-blue" />
 
             <p class:list={[bp.eyebrow, "text-bp-blue"]} data-bp-hit>{d.methodHeading.eyebrow}</p>
             <h2 id="method-title" class:list={[bp.h2, "max-w-[14ch]"]} data-bp-hit set:html={formatTitle(d.methodHeading.title)} />
@@ -203,7 +206,7 @@ const cartoKey = import.meta.env.PUBLIC_CARTO_KEY ?? "";
 
         <!-- ============ 03 · TERRITORIO (mapa) ============ -->
         <section id="territorio" class:list={[bp.block, bp.fieldPurple, "scroll-mt-[92px]"]} aria-labelledby="territory-title" data-bp-scene>
-            <Measure num="03" label="Dónde suena" filled={6} numClass="text-white" />
+            <Measure num="03" label={t("batucada.navWhereItSounds")} filled={6} numClass="text-white" />
 
             <p class={bp.eyebrow} data-bp-hit>{d.territoryHeading.eyebrow}</p>
             <h2 id="territory-title" class:list={[bp.h2, "max-w-[14ch]"]} data-bp-hit set:html={formatTitle(d.territoryHeading.title, "text-accent")} />
@@ -231,7 +234,7 @@ const cartoKey = import.meta.env.PUBLIC_CARTO_KEY ?? "";
 
                 <div class="relative aspect-[4/3] min-h-[19rem] border-[3px] border-white bg-[#e8e0d3] lg:aspect-auto lg:min-h-[clamp(26rem,62vh,40rem)]">
                     <div id="bp-map" class="peer absolute inset-0 z-0" role="application" aria-label={`Mapa de Guayaquil con los ${sectors.length} sectores donde trabaja Batucada Popular`} aria-describedby="bp-map-status" aria-busy="true" data-state="idle" data-bp-sectors={sectorsJson} data-carto-key={cartoKey}></div>
-                    <p id="bp-map-status" class="pointer-events-none absolute inset-x-0 bottom-3 z-[1] text-center text-[0.78rem] font-black uppercase tracking-[0.14em] text-black/70 peer-data-[state=ready]:hidden" data-bp-map-status role="status">Cargando mapa de los sectores…</p>
+                    <p id="bp-map-status" class="pointer-events-none absolute inset-x-0 bottom-3 z-[1] text-center text-[0.78rem] font-black uppercase tracking-[0.14em] text-black/70 peer-data-[state=ready]:hidden" data-bp-map-status role="status">{t("loading.map")}</p>
                     <button
                         type="button"
                         class="absolute bottom-3 left-3 z-[2] hidden -rotate-1 cursor-pointer border-2 border-black bg-accent px-3 py-[0.45rem] text-[0.7rem] font-black uppercase tracking-[0.08em] text-black shadow-[3px_3px_0_rgba(10,8,1,0.6)] transition-transform duration-[180ms] ease-bp-rebound hover:-translate-y-[2px] focus-visible:outline-[3px] focus-visible:outline-offset-4 focus-visible:outline-white peer-data-[state=ready]:inline-flex motion-reduce:transition-none"
@@ -245,7 +248,7 @@ const cartoKey = import.meta.env.PUBLIC_CARTO_KEY ?? "";
 
         <!-- ============ 04 · ACCIÓN COMUNITARIA ============ -->
         <section class={bp.block} aria-labelledby="action-title" data-bp-scene>
-            <Measure num="04" label="Más allá del ensayo" filled={8} />
+            <Measure num="04" label={t("batucada.navBeyondRehearsal")} filled={8} />
 
             <div class="grid items-center gap-[clamp(2.25rem,5vw,4.5rem)] lg:grid-cols-[minmax(0,1.05fr)_minmax(20rem,0.95fr)]">
                 <div>

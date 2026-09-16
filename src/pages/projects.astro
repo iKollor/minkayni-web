@@ -6,9 +6,12 @@ import ProjectExplorer, { type ProjectItem } from "@/components/projects/Project
 import { projectsFallback } from "@/data/pages/projects";
 import { loadPageContent } from "@/utils/page-content";
 import { formatTitle } from "@/utils/rich-title";
+import { getLocale, useTranslations } from "../i18n";
 
 /* Contenido: single type `projects-page` en Strapi, con fallback local. */
-const d = await loadPageContent("projectsPage", projectsFallback);
+const locale = getLocale(Astro.url);
+const t = useTranslations(locale);
+const d = await loadPageContent("projectsPage", projectsFallback, locale);
 
 /* El CMS declara anchor/category/title/href/accent como nullables, pero
    ProjectExplorer los necesita presentes: en vez de forzar el tipo con un
@@ -31,7 +34,7 @@ const stepStyles = [
 ];
 ---
 
-<PageLayout title="Proyectos" description={d.seo.metaDescription}>
+<PageLayout title={t("page.projects")} description={d.seo.metaDescription}>
     <section class="mx-auto w-[90%] max-w-[1280px] py-20 sm:py-28" aria-labelledby="projects-intro-title">
         <div class="grid items-end gap-10 lg:grid-cols-[0.8fr_1.2fr]">
             <div>
@@ -95,7 +98,7 @@ const stepStyles = [
                 <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">{d.alliancesHeading.eyebrow}</p>
                 <h2 id="alliances-title" class="font-display text-5xl font-black leading-[0.95] sm:text-7xl" set:html={formatTitle(d.alliancesHeading.title)} />
                 <p class="mt-6 max-w-[58ch] text-lg leading-relaxed text-white/75">{d.alliancesHeading.body}</p>
-                <ul class="mt-8 flex flex-wrap gap-2" aria-label="Aliados y financiadores">
+                <ul class="mt-8 flex flex-wrap gap-2" aria-label={t("projects.alliesAndFunders")}>
                     {d.allies.map((ally) => <li class="rounded-full bg-white/10 px-4 py-2 text-sm font-bold backdrop-blur">{ally.text}</li>)}
                 </ul>
             </div>

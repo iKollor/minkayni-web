@@ -248,7 +248,10 @@ export const initPageNav = () => {
         };
         const updateToggleUI = (hidden: boolean) => {
             if (!toggleBtn) return;
-            const label = hidden ? "Mostrar navegación" : "Ocultar navegación";
+            /* Los dos textos los imprime el componente en el idioma de la
+               página (data-label-show / data-label-hide). Un script no puede
+               traducirlos: no sabe en qué idioma está la página que lo carga. */
+            const label = (hidden ? toggleBtn.dataset.labelShow : toggleBtn.dataset.labelHide) ?? "";
             toggleBtn.setAttribute("aria-label", label);
             toggleBtn.setAttribute("aria-expanded", hidden ? "false" : "true");
             toggleBtn.setAttribute("data-nav-hidden", hidden ? "true" : "false");

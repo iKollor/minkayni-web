@@ -14,12 +14,19 @@ import Markdown from "@/components/Markdown.astro";
 import { getCollection, getEntry } from "astro:content";
 
 import { getData } from "../utils/i18n";
+import { localizeEntry } from "../utils/page-content";
+import { getLocale, localizePath, useTranslations } from "../i18n";
 import Projects from "../components/index/Projects.astro";
 import ProjectsCta from "../components/index/ProjectsCta.astro";
-import { fallbackLegend } from "../data/site";
+import { fallbackLegend, fallbackLegendEn } from "../data/site";
 import { homepageTextsFallback } from "../data/pages/global";
 
-const homepage = await getEntry("homepage", "homepage");
+const locale = getLocale(Astro.url);
+const t = useTranslations(locale);
+
+/* La portada en inglés lee `homepageEn` sobre `homepage`: lo que todavía no
+   esté traducido en el CMS sale en español en lugar de salir vacío. */
+const homepage = await localizeEntry(await getEntry("homepage", "homepage"), "homepageEn", "homepage", locale);
 
 /* Testimonios y Equipo: collection types en Strapi, ordenados por `sort`
    (menor primero) y luego por fecha de creación. */
@@ -28,15 +35,15 @@ const bySort = (a: { sort?: number | null; createdAt?: string | null }, b: { sor
 
 const testimonials = (await getCollection("testimonials")).map((entry) => entry.data).sort(bySort);
 const teams = (await getCollection("teamMembers")).map((entry) => entry.data).sort(bySort);
-const legend = getData(homepage, "legend", "es", fallbackLegend);
-const testimonialsTitle = getData(homepage, "testimonialsTitle", "es", homepageTextsFallback.testimonialsTitle) || homepageTextsFallback.testimonialsTitle;
-const teamTitle = getData(homepage, "teamTitle", "es", homepageTextsFallback.teamTitle) || homepageTextsFallback.teamTitle;
-const featuredProject = homepage ? getData(homepage, "featuredProject", "es", null) : null;
+const legend = getData(homepage, "legend", undefined, locale === "en" ? fallbackLegendEn : fallbackLegend);
+const testimonialsTitle = getData(homepage, "testimonialsTitle", undefined, homepageTextsFallback.testimonialsTitle) || homepageTextsFallback.testimonialsTitle;
+const teamTitle = getData(homepage, "teamTitle", undefined, homepageTextsFallback.teamTitle) || homepageTextsFallback.teamTitle;
+const featuredProject = homepage ? getData(homepage, "featuredProject", undefined, null) : null;
 const projectsCta = homepage
     ? {
-          heading: getData(homepage, "projectsCtaHeading", "es", null),
-          tags: getData(homepage, "projectsCtaTags", "es", []),
-          button: getData(homepage, "projectsCtaButton", "es", null),
+          heading: getData(homepage, "projectsCtaHeading", undefined, null),
+          tags: getData(homepage, "projectsCtaTags", undefined, []),
+          button: getData(homepage, "projectsCtaButton", undefined, null),
       }
     : null;
 ---
@@ -115,6 +122,10 @@ const projectsCta = homepage
     <div id="app-content" class="opacity-0 transition-opacity duration-500">
         <header>
             <div class="header__container w-full relative">
+                <!-- El título visual de la portada es el logotipo (una imagen), así
+                     que el h1 del documento va aquí, disponible para lectores de
+                     pantalla y rastreadores sin alterar el diseño. -->
+                <h1 class="sr-only">{t("home.title")}</h1>
                 <div id="hero-background" data-nav-theme="dark" class="bg__container absolute top-0 left-0 w-full h-[50vh] md:h-screen z-20 bg-[var(--primary)]">
                     <BubbleBackground
                         interactive
@@ -155,8 +166,8 @@ const projectsCta = homepage
                     <div class="mx-auto w-[90%] max-w-[1200px] py-24 sm:py-32">
                         <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{testimonialsTitle}</p>
                         <blockquote class="rounded-[2.75rem] bg-secondary p-8 text-black sm:p-14 lg:rounded-[5rem] lg:p-20">
-                            <p class="max-w-[32ch] font-display text-4xl font-black leading-[1.05] sm:text-6xl">“Aprendí a tocar el tambor, a manejar mejor mi carácter y encontré buenos amigos.”</p>
-                            <footer class="mt-8 text-lg font-bold">Daniel · Integrante de Batucada Popular</footer>
+                            <p class="max-w-[32ch] font-display text-4xl font-black leading-[1.05] sm:text-6xl">{t("home.danielQuote")}</p>
+                            <footer class="mt-8 text-lg font-bold">{t("home.danielAttribution")}</footer>
                         </blockquote>
                     </div>
                 )
@@ -170,11 +181,11 @@ const projectsCta = homepage
                 ) : (
                     <div class="mx-auto grid w-[90%] max-w-[1200px] items-center gap-8 py-24 sm:py-32 lg:grid-cols-[1fr_auto]">
                         <div>
-                            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">Quiénes somos</p>
-                            <h2 class="max-w-[14ch] font-display text-5xl font-black leading-[0.92] text-primary sm:text-7xl">Un equipo que cree en el trabajo compartido.</h2>
-                            <p class="mt-6 max-w-[54ch] text-lg leading-[1.55] text-black/65">Educación, arte y organización comunitaria se encuentran para acompañar a las juventudes y sostener procesos que nacen desde el territorio.</p>
+                            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">{t("home.teamEyebrow")}</p>
+                            <h2 class="max-w-[14ch] font-display text-5xl font-black leading-[0.92] text-primary sm:text-7xl">{t("home.teamSubtitle")}</h2>
+                            <p class="mt-6 max-w-[54ch] text-lg leading-[1.55] text-black/65">{t("home.teamBody")}</p>
                         </div>
-                        <a href="/about" class="inline-flex min-h-14 items-center justify-center rounded-full bg-primary px-7 py-4 font-display text-lg font-bold text-white transition hover:-translate-y-1 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">Conoce a Minkayni</a>
+                        <a href={localizePath("/about", locale)} class="inline-flex min-h-14 items-center justify-center rounded-full bg-primary px-7 py-4 font-display text-lg font-bold text-white transition hover:-translate-y-1 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">{t("home.teamCta")}</a>
                     </div>
                 )
             }

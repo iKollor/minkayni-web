@@ -8,14 +8,17 @@ import { bp } from "@/components/batucada/tokens";
 import { batucadaHistoriaFallback } from "@/data/pages/batucada-historia";
 import { loadPageContent } from "@/utils/page-content";
 import { formatTitle } from "@/utils/rich-title";
+import { getLocale, useTranslations } from "../../../i18n";
 
 /* Contenido: single type `batucada-history-page` en Strapi, con fallback local. */
-const d = await loadPageContent("batucadaHistoryPage", batucadaHistoriaFallback);
+const locale = getLocale(Astro.url);
+const t = useTranslations(locale);
+const d = await loadPageContent("batucadaHistoryPage", batucadaHistoriaFallback, locale);
 
 const timeline = d.timeline;
 ---
 
-<PageLayout title="Historia — Batucada Popular" showHero={false} description={d.seo.metaDescription}>
+<PageLayout title={t("page.batucadaHistory")} showHero={false} description={d.seo.metaDescription}>
     <article class="overflow-clip bg-white text-black">
         <header class:list={[bp.edge, bp.fieldBlue, "pt-[calc(90px+clamp(2.25rem,5vw,4.5rem))] pb-[clamp(2.25rem,5vw,4.5rem)]"]} aria-labelledby="historia-title">
             <a class="inline-flex min-h-11 items-center gap-2 border-b-2 border-current text-[0.78rem] font-black uppercase tracking-[0.14em] focus-visible:outline-[3px] focus-visible:outline-offset-4 focus-visible:outline-black" href={d.backLink.href} data-bp-hero><span aria-hidden="true">←</span> {d.backLink.text}</a>
@@ -26,12 +29,12 @@ const timeline = d.timeline;
 
         <Pulseline items={d.pulseline.map((item) => item.text ?? "")} />
 
-        <section class="mx-auto my-[clamp(2.25rem,5vw,4.5rem)] w-[94%] max-w-[1440px] rounded-[2.75rem] bg-[#dedbd4] px-4 py-14 sm:px-8 lg:rounded-[5rem] lg:px-14 lg:py-20" aria-label="Línea de tiempo de la Batucada Popular" data-bp-scene>
+        <section class="mx-auto my-[clamp(2.25rem,5vw,4.5rem)] w-[94%] max-w-[1440px] rounded-[2.75rem] bg-[#dedbd4] px-4 py-14 sm:px-8 lg:rounded-[5rem] lg:px-14 lg:py-20" aria-label={t("batucada.timeline")} data-bp-scene>
             <div class="mb-10 max-w-[760px]">
                 <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary" data-bp-hit>{d.timelineHeading.eyebrow}</p>
                 <h2 class="font-display text-4xl font-black leading-none text-black sm:text-6xl" data-bp-hit set:html={formatTitle(d.timelineHeading.title)} />
             </div>
-            <ImmersiveTimeline items={timeline} ariaLabel="Línea de tiempo de la Batucada Popular" />
+            <ImmersiveTimeline items={timeline} ariaLabel={t("batucada.timeline")} />
         </section>
 
         <Torn color="var(--bg-white)" border={2} field="none" />

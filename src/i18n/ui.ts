@@ -1,0 +1,291 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   Cadenas de interfaz que viven en el repositorio, no en Strapi.
+
+   Aquí NO va contenido editorial: eso es del CMS, donde una persona puede
+   corregirlo sin tocar código. Aquí van las etiquetas que forman parte de la
+   interfaz —textos de accesibilidad, estados de carga, créditos del pie— que
+   cambian solo cuando cambia el código que las usa.
+
+   Regla para añadir una clave: si el texto puede quedarse obsoleto sin que
+   nadie toque un `.astro`, pertenece al CMS. Si desaparece al borrar un
+   componente, pertenece aquí.
+
+   Los nombres propios no se traducen: «Batucada Popular», «MINKAYNI»,
+   «Guayaquil» y los nombres de los sectores son los mismos en los dos idiomas.
+─────────────────────────────────────────────────────────────────────────── */
+
+export const ui = {
+    es: {
+        /* Navegación y menú */
+        "nav.home": "Inicio",
+        "nav.goHome": "Ir al inicio",
+        "nav.submenuOf": "Submenú de {title}",
+        "nav.mainNavigation": "Navegación principal",
+        "nav.secondaryNavigation": "Navegación secundaria",
+        "nav.siteNavigation": "Navegación del sitio",
+        "nav.legalCredits": "Información legal y créditos",
+        "nav.legalTransparency": "Transparencia legal",
+        "nav.sections": "Navegación de secciones",
+        "nav.sectionsOfPage": "Secciones de esta página",
+        "nav.toggle": "Alternar navegación",
+        "nav.hide": "Ocultar navegación",
+        "nav.show": "Mostrar navegación",
+
+        /* Selector de idioma */
+        "lang.label": "Cambiar idioma",
+        "lang.es": "Español",
+        "lang.en": "English",
+        "lang.esShort": "ES",
+        "lang.enShort": "EN",
+        "lang.switchTo": "Ver esta página en {language}",
+
+        /* Reloj del navbar */
+        "clock.place": "Guayaquil, Ecuador",
+        "clock.label": "Hora en Guayaquil",
+
+        /* Pie de página */
+        "footer.developedBy": "Desarrollado por",
+        "footer.madeWith": "Hecho con",
+        "footer.orgLegalInfo": "Información legal de la organización",
+        "footer.socialNetworks": "Redes sociales",
+        "footer.partnersCarousel": "Carrusel de logos de empresas colaboradoras",
+
+        /* Estados vacíos y de carga */
+        "empty.description": "Sin descripción disponible.",
+        "empty.posts": "Sin publicaciones disponibles.",
+        "loading.map": "Cargando el mapa de los sectores…",
+
+        /* Portada */
+        "home.title": "Fundación Minkayni — Colaboración y reciprocidad",
+        "home.danielQuote": "“Aprendí a tocar el tambor, a manejar mejor mi carácter y encontré buenos amigos.”",
+        "home.danielAttribution": "Daniel · Integrante de Batucada Popular",
+        "home.teamEyebrow": "Quiénes somos",
+        "home.teamSubtitle": "Un equipo que cree en el trabajo compartido.",
+        "home.teamBody": "Educación, arte y organización comunitaria se encuentran para acompañar a las juventudes y sostener procesos que nacen desde el territorio.",
+        "home.teamCta": "Conoce a Minkayni",
+        "home.linesOfAction": "Líneas de acción",
+
+        /* Títulos de página. Se ven dos veces: en la pestaña del navegador y
+           en el hero, así que no basta con traducir el `metaTitle` del CMS. */
+        "page.impact": "Impacto",
+        "page.projects": "Proyectos",
+        "page.donate": "Aporta hoy",
+        "page.batucada": "Batucada Popular",
+        "page.batucadaHistory": "Historia — Batucada Popular",
+        "page.batucadaEcosystem": "Ecosistema — Batucada Popular",
+
+        /* Conócenos */
+        "about.title": "Conócenos",
+        "about.missionVision": "Misión y visión",
+        "about.historyTimeline": "Historia de la fundación",
+
+        /* Proyectos */
+        "projects.filter": "Filtrar proyectos y líneas de acción",
+        "projects.alliesAndFunders": "Aliados y financiadores",
+
+        /* Batucada Popular */
+        "batucada.timeline": "Línea de tiempo de la Batucada Popular",
+        "batucada.jumpToPeriod": "Saltar a una época",
+        "batucada.navWhoWeAre": "Quiénes somos",
+        "batucada.navHowWeWork": "Cómo trabajamos",
+        "batucada.navWhereItSounds": "Dónde suena",
+        "batucada.navBeyondRehearsal": "Más allá del ensayo",
+
+        /* Donaciones */
+        "donate.copyAll": "Copiar todos los datos",
+        "donate.copied": "Datos copiados",
+        "donate.wireDetails": "Datos del giro",
+
+        /* Transparencia: etiquetas de la ficha legal. Los valores NO se
+           traducen —son los que constan en los registros del Estado— pero
+           las etiquetas sí, porque son las que lee quien verifica. */
+        "legal.legalName": "Nombre legal",
+        "legal.ruc": "RUC",
+        "legal.personality": "Personería jurídica",
+        "legal.suios": "Registro SUIOS",
+        "legal.legalForm": "Naturaleza jurídica",
+        "legal.status": "Estado de la organización",
+        "legal.incorporation": "Fecha de constitución",
+        "legal.representative": "Representante legal",
+        "legal.board": "Directiva registrada",
+        "legal.activity": "Actividad económica (CIIU)",
+
+        /* Transparencia */
+        "transparency.address": "Domicilio y contacto oficial",
+        "transparency.physicalAddress": "Dirección física",
+        "transparency.email": "Correo institucional",
+        "transparency.website": "Sitio web oficial",
+        "transparency.phone": "Teléfono",
+        "transparency.officialSources": "Verificación en fuentes oficiales",
+        "transparency.opensNewTab": "(se abre en una pestaña nueva)",
+        "transparency.opensPdf": "(documento PDF, se abre en una pestaña nueva)",
+        "transparency.certificates": "Los certificados originales se entregan bajo solicitud para procesos de verificación y debida diligencia.",
+
+        /* 404 */
+        "notFound.title": "Página no encontrada",
+        "notFound.tagline": "se salió del compás",
+        "notFound.eyebrow": "Error 404",
+        "notFound.headingBefore": "Esta página",
+        "notFound.description": "La página que buscas no existe o cambió de dirección. Vuelve al inicio de Fundación Minkayni o explora los proyectos, el impacto y la información legal de la fundación.",
+        "notFound.body": "La dirección que buscas no existe, cambió de nombre o el enlace llegó incompleto. El tambor sigue sonando en el resto del sitio: elige por dónde seguir.",
+        "notFound.shortcuts": "Secciones principales del sitio",
+        "notFound.contactBefore": "¿Llegaste aquí desde un enlace nuestro? Escríbenos a",
+        "notFound.contactAfter": "y lo arreglamos.",
+        "notFound.homeText": "Volver al principio",
+        "notFound.aboutText": "Quiénes somos y cómo trabajamos",
+        "notFound.projectsTitle": "Proyectos",
+        "notFound.projectsText": "La Batucada Popular y todo su ecosistema",
+        "notFound.impactTitle": "Impacto",
+        "notFound.impactText": "Resultados verificados en los territorios",
+        "notFound.donateTitle": "Aporta hoy",
+        "notFound.donateText": "Suma tu donación al proyecto",
+        "notFound.transparencyText": "Datos legales de la fundación",
+
+        /* Textos alternativos de imágenes fijas del repositorio */
+        "alt.batucadaIntervention": "Batucada Popular – intervención cultural en Guayaquil",
+        "alt.celebrating": "Integrantes de la Batucada Popular celebrando tras una presentación",
+        "alt.marching": "Jóvenes marchando con tambores en el centro de Guayaquil",
+        "alt.withTeam": "Integrantes de Batucada Popular junto al equipo de MINKAYNI",
+        "alt.daniel": "Daniel, integrante de la Batucada Popular",
+        "alt.performing": "Integrantes de Batucada Popular en presentación",
+        "alt.logo": "Logotipo de la Fundación Minkayni",
+    },
+
+    en: {
+        /* Navigation and menu */
+        "nav.home": "Home",
+        "nav.goHome": "Go to the homepage",
+        "nav.submenuOf": "{title} submenu",
+        "nav.mainNavigation": "Main navigation",
+        "nav.secondaryNavigation": "Secondary navigation",
+        "nav.siteNavigation": "Site navigation",
+        "nav.legalCredits": "Legal information and credits",
+        "nav.legalTransparency": "Legal transparency",
+        "nav.sections": "Section navigation",
+        "nav.sectionsOfPage": "Sections on this page",
+        "nav.toggle": "Toggle navigation",
+        "nav.hide": "Hide navigation",
+        "nav.show": "Show navigation",
+
+        /* Language switcher */
+        "lang.label": "Change language",
+        "lang.es": "Español",
+        "lang.en": "English",
+        "lang.esShort": "ES",
+        "lang.enShort": "EN",
+        "lang.switchTo": "View this page in {language}",
+
+        /* Navbar clock */
+        "clock.place": "Guayaquil, Ecuador",
+        "clock.label": "Local time in Guayaquil",
+
+        /* Footer */
+        "footer.developedBy": "Built by",
+        "footer.madeWith": "Made with",
+        "footer.orgLegalInfo": "Legal information about the organisation",
+        "footer.socialNetworks": "Social networks",
+        "footer.partnersCarousel": "Carousel of partner organisation logos",
+
+        /* Empty and loading states */
+        "empty.description": "No description available.",
+        "empty.posts": "No posts available.",
+        "loading.map": "Loading the map of neighbourhoods…",
+
+        /* Homepage */
+        "home.title": "Minkayni Foundation — Collaboration and reciprocity",
+        "home.danielQuote": "“I learned to play the drum, to handle my temper better, and I found good friends.”",
+        "home.danielAttribution": "Daniel · Batucada Popular member",
+        "home.teamEyebrow": "Who we are",
+        "home.teamSubtitle": "A team that believes in working together.",
+        "home.teamBody": "Education, art and community organising come together to accompany young people and sustain processes that are born in the territory itself.",
+        "home.teamCta": "Get to know Minkayni",
+        "home.linesOfAction": "Lines of action",
+
+        /* Page titles. They appear twice: in the browser tab and in the hero,
+           so translating the CMS `metaTitle` alone is not enough. */
+        "page.impact": "Impact",
+        "page.projects": "Projects",
+        "page.donate": "Give today",
+        "page.batucada": "Batucada Popular",
+        "page.batucadaHistory": "History — Batucada Popular",
+        "page.batucadaEcosystem": "Ecosystem — Batucada Popular",
+
+        /* About */
+        "about.title": "About us",
+        "about.missionVision": "Mission and vision",
+        "about.historyTimeline": "History of the foundation",
+
+        /* Projects */
+        "projects.filter": "Filter projects and lines of action",
+        "projects.alliesAndFunders": "Allies and funders",
+
+        /* Batucada Popular */
+        "batucada.timeline": "Batucada Popular timeline",
+        "batucada.jumpToPeriod": "Jump to a period",
+        "batucada.navWhoWeAre": "Who we are",
+        "batucada.navHowWeWork": "How we work",
+        "batucada.navWhereItSounds": "Where it plays",
+        "batucada.navBeyondRehearsal": "Beyond rehearsal",
+
+        /* Donations */
+        "donate.copyAll": "Copy all details",
+        "donate.copied": "Details copied",
+        "donate.wireDetails": "Wire details",
+
+        /* Transparency: labels of the legal record. The values are NOT
+           translated —they are what the state registries hold— but the
+           labels are, because they are what a verifier reads. */
+        "legal.legalName": "Legal name",
+        "legal.ruc": "Tax ID (RUC)",
+        "legal.personality": "Legal personality",
+        "legal.suios": "SUIOS registration",
+        "legal.legalForm": "Legal form",
+        "legal.status": "Status of the organisation",
+        "legal.incorporation": "Date of incorporation",
+        "legal.representative": "Legal representative",
+        "legal.board": "Registered board",
+        "legal.activity": "Economic activity (ISIC)",
+
+        /* Transparency */
+        "transparency.address": "Registered address and official contact",
+        "transparency.physicalAddress": "Street address",
+        "transparency.email": "Institutional email",
+        "transparency.website": "Official website",
+        "transparency.phone": "Phone",
+        "transparency.officialSources": "Verification against official sources",
+        "transparency.opensNewTab": "(opens in a new tab)",
+        "transparency.opensPdf": "(PDF document, opens in a new tab)",
+        "transparency.certificates": "Original certificates are provided on request for verification and due diligence processes.",
+
+        /* 404 */
+        "notFound.title": "Page not found",
+        "notFound.tagline": "lost the beat",
+        "notFound.eyebrow": "Error 404",
+        "notFound.headingBefore": "This page",
+        "notFound.description": "The page you are looking for does not exist or has moved. Go back to the Minkayni Foundation homepage, or explore the projects, the impact and the foundation's legal information.",
+        "notFound.body": "The address you are after does not exist, changed name, or the link arrived incomplete. The drum is still playing everywhere else on the site: pick where to carry on.",
+        "notFound.shortcuts": "Main sections of the site",
+        "notFound.contactBefore": "Did you get here from a link of ours? Write to us at",
+        "notFound.contactAfter": "and we will fix it.",
+        "notFound.homeText": "Back to the start",
+        "notFound.aboutText": "Who we are and how we work",
+        "notFound.projectsTitle": "Projects",
+        "notFound.projectsText": "Batucada Popular and its whole ecosystem",
+        "notFound.impactTitle": "Impact",
+        "notFound.impactText": "Verified results across the neighbourhoods",
+        "notFound.donateTitle": "Give today",
+        "notFound.donateText": "Add your donation to the project",
+        "notFound.transparencyText": "The foundation's legal details",
+
+        /* Alt text for images that live in the repository */
+        "alt.batucadaIntervention": "Batucada Popular – a cultural intervention in Guayaquil",
+        "alt.celebrating": "Batucada Popular members celebrating after a performance",
+        "alt.marching": "Young people marching with drums through central Guayaquil",
+        "alt.withTeam": "Batucada Popular members alongside the MINKAYNI team",
+        "alt.daniel": "Daniel, a member of Batucada Popular",
+        "alt.performing": "Batucada Popular members performing",
+        "alt.logo": "Minkayni Foundation logo",
+    },
+} as const;
+
+export type UiKey = keyof (typeof ui)["es"];

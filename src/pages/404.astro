@@ -10,56 +10,98 @@
    Accesibilidad: el "404" decorativo es aria-hidden y el número real se
    anuncia en el h1; los accesos son enlaces reales con área táctil ≥44px y
    foco visible.
+
+   IDIOMA — el caso raro del sitio. Todas las demás páginas saben en qué
+   idioma se sirven porque su ruta lo dice. Esta no: el servidor la entrega en
+   respuesta a una URL que no existe, y esa URL puede ser cualquiera. Por eso
+   se resuelve dos veces:
+
+   1. Se compila también en /en/404.html, y nginx sirve ese fichero cuando la
+      URL fallida empieza por /en/ (ver nginx.conf). Es la vía buena: llega ya
+      en inglés, con `lang` correcto y sin saltos.
+   2. Si el servidor no aplicara esa regla y entregara el 404 español para una
+      URL /en/…, el script del final traduce la página en el navegador. Es red
+      de seguridad, no el mecanismo principal: sin JavaScript sigue viéndose
+      un 404 correcto, solo que en español.
 ─────────────────────────────────────────────────────────────────────────── */
 import PageLayout from "../layouts/PageLayout.astro";
 import { Icon } from "astro-icon/components";
+import { getLocale, localizePath, useTranslations, ui } from "../i18n";
+
+const locale = getLocale(Astro.url);
+const t = useTranslations(locale);
 
 const shortcuts = [
-    { title: "Inicio", text: "Volver al principio", href: "/", icon: "mdi:home-outline" },
-    { title: "Conócenos", text: "Quiénes somos y cómo trabajamos", href: "/about", icon: "mdi:account-group-outline" },
-    { title: "Proyectos", text: "La Batucada Popular y todo su ecosistema", href: "/projects", icon: "mdi:music-note-outline" },
-    { title: "Impacto", text: "Resultados verificados en los territorios", href: "/impact", icon: "mdi:chart-timeline-variant" },
-    { title: "Aporta hoy", text: "Suma tu donación al proyecto", href: "/donate", icon: "mdi:heart-outline" },
-    { title: "Transparencia legal", text: "Datos legales de la fundación", href: "/transparencia", icon: "mdi:shield-check-outline" },
-];
+    { key: "home", titleKey: "nav.home", textKey: "notFound.homeText", href: "/", icon: "mdi:home-outline" },
+    { key: "about", titleKey: "about.title", textKey: "notFound.aboutText", href: "/about", icon: "mdi:account-group-outline" },
+    { key: "projects", titleKey: "notFound.projectsTitle", textKey: "notFound.projectsText", href: "/projects", icon: "mdi:music-note-outline" },
+    { key: "impact", titleKey: "notFound.impactTitle", textKey: "notFound.impactText", href: "/impact", icon: "mdi:chart-timeline-variant" },
+    { key: "donate", titleKey: "notFound.donateTitle", textKey: "notFound.donateText", href: "/donate", icon: "mdi:heart-outline" },
+    { key: "transparency", titleKey: "nav.legalTransparency", textKey: "notFound.transparencyText", href: "/transparencia", icon: "mdi:shield-check-outline" },
+] as const;
+
+/* Lo que necesita la red de seguridad del punto 2: los textos en inglés y a
+   dónde apunta cada acceso en inglés. Se emite desde el diccionario, así que
+   no hay una segunda lista de cadenas que se pueda desincronizar. */
+const englishCopy = {
+    lang: "en",
+    strings: Object.fromEntries(
+        [
+            "notFound.title",
+            "notFound.tagline",
+            "notFound.eyebrow",
+            "notFound.headingBefore",
+            "notFound.body",
+            "notFound.shortcuts",
+            "notFound.contactBefore",
+            "notFound.contactAfter",
+            ...shortcuts.flatMap((item) => [item.titleKey, item.textKey]),
+        ].map((key) => [key, ui.en[key as keyof typeof ui.en]])
+    ),
+    links: Object.fromEntries(shortcuts.map((item) => [item.key, localizePath(item.href, "en")])),
+};
 ---
 
-<PageLayout title="Página no encontrada" showHero={false} noindex description="La página que buscas no existe o cambió de dirección. Vuelve al inicio de Fundación Minkayni o explora los proyectos, el impacto y la información legal de la fundación.">
+<PageLayout title={t("notFound.title")} showHero={false} noindex description={t("notFound.description")}>
     <section class="mx-auto mb-44 flex w-[90%] max-w-[1200px] flex-col justify-center py-28 sm:py-36" aria-labelledby="notfound-title">
         <div class="relative" data-reveal>
             <!-- Número decorativo: el h1 ya lleva el texto accesible -->
             <p class="pointer-events-none select-none font-display text-[clamp(7rem,32vw,20rem)] font-black leading-[0.78] tracking-tighter text-primary/10" aria-hidden="true">404</p>
 
             <div class="mt-[-8%]">
-                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">Error 404</p>
+                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep" data-i18n="notFound.eyebrow">{t("notFound.eyebrow")}</p>
                 <h1 id="notfound-title" class="max-w-[15ch] font-display text-4xl font-black leading-[0.92] tracking-tight text-black sm:text-6xl lg:text-7xl">
-                    Esta página <span class="text-primary">se salió del compás</span>.
+                    <span data-i18n="notFound.headingBefore">{t("notFound.headingBefore")}</span>{" "}
+                    <span class="text-primary" data-i18n="notFound.tagline">{t("notFound.tagline")}</span>.
                 </h1>
             </div>
 
-            <p class="mt-8 max-w-[58ch] text-lg leading-relaxed text-black/75">
-                La dirección que buscas no existe, cambió de nombre o el enlace llegó incompleto. El tambor sigue sonando en el resto del sitio: elige por dónde seguir.
+            <p class="mt-8 max-w-[58ch] text-lg leading-relaxed text-black/75" data-i18n="notFound.body">
+                {t("notFound.body")}
             </p>
         </div>
 
-        <nav class="mt-14" aria-label="Secciones principales del sitio">
+        <nav class="mt-14" aria-label={t("notFound.shortcuts")} data-i18n-label="notFound.shortcuts">
             <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
                 {
                     shortcuts.map((item) => (
                         <li>
                             <a
-                                href={item.href}
+                                href={localizePath(item.href, locale)}
+                                data-i18n-link={item.key}
                                 class="group flex h-full min-h-[5.5rem] items-start gap-4 rounded-[1.75rem] border border-black/10 bg-white/60 px-6 py-5 transition hover:-translate-y-0.5 hover:border-primary hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                             >
                                 <Icon name={item.icon} class="mt-0.5 h-6 w-6 shrink-0 text-primary" aria-hidden="true" />
                                 <span>
                                     <span class="flex items-center gap-2 font-display text-lg font-black leading-snug text-black">
-                                        {item.title}
+                                        <span data-i18n={item.titleKey}>{t(item.titleKey)}</span>
                                         <span class="translate-x-0 text-primary transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true">
                                             →
                                         </span>
                                     </span>
-                                    <span class="mt-1 block text-sm leading-relaxed text-black/70">{item.text}</span>
+                                    <span class="mt-1 block text-sm leading-relaxed text-black/70" data-i18n={item.textKey}>
+                                        {t(item.textKey)}
+                                    </span>
                                 </span>
                             </a>
                         </li>
@@ -69,9 +111,38 @@ const shortcuts = [
         </nav>
 
         <p class="mt-12 text-sm leading-relaxed text-black/70">
-            ¿Llegaste aquí desde un enlace nuestro? Escríbenos a{" "}
+            <span data-i18n="notFound.contactBefore">{t("notFound.contactBefore")}</span>{" "}
             <a href="mailto:admin@minkayni.org" class="font-bold text-primary underline underline-offset-4 transition hover:text-secondary-deep focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">admin@minkayni.org</a>{" "}
-            y lo arreglamos.
+            <span data-i18n="notFound.contactAfter">{t("notFound.contactAfter")}</span>
         </p>
     </section>
 </PageLayout>
+
+<script is:inline define:vars={{ englishCopy }}>
+    /* Red de seguridad: ver el punto 2 del comentario de arriba. Solo actúa si
+       la URL pedida es inglesa y la página llegó en otro idioma. */
+    (() => {
+        const esIngles = location.pathname === "/en" || location.pathname.startsWith("/en/");
+        if (!esIngles || document.documentElement.lang === englishCopy.lang) return;
+
+        document.documentElement.lang = englishCopy.lang;
+
+        for (const nodo of document.querySelectorAll("[data-i18n]")) {
+            const texto = englishCopy.strings[nodo.dataset.i18n];
+            if (texto) nodo.textContent = texto;
+        }
+
+        for (const nodo of document.querySelectorAll("[data-i18n-label]")) {
+            const texto = englishCopy.strings[nodo.dataset.i18nLabel];
+            if (texto) nodo.setAttribute("aria-label", texto);
+        }
+
+        for (const nodo of document.querySelectorAll("[data-i18n-link]")) {
+            const destino = englishCopy.links[nodo.dataset.i18nLink];
+            if (destino) nodo.setAttribute("href", destino);
+        }
+
+        const titulo = englishCopy.strings["notFound.title"];
+        if (titulo) document.title = document.title.replace(/^[^•]*/, titulo + " ");
+    })();
+</script>

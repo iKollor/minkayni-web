@@ -7,9 +7,12 @@ import { bp } from "@/components/batucada/tokens";
 import { batucadaEcosistemaFallback } from "@/data/pages/batucada-ecosistema";
 import { loadPageContent } from "@/utils/page-content";
 import { formatTitle } from "@/utils/rich-title";
+import { getLocale, useTranslations } from "../../../i18n";
 
 /* Contenido: single type `batucada-ecosystem-page` en Strapi, con fallback local. */
-const d = await loadPageContent("batucadaEcosystemPage", batucadaEcosistemaFallback);
+const locale = getLocale(Astro.url);
+const t = useTranslations(locale);
+const d = await loadPageContent("batucadaEcosystemPage", batucadaEcosistemaFallback, locale);
 
 const organisms = d.organisms;
 const horizons = d.horizons;
@@ -18,7 +21,7 @@ const allies = d.allies;
 const cardShadows = ["shadow-[6px_6px_0_var(--color-bp-blue)]", "rotate-[0.6deg] shadow-[6px_6px_0_var(--accent)]", "-rotate-[0.6deg] shadow-[6px_6px_0_var(--primary)]"];
 ---
 
-<PageLayout title="Ecosistema — Batucada Popular" showHero={false} description={d.seo.metaDescription}>
+<PageLayout title={t("page.batucadaEcosystem")} showHero={false} description={d.seo.metaDescription}>
     <article class="overflow-clip bg-white text-black">
         <header class:list={[bp.edge, bp.fieldInk, "pt-[calc(90px+clamp(2.25rem,5vw,4.5rem))] pb-[clamp(2.25rem,5vw,4.5rem)]"]} aria-labelledby="eco-title">
             <a class="inline-flex min-h-11 items-center gap-2 border-b-2 border-current text-[0.78rem] font-black uppercase tracking-[0.14em] focus-visible:outline-[3px] focus-visible:outline-offset-4 focus-visible:outline-bp-blue" href={d.backLink.href} data-bp-hero><span aria-hidden="true">←</span> {d.backLink.text}</a>

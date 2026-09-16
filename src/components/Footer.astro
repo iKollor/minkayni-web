@@ -11,6 +11,7 @@ import { formatCopyright } from "../scripts/components/Copyright";
 import { buildSocialItems } from "../scripts/components/socials";
 import Button from "./Button.astro";
 import LegalFooterBand from "./legal/LegalFooterBand.astro";
+import { defaultLocale, localizePath, stripLocale, useTranslations, type Locale } from "../i18n";
 
 /** Campos añadidos al single type `footer` (textos de aliados y CTA). */
 type FooterTexts = {
@@ -25,6 +26,8 @@ interface Props {
     primaryLinks?: NavTree;
     /** Título/nombre del grupo a extraer como navegación secundaria */
     secondaryLinks?: string;
+    /** Idioma de la página que contiene el pie. */
+    locale?: Locale;
     footer: Footer & FooterTexts;
     /** URL a donde apunta el logo */
     logoLinkHref?: string;
@@ -43,26 +46,42 @@ type LooseNavNode = NavItem & {
     children?: LooseNavNode[];
 };
 
-function getNavGroupItemsByTitle(tree?: NavTree, title?: string): NavItem[] {
-    if (!tree || !title) return [];
+/* Busca el grupo del menú que alimenta la navegación secundaria.
+
+   Antes se localizaba solo por título («Proyectos»), lo que dejaba de
+   funcionar en cuanto el árbol venía en otro idioma. Ahora se acepta también
+   la ruta —`/projects`, sin el prefijo de idioma—, que es lo único estable
+   entre las dos versiones del menú. Devuelve además el título tal y como
+   viene del árbol, para que el encabezado del pie salga en el idioma de la
+   página y no en el del código. */
+function getNavGroup(tree: NavTree | undefined, title: string | undefined, path: string): { title: string; items: NavItem[] } {
+    const empty = { title: title ?? "", items: [] as NavItem[] };
+    if (!tree) return empty;
+
     const queue: LooseNavNode[] = Array.isArray(tree) ? [...(tree as LooseNavNode[])] : [tree as LooseNavNode];
     while (queue.length) {
         const node = queue.shift();
         if (!node) continue;
+
         const nodeTitle = String(node.title ?? node.name ?? "");
-        if (nodeTitle === title) {
-            if (Array.isArray(node.items)) return node.items;
-            if (Array.isArray(node.children)) return node.children;
-            return [node];
+        const nodePath = node.path ?? node.href;
+        const matchesTitle = title !== undefined && nodeTitle === title;
+        const matchesPath = typeof nodePath === "string" && stripLocale(nodePath) === path;
+
+        if (matchesTitle || matchesPath) {
+            const children = Array.isArray(node.items) ? node.items : Array.isArray(node.children) ? node.children : [node];
+            return { title: nodeTitle || empty.title, items: children as NavItem[] };
         }
+
         const children = node.items ?? node.children;
         if (Array.isArray(children)) queue.push(...children);
     }
-    return [];
+    return empty;
 }
 
 // Desestructuración de props con alias internos más claros
-const { primaryLinks: navigationTree, secondaryLinks } = Astro.props as Props;
+const { primaryLinks: navigationTree, secondaryLinks, locale = defaultLocale } = Astro.props as Props;
+const t = useTranslations(locale);
 
 /* Textos editables del footer (single type `footer` en Strapi) con fallback local. */
 import { footerTextsFallback } from "../data/pages/global";
@@ -74,7 +93,8 @@ const texts = withFallback(footerTextsFallback, {
     joinButton: (Astro.props as Props).footer?.joinButton,
 });
 
-const secondaryNavItems: NavItem[] = getNavGroupItemsByTitle(navigationTree as NavTree, secondaryLinks);
+const secondaryGroup = getNavGroup(navigationTree as NavTree, secondaryLinks, "/projects");
+const secondaryNavItems: NavItem[] = secondaryGroup.items;
 
 const {
     primaryLinks: mainNavItems = [
@@ -84,7 +104,7 @@ const {
         { title: "Contacto", path: "/contact" },
     ],
     footer,
-    logoLinkHref = "/",
+    logoLinkHref = localizePath("/", locale),
     logoSrc = LOGO as unknown as ImageMetadata,
 } = Astro.props as Props;
 
@@ -108,7 +128,7 @@ const partnerImages = await partners();
         </DomeSeparator>
 
         <!-- Carrusel -->
-        {partnerImages && <Carrousel images={partnerImages} ariaLabel="Carrusel de logos de empresas colaboradoras" />}
+        {partnerImages && <Carrousel images={partnerImages} ariaLabel={t("footer.partnersCarousel")} />}
     </section>
 
     <section class="relative pt-10">
@@ -126,9 +146,9 @@ const partnerImages = await partners();
     </section>
     <div class="relative w-full bg-primary text-white before:w-full before:h-1 before:bg-primary before:absolute before:-top-0.5">
         <section class="w-[90%] mx-auto relative pb-10 pt-10 grid grid-cols-1 md:grid-cols-12 gap-10 items-start" aria-labelledby="site-navigation-title">
-            <h2 id="site-navigation-title" class="sr-only">Navegación del sitio</h2>
+            <h2 id="site-navigation-title" class="sr-only">{t("nav.siteNavigation")}</h2>
 
-            <nav class="md:col-span-4" aria-label="Navegación principal">
+            <nav class="md:col-span-4" aria-label={t("nav.mainNavigation")}>
                 <ul class="text-2xl sm:text-3xl md:text-4xl space-y-3">
                     {
                         (navigationTree && Array.isArray(navigationTree) ? navigationTree : mainNavItems).map((item) => {
@@ -147,12 +167,12 @@ const partnerImages = await partners();
                 </ul>
             </nav>
 
-            <nav class="md:col-span-5" aria-label="Navegación secundaria">
+            <nav class="md:col-span-5" aria-label={t("nav.secondaryNavigation")}>
                 {
                     secondaryNavItems.length > 0 && (
                         <ul class="text-base sm:text-lg md:text-xl space-y-3 md:max-w-[56ch]">
                             <li>
-                                <h2 class="opacity-40 font-display font-bold">{secondaryLinks}</h2>
+                                <h2 class="opacity-40 font-display font-bold">{secondaryGroup.title}</h2>
                             </li>
                             {secondaryNavItems.map((item) => (
                                 <li>
@@ -169,11 +189,11 @@ const partnerImages = await partners();
             <div class="md:col-span-3 text-center md:text-right md:justify-self-end">
                 <div class="md:mt-12">
                     <a href={logoLinkHref} class="inline-block">
-                        <Image src={logoSrc} alt="Logotipo" class="w-full mx-auto md:ml-auto md:mr-0" />
+                        <Image src={logoSrc} alt={t("alt.logo")} class="w-full mx-auto md:ml-auto md:mr-0" />
                     </a>
                 </div>
 
-                <nav class="mt-8 w-full" aria-label="Redes sociales">
+                <nav class="mt-8 w-full" aria-label={t("footer.socialNetworks")}>
                     <ul class="flex items-center justify-center md:justify-end gap-3 w-full">
                         {
                             footer.Socials &&
@@ -197,7 +217,7 @@ const partnerImages = await partners();
         <LegalFooterBand />
     </div>
 
-    <section class="bg-secondary py-5 md:px-10 flex flex-col md:flex-row items-center justify-center md:justify-between gap-3 text-sm md:text-base" aria-label="Información legal y créditos">
+    <section class="bg-secondary py-5 md:px-10 flex flex-col md:flex-row items-center justify-center md:justify-between gap-3 text-sm md:text-base" aria-label={t("nav.legalCredits")}>
         <div class="w-full">
             <div class="flex flex-wrap justify-center md:justify-start gap-x-5 gap-y-1">
                 <p>
@@ -235,11 +255,11 @@ const partnerImages = await partners();
             </div>
         </div>
         <div class="w-full text-center">
-            <span class="text-white opacity-80">Desarrollado por</span>
+            <span class="text-white opacity-80">{t("footer.developedBy")}</span>
             <a href="https://allmylinks.com/definitelynotisai" class="text-white opacity-80 hover:opacity-100 after:absolute relative after:h-[1px] hover:after:bg-primary after:w-full hover:after:w-0 hover:text-primary after:bg-white after:left-0 after:bottom-0 after:transition-all after:duration-200 after:ease-in-out" rel="noopener noreferrer" target="_blank">Isaí Tobar</a>
         </div>
         <div class="w-full text-center md:text-right">
-            <span class="text-white opacity-80">Hecho con</span>
+            <span class="text-white opacity-80">{t("footer.madeWith")}</span>
             <a class="text-white hover:text-primary opacity-80 hover:opacity-100" href="https://astro.build" rel="noopener noreferrer" target="_blank"><Icon name="simple-icons:astro" class="inline-block" />{Astro.generator}</a>
         </div>
     </section>

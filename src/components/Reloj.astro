@@ -1,11 +1,19 @@
 ---
 import { Icon } from "astro-icon/components";
+import { defaultLocale, useTranslations, type Locale } from "../i18n";
+
+interface Props {
+    locale?: Locale;
+}
+
+const { locale = defaultLocale } = Astro.props;
+const t = useTranslations(locale);
 ---
 
 <div class="flex items-center overflow-hidden gap-2 justify-center w-full animate">
     <Icon name="svg-spinners:clock" width="18" height="18" />
-    <p>Guayaquil, Ecuador</p>
-    <div class="animate" id="timeDigits" aria-label="Hora en Guayaquil"></div>
+    <p>{t("clock.place")}</p>
+    <div class="animate" id="timeDigits" aria-label={t("clock.label")}></div>
 </div>
 
 <script>

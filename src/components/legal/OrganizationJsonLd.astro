@@ -6,8 +6,9 @@
    confirmar nombre legal, RUC, registro y domicilio sin ejecutar JavaScript.
    Se alimenta del mismo single type `legal-transparency` que el bloque visible. */
 import { getLegalContent, organizationJsonLd } from "./legalContent";
+import { getLocale } from "../../i18n";
 
-const d = await getLegalContent();
+const d = await getLegalContent(getLocale(Astro.url));
 const siteUrl = Astro.site?.href ?? d.website;
 const org = organizationJsonLd(d, siteUrl);
 ---

@@ -2,36 +2,71 @@
 /* ──────────────────────────────────────────────────────────────────────────
    /donate — Aporta hoy.
 
-   Es el destino del CTA "Aporta hoy 💜" de la navegación (Strapi), que hasta
-   ahora caía en 404. Mientras no exista pasarela de pagos, el canal es la
-   transferencia bancaria: por eso los datos de la cuenta son el bloque
-   principal, en texto seleccionable, con botón de copiar como mejora
-   progresiva (sin JS, el número se lee y se copia a mano igual).
+   La cuenta institucional es el protagonista y aparece UNA sola vez: dentro
+   de su ficha, los datos del giro internacional (SWIFT, direcciones, moneda)
+   son un segundo nivel, no otra sección. Duplicar un dato bancario garantiza
+   que algún día quede desactualizado en una de las dos copias.
+
+   Debajo, dos rejillas de canales con botón, que comparten MethodCard:
+   · paymentMethods → pasarelas de pago (Donorbox, PayPal…), cuando exista
+                      una contratada.
+   · transferApps   → apps de envío desde el exterior (Wise, Remitly).
+
+   Un canal sin `href` no se pinta, así que la página nunca muestra un botón
+   muerto mientras no haya pasarela.
+
+   Los datos son texto seleccionable; los botones de copiar son mejora
+   progresiva y sin JS la página funciona igual.
 
    Contenido editable en Strapi: single type `donate-page`.
 ─────────────────────────────────────────────────────────────────────────── */
 import PageLayout from "../layouts/PageLayout.astro";
 import Button from "../components/Button.astro";
+import MethodCard from "../components/donate/MethodCard.astro";
 import { Icon } from "astro-icon/components";
-import { donateFallback } from "../data/pages/donate";
+import { donateFallback, donateFallbackEn } from "../data/pages/donate";
 import { loadPageContent } from "../utils/page-content";
 import { formatTitle } from "../utils/rich-title";
+import { getLocale, localizePath, useTranslations } from "../i18n";
 
-const d = await loadPageContent("donatePage", donateFallback);
+const locale = getLocale(Astro.url);
+const t = useTranslations(locale);
+/* El fallback cambia con el idioma: el `donate-page` del CMS desplegado
+   todavía no tiene los campos nuevos, así que hoy la página se sirve desde
+   aquí en los dos idiomas. */
+const d = await loadPageContent("donatePage", locale === "en" ? donateFallbackEn : donateFallback, locale);
 
-/* Filas de cada cuenta: etiqueta, valor y si se ofrece "copiar". */
-const accountRows = (account: (typeof d.accounts)[number]) =>
+type Account = (typeof d.accounts)[number];
+
+/* Datos que pide una transferencia nacional. */
+const localRows = (account: Account) =>
     [
-        { label: "Banco", value: account.bank, copy: false },
-        { label: "Tipo de cuenta", value: account.accountType, copy: false },
-        { label: "Número de cuenta", value: account.accountNumber, copy: true },
-        { label: "Titular", value: account.holder, copy: false },
-        { label: "RUC", value: account.taxId, copy: true },
-        { label: "Código SWIFT (desde el exterior)", value: account.swift, copy: true },
+        { label: "Banco", value: account.bank, copy: false, lead: false },
+        { label: "Tipo de cuenta", value: account.accountType, copy: false, lead: false },
+        { label: "Número de cuenta", value: account.accountNumber, copy: true, lead: true },
+        { label: "Titular", value: account.holder, copy: false, lead: false },
+        { label: "RUC", value: account.taxId, copy: true, lead: false },
     ].filter((row) => Boolean(row.value));
+
+/* Lo que un banco extranjero pide ADEMÁS de lo anterior. */
+const wireRows = (account: Account) =>
+    [
+        { label: "Código SWIFT / BIC", value: account.swift, copy: true, lead: true },
+        { label: "Dirección del titular", value: account.holderAddress, copy: true, lead: false },
+        { label: "Dirección del banco", value: account.bankAddress, copy: true, lead: false },
+        { label: "Moneda", value: account.currency, copy: false, lead: false },
+    ].filter((row) => Boolean(row.value));
+
+/* Un solo bloque de texto con todo el giro: es lo que el donante pega en el
+   formulario de su banco sin ir campo por campo. */
+const wireBlock = (account: Account) => [...localRows(account), ...wireRows(account)].map((row) => `${row.label}: ${row.value}`).join("\n");
+
+const paymentMethods = d.paymentMethods.filter((method) => method?.href && method?.name);
+const transferApps = d.transferApps.filter((method) => method?.href && method?.name);
+const faq = d.faq.filter((item) => item?.question && item?.answer);
 ---
 
-<PageLayout title="Aporta hoy" description={d.seo.metaDescription}>
+<PageLayout title={t("page.donate")} description={d.seo.metaDescription}>
     <!-- Intro -->
     <section class="mx-auto w-[90%] max-w-[1100px] py-16 sm:py-24" aria-labelledby="donate-intro-title">
         <div class="max-w-[62ch]" data-reveal>
@@ -39,26 +74,43 @@ const accountRows = (account: (typeof d.accounts)[number]) =>
             <h2 id="donate-intro-title" class="font-display text-4xl font-black leading-[0.95] text-black sm:text-6xl" set:html={formatTitle(d.intro.title, "text-secondary-deep")} />
             <p class="mt-6 text-lg leading-relaxed text-black/75">{d.intro.body}</p>
         </div>
+
+        {
+            d.channelLinks.length > 0 && (
+                <nav class="mt-9 flex flex-wrap gap-3" aria-label="Atajos" data-reveal>
+                    {d.channelLinks.map((link) => (
+                        <a
+                            href={link.href}
+                            class="inline-flex min-h-12 items-center gap-2 rounded-full border-2 border-black/15 px-6 py-3 font-display font-bold text-black transition hover:-translate-y-0.5 hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
+                        >
+                            <Icon name="mdi:arrow-down" class="h-4 w-4" aria-hidden="true" />
+                            {link.text}
+                        </a>
+                    ))}
+                </nav>
+            )
+        }
     </section>
 
-    <!-- Cuentas bancarias -->
+    <!-- Cuenta institucional: el canal principal, con el giro internacional dentro -->
     <section class="mx-auto w-[94%] max-w-[1200px] rounded-[2.5rem] bg-primary px-6 py-14 text-white sm:px-12 lg:rounded-[4rem] lg:px-16 lg:py-20" aria-labelledby="donate-accounts-title">
         <div class="max-w-[62ch]" data-reveal>
             <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">{d.accountsHeading.eyebrow}</p>
-            <h2 id="donate-accounts-title" class="font-display text-3xl font-black leading-tight sm:text-5xl" set:html={formatTitle(d.accountsHeading.title)} />
-            <p class="mt-5 text-lg leading-relaxed text-white/80">{d.accountsHeading.body}</p>
+            <h2 id="donate-accounts-title" class="font-display text-4xl font-black leading-[0.95] sm:text-6xl" set:html={formatTitle(d.accountsHeading.title, "text-secondary")} />
+            <p class="mt-6 text-lg leading-relaxed text-white/80">{d.accountsHeading.body}</p>
         </div>
 
-        <ul class:list={["mt-10 grid gap-6", d.accounts.length > 1 ? "lg:grid-cols-2" : "max-w-[44rem]"]} data-reveal-group>
+        <ul class:list={["mt-12 grid gap-8", d.accounts.length > 1 && "xl:grid-cols-2"]} data-reveal-group>
             {
                 d.accounts.map((account) => (
-                    <li class="rounded-[2rem] bg-white/10 p-6 backdrop-blur sm:p-8">
-                        <h3 class="font-display text-2xl font-black leading-tight">{account.bank}</h3>
-                        <dl class="mt-6 divide-y divide-white/15">
-                            {accountRows(account).map((row) => (
-                                <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-3">
+                    <li class="rounded-[2rem] bg-white/10 p-6 backdrop-blur sm:p-10">
+                        <h3 class="font-display text-3xl font-black leading-tight sm:text-4xl">{account.bank}</h3>
+
+                        <dl class="mt-8 divide-y divide-white/15">
+                            {localRows(account).map((row) => (
+                                <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-4">
                                     <dt class="text-xs font-bold uppercase tracking-[0.14em] text-white/80">{row.label}</dt>
-                                    <dd class="flex items-center gap-3 font-display text-lg font-bold sm:text-xl">
+                                    <dd class:list={["flex flex-wrap items-center gap-x-4 gap-y-2 font-display font-bold", row.lead ? "text-2xl sm:text-4xl" : "text-lg sm:text-xl"]}>
                                         <span class="select-all">{row.value}</span>
                                         {row.copy && (
                                             <button
@@ -75,7 +127,50 @@ const accountRows = (account: (typeof d.accounts)[number]) =>
                                 </div>
                             ))}
                         </dl>
+
                         {account.note && <p class="mt-5 text-sm leading-relaxed text-white/70">{account.note}</p>}
+
+                        {wireRows(account).length > 0 && (
+                            <div id="desde-el-exterior" class="mt-10 scroll-mt-28 rounded-[1.5rem] bg-black/20 p-6 sm:p-8">
+                                <p class="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-secondary">{d.internationalHeading.eyebrow}</p>
+                                <h4 class="font-display text-2xl font-black leading-tight">{d.internationalHeading.title}</h4>
+                                {d.internationalHeading.body && <p class="mt-3 max-w-[62ch] text-base leading-relaxed text-white/75">{d.internationalHeading.body}</p>}
+
+                                <dl class="mt-6 divide-y divide-white/10">
+                                    {wireRows(account).map((row) => (
+                                        <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-3">
+                                            <dt class="text-xs font-bold uppercase tracking-[0.14em] text-white/70">{row.label}</dt>
+                                            <dd class:list={["flex flex-wrap items-center gap-x-4 gap-y-2 font-display font-bold", row.lead ? "text-xl sm:text-2xl" : "text-base sm:text-lg"]}>
+                                                <span class="select-all">{row.value}</span>
+                                                {row.copy && (
+                                                    <button
+                                                        type="button"
+                                                        class="copy-btn inline-flex min-h-[2.25rem] items-center gap-1.5 rounded-full bg-white/15 px-4 py-2 text-xs font-bold uppercase tracking-[0.1em] transition hover:bg-white/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+                                                        data-copy={row.value}
+                                                        data-label={row.label}
+                                                    >
+                                                        <Icon name="mdi:content-copy" class="h-4 w-4" aria-hidden="true" />
+                                                        <span class="copy-btn-text">Copiar</span>
+                                                    </button>
+                                                )}
+                                            </dd>
+                                        </div>
+                                    ))}
+                                </dl>
+
+                                <button
+                                    type="button"
+                                    class="copy-btn mt-6 inline-flex min-h-12 items-center gap-2 rounded-full bg-secondary px-7 py-3 font-display font-bold text-black transition hover:-translate-y-0.5 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-secondary motion-reduce:hover:translate-y-0"
+                                    data-copy={wireBlock(account)}
+                                    data-label={t("donate.wireDetails")}
+                                >
+                                    <Icon name="mdi:content-copy" class="h-4 w-4" aria-hidden="true" />
+                                    <span class="copy-btn-text">{t("donate.copyAll")}</span>
+                                </button>
+
+                                {account.wireNote && <p class="mt-5 max-w-[70ch] text-sm leading-relaxed text-white/70">{account.wireNote}</p>}
+                            </div>
+                        )}
                     </li>
                 ))
             }
@@ -103,8 +198,89 @@ const accountRows = (account: (typeof d.accounts)[number]) =>
         <p class="sr-only" role="status" aria-live="polite" id="copy-status"></p>
     </section>
 
+    <!-- Pasarelas de pago en línea -->
+    {
+        paymentMethods.length > 0 && (
+            <section class="mx-auto w-[90%] max-w-[1200px] py-20 sm:py-28" aria-labelledby="donate-methods-title">
+                <div class="max-w-[62ch]" data-reveal>
+                    <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{d.paymentMethodsHeading.eyebrow}</p>
+                    <h2 id="donate-methods-title" class="font-display text-4xl font-black leading-[0.95] text-black sm:text-6xl" set:html={formatTitle(d.paymentMethodsHeading.title, "text-primary")} />
+                    {d.paymentMethodsHeading.body && <p class="mt-6 text-lg leading-relaxed text-black/75">{d.paymentMethodsHeading.body}</p>}
+                </div>
+
+                <ul class="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3" data-reveal-group>
+                    {paymentMethods.map((method) => (
+                        <MethodCard
+                            name={method.name!}
+                            description={method.description ?? undefined}
+                            href={method.href!}
+                            linkText={method.linkText ?? undefined}
+                            fee={method.fee ?? undefined}
+                            icon={method.icon ?? undefined}
+                        />
+                    ))}
+                </ul>
+            </section>
+        )
+    }
+
+    <!-- Apps de envío desde el exterior -->
+    {
+        transferApps.length > 0 && (
+            <section class="mx-auto w-[90%] max-w-[1200px] py-20 sm:py-28" aria-labelledby="donate-apps-title">
+                <div class="max-w-[62ch]" data-reveal>
+                    <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{d.transferAppsHeading.eyebrow}</p>
+                    <h2 id="donate-apps-title" class="font-display text-4xl font-black leading-[0.95] text-black sm:text-6xl" set:html={formatTitle(d.transferAppsHeading.title, "text-primary")} />
+                    {d.transferAppsHeading.body && <p class="mt-6 text-lg leading-relaxed text-black/75">{d.transferAppsHeading.body}</p>}
+                </div>
+
+                <div class="mt-12 grid gap-5 lg:grid-cols-[1.4fr_1fr]" data-reveal-group>
+                    <ul class="grid gap-5 sm:grid-cols-2">
+                        {transferApps.map((app) => (
+                            <MethodCard name={app.name!} description={app.description ?? undefined} href={app.href!} linkText={app.linkText ?? undefined} fee={app.fee ?? undefined} icon={app.icon ?? undefined} />
+                        ))}
+                    </ul>
+
+                    {d.english?.title && (
+                        <article lang="en" class="rounded-[2rem] bg-accent p-7 text-black sm:p-8">
+                            <h3 class="font-display text-2xl font-black leading-tight">{d.english.title}</h3>
+                            {d.english.body && <p class="mt-3 text-base leading-relaxed text-black/80">{d.english.body}</p>}
+                            {d.english.note && <p class="mt-3 text-sm leading-relaxed text-black/70">{d.english.note}</p>}
+                        </article>
+                    )}
+                </div>
+            </section>
+        )
+    }
+
+    <!-- Preguntas frecuentes -->
+    {
+        faq.length > 0 && (
+            <section class="mx-auto w-[90%] max-w-[1100px] pb-20 sm:pb-28" aria-labelledby="donate-faq-title">
+                <div class="max-w-[62ch]" data-reveal>
+                    <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.faqHeading.eyebrow}</p>
+                    <h2 id="donate-faq-title" class="font-display text-4xl font-black leading-[0.95] text-black sm:text-6xl" set:html={formatTitle(d.faqHeading.title, "text-secondary-deep")} />
+                </div>
+
+                <ul class="mt-12 space-y-4" data-reveal-group>
+                    {faq.map((item) => (
+                        <li>
+                            <details class="group rounded-[1.5rem] border border-black/10 bg-white/60 px-6 py-5 open:bg-white/80">
+                                <summary class="flex cursor-pointer list-none items-center justify-between gap-6 font-display text-lg font-black leading-snug text-black marker:hidden focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+                                    {item.question}
+                                    <Icon name="mdi:plus" class="h-5 w-5 shrink-0 text-primary transition-transform duration-300 group-open:rotate-45 motion-reduce:transition-none" aria-hidden="true" />
+                                </summary>
+                                <p class="mt-4 max-w-[75ch] text-base leading-relaxed text-black/75">{item.answer}</p>
+                            </details>
+                        </li>
+                    ))}
+                </ul>
+            </section>
+        )
+    }
+
     <!-- A dónde va tu aporte -->
-    <section class="mx-auto w-[90%] max-w-[1200px] py-20 sm:py-28" aria-labelledby="donate-impact-title">
+    <section class="mx-auto w-[90%] max-w-[1200px] pb-20 sm:pb-28" aria-labelledby="donate-impact-title">
         <div class="max-w-[62ch]" data-reveal>
             <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{d.impactHeading.eyebrow}</p>
             <h2 id="donate-impact-title" class="font-display text-4xl font-black leading-[0.95] text-primary sm:text-6xl" set:html={formatTitle(d.impactHeading.title, "text-accent")} />
@@ -144,7 +320,7 @@ const accountRows = (account: (typeof d.accounts)[number]) =>
             d.legalNote && (
                 <p class="mt-12 max-w-[80ch] text-sm leading-relaxed text-black/70">
                     {d.legalNote}{" "}
-                    <a href="/transparencia" class="font-bold text-primary underline underline-offset-4 hover:text-secondary-deep">
+                    <a href={localizePath("/transparencia", locale)} class="font-bold text-primary underline underline-offset-4 hover:text-secondary-deep">
                         Ver transparencia legal
                     </a>
                 </p>
@@ -153,7 +329,21 @@ const accountRows = (account: (typeof d.accounts)[number]) =>
     </section>
 </PageLayout>
 
+<style>
+    /* Safari sigue pintando el triángulo del summary con list-none. */
+    summary::-webkit-details-marker {
+        display: none;
+    }
+</style>
+
 <script>
+    /* El atajo a #desde-el-exterior necesita el helper de anclas: con
+       ScrollSmoother activo el salto nativo del navegador no mueve el
+       contenido. Sin JS el navegador salta igual. */
+    import { initInPageAnchors } from "../scripts/anchors";
+
+    initInPageAnchors();
+
     /* Copiar al portapapeles: mejora progresiva. Sin JS el dato sigue siendo
        texto seleccionable (`select-all`), así que la página funciona igual. */
     const status = document.getElementById("copy-status");
@@ -163,12 +353,13 @@ const accountRows = (account: (typeof d.accounts)[number]) =>
             const value = btn.dataset.copy ?? "";
             const label = btn.dataset.label ?? "dato";
             const text = btn.querySelector(".copy-btn-text");
+            const original = text?.textContent ?? "Copiar";
             try {
                 await navigator.clipboard.writeText(value);
                 if (text) text.textContent = "Copiado";
-                if (status) status.textContent = `${label} copiado: ${value}`;
+                if (status) status.textContent = `${label} copiado.`;
                 window.setTimeout(() => {
-                    if (text) text.textContent = "Copiar";
+                    if (text) text.textContent = original;
                 }, 2000);
             } catch {
                 if (status) status.textContent = `No se pudo copiar automáticamente. ${label}: ${value}`;

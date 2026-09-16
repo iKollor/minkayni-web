@@ -2,6 +2,9 @@
 import { StrapiBlocks } from "@sensinum/astro-strapi-blocks";
 import type { TeamMemberEntry } from "../../schemas/pages.zod";
 import { strapiMediaUrl } from "../../utils/media-url";
+import { getLocale, useTranslations } from "../../i18n";
+
+const t = useTranslations(getLocale(Astro.url));
 
 interface Props {
     members?: TeamMemberEntry[];
@@ -36,7 +39,7 @@ startIdx = startIdx >= 0 ? startIdx : 0;
                     {
                         list.map((m, i) => (
                             <div class="about-entry" data-about={i}>
-                                {m?.about?.length ? <StrapiBlocks data={m.about} class="t t-description prose prose-neutral max-w-none text-[1.02rem] leading-relaxed text-black/80 prose-p:my-2 prose-h4:mt-4 prose-ul:my-2 prose-li:my-0.5" /> : <p class="text-black/50">Sin descripción disponible.</p>}
+                                {m?.about?.length ? <StrapiBlocks data={m.about} class="t t-description prose prose-neutral max-w-none text-[1.02rem] leading-relaxed text-black/80 prose-p:my-2 prose-h4:mt-4 prose-ul:my-2 prose-li:my-0.5" /> : <p class="text-black/50">{t("empty.description")}</p>}
                             </div>
                         ))
                     }

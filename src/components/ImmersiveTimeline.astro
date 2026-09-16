@@ -10,6 +10,9 @@ import CmsImage from "./CmsImage.astro";
 import type { CmsMedia } from "../data/pages/types";
 import { splitParagraphs } from "../utils/rich-title";
 import flor from "../assets/SVG/misc/flor.svg";
+import { getLocale, useTranslations } from "../i18n";
+
+const t = useTranslations(getLocale(Astro.url));
 
 export interface TimelineEntry {
     chip?: string | null;
@@ -31,7 +34,7 @@ const chipOf = (item: TimelineEntry) => item.chip ?? item.period ?? "";
 ---
 
 <div data-timeline aria-label={ariaLabel}>
-    <nav class="mb-14 flex flex-wrap gap-2" aria-label="Saltar a una época" data-reveal>
+    <nav class="mb-14 flex flex-wrap gap-2" aria-label={t("batucada.jumpToPeriod")} data-reveal>
         {
             items.map((item, index) => (
                 <button

@@ -1,15 +1,17 @@
 ---
-/* Subpáginas del constructor de Strapi (collection type `page`).
-   Cada entrada publicada genera la ruta /<slug> en build; las rutas
-   estáticas del sitio tienen prioridad y además se filtran por seguridad.
-   Reveals y odómetro usan el mismo patrón que /about e /impact. */
+/* Subpáginas del constructor en inglés.
+
+   No puede limitarse a montar la página española como hacen las demás rutas
+   de `/en`: una ruta dinámica necesita su propio `getStaticPaths`, porque es
+   ahí donde Astro decide qué URLs existen. La lista y la mezcla de idiomas
+   viven en `builderPagePaths`, compartidas con `/[...slug]`. */
 import PageLayout from "@/layouts/PageLayout.astro";
 import BlockRenderer from "@/components/blocks/BlockRenderer.astro";
 import { builderPagePaths } from "@/utils/builder-pages";
 import type { BuilderPage } from "@/schemas/pages.zod";
 
 export async function getStaticPaths() {
-    return builderPagePaths("es");
+    return builderPagePaths("en");
 }
 
 interface Props {
@@ -18,7 +20,6 @@ interface Props {
 const { page } = Astro.props;
 const blocks = (page.sections ?? []).filter((section): section is Record<string, unknown> => Boolean(section));
 
-/* La subpágina trae su propio SEO; sin esto heredaba la descripción global. */
 const description = page.seo?.metaDescription ?? page.description ?? undefined;
 ---
 
@@ -29,11 +30,11 @@ const description = page.seo?.metaDescription ?? page.description ?? undefined;
 </PageLayout>
 
 <script>
-    import { initBatucadaAnchors } from "../scripts/batucada/motion";
-    import { initReveals, initCounters } from "../scripts/reveals";
+    import { initBatucadaAnchors } from "../../scripts/batucada/motion";
+    import { initReveals, initCounters } from "../../scripts/reveals";
 
     const initBuilderPage = () => {
-        initBatucadaAnchors(); // anclas internas con offset por navbar fija
+        initBatucadaAnchors();
         initCounters();
         initReveals();
     };

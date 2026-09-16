@@ -383,12 +383,23 @@ const builderPageSelection = `
     seo { ${seoSelection} }
 `;
 
+const donationMethodSelection = `id name description href linkText fee icon`;
+
 const donatePageSelection = `
     ${entryMetaSelection}
     intro { ${headingSelection} }
+    channelLinks(pagination: { limit: 10 }) { ${linkSelection} }
     accountsHeading { ${headingSelection} }
-    accounts(pagination: { limit: 100 }) { id bank accountType accountNumber holder taxId swift note }
+    accounts(pagination: { limit: 100 }) { id bank accountType accountNumber holder taxId swift holderAddress bankAddress currency wireNote note }
     transferNote
+    internationalHeading { ${headingSelection} }
+    paymentMethodsHeading { ${headingSelection} }
+    paymentMethods(pagination: { limit: 100 }) { ${donationMethodSelection} }
+    transferAppsHeading { ${headingSelection} }
+    transferApps(pagination: { limit: 100 }) { ${donationMethodSelection} }
+    english { id title body note }
+    faqHeading { ${headingSelection} }
+    faq(pagination: { limit: 100 }) { id question answer }
     impactHeading { ${headingSelection} }
     impactCards(pagination: { limit: 100 }) { ${cardSelection} }
     otherWaysHeading { ${headingSelection} }
@@ -496,6 +507,48 @@ const footer = defineCollection({
   }),
 });
 
+const homepageEn = defineCollection({
+  loader: strapiConfigured
+    ? strapiLoader({
+        mode: "single",
+        rootField: "homepage",
+        selection: homepageSelection,
+        client: clientHeaders,
+        cacheDurationInMs: contentCacheMs,
+        idResolver: () => "homepage",
+        locale: "en",
+      })
+    : preserveCachedContent("homepage:en"),
+  schema: HomepageSchema().extend({
+    testimonialsTitle: z.string().nullish(),
+    teamTitle: z.string().nullish(),
+    featuredProject: FeaturedProjectSchema().nullish(),
+    projectsCtaHeading: SectionHeadingSchema().nullish(),
+    projectsCtaTags: z.array(ListItemSchema().nullable()).nullish(),
+    projectsCtaButton: ActionButtonSchema().nullish(),
+  }),
+});
+
+const footerEn = defineCollection({
+  loader: strapiConfigured
+    ? strapiLoader({
+        mode: "single",
+        rootField: "footer",
+        selection: footerSelection,
+        client: clientHeaders,
+        cacheDurationInMs: contentCacheMs,
+        idResolver: () => "footer",
+        locale: "en",
+      })
+    : preserveCachedContent("footer:en"),
+  schema: FooterSchema().extend({
+    partnersTitle: z.string().nullish(),
+    joinTitle: z.string().nullish(),
+    joinSubtitle: z.string().nullish(),
+    joinButton: ActionButtonSchema().nullish(),
+  }),
+});
+
 const navigationHeader = defineCollection({
   loader: strapiConfigured
     ? navigationLoader({
@@ -509,9 +562,36 @@ const navigationHeader = defineCollection({
   schema: NavigationTreeSchema,
 });
 
+/* El plugin Navigation guarda un árbol por idioma. Mientras el árbol `header`
+   en inglés no exista en el CMS, este loader devuelve una lista vacía y los
+   layouts usan `navigationFallbackEn` (src/data/pages/global.ts). */
+const navigationHeaderEn = defineCollection({
+  loader: strapiConfigured
+    ? navigationLoader({
+        slug: "header",
+        locale: "en",
+        url: STRAPI_BASE,
+        token: STRAPI_TOKEN,
+        cacheMs: contentCacheMs,
+      })
+    : preserveCachedContent("navigationHeader:en"),
+  schema: NavigationTreeSchema,
+});
+
 /* ── Single types de página ────────────────────────────────────────────── */
-const definePageSingle = <S extends z.ZodType>(rootField: string, selection: string, schema: S) =>
-  defineCollection({
+/* Cada single type se registra una vez por idioma. Una colección de Astro
+   admite un solo loader, y el loader lleva el locale dentro de la consulta
+   GraphQL, así que dos idiomas son necesariamente dos colecciones: `aboutPage`
+   (español) y `aboutPageEn` (inglés). `loadPageContent` es quien elige entre
+   las dos, y quien cae al español cuando el inglés todavía está vacío. */
+const definePageSingle = <S extends z.ZodType>(
+  rootField: string,
+  selection: string,
+  schema: S,
+  locale: string = "es"
+) => {
+  const suffix = locale === "es" ? "" : `:${locale}`;
+  return defineCollection({
     loader: strapiConfigured
       ? strapiLoader({
           mode: "single",
@@ -520,11 +600,12 @@ const definePageSingle = <S extends z.ZodType>(rootField: string, selection: str
           client: clientHeaders,
           cacheDurationInMs: contentCacheMs,
           idResolver: () => rootField,
-          locale: "es",
+          locale,
         })
-      : preserveCachedContent(rootField),
+      : preserveCachedContent(`${rootField}${suffix}`),
     schema,
   });
+};
 
 const aboutPage = definePageSingle("aboutPage", aboutPageSelection, AboutPageSchema());
 const impactPage = definePageSingle("impactPage", impactPageSelection, ImpactPageSchema());
@@ -547,6 +628,34 @@ const legalTransparency = definePageSingle(
   LegalTransparencySchema()
 );
 const donatePage = definePageSingle("donatePage", donatePageSelection, DonatePageSchema());
+
+/* Los mismos single types en inglés. El editor traduce en el CMS con el
+   selector de idioma del admin; hasta que lo haga, estas colecciones llegan
+   vacías y `loadPageContent` sirve el español. */
+const aboutPageEn = definePageSingle("aboutPage", aboutPageSelection, AboutPageSchema(), "en");
+const impactPageEn = definePageSingle("impactPage", impactPageSelection, ImpactPageSchema(), "en");
+const projectsPageEn = definePageSingle("projectsPage", projectsPageSelection, ProjectsPageSchema(), "en");
+const batucadaPageEn = definePageSingle("batucadaPage", batucadaPageSelection, BatucadaPageSchema(), "en");
+const batucadaEcosystemPageEn = definePageSingle(
+  "batucadaEcosystemPage",
+  batucadaEcosystemPageSelection,
+  BatucadaEcosystemPageSchema(),
+  "en"
+);
+const batucadaHistoryPageEn = definePageSingle(
+  "batucadaHistoryPage",
+  batucadaHistoryPageSelection,
+  BatucadaHistoryPageSchema(),
+  "en"
+);
+const globalSettingsEn = definePageSingle("global", globalSelection, GlobalSettingsSchema(), "en");
+const legalTransparencyEn = definePageSingle(
+  "legalTransparency",
+  legalTransparencySelection,
+  LegalTransparencySchema(),
+  "en"
+);
+const donatePageEn = definePageSingle("donatePage", donatePageSelection, DonatePageSchema(), "en");
 
 /* Testimonios y Equipo (collection types en Strapi, orden por campo sort). */
 const testimonials = defineCollection({
@@ -589,21 +698,52 @@ const builderPages = defineCollection({
   schema: BuilderPageSchema(),
 });
 
+const builderPagesEn = defineCollection({
+  loader: strapiConfigured
+    ? strapiLoader({
+        mode: "collection",
+        rootField: "pages",
+        selection: builderPageSelection,
+        client: clientHeaders,
+        cacheDurationInMs: contentCacheMs,
+        locale: "en",
+      })
+    : preserveCachedContent("pages:en"),
+  schema: BuilderPageSchema(),
+});
+
+/* `testimonials` y `teamMembers` no aparecen duplicados a propósito: esos dos
+   collection types no tienen la internacionalización activada en Strapi, así
+   que solo existen en español. Para traducirlos hay que marcarlos como
+   localizados en el Content-Type Builder del CMS primero. */
 export const collections = {
   posts,
   homepage,
+  homepageEn,
   navigationHeader,
+  navigationHeaderEn,
   footer,
+  footerEn,
   testimonials,
   teamMembers,
   aboutPage,
+  aboutPageEn,
   impactPage,
+  impactPageEn,
   projectsPage,
+  projectsPageEn,
   batucadaPage,
+  batucadaPageEn,
   batucadaEcosystemPage,
+  batucadaEcosystemPageEn,
   batucadaHistoryPage,
+  batucadaHistoryPageEn,
   globalSettings,
+  globalSettingsEn,
   legalTransparency,
+  legalTransparencyEn,
   donatePage,
+  donatePageEn,
   builderPages,
+  builderPagesEn,
 };

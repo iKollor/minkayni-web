@@ -1,0 +1,87 @@
+---
+/* Datos estructurados por página: WebSite y, en las páginas anidadas,
+   BreadcrumbList.
+
+   El JSON-LD de la organización (OrganizationJsonLd) describe QUIÉN publica el
+   sitio, pero no describe el sitio ni dónde encaja cada página dentro de él.
+   Sin `WebSite`, Google no tiene una declaración explícita del nombre del sitio
+   para los resultados; sin `BreadcrumbList`, las rutas anidadas
+   (/projects/batucada-popular/ecosistema) se muestran como URL cruda en lugar
+   de como ruta de navegación.
+
+   Se emite sólo cuando hay `site` configurado: una URL relativa en estos
+   esquemas no es válida y Google descarta el bloque entero. */
+import { globalFallback } from "../../data/pages/global";
+import { loadPageContent } from "../../utils/page-content";
+import { defaultLocale, getLocale, htmlLang, localizePath, useTranslations } from "../../i18n";
+
+interface Props {
+    /** Título de la página actual, el último eslabón de la ruta. */
+    title?: string;
+    /** Páginas excluidas de los buscadores: no declaran ruta ni sitio. */
+    noindex?: boolean;
+}
+
+const { title, noindex = false } = Astro.props;
+const locale = getLocale(Astro.url);
+const t = useTranslations(locale);
+const site = await loadPageContent("globalSettings", globalFallback, locale);
+
+/** Etiquetas legibles de los segmentos que no son una página con título propio. */
+const SEGMENT_LABELS: Record<string, Record<string, string>> = {
+    es: { projects: "Proyectos", "batucada-popular": "Batucada Popular" },
+    en: { projects: "Projects", "batucada-popular": "Batucada Popular" },
+};
+const segmentLabels = SEGMENT_LABELS[locale] ?? SEGMENT_LABELS[defaultLocale];
+
+/* Raíz del sitio en este idioma: la portada inglesa es /en/, no /. */
+const localeRoot = new URL(localizePath("/", locale), Astro.site ?? "https://minkayni.org").href;
+
+const buildGraph = (origin: URL) => {
+    const graph: Record<string, unknown>[] = [
+        {
+            "@type": "WebSite",
+            "@id": `${origin.origin}/#website${locale === defaultLocale ? "" : `-${locale}`}`,
+            url: localeRoot,
+            name: site.siteName,
+            inLanguage: htmlLang[locale],
+            publisher: { "@id": `${origin.origin}/#organization` },
+        },
+    ];
+
+    /* Los segmentos de la URL actual, sin el vacío final del slash y sin el
+       prefijo de idioma: `/en` no es un escalón de la navegación, es la misma
+       ruta en otro idioma. La migaja arranca en la portada de ESE idioma. */
+    const segments = Astro.url.pathname.split("/").filter(Boolean);
+    const routeSegments = locale === defaultLocale ? segments : segments.slice(1);
+    if (routeSegments.length === 0) return graph;
+
+    const items = [{ name: t("nav.home"), item: localeRoot }];
+    let acumulado = localizePath("/", locale).replace(/\/$/, "");
+    routeSegments.forEach((segment, index) => {
+        acumulado += `/${segment}`;
+        const esUltimo = index === routeSegments.length - 1;
+        items.push({
+            name: (esUltimo && title) || segmentLabels[segment] || segment,
+            item: `${origin.origin}${acumulado}/`,
+        });
+    });
+
+    graph.push({
+        "@type": "BreadcrumbList",
+        "@id": `${new URL(Astro.url.pathname, origin).href}#breadcrumb`,
+        itemListElement: items.map((entry, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            name: entry.name,
+            item: entry.item,
+        })),
+    });
+
+    return graph;
+};
+
+const graph = !noindex && Astro.site ? buildGraph(Astro.site) : null;
+---
+
+{graph && <script type="application/ld+json" is:inline set:html={JSON.stringify({ "@context": "https://schema.org", "@graph": graph })} />}

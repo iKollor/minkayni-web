@@ -473,6 +473,43 @@ export const BankAccountSchema = () =>
         holder: z.string().nullish(),
         taxId: z.string().nullish(),
         swift: z.string().nullish(),
+        holderAddress: z.string().nullish(),
+        bankAddress: z.string().nullish(),
+        currency: z.string().nullish(),
+        wireNote: z.string().nullish(),
+        note: z.string().nullish(),
+    });
+
+/** Canal de donación con enlace propio (pasarela, plataforma o app de envío).
+    Sólo se pinta si trae `href`: mientras la fundación no abra la cuenta, el
+    canal simplemente no existe en la página, sin botones muertos. */
+export const DonationMethodSchema = () =>
+    z.object({
+        id: z.string().nullish(),
+        name: z.string().nullish(),
+        description: z.string().nullish(),
+        href: z.string().nullish(),
+        linkText: z.string().nullish(),
+        fee: z.string().nullish(),
+        icon: z.string().nullish(),
+    });
+export type DonationMethod = z.infer<ReturnType<typeof DonationMethodSchema>>;
+
+export const FaqItemSchema = () =>
+    z.object({
+        id: z.string().nullish(),
+        question: z.string().nullish(),
+        answer: z.string().nullish(),
+    });
+export type FaqItem = z.infer<ReturnType<typeof FaqItemSchema>>;
+
+/** Bloque en inglés para donantes del exterior: el sitio es en español y
+    esta es la única sección que un donante extranjero necesita entender. */
+export const EnglishPanelSchema = () =>
+    z.object({
+        id: z.string().nullish(),
+        title: z.string().nullish(),
+        body: z.string().nullish(),
         note: z.string().nullish(),
     });
 
@@ -480,9 +517,18 @@ export const DonatePageSchema = () =>
     z.object({
         ...entryBase,
         intro: SectionHeadingSchema().nullish(),
+        channelLinks: z.array(LinkSchema().nullable()).nullish(),
         accountsHeading: SectionHeadingSchema().nullish(),
         accounts: z.array(BankAccountSchema().nullable()).nullish(),
         transferNote: z.string().nullish(),
+        internationalHeading: SectionHeadingSchema().nullish(),
+        paymentMethodsHeading: SectionHeadingSchema().nullish(),
+        paymentMethods: z.array(DonationMethodSchema().nullable()).nullish(),
+        transferAppsHeading: SectionHeadingSchema().nullish(),
+        transferApps: z.array(DonationMethodSchema().nullable()).nullish(),
+        english: EnglishPanelSchema().nullish(),
+        faqHeading: SectionHeadingSchema().nullish(),
+        faq: z.array(FaqItemSchema().nullable()).nullish(),
         impactHeading: SectionHeadingSchema().nullish(),
         impactCards: z.array(CardSchema().nullable()).nullish(),
         otherWaysHeading: SectionHeadingSchema().nullish(),

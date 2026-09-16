@@ -5,6 +5,9 @@ import { Image } from "astro:assets";
 
 import reelIcon from "../../assets/icons/reel.png";
 import { strapiMediaSrcSet, strapiMediaUrl } from "../../utils/media-url";
+import { getLocale, useTranslations } from "../../i18n";
+
+const t = useTranslations(getLocale(Astro.url));
 
 const STRAPI_URL = import.meta.env.STRAPI_URL ?? "";
 const posts = await getCollection("posts");
@@ -17,7 +20,7 @@ const items = posts.filter((p) => p?.data?.source?.url);
     <div class="wrapper h-[250px] md:h-[500px] relative flex items-center overflow-hidden gap-6">
         {
             items.length === 0 ? (
-                <div class="text-white opacity-70 w-full flex items-center justify-center text-center">Sin publicaciones disponibles.</div>
+                <div class="text-white opacity-70 w-full flex items-center justify-center text-center">{t("empty.posts")}</div>
             ) : (
                 items.map(({ data: post }) => {
                     const mediaUrl = strapiMediaUrl(post.source?.url, STRAPI_URL, 960);

@@ -62,6 +62,18 @@ export default defineConfig({
        que un cambio en el CMS exige rebuild; se resuelve con un webhook de
        Strapi hacia el despliegue, no cambiando de modo de salida. */
     output: "static",
+    /* Dos idiomas, con el español sin prefijo: `/about` sigue siendo la URL
+       de siempre y el inglés cuelga de `/en/about`. Prefijar también el
+       español habría obligado a redirigir las once páginas ya indexadas sin
+       ganar nada a cambio. Ver src/i18n/index.ts, que implementa la misma
+       regla para los enlaces y los `hreflang`. */
+    i18n: {
+        defaultLocale: "es",
+        locales: ["es", "en"],
+        routing: {
+            prefixDefaultLocale: false,
+        },
+    },
     /* Ver `resolveImageService`: sharp cuando está disponible, passthrough si no. */
     image: {
         service: resolveImageService(),
@@ -74,10 +86,31 @@ export default defineConfig({
             /* Las páginas `noindex` no pertenecen al sitemap: 404 no es un
                destino real y /transparencia se enlaza desde el footer. */
             filter: (page) => !page.includes("/404"),
+            /* Con esto el sitemap emite `xhtml:link rel="alternate"` entre las
+               dos versiones de cada página. Sin declararlo, un buscador trata
+               /about y /en/about como páginas distintas sin relación y puede
+               considerar una de ellas contenido duplicado. */
+            i18n: {
+                defaultLocale: "es",
+                locales: {
+                    es: "es-EC",
+                    en: "en",
+                },
+            },
         }),
     ],
     redirects: {
         "/batucada-popular": "/projects/batucada-popular/",
+        /* El ítem "Súmate" de la navegación de Strapi apunta a /join, que no
+           existe: era un enlace muerto en las once páginas. Se redirige al
+           mismo destino que el CTA "Quiero unirme" del footer. Lo correcto es
+           además corregir la URL en el plugin Navigation del CMS. */
+        "/join": "/about#contacto",
+        /* Los mismos dos atajos dentro del sitio inglés. Un enlace antiguo
+           compartido por alguien no sabe de idiomas, y /en/join escrito a mano
+           es una suposición razonable de quien navega en inglés. */
+        "/en/batucada-popular": "/en/projects/batucada-popular/",
+        "/en/join": "/en/about#contacto",
     },
     vite: {
         plugins: [tailwindcss()],

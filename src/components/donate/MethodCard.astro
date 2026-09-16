@@ -1,0 +1,43 @@
+---
+/* Tarjeta de un canal de pago con botón propio.
+
+   La comparten las dos rejillas de /donate —pasarelas de tarjeta y apps de
+   envío desde el exterior— para que un canal nuevo se vea igual que los que
+   ya existen, sin importar en qué sección lo coloque el editor.
+
+   Solo se renderiza con `href`: un canal sin destino no es un canal. */
+import { Icon } from "astro-icon/components";
+
+interface Props {
+    name: string;
+    description?: string;
+    href: string;
+    linkText?: string;
+    fee?: string;
+    icon?: string;
+}
+
+const { name, description, href, linkText, fee, icon } = Astro.props;
+---
+
+<li class="flex flex-col rounded-[2rem] border border-black/10 bg-white/70 p-7 transition-shadow duration-300 hover:shadow-[0_18px_40px_-24px_rgba(10,8,1,0.45)] motion-reduce:transition-none">
+    <div class="flex items-start justify-between gap-4">
+        <h3 class="flex items-center gap-2.5 font-display text-2xl font-black leading-tight text-black">
+            {icon && <Icon name={icon} class="h-6 w-6 shrink-0 text-primary" aria-hidden="true" />}
+            {name}
+        </h3>
+        {fee && <span class="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-primary">{fee}</span>}
+    </div>
+
+    {description && <p class="mt-3 text-base leading-relaxed text-black/75">{description}</p>}
+
+    <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="mt-6 inline-flex min-h-12 items-center justify-center gap-2 self-start rounded-full bg-primary px-7 py-3 font-display font-bold text-white transition hover:-translate-y-0.5 hover:bg-secondary-deep focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
+    >
+        {linkText || `Donar con ${name}`}
+        <Icon name="mdi:arrow-top-right" class="h-4 w-4" aria-hidden="true" />
+    </a>
+</li>

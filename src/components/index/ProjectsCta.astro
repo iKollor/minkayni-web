@@ -6,6 +6,9 @@ import Button from "../Button.astro";
 import { projectsCtaFallback } from "../../data/pages/global";
 import { withFallback } from "../../utils/content";
 import { formatTitle } from "../../utils/rich-title";
+import { getLocale, useTranslations } from "../../i18n";
+
+const t = useTranslations(getLocale(Astro.url));
 
 interface Props {
     content?: {
@@ -28,7 +31,7 @@ const exploreHref = d.button.href || "/projects";
         <p class="mt-6 max-w-[58ch] text-lg leading-[1.55] text-black/75">{d.heading.body}</p>
         {
             tags.length > 0 && (
-                <ul class="mt-8 flex flex-wrap justify-center gap-2" aria-label="Líneas de acción">
+                <ul class="mt-8 flex flex-wrap justify-center gap-2" aria-label={t("home.linesOfAction")}>
                     {tags.map((tag) => (
                         <li>
                             <a

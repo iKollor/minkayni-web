@@ -4,6 +4,9 @@ import type { ImageMetadata } from "astro";
 import CmsImage from "../CmsImage.astro";
 import type { CmsMedia } from "../../data/pages/types";
 import flor from "../../assets/SVG/misc/flor.svg";
+import { getLocale, useTranslations } from "../../i18n";
+
+const t = useTranslations(getLocale(Astro.url));
 
 export interface ProjectItem {
     /** id del elemento en la página (para anclas #proyecto) */
@@ -68,7 +71,7 @@ const hasImage = (project: ProjectItem) => Boolean(project.image?.url || project
             <h2 id="explorer-title" class="font-display text-4xl font-black text-black sm:text-6xl">{title}</h2>
         </div>
 
-        <div class="flex flex-wrap gap-2" role="group" aria-label="Filtrar proyectos y líneas de acción">
+        <div class="flex flex-wrap gap-2" role="group" aria-label={t("projects.filter")}>
             {
                 filters.map((filter, index) => (
                     <button

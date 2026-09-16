@@ -13,9 +13,12 @@ import daniel from "../assets/DANIEL.png";
 import { aboutFallback } from "../data/pages/about";
 import { loadPageContent } from "../utils/page-content";
 import { formatTitle } from "../utils/rich-title";
+import { getLocale, useTranslations } from "../i18n";
 
 /* Contenido: single type `about-page` en Strapi, con fallback local. */
-const d = await loadPageContent("aboutPage", aboutFallback);
+const locale = getLocale(Astro.url);
+const t = useTranslations(locale);
+const d = await loadPageContent("aboutPage", aboutFallback, locale);
 
 const { timeline, politicas, ecosistema } = {
     timeline: d.timeline,
@@ -31,7 +34,7 @@ const actionCardStyles = [
 ];
 ---
 
-<PageLayout title="Conócenos" description={d.seo.metaDescription}>
+<PageLayout title={t("about.title")} description={d.seo.metaDescription}>
     <!-- Quiénes somos -->
     <section class="mx-auto w-[90%] max-w-[1280px] py-20 sm:py-28" aria-labelledby="about-intro-title">
         <div class="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr]">
@@ -43,9 +46,9 @@ const actionCardStyles = [
 
             <div class="relative mx-auto w-fit pb-16 pl-10 sm:pb-20" data-reveal data-reveal-delay="0.15">
                 <div class="absolute -top-8 right-0 h-24 w-24 sm:h-32 sm:w-32" data-float aria-hidden="true"><Image src={flor} alt="" class="h-full w-full object-cover" /></div>
-                <MaskFlor src={comunidad} alt="Integrantes de la Batucada Popular celebrando tras una presentación" className="h-72 w-72 shadow-xl sm:h-96 sm:w-96 lg:h-[28rem] lg:w-[28rem]" />
+                <MaskFlor src={comunidad} alt={t("alt.celebrating")} className="h-72 w-72 shadow-xl sm:h-96 sm:w-96 lg:h-[28rem] lg:w-[28rem]" />
                 <figure class="absolute -bottom-0 -left-0 w-44 rotate-[-6deg] overflow-hidden rounded-[1.25rem] border-[6px] border-white shadow-2xl sm:w-60" data-float>
-                    <Image src={marcha} alt="Jóvenes marchando con tambores en el centro de Guayaquil" class="h-full w-full object-cover" />
+                    <Image src={marcha} alt={t("alt.marching")} class="h-full w-full object-cover" />
                 </figure>
             </div>
         </div>
@@ -72,11 +75,11 @@ const actionCardStyles = [
             <h2 id="history-title" class="font-display text-4xl font-black leading-none text-black sm:text-6xl" set:html={formatTitle(d.historyHeading.title)} />
         </div>
 
-        <ImmersiveTimeline items={timeline} ariaLabel="Historia de la fundación" />
+        <ImmersiveTimeline items={timeline} ariaLabel={t("about.historyTimeline")} />
     </section>
 
     <!-- Misión y visión -->
-    <section class="mx-auto w-[90%] max-w-[1280px] py-24" aria-label="Misión y visión">
+    <section class="mx-auto w-[90%] max-w-[1280px] py-24" aria-label={t("about.missionVision")}>
         <div class="grid gap-5 lg:grid-cols-2" data-reveal-group>
             <div class="relative overflow-hidden rounded-[2.75rem] bg-primary p-8 text-white sm:p-12">
                 <Image src={flor} alt="" class="absolute -bottom-14 -right-12 h-56 w-56 rotate-12 opacity-15" aria-hidden="true" />
@@ -141,7 +144,7 @@ const actionCardStyles = [
         <div class="grid items-center gap-10 lg:grid-cols-[auto_1fr]">
             <div class="relative mx-auto flex items-center justify-center" data-reveal>
                 <div class="absolute -left-8 -top-6 h-28 w-28 sm:h-36 sm:w-36" data-float aria-hidden="true"><Image src={flor} alt="" class="h-full w-full object-cover" /></div>
-                <MaskFlor src={foto} alt="Integrantes de Batucada Popular junto al equipo de MINKAYNI" className="h-64 w-64 shadow-lg sm:h-80 sm:w-80 lg:h-96 lg:w-96" />
+                <MaskFlor src={foto} alt={t("alt.withTeam")} className="h-64 w-64 shadow-lg sm:h-80 sm:w-80 lg:h-96 lg:w-96" />
             </div>
             <div data-reveal data-reveal-delay="0.1">
                 <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.teamHeading.eyebrow}</p>
@@ -233,7 +236,7 @@ const actionCardStyles = [
             </div>
             <div class="relative mx-auto hidden lg:block" data-reveal data-reveal-delay="0.2">
                 <div class="absolute -left-10 top-4 h-24 w-24 opacity-70" data-float aria-hidden="true"><Image src={flor} alt="" class="h-full w-full object-cover" /></div>
-                <Image src={daniel} alt="Daniel, integrante de la Batucada Popular" class="h-96 w-auto drop-shadow-2xl" data-float />
+                <Image src={daniel} alt={t("alt.daniel")} class="h-96 w-auto drop-shadow-2xl" data-float />
             </div>
         </div>
     </section>

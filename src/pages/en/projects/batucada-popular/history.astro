@@ -1,0 +1,12 @@
+---
+/* Versión en inglés de /projects/batucada-popular/historia, servida en /en/projects/batucada-popular/history.
+
+   Una página de Astro es un componente, así que la ruta inglesa monta la
+   misma página en lugar de duplicarla: una sola plantilla, un solo sitio
+   donde corregir un fallo. El idioma no se pasa por props —lo deduce cada
+   componente de `Astro.url`, que aquí vale `/en/projects/batucada-popular/historia`— para que añadir un
+   tercer idioma no obligue a repasar todas las páginas. */
+import Page from "../../../projects/batucada-popular/historia.astro";
+---
+
+<Page />

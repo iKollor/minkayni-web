@@ -4,6 +4,8 @@ import type { NavTree } from "../schemas/navigation";
 import { buildSocialItems } from "../scripts/components/socials";
 import type { Footer } from "../schemas/strapi.graphql.zod";
 import type { SocialItem } from "../scripts/components/socials";
+import LanguageSwitcher from "./LanguageSwitcher.astro";
+import { defaultLocale, localizePath, stripLocale, useTranslations, type Locale } from "../i18n";
 
 interface Props {
     buttons: NavTree;
@@ -12,17 +14,21 @@ interface Props {
     menuLabel?: string;
     /** Email de contacto (single type `global` en Strapi) */
     contactEmail?: string;
+    /** Idioma de la página que contiene el menú. */
+    locale?: Locale;
 }
 
-const { buttons, socials, menuLabel = "Fundación MINKAYNI", contactEmail = "xavier.moreira@minkayni.org" } = Astro.props;
+const { buttons, socials, menuLabel = "Fundación MINKAYNI", contactEmail = "xavier.moreira@minkayni.org", locale = defaultLocale } = Astro.props;
+const t = useTranslations(locale);
 
 /* Enlaces institucionales del pie del menú, junto al correo de contacto. */
-const secondaryLinks = [{ text: "Transparencia legal", href: "/transparencia" }];
+const secondaryLinks = [{ text: t("nav.legalTransparency"), href: localizePath("/transparencia", locale) }];
 
-const hasHome = buttons.some((b) => b.path === "/");
+/* En inglés la portada es `/en/`, no `/`: se compara la ruta canónica. */
+const hasHome = buttons.some((b) => typeof b.path === "string" && stripLocale(b.path) === "/");
 const navButtons = hasHome
     ? [...buttons]
-    : [{ title: "Inicio", path: "/" }, ...buttons];
+    : [{ title: t("nav.home"), path: localizePath("/", locale) }, ...buttons];
 ---
 
 <>
@@ -109,6 +115,7 @@ const navButtons = hasHome
                         })()
                     }
                     <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+                        <LanguageSwitcher locale={locale} variant="menu" class="text-white/60" />
                         {
                             secondaryLinks.map((link) => (
                                 <a

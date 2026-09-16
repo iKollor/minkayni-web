@@ -6,6 +6,8 @@ import { getImage } from "astro:assets";
 import { globalFallback } from "../../data/pages/global";
 import { loadPageContent } from "../../utils/page-content";
 import OrganizationJsonLd from "../../components/legal/OrganizationJsonLd.astro";
+import PageJsonLd from "../../components/legal/PageJsonLd.astro";
+import { alternatePaths, defaultLocale, getLocale, htmlLang, ogLocale } from "../../i18n";
 
 interface Props {
     title: string;
@@ -27,8 +29,10 @@ const faviconSvg = await getImage({ src: faviconSvgSrc, format: "svg" });
 /* Sustituye a /favicon.ico, que no existe en public/ y devolvía 404 en cada página. */
 const faviconPng = await getImage({ src: faviconSrc, width: 32, height: 32, format: "png" });
 
-/* SEO por defecto editable (single type `global` en Strapi). */
-const site = await loadPageContent("globalSettings", globalFallback);
+/* SEO por defecto editable (single type `global` en Strapi), en el idioma
+   de la página. */
+const locale = getLocale(Astro.url);
+const site = await loadPageContent("globalSettings", globalFallback, locale);
 const { title, description = site.defaultSeo.metaDescription, noindex = false, image, imageAlt } = Astro.props;
 const siteTitle = site.defaultSeo.metaTitle || site.siteName;
 const fullTitle = title ? `${title} ${site.titleSuffix}` : siteTitle;
@@ -36,6 +40,21 @@ const fullTitle = title ? `${title} ${site.titleSuffix}` : siteTitle;
 /* URL canónica de la página (requiere `site` en astro.config.ts).
    Una página de error no declara canónica: no es un destino real. */
 const canonical = !noindex && Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
+
+/* Las dos versiones de esta misma página, para `hreflang`. Sin ellas un
+   buscador no sabe que /about y /en/about son la misma página en dos idiomas
+   y puede tratar una como duplicado de la otra. `x-default` apunta al
+   español, que es el idioma del sitio y el destino razonable para quien no
+   encaje en ninguno de los dos. Una página `noindex` no las declara: no
+   pertenece al índice, así que tampoco a un grupo de alternativas. */
+const alternates =
+    !noindex && Astro.site
+        ? alternatePaths(Astro.url).map(({ locale: code, path }) => ({
+              locale: code,
+              href: new URL(path, Astro.site).href,
+          }))
+        : [];
+const defaultAlternate = alternates.find((alt) => alt.locale === defaultLocale);
 
 /* Imagen para compartir: la que pase la página, la del single type `global`
    o, como último recurso, una foto del proyecto recortada a 1200x630 (la
@@ -58,7 +77,7 @@ const strapiOrigin = (() => {
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang={htmlLang[locale]}>
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -68,13 +87,16 @@ const strapiOrigin = (() => {
         <meta name="generator" content={Astro.generator} />
         <meta name="description" content={description} />
         {canonical && <link rel="canonical" href={canonical} />}
+        {alternates.map((alt) => <link rel="alternate" hreflang={htmlLang[alt.locale]} href={alt.href} />)}
+        {defaultAlternate && <link rel="alternate" hreflang="x-default" href={defaultAlternate.href} />}
         {noindex && <meta name="robots" content="noindex, follow" />}
 
         <!-- Open Graph / Twitter: sin esto, al compartir un enlace no hay
              título, descripción ni imagen de vista previa. -->
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content={site.siteName} />
-        <meta property="og:locale" content="es_EC" />
+        <meta property="og:locale" content={ogLocale[locale]} />
+        {alternates.filter((alt) => alt.locale !== locale).map((alt) => <meta property="og:locale:alternate" content={ogLocale[alt.locale]} />)}
         <meta property="og:title" content={fullTitle} />
         <meta property="og:description" content={description} />
         {ogUrl && <meta property="og:url" content={ogUrl} />}
@@ -116,6 +138,8 @@ const strapiOrigin = (() => {
 
         <!-- Identidad legal de la organización (schema.org/NGO) -->
         <OrganizationJsonLd />
+        <!-- Sitio y ruta de navegación (WebSite + BreadcrumbList) -->
+        <PageJsonLd title={title} noindex={noindex} />
         <style>
             body[data-grain="off"] #grain-layer {
                 display: none;

@@ -16,6 +16,9 @@ import type { CmsMedia } from "../../data/pages/types";
 import { featuredProjectFallback } from "../../data/pages/global";
 import { withFallback } from "../../utils/content";
 import { formatTitle, splitParagraphs } from "../../utils/rich-title";
+import { getLocale, useTranslations } from "../../i18n";
+
+const t = useTranslations(getLocale(Astro.url));
 
 interface Props {
     logoSrc?: ImageMetadata;
@@ -45,7 +48,7 @@ const stats = (d.stats ?? []).filter((stat) => stat?.value && stat?.label);
             <CmsImage
                 media={d.photo}
                 fallback={photoSrc}
-                alt="Batucada Popular – intervención cultural en Guayaquil"
+                alt={t("alt.batucadaIntervention")}
                 class="batucada-photo absolute inset-0 h-full w-full object-cover object-center"
                 widths={[720, 1280, 1920]}
                 sizes="(min-width: 64em) 55vw, 100vw"

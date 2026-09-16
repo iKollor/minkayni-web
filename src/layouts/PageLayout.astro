@@ -5,12 +5,9 @@ import Navbar from "../components/Navbar.astro";
 import Menu from "../components/Menu.astro";
 import Hero from "../components/Hero.astro";
 import SiteGrain from "../components/SiteGrain.astro";
-import { getEntry } from "astro:content";
-import { getData } from "../utils/i18n";
 import Head from "./lib/head.astro";
-import { fallbackFooter, fallbackNavigation, withBatucadaProject } from "../data/site";
-import { globalFallback } from "../data/pages/global";
-import { loadPageContent } from "../utils/page-content";
+import { loadLayoutContent } from "../utils/layout-content";
+import { getLocale } from "../i18n";
 
 interface Props {
     title: string;
@@ -28,27 +25,25 @@ interface Props {
     enableNavTheming?: boolean;
 }
 
-const navigationEntry = await getEntry("navigationHeader", "navigation:header:es");
-const footerEntry = await getEntry("footer", "footer");
-const navHeader = withBatucadaProject(navigationEntry ? getData(navigationEntry) : fallbackNavigation);
-const footer = footerEntry ? getData(footerEntry, "es") : fallbackFooter;
-const site = await loadPageContent("globalSettings", globalFallback);
+/* El idioma sale de la URL: `/en/about` es inglés, `/about` español. Así
+   ninguna página tiene que acordarse de declararlo. */
+const locale = getLocale(Astro.url);
+const { navHeader, footer, site } = await loadLayoutContent(locale);
 const { title, description, noindex, image, imageAlt, showHero = true, buttonClassName = "", enableNavTheming } = Astro.props;
-
 ---
 
 <Head title={title} description={description} noindex={noindex} image={image} imageAlt={imageAlt}>
     <SiteGrain />
 
-    <Navbar buttons={navHeader} buttonClassName={buttonClassName} enableTheming={enableNavTheming} />
-    <Menu buttons={navHeader} socials={footer.Socials} menuLabel={site.menuLabel} contactEmail={site.contactEmail} />
+    <Navbar buttons={navHeader} buttonClassName={buttonClassName} enableTheming={enableNavTheming} locale={locale} />
+    <Menu buttons={navHeader} socials={footer.Socials} menuLabel={site.menuLabel} contactEmail={site.contactEmail} locale={locale} />
 
     <div id="smooth-wrapper" class="overflow-x-hidden">
         <div id="smooth-content" class="flex flex-col min-h-screen">
             <main class="flex-1 w-full flex flex-col justify-start">
                 {showHero && <Hero text={title} />}
                 <slot />
-                <Footer primaryLinks={navHeader} {footer} secondaryLinks="Proyectos" />
+                <Footer primaryLinks={navHeader} {footer} secondaryLinks="Proyectos" locale={locale} />
             </main>
         </div>
     </div>

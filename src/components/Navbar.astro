@@ -7,17 +7,23 @@ import Button from "./Button.astro";
 import IsotipoIcon from "../assets/SVG/ISOTIPO_WHITE.svg";
 import LogoIconWhite from "../assets/SVG/LOGO_WHITE.svg";
 import BurgerIcon from "./BurgerIcon.astro";
+import LanguageSwitcher from "./LanguageSwitcher.astro";
 import type { NavTree } from "../schemas/navigation";
+import { defaultLocale, localizePath, useTranslations, type Locale } from "../i18n";
 
 interface Props {
     buttons: NavTree;
+    /** Idioma de la página. Define el texto accesible y el estado del selector. */
+    locale?: Locale;
     /** Clase extra para el botón CTA (no lo toca la tinta adaptativa). */
     buttonClassName?: string;
     /** Desactiva la tinta adaptativa y deja el navbar siempre en crema. */
     enableTheming?: boolean;
 }
 
-const { buttons, buttonClassName = "", enableTheming = true } = Astro.props;
+const { buttons, buttonClassName = "", enableTheming = true, locale = defaultLocale } = Astro.props;
+const t = useTranslations(locale);
+const homeHref = localizePath("/", locale);
 const submenuButtons = buttons
     .map((button, index) => ({ button, index }))
     .filter(({ button }) => Array.isArray(button.items) && button.items.length > 0);
@@ -28,13 +34,14 @@ const submenuButtons = buttons
         <div class="h-full w-full">
             <div id="nav-switcher" class="max-lg:-translate-y-[100px]">
                 <div id="navBase" class="flex items-center h-[90px] justify-between text-lg text-white font-medium">
-                    <a href="/" class="animate" aria-label="Ir al inicio">
+                    <a href={homeHref} class="animate" aria-label={t("nav.goHome")}>
                         <IsotipoIcon class="h-10 mr-10" />
                     </a>
                     <div class="flex items-center space-x-8 w-full animate">
                         {buttons.map((button, index) => ((button.additionalFields?.style ?? "default") === "default" ? <NavButton button={button} index={index} /> : null))}
                     </div>
-                    <Reloj />
+                    <Reloj locale={locale} />
+                    <LanguageSwitcher locale={locale} class="shrink-0" />
                     <div class="nav-cta flex items-center">
                         {
                             buttons.map((button) => {
@@ -47,7 +54,7 @@ const submenuButtons = buttons
                     </div>
                 </div>
                 <div id="navScrolled" class="flex items-center h-[90px] justify-between">
-                    <a href="/" aria-label="Ir al inicio">
+                    <a href={homeHref} aria-label={t("nav.goHome")}>
                         <LogoIconWhite class="h-10 w-auto" />
                     </a>
                     <BurgerIcon />
@@ -61,7 +68,7 @@ const submenuButtons = buttons
             <nav
                 id={`navbar-submenu-${index}`}
                 class="navbar-submenu absolute top-[68px] min-w-64 rounded-[1.5rem] border border-black/10 bg-[var(--bg-white)] p-3 text-black opacity-0 invisible pointer-events-none -translate-y-2 shadow-[0_24px_60px_rgba(35,15,55,0.22)] transition-[opacity,transform,visibility] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                aria-label={`Submenú de ${button.title}`}
+                aria-label={t("nav.submenuOf", { title: button.title })}
             >
                 <p class="px-4 pb-2 pt-2 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-primary/70" aria-hidden="true">{button.title}</p>
                 <ul>

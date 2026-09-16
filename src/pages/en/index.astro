@@ -1,0 +1,12 @@
+---
+/* Versión en inglés de la portada.
+
+   Una página de Astro es un componente, así que la ruta inglesa monta la
+   misma página en lugar de duplicarla: una sola plantilla, un solo sitio
+   donde corregir un fallo. El idioma no se pasa por props —lo deduce cada
+   componente de `Astro.url`, que aquí vale `/enla portada`— para que añadir un
+   tercer idioma no obligue a repasar todas las páginas. */
+import Page from "../index.astro";
+---
+
+<Page />

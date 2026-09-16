@@ -9,9 +9,12 @@ import foto from "../assets/FOTO_BATUCADA.webp";
 import { impactFallback } from "../data/pages/impact";
 import { loadPageContent } from "../utils/page-content";
 import { formatTitle } from "../utils/rich-title";
+import { getLocale, useTranslations } from "../i18n";
 
 /* Contenido: single type `impact-page` en Strapi, con fallback local. */
-const d = await loadPageContent("impactPage", impactFallback);
+const locale = getLocale(Astro.url);
+const t = useTranslations(locale);
+const d = await loadPageContent("impactPage", impactFallback, locale);
 
 /* Estilos por posición de las tarjetas de cifras (presentacional). */
 const statStyles = [
@@ -22,7 +25,7 @@ const statStyles = [
 ];
 ---
 
-<PageLayout title="Impacto" description={d.seo.metaDescription}>
+<PageLayout title={t("page.impact")} description={d.seo.metaDescription}>
     <!-- Intro -->
     <section class="mx-auto w-[90%] max-w-[1280px] py-20 sm:py-28" aria-labelledby="impact-intro-title">
         <div class="grid items-end gap-10 lg:grid-cols-[1.1fr_0.9fr]">
@@ -35,7 +38,7 @@ const statStyles = [
             </div>
         </div>
 
-        <nav class="mt-10 flex flex-wrap gap-2" aria-label="Secciones de esta página" data-reveal data-reveal-delay="0.15">
+        <nav class="mt-10 flex flex-wrap gap-2" aria-label={t("nav.sectionsOfPage")} data-reveal data-reveal-delay="0.15">
             {
                 d.sectionNav.map((s) => (
                     <a
@@ -163,7 +166,7 @@ const statStyles = [
             <div class="relative mx-auto hidden items-center justify-center lg:flex" data-reveal>
                 <div class="absolute -right-6 -top-8 h-28 w-28" data-float aria-hidden="true"><Image src={flor} alt="" class="h-full w-full object-cover" /></div>
                 <div class="absolute -bottom-6 -left-8 h-24 w-24" data-float aria-hidden="true"><Image src={flor} alt="" class="h-full w-full object-cover" /></div>
-                <MaskFlor src={foto} alt="Integrantes de Batucada Popular en presentación" className="h-72 w-72 shadow-lg xl:h-96 xl:w-96" />
+                <MaskFlor src={foto} alt={t("alt.performing")} className="h-72 w-72 shadow-lg xl:h-96 xl:w-96" />
             </div>
             <div data-reveal data-reveal-delay="0.1">
                 <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.pressHeading.eyebrow}</p>

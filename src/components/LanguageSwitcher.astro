@@ -1,0 +1,70 @@
+---
+/* Selector de idioma.
+
+   Dos enlaces reales a la misma página en el otro idioma, no un desplegable
+   con JavaScript: así funciona sin scripts, el buscador los rastrea y el
+   navegador puede abrirlos en otra pestaña.
+
+   No define color propio. El navbar pinta con `currentColor` según el fondo
+   que tenga debajo (ver la tinta adaptativa en Navbar.astro), y el menú a
+   pantalla completa es siempre morado con tinta blanca; heredar es lo que
+   hace que el mismo componente sirva en los dos sitios. */
+import { locales, localeName, localizePath, useTranslations, type Locale } from "../i18n";
+
+interface Props {
+    /** Idioma que se está mostrando. */
+    locale: Locale;
+    /** `compact` para el navbar; `menu` para el menú a pantalla completa. */
+    variant?: "compact" | "menu";
+    class?: string;
+}
+
+const { locale, variant = "compact", class: className = "" } = Astro.props;
+const t = useTranslations(locale);
+
+const options = locales.map((code) => ({
+    code,
+    href: localizePath(Astro.url.pathname, code),
+    short: t(code === "es" ? "lang.esShort" : "lang.enShort"),
+    name: localeName[code],
+    current: code === locale,
+}));
+
+const isMenu = variant === "menu";
+---
+
+<nav
+    aria-label={t("lang.label")}
+    class:list={[
+        "flex items-center",
+        isMenu ? "gap-3 text-[0.95rem]" : "gap-2 text-[0.8rem]",
+        className,
+    ]}
+>
+    {
+        options.map((option, index) => (
+            <>
+                {index > 0 && (
+                    <span aria-hidden="true" class={isMenu ? "opacity-30" : "opacity-40"}>
+                        /
+                    </span>
+                )}
+                <a
+                    href={option.href}
+                    hreflang={option.code}
+                    lang={option.code}
+                    aria-current={option.current ? "page" : undefined}
+                    aria-label={option.current ? undefined : t("lang.switchTo", { language: option.name })}
+                    class:list={[
+                        "font-display font-bold uppercase tracking-[0.18em] transition-opacity duration-300",
+                        "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current rounded-sm",
+                        isMenu ? "min-h-[2.75rem] inline-flex items-center px-1" : "px-0.5",
+                        option.current ? "opacity-100" : "opacity-50 hover:opacity-100 focus-visible:opacity-100",
+                    ]}
+                >
+                    {option.short}
+                </a>
+            </>
+        ))
+    }
+</nav>

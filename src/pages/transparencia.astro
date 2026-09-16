@@ -18,16 +18,19 @@
 import PageLayout from "../layouts/PageLayout.astro";
 import { Icon } from "astro-icon/components";
 import { getLegalContent, fullRows, formatAddress, documentUrl } from "../components/legal/legalContent";
+import { getLocale, useTranslations } from "../i18n";
+const locale = getLocale(Astro.url);
+const t = useTranslations(locale);
 
-const d = await getLegalContent();
-const rows = fullRows(d);
+const d = await getLegalContent(locale);
+const rows = fullRows(d, locale);
 const address = formatAddress(d);
 const documents = (d.documents ?? []).filter((doc) => doc?.file?.url);
 const verificationLinks = (d.verificationLinks ?? []).filter((link) => link?.href && link?.text);
 const telHref = d.phone ? `tel:${d.phone.replace(/[^+\d]/g, "")}` : "";
 ---
 
-<PageLayout title="Transparencia legal" description={d.seo.metaDescription}>
+<PageLayout title={t("nav.legalTransparency")} description={d.seo.metaDescription}>
     <!-- Identidad legal -->
     <section class="mx-auto w-[90%] max-w-[1100px] py-16 sm:py-24" aria-labelledby="legal-identity-title">
         <header class="max-w-[70ch]" data-reveal>
@@ -50,14 +53,14 @@ const telHref = d.phone ? `tel:${d.phone.replace(/[^+\d]/g, "")}` : "";
 
     <!-- Domicilio, contacto y verificación pública -->
     <section class="mx-auto w-[94%] max-w-[1200px] rounded-[2.5rem] bg-primary px-6 py-14 text-white sm:px-12 lg:rounded-[4rem] lg:px-16 lg:py-20" aria-labelledby="legal-contact-title">
-        <h2 id="legal-contact-title" class="font-display text-3xl font-black leading-tight sm:text-5xl">Domicilio y contacto oficial</h2>
+        <h2 id="legal-contact-title" class="font-display text-3xl font-black leading-tight sm:text-5xl">{t("transparency.address")}</h2>
 
         <div class="mt-10 grid gap-10 lg:grid-cols-2">
             <address class="space-y-5 not-italic">
                 <p class="flex items-start gap-4 text-lg leading-snug">
                     <Icon name="mdi:map-marker-outline" class="mt-1 h-6 w-6 shrink-0 text-secondary" aria-hidden="true" />
                     <span>
-                        <span class="block text-sm font-bold uppercase tracking-[0.14em] text-white/80">Dirección física</span>
+                        <span class="block text-sm font-bold uppercase tracking-[0.14em] text-white/80">{t("transparency.physicalAddress")}</span>
                         <span class="mt-1 block font-semibold">{address}</span>
                     </span>
                 </p>
@@ -66,7 +69,7 @@ const telHref = d.phone ? `tel:${d.phone.replace(/[^+\d]/g, "")}` : "";
                         <p class="flex items-start gap-4 text-lg leading-snug">
                             <Icon name="mdi:email-outline" class="mt-1 h-6 w-6 shrink-0 text-secondary" aria-hidden="true" />
                             <span>
-                                <span class="block text-sm font-bold uppercase tracking-[0.14em] text-white/80">Correo institucional</span>
+                                <span class="block text-sm font-bold uppercase tracking-[0.14em] text-white/80">{t("transparency.email")}</span>
                                 <a href={`mailto:${d.email}`} class="mt-1 block font-semibold underline decoration-secondary underline-offset-4 transition hover:text-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary">
                                     {d.email}
                                 </a>
@@ -79,7 +82,7 @@ const telHref = d.phone ? `tel:${d.phone.replace(/[^+\d]/g, "")}` : "";
                         <p class="flex items-start gap-4 text-lg leading-snug">
                             <Icon name="mdi:phone-outline" class="mt-1 h-6 w-6 shrink-0 text-secondary" aria-hidden="true" />
                             <span>
-                                <span class="block text-sm font-bold uppercase tracking-[0.14em] text-white/80">Teléfono</span>
+                                <span class="block text-sm font-bold uppercase tracking-[0.14em] text-white/80">{t("transparency.phone")}</span>
                                 <a href={telHref} class="mt-1 block font-semibold underline decoration-secondary underline-offset-4 transition hover:text-secondary">
                                     {d.phone}
                                 </a>
@@ -92,7 +95,7 @@ const telHref = d.phone ? `tel:${d.phone.replace(/[^+\d]/g, "")}` : "";
                         <p class="flex items-start gap-4 text-lg leading-snug">
                             <Icon name="mdi:web" class="mt-1 h-6 w-6 shrink-0 text-secondary" aria-hidden="true" />
                             <span>
-                                <span class="block text-sm font-bold uppercase tracking-[0.14em] text-white/80">Sitio web oficial</span>
+                                <span class="block text-sm font-bold uppercase tracking-[0.14em] text-white/80">{t("transparency.website")}</span>
                                 <a href={d.website} class="mt-1 block font-semibold underline decoration-secondary underline-offset-4 transition hover:text-secondary">
                                     {d.website.replace(/^https?:\/\//, "")}
                                 </a>
@@ -105,7 +108,7 @@ const telHref = d.phone ? `tel:${d.phone.replace(/[^+\d]/g, "")}` : "";
             {
                 verificationLinks.length > 0 && (
                     <div>
-                        <h3 class="text-sm font-bold uppercase tracking-[0.14em] text-white/80">Verificación en fuentes oficiales</h3>
+                        <h3 class="text-sm font-bold uppercase tracking-[0.14em] text-white/80">{t("transparency.officialSources")}</h3>
                         <ul class="mt-4 space-y-3">
                             {verificationLinks.map((link) => (
                                 <li>
@@ -118,7 +121,7 @@ const telHref = d.phone ? `tel:${d.phone.replace(/[^+\d]/g, "")}` : "";
                                         <Icon name="mdi:shield-check-outline" class="h-5 w-5 shrink-0 text-secondary" aria-hidden="true" />
                                         <span>{link!.text}</span>
                                         <Icon name="mdi:external-link" class="h-4 w-4 shrink-0" aria-hidden="true" />
-                                        <span class="sr-only">(se abre en una pestaña nueva)</span>
+                                        <span class="sr-only">{t("transparency.opensNewTab")}</span>
                                     </a>
                                 </li>
                             ))}
@@ -148,14 +151,14 @@ const telHref = d.phone ? `tel:${d.phone.replace(/[^+\d]/g, "")}` : "";
                                 <span>
                                     <span class="block font-display text-lg font-bold leading-snug text-black">{doc!.title}</span>
                                     {doc!.note && <span class="mt-1 block text-sm leading-relaxed text-black/70">{doc!.note}</span>}
-                                    <span class="sr-only">(documento PDF, se abre en una pestaña nueva)</span>
+                                    <span class="sr-only">{t("transparency.opensPdf")}</span>
                                 </span>
                             </a>
                         </li>
                     ))}
                 </ul>
             ) : (
-                <p class="mt-8 max-w-[70ch] text-lg leading-relaxed text-black/75">Los certificados originales se entregan bajo solicitud para procesos de verificación y debida diligencia.</p>
+                <p class="mt-8 max-w-[70ch] text-lg leading-relaxed text-black/75">{t("transparency.certificates")}</p>
             )
         }
 

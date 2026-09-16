@@ -1,0 +1,10 @@
+---
+/* Versión en inglés del 404, compilada en /en/404.html.
+
+   Nginx la sirve cuando la URL fallida empieza por /en/ (ver nginx.conf). Sin
+   esta ruta, un enlace roto dentro del sitio inglés devolvería el 404 español
+   y habría que confiar en el script de respaldo de la página española. */
+import Page from "../404.astro";
+---
+
+<Page />
