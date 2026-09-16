@@ -55,5 +55,23 @@
         "graphql-codegen-typescript-validation-schema": "^0.19.0",
         "tsx": "^4.23.13",
         "typescript": "^6.0.3"
+    },
+    "pnpm": {
+        "supportedArchitectures": {
+            "os": [
+                "current",
+                "linux"
+            ],
+            "cpu": [
+                "current",
+                "x64",
+                "arm64"
+            ],
+            "libc": [
+                "current",
+                "glibc",
+                "musl"
+            ]
+        }
     }
 }

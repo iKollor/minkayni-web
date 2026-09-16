@@ -1,4 +1,6 @@
-import { defineConfig } from "astro/config";
+import { createRequire } from "node:module";
+
+import { defineConfig, passthroughImageService, sharpImageService } from "astro/config";
 
 import sitemap from "@astrojs/sitemap";
 
@@ -8,6 +10,41 @@ import icon from "astro-icon";
 
 import { unified } from "@astrojs/markdown-remark";
 import { rehypePlugins } from "./src/utils/markdown-pipeline";
+
+/* Servicio de imágenes declarado explícitamente y tolerante a fallos.
+
+   Astro optimiza las imágenes con sharp, que es un módulo nativo: se instala
+   como binario precompilado por plataforma (`@img/sharp-<os>-<arch>`). En la
+   imagen de build (nixpacks + pnpm sobre Coolify) ese binario puede no llegar
+   a instalarse —o no cargar—, y entonces `astro build` aborta con
+   `MissingSharp` en la fase de imágenes, cuando ya ha escrito todo el HTML. Un
+   despliegue no puede caerse por eso: sin optimizar, el sitio sigue siendo
+   correcto; sólo pesa más.
+
+   Por eso se comprueba sharp antes de construir: si carga, se usa; si no, se
+   continúa con el servicio passthrough (no transforma nada) y se avisa en el
+   log con el error real, que Astro se traga al envolverlo en `MissingSharp`.
+   La comprobación usa `require` síncrono y no `import()` porque, además de
+   resolver el paquete, fuerza la carga del binario nativo, que es justo lo que
+   falla en el contenedor. */
+const require = createRequire(import.meta.url);
+
+function resolveImageService() {
+    try {
+        require("sharp");
+        return sharpImageService();
+    } catch (error) {
+        const detalle = error instanceof Error ? error.message : String(error);
+        /* A stderr: el aviso se emite al cargar la config, antes de que
+           exista el logger de Astro, y así llega al log del despliegue. */
+        process.stderr.write(
+            `[imagenes] sharp no está disponible: ${detalle}\n` +
+                "[imagenes] El build continúa SIN optimizar imágenes (passthrough). " +
+                "Revisa la instalación de sharp en el entorno de build.\n",
+        );
+        return passthroughImageService();
+    }
+}
 
 // https://astro.build/config
 export default defineConfig({
@@ -25,6 +62,10 @@ export default defineConfig({
        que un cambio en el CMS exige rebuild; se resuelve con un webhook de
        Strapi hacia el despliegue, no cambiando de modo de salida. */
     output: "static",
+    /* Ver `resolveImageService`: sharp cuando está disponible, passthrough si no. */
+    image: {
+        service: resolveImageService(),
+    },
     // Permite que herramientas (p. ej. previews) asignen puerto vía PORT
     server: process.env.PORT ? { port: Number(process.env.PORT) } : undefined,
     integrations: [

@@ -250,6 +250,21 @@ contenido de Strapi se obtiene durante el build estático.
   - ScrollSmoother se deshabilita en iOS y viewports <768px por diseño para evitar conflictos. Es esperado.
 - Shortcode `{{odometer:...}}` no aparece:
   - Asegúrate de usar Markdown procesado por Astro y que el contenido del shortcode llegue sin escapar.
+- El build del proveedor falla con `MissingSharp: Could not find Sharp`:
+  - Sharp es un módulo nativo: cada plataforma usa su propio binario
+    (`@img/sharp-<os>-<arch>`). pnpm sólo instala el de la máquina donde corre
+    la instalación, así que un lockfile generado en Windows o macOS puede dejar
+    al contenedor Linux sin binario; el build muere al generar las imágenes, con
+    todo el HTML ya escrito.
+  - `package.json` declara `pnpm.supportedArchitectures` con `linux` (glibc y
+    musl, x64 y arm64) además de la plataforma actual, para que
+    `pnpm install --frozen-lockfile` baje siempre los binarios del entorno de
+    build. No altera el lockfile: esos paquetes opcionales ya estaban en él.
+  - Como red de seguridad, `astro.config.ts` comprueba sharp antes de construir
+    y, si no carga, usa `passthroughImageService()`: el despliegue no se cae,
+    pero las imágenes van sin optimizar. Se ve en el log como
+    `[imagenes] sharp no está disponible: ...`; si eso aparece en producción hay
+    que arreglar la instalación de sharp, no ignorarlo.
 
 ## Notas y convenciones
 
