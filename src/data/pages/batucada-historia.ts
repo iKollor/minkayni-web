@@ -116,4 +116,7 @@ export const batucadaHistoriaFallback = {
     },
     ctaPrimary: { text: "Conoce el ecosistema", href: "/projects/batucada-popular/ecosistema/" },
     ctaSecondary: { text: "Volver al proyecto", href: "/projects/batucada-popular/" },
+    /* Meta description propia: sin ella todas las páginas heredaban la
+       descripción global y competían entre sí en los buscadores. */
+    seo: { metaDescription: "Cómo nació la Batucada Popular durante la pandemia y el recorrido de los barrios de Guayaquil que aprendieron a responder juntos al ritmo de sus tambores." },
 };

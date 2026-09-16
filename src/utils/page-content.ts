@@ -17,7 +17,9 @@ type SingleCollection =
     | "batucadaPage"
     | "batucadaEcosystemPage"
     | "batucadaHistoryPage"
-    | "globalSettings";
+    | "globalSettings"
+    | "legalTransparency"
+    | "donatePage";
 
 /** id del documento dentro de la colección (lo fija idResolver en config.ts). */
 const ENTRY_IDS: Record<SingleCollection, string> = {
@@ -28,6 +30,8 @@ const ENTRY_IDS: Record<SingleCollection, string> = {
     batucadaEcosystemPage: "batucadaEcosystemPage",
     batucadaHistoryPage: "batucadaHistoryPage",
     globalSettings: "global",
+    legalTransparency: "legalTransparency",
+    donatePage: "donatePage",
 };
 
 export async function loadPageContent<T>(collection: SingleCollection, fallback: T): Promise<T> {

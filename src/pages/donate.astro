@@ -1,0 +1,178 @@
+---
+/* ──────────────────────────────────────────────────────────────────────────
+   /donate — Aporta hoy.
+
+   Es el destino del CTA "Aporta hoy 💜" de la navegación (Strapi), que hasta
+   ahora caía en 404. Mientras no exista pasarela de pagos, el canal es la
+   transferencia bancaria: por eso los datos de la cuenta son el bloque
+   principal, en texto seleccionable, con botón de copiar como mejora
+   progresiva (sin JS, el número se lee y se copia a mano igual).
+
+   Contenido editable en Strapi: single type `donate-page`.
+─────────────────────────────────────────────────────────────────────────── */
+import PageLayout from "../layouts/PageLayout.astro";
+import Button from "../components/Button.astro";
+import { Icon } from "astro-icon/components";
+import { donateFallback } from "../data/pages/donate";
+import { loadPageContent } from "../utils/page-content";
+import { formatTitle } from "../utils/rich-title";
+
+const d = await loadPageContent("donatePage", donateFallback);
+
+/* Filas de cada cuenta: etiqueta, valor y si se ofrece "copiar". */
+const accountRows = (account: (typeof d.accounts)[number]) =>
+    [
+        { label: "Banco", value: account.bank, copy: false },
+        { label: "Tipo de cuenta", value: account.accountType, copy: false },
+        { label: "Número de cuenta", value: account.accountNumber, copy: true },
+        { label: "Titular", value: account.holder, copy: false },
+        { label: "RUC", value: account.taxId, copy: true },
+        { label: "Código SWIFT (desde el exterior)", value: account.swift, copy: true },
+    ].filter((row) => Boolean(row.value));
+---
+
+<PageLayout title="Aporta hoy" description={d.seo.metaDescription}>
+    <!-- Intro -->
+    <section class="mx-auto w-[90%] max-w-[1100px] py-16 sm:py-24" aria-labelledby="donate-intro-title">
+        <div class="max-w-[62ch]" data-reveal>
+            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.intro.eyebrow}</p>
+            <h2 id="donate-intro-title" class="font-display text-4xl font-black leading-[0.95] text-black sm:text-6xl" set:html={formatTitle(d.intro.title, "text-secondary-deep")} />
+            <p class="mt-6 text-lg leading-relaxed text-black/75">{d.intro.body}</p>
+        </div>
+    </section>
+
+    <!-- Cuentas bancarias -->
+    <section class="mx-auto w-[94%] max-w-[1200px] rounded-[2.5rem] bg-primary px-6 py-14 text-white sm:px-12 lg:rounded-[4rem] lg:px-16 lg:py-20" aria-labelledby="donate-accounts-title">
+        <div class="max-w-[62ch]" data-reveal>
+            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">{d.accountsHeading.eyebrow}</p>
+            <h2 id="donate-accounts-title" class="font-display text-3xl font-black leading-tight sm:text-5xl" set:html={formatTitle(d.accountsHeading.title)} />
+            <p class="mt-5 text-lg leading-relaxed text-white/80">{d.accountsHeading.body}</p>
+        </div>
+
+        <ul class:list={["mt-10 grid gap-6", d.accounts.length > 1 ? "lg:grid-cols-2" : "max-w-[44rem]"]} data-reveal-group>
+            {
+                d.accounts.map((account) => (
+                    <li class="rounded-[2rem] bg-white/10 p-6 backdrop-blur sm:p-8">
+                        <h3 class="font-display text-2xl font-black leading-tight">{account.bank}</h3>
+                        <dl class="mt-6 divide-y divide-white/15">
+                            {accountRows(account).map((row) => (
+                                <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-3">
+                                    <dt class="text-xs font-bold uppercase tracking-[0.14em] text-white/80">{row.label}</dt>
+                                    <dd class="flex items-center gap-3 font-display text-lg font-bold sm:text-xl">
+                                        <span class="select-all">{row.value}</span>
+                                        {row.copy && (
+                                            <button
+                                                type="button"
+                                                class="copy-btn inline-flex min-h-[2.25rem] items-center gap-1.5 rounded-full bg-white/15 px-4 py-2 text-xs font-bold uppercase tracking-[0.1em] transition hover:bg-white/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+                                                data-copy={row.value}
+                                                data-label={row.label}
+                                            >
+                                                <Icon name="mdi:content-copy" class="h-4 w-4" aria-hidden="true" />
+                                                <span class="copy-btn-text">Copiar</span>
+                                            </button>
+                                        )}
+                                    </dd>
+                                </div>
+                            ))}
+                        </dl>
+                        {account.note && <p class="mt-5 text-sm leading-relaxed text-white/70">{account.note}</p>}
+                    </li>
+                ))
+            }
+        </ul>
+
+        {d.transferNote && <p class="mt-8 max-w-[75ch] text-sm leading-relaxed text-white/75">{d.transferNote}</p>}
+
+        <div class="mt-10 flex flex-wrap items-center gap-6">
+            <Button href={d.contactButton.href} defaultText={d.contactButton.defaultText} hoverText={d.contactButton.hoverText} />
+            {
+                d.whatsappLink?.href && (
+                    <a
+                        href={d.whatsappLink.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="inline-flex items-center gap-2 font-display font-bold text-white underline decoration-secondary underline-offset-4 transition hover:text-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+                    >
+                        <Icon name="mdi:whatsapp" class="h-5 w-5" aria-hidden="true" />
+                        {d.whatsappLink.text}
+                    </a>
+                )
+            }
+        </div>
+
+        <p class="sr-only" role="status" aria-live="polite" id="copy-status"></p>
+    </section>
+
+    <!-- A dónde va tu aporte -->
+    <section class="mx-auto w-[90%] max-w-[1200px] py-20 sm:py-28" aria-labelledby="donate-impact-title">
+        <div class="max-w-[62ch]" data-reveal>
+            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{d.impactHeading.eyebrow}</p>
+            <h2 id="donate-impact-title" class="font-display text-4xl font-black leading-[0.95] text-primary sm:text-6xl" set:html={formatTitle(d.impactHeading.title, "text-accent")} />
+        </div>
+
+        <ul class="mt-12 grid gap-5 md:grid-cols-3" data-reveal-group>
+            {
+                d.impactCards.map((card) => (
+                    <li class="rounded-[1.75rem] border border-black/10 bg-white/60 px-6 py-7">
+                        <h3 class="font-display text-xl font-black leading-snug text-black">{card.title}</h3>
+                        <p class="mt-3 text-base leading-relaxed text-black/75">{card.description}</p>
+                    </li>
+                ))
+            }
+        </ul>
+    </section>
+
+    <!-- Otras formas de sumarse -->
+    <section class="mx-auto mb-44 w-[90%] max-w-[1200px] pb-40" aria-labelledby="donate-other-title">
+        <div class="max-w-[62ch]" data-reveal>
+            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.otherWaysHeading.eyebrow}</p>
+            <h2 id="donate-other-title" class="font-display text-4xl font-black leading-[0.95] text-black sm:text-6xl" set:html={formatTitle(d.otherWaysHeading.title, "text-secondary-deep")} />
+        </div>
+
+        <ul class="mt-12 grid gap-5 md:grid-cols-3" data-reveal-group>
+            {
+                d.otherWays.map((card) => (
+                    <li class="rounded-[1.75rem] bg-black/[0.04] px-6 py-7">
+                        <h3 class="font-display text-xl font-black leading-snug text-black">{card.title}</h3>
+                        <p class="mt-3 text-base leading-relaxed text-black/75">{card.description}</p>
+                    </li>
+                ))
+            }
+        </ul>
+
+        {
+            d.legalNote && (
+                <p class="mt-12 max-w-[80ch] text-sm leading-relaxed text-black/70">
+                    {d.legalNote}{" "}
+                    <a href="/transparencia" class="font-bold text-primary underline underline-offset-4 hover:text-secondary-deep">
+                        Ver transparencia legal
+                    </a>
+                </p>
+            )
+        }
+    </section>
+</PageLayout>
+
+<script>
+    /* Copiar al portapapeles: mejora progresiva. Sin JS el dato sigue siendo
+       texto seleccionable (`select-all`), así que la página funciona igual. */
+    const status = document.getElementById("copy-status");
+
+    document.querySelectorAll<HTMLButtonElement>(".copy-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+            const value = btn.dataset.copy ?? "";
+            const label = btn.dataset.label ?? "dato";
+            const text = btn.querySelector(".copy-btn-text");
+            try {
+                await navigator.clipboard.writeText(value);
+                if (text) text.textContent = "Copiado";
+                if (status) status.textContent = `${label} copiado: ${value}`;
+                window.setTimeout(() => {
+                    if (text) text.textContent = "Copiar";
+                }, 2000);
+            } catch {
+                if (status) status.textContent = `No se pudo copiar automáticamente. ${label}: ${value}`;
+            }
+        });
+    });
+</script>

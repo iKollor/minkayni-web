@@ -1,0 +1,64 @@
+/* Fallback local del single type `legal-transparency` (Transparencia legal).
+
+   Los valores están tomados LITERALMENTE de los documentos oficiales:
+   - RUC y razón social .......... Certificado de RUC (SRI), 15 sep 2026
+   - Constitución ................ Resolución MIES-CZ-8-DDG1-2020-0059-R (30 jun 2020)
+   - Registro SUIOS .............. Constancia de Registro, Ministerio de Gobierno
+   - Directiva ................... Oficio MIES-CZ-8-DDGM-2024-1822-OF (18 nov 2024)
+
+   Si cambian, se editan en Strapi (Contenido → Transparencia legal) y este
+   archivo queda solo como respaldo cuando el CMS no responde. */
+
+export const legalFallback = {
+    /* Etiqueta corta del bloque en el footer */
+    eyebrow: "Transparencia legal",
+    title: "Organización legalmente constituida en el Ecuador",
+    intro: "Fundación MINKAYNI es una organización no gubernamental (ONG) sin fines de lucro, de derecho privado y finalidad social, con personería jurídica otorgada por el Estado ecuatoriano y registro vigente en el Sistema Unificado de Información de las Organizaciones Sociales (SUIOS).",
+
+    /* Identidad legal — campos que revisan las plataformas de verificación */
+    legalName: "FUNDACIÓN MINKAYNI",
+    tradeName: "Fundación Minkayni",
+    ruc: "0993333182001",
+    legalForm: "Fundación sin fines de lucro (ONG)",
+    legalStatus: "Activa — estado tributario ACTIVO (SRI) y “Registrada” en el SUIOS",
+    ministryResolution: "Resolución No. MIES-CZ-8-DDG1-2020-0059-R, de 30 de junio de 2020, emitida por el Ministerio de Inclusión Económica y Social (MIES)",
+    incorporationDate: "30 de junio de 2020",
+    suiosCode: "0000130796 — Sistema Unificado de Organizaciones Sociales (SUIOS), Ministerio de Gobierno",
+    boardRegistration: "Oficio No. MIES-CZ-8-DDGM-2024-1822-OF, de 18 de noviembre de 2024 (directiva registrada para el período 3 de julio de 2024 – 3 de julio de 2028)",
+    legalRepresentative: "Héctor Xavier Moreira Flores, Presidente y representante legal",
+    economicActivity: "S94110001 — Actividades de organizaciones sin fines de lucro para el desarrollo de una determinada zona geográfica",
+
+    /* Contacto oficial */
+    addressStreet: "Calle 44 ava N.° 817, entre Rosendo Avilés y Chambers",
+    addressLocality: "Parroquia Febres Cordero, Guayaquil",
+    addressRegion: "Guayas",
+    addressCountry: "Ecuador",
+    email: "admin@minkayni.org",
+    phone: "",
+    website: "https://minkayni.org",
+
+    /* Datos adicionales opcionales (repetible en el CMS) */
+    records: [] as Array<{ label?: string | null; value?: string | null }>,
+
+    /* Enlaces de verificación pública (consultas oficiales del Estado) */
+    verificationLinks: [
+        { text: "Consultar el RUC en el SRI", href: "https://srienlinea.sri.gob.ec/sri-en-linea/SriRucWeb/ConsultaRuc/Consultas/consultaRuc" },
+        { text: "Consultar el registro en el SUIOS", href: "https://www.sociedadcivil.gob.ec/" },
+    ],
+
+    /* Documentos publicados (se cargan como PDF en el CMS) */
+    documents: [] as Array<{ title?: string | null; note?: string | null; file?: { url?: string | null; name?: string | null } | null }>,
+
+    /* Nota legal al pie del bloque */
+    note: "Los certificados originales (RUC, constancia de registro SUIOS, registro de directiva y estatutos) están disponibles para procesos de verificación, auditoría y debida diligencia. Solicítalos a admin@minkayni.org.",
+
+    /* Enlace del footer hacia la página completa */
+    pageLink: { text: "Transparencia legal", href: "/transparencia" },
+
+    seo: {
+        metaTitle: "Transparencia legal · Fundación Minkayni",
+        metaDescription: "Datos legales verificables de Fundación MINKAYNI: RUC 0993333182001, resolución MIES-CZ-8-DDG1-2020-0059-R, registro SUIOS 0000130796, domicilio y contacto oficial en Guayaquil, Ecuador.",
+    },
+};
+
+export type LegalContent = typeof legalFallback;

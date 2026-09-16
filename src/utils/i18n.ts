@@ -94,10 +94,10 @@ const isEntryLike = (x: any): x is EntryLike => !!x && typeof x === "object" && 
 
 /* ===================== OVERLOADS ===================== */
 // ENTRY + KEY (con fallback opcional)
-export function getData<E extends EntryLike, K extends keyof EntryDataOf<E>, D extends Clean<EntryDataOf<E>[K]>>(src: E | null | undefined, key: K, locale?: string, fallback?: D): Clean<EntryDataOf<E>[K]> | D;
+export function getData<E extends EntryLike, K extends keyof EntryDataOf<E>, D extends Clean<EntryDataOf<E>[K]> | null>(src: E | null | undefined, key: K, locale?: string, fallback?: D): Clean<EntryDataOf<E>[K]> | D;
 
 // ENTRIES[] + KEY (con fallback opcional)
-export function getData<E extends EntryLike, K extends keyof EntryDataOf<E>, D extends Clean<EntryDataOf<E>[K]>>(src: Array<E> | null | undefined, key: K, locale?: string, fallback?: D): Array<Clean<EntryDataOf<E>[K]> | D>;
+export function getData<E extends EntryLike, K extends keyof EntryDataOf<E>, D extends Clean<EntryDataOf<E>[K]> | null>(src: Array<E> | null | undefined, key: K, locale?: string, fallback?: D): Array<Clean<EntryDataOf<E>[K]> | D>;
 
 // ENTRY → data localizado (sin clave) — **garantiza retorno** (lanza si no existe)
 export function getData<E extends EntryLike>(src: E | null | undefined, locale?: string): EntryDataOf<E>;

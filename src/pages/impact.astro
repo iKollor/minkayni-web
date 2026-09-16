@@ -2,7 +2,7 @@
 import PageLayout from "../layouts/PageLayout.astro";
 import Button from "../components/Button.astro";
 import { Image } from "astro:assets";
-import { Markdown } from "@astropub/md";
+import Markdown from "@/components/Markdown.astro";
 import flor from "../assets/SVG/misc/flor.svg";
 import MaskFlor from "../components/MaskFlor.astro";
 import foto from "../assets/FOTO_BATUCADA.webp";
@@ -22,7 +22,7 @@ const statStyles = [
 ];
 ---
 
-<PageLayout title="Impacto" navbarThreshold={0.5}>
+<PageLayout title="Impacto" description={d.seo.metaDescription}>
     <!-- Intro -->
     <section class="mx-auto w-[90%] max-w-[1280px] py-20 sm:py-28" aria-labelledby="impact-intro-title">
         <div class="grid items-end gap-10 lg:grid-cols-[1.1fr_0.9fr]">

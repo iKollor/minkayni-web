@@ -10,6 +10,7 @@ import type { Footer } from "../schemas/strapi.graphql.zod";
 import { formatCopyright } from "../scripts/components/Copyright";
 import { buildSocialItems } from "../scripts/components/socials";
 import Button from "./Button.astro";
+import LegalFooterBand from "./legal/LegalFooterBand.astro";
 
 /** Campos añadidos al single type `footer` (textos de aliados y CTA). */
 type FooterTexts = {
@@ -180,6 +181,9 @@ const partnerImages = await partners();
                 </nav>
             </div>
         </section>
+
+        <!-- Línea legal (visible en todo el sitio) -->
+        <LegalFooterBand />
     </div>
 
     <section class="bg-secondary py-5 md:px-10 flex flex-col md:flex-row items-center justify-center md:justify-between gap-3 text-sm md:text-base" aria-label="Información legal y créditos">

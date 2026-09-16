@@ -2,11 +2,11 @@
 import { Icon } from "astro-icon/components";
 import { StrapiBlocks } from "@sensinum/astro-strapi-blocks";
 import Blob from "../Blob.astro";
-import type { ComponentSectionsTestimonial } from "../../schemas/strapi.graphql.zod";
+import type { TestimonialEntry } from "../../schemas/pages.zod";
 import { strapiMediaUrl } from "../../utils/media-url";
 
 interface Props {
-    testimonials: ComponentSectionsTestimonial[];
+    testimonials: TestimonialEntry[];
     title?: string;
 }
 const { testimonials, title = "Historias de cambio" } = Astro.props;

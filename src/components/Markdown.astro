@@ -1,0 +1,21 @@
+---
+/**
+ * Renderiza un campo Markdown del CMS. Reemplazo local de `@astropub/md`.
+ *
+ * Con `of` renderiza esa cadena; sin ella cae al slot, de modo que el
+ * componente sigue siendo seguro cuando el CMS devuelve `null`.
+ */
+import { renderMarkdown, renderMarkdownInline } from "@/utils/render-markdown";
+
+interface Props {
+    /** Markdown de origen. Si no es una cadena, se renderiza el slot. */
+    of?: string | null;
+    /** Omite el `<p>` envolvente cuando la salida es un único párrafo. */
+    inline?: boolean;
+}
+
+const { of: source, inline = false } = Astro.props;
+const html = typeof source === "string" && source.trim() ? await (inline ? renderMarkdownInline(source) : renderMarkdown(source)) : null;
+---
+
+{html === null ? <slot /> : <Fragment set:html={html} />}

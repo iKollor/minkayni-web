@@ -1,37 +1,21 @@
 ---
 import type { NavItem } from "../schemas/navigation";
 
-/**
- * @description Clase para el color del texto del botón en formato tailwind
- */
-export type LinkColor = `text-${string}`;
-
-/**
- * @description Clase para el color del underline del botón en formato tailwind
- */
-export type UnderlineColor = `bg-${string}`;
-
 export interface Props {
     button: NavItem;
     index: number;
-    linkColor?: LinkColor; // clase extra opcional
-    underlineColor?: UnderlineColor; // color del underline
 }
 
 const currentPath = new URL(Astro.request.url).pathname;
 
-const { button, index, linkColor = "text-white", underlineColor } = Astro.props;
-
-// Extrae el color base del linkColor y construye el bg correspondiente
-const bgColorFromText = linkColor.replace("text-", "bg-");
-const computedUnderlineColor = underlineColor ?? bgColorFromText;
+const { button, index } = Astro.props;
 ---
 
 <div class="nav-button relative mx-4 overflow-hidden" id={`nav-button-${index}`}>
-    <a href={button.path} class={`inline-block relative z-10 focus:outline-none ${linkColor} ${currentPath === button.path ? "pointer-events-none opacity-60" : ""}`}>
+    <a href={button.path} class:list={["inline-block relative z-10 focus:outline-none", currentPath === button.path && "pointer-events-none opacity-60"]}>
         {button.title}
     </a>
-    {currentPath !== button.path && <span class={`underline pointer-events-none absolute left-0 bottom-0 h-[1.5px] w-full rounded-xl ${computedUnderlineColor}`} style="transform:translateX(-100%);will-change:transform;" />}
+    {currentPath !== button.path && <span class="underline pointer-events-none absolute left-0 bottom-0 h-[1.5px] w-full rounded-xl bg-current" style="transform:translateX(-100%);will-change:transform;" />}
 </div>
 <script>
     import { gsap } from "gsap";

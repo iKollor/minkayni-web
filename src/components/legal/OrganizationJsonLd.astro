@@ -1,0 +1,15 @@
+---
+/* Datos estructurados schema.org/NGO con la identidad legal de la fundación.
+
+   Va en el <head> de todas las páginas: es la forma que leen los rastreadores
+   de Google for Nonprofits, TechSoup/Goodstack y Microsoft Elevate para
+   confirmar nombre legal, RUC, registro y domicilio sin ejecutar JavaScript.
+   Se alimenta del mismo single type `legal-transparency` que el bloque visible. */
+import { getLegalContent, organizationJsonLd } from "./legalContent";
+
+const d = await getLegalContent();
+const siteUrl = Astro.site?.href ?? d.website;
+const org = organizationJsonLd(d, siteUrl);
+---
+
+<script type="application/ld+json" is:inline set:html={JSON.stringify(org)} />

@@ -1,9 +1,9 @@
 ---
-import type { ComponentSectionsTeam } from "../../schemas/strapi.graphql.zod";
+import type { TeamMemberEntry } from "../../schemas/pages.zod";
 import CustomSlider from "./CustomSlider.astro";
 
 interface Props {
-    data: ComponentSectionsTeam[];
+    data: TeamMemberEntry[];
     title?: string;
 }
 

@@ -1,7 +1,7 @@
 // @ts-nocheck
 
 // src/schemas/navigation.ts
-import { z, type ZodType, type ZodTypeDef } from "zod";
+import { z, type ZodType } from "zod";
 
 /** SALIDA (lo que usa tu app) */
 export type NavItem = {
@@ -38,7 +38,7 @@ const Prim = z.union([z.string(), z.number(), z.boolean()]);
  *  - input: Record<string, Prim | Prim[] | null> | null | undefined
  *  - output: Record<string, Prim | Prim[]> | undefined (filtra keys con null)
  */
-const AdditionalFieldsSchema: ZodType<Record<string, string | number | boolean | string[] | number[] | boolean[]> | undefined, ZodTypeDef, Record<string, string | number | boolean | (string | number | boolean)[] | null> | null | undefined> = z
+const AdditionalFieldsSchema: ZodType<Record<string, string | number | boolean | string[] | number[] | boolean[]> | undefined, Record<string, string | number | boolean | (string | number | boolean)[] | null> | null | undefined> = z
     .record(z.string(), z.union([Prim, z.array(Prim), z.null()]))
     .nullable()
     .optional()
@@ -53,7 +53,7 @@ const AdditionalFieldsSchema: ZodType<Record<string, string | number | boolean |
     });
 
 /** Schema recursivo principal */
-export const NavItemSchema: ZodType<NavItem, ZodTypeDef, NavItemInput> = z.lazy(() =>
+export const NavItemSchema: ZodType<NavItem, NavItemInput> = z.lazy(() =>
     z
         .object({
             title: z.string().min(1),
@@ -83,7 +83,6 @@ export const NavItemSchema: ZodType<NavItem, ZodTypeDef, NavItemInput> = z.lazy(
         })
         // Si el plugin te “plana” algunos fields extra al nivel raíz, los aceptamos como primitivos o arrays
         .catchall(z.union([Prim, z.array(Prim)]))
-        .passthrough()
         .refine((i) => i.type !== "EXTERNAL" || i.external === true, {
             message: "Los items EXTERNAL deben marcarse con external=true",
         })
@@ -93,6 +92,6 @@ export const NavItemSchema: ZodType<NavItem, ZodTypeDef, NavItemInput> = z.lazy(
 );
 
 /** Árbol tipado */
-export const NavigationTreeSchema: ZodType<NavTree, ZodTypeDef, NavTreeInput> = z.array(NavItemSchema);
+export const NavigationTreeSchema: ZodType<NavTree, NavTreeInput> = z.array(NavItemSchema);
 
 export type NavigationTree = NavTree;

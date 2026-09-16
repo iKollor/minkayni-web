@@ -1,17 +1,17 @@
 # Fundación Minkayni — Sitio estático con Astro, React, GSAP y Tailwind
 
-Este repositorio contiene el sitio de Fundación Minkayni construido con Astro v5, React 19, GSAP 3 y TailwindCSS v4. El contenido se obtiene desde Strapi vía GraphQL y se valida con esquemas Zod generados automáticamente. Además incluye un pipeline de Markdown/HTML con reglas personalizadas (rehype) y una arquitectura de animaciones basada en GSAP con ScrollSmoother/ScrollTrigger.
+Este repositorio contiene el sitio de Fundación Minkayni construido con Astro v7, React 19, GSAP 3 y TailwindCSS v4. El contenido se obtiene desde Strapi vía GraphQL y se valida con esquemas Zod generados automáticamente. Además incluye un pipeline de Markdown/HTML con reglas personalizadas (rehype) y una arquitectura de animaciones basada en GSAP con ScrollSmoother/ScrollTrigger.
 
 ## Stack principal
 
-- Astro 5 (render estático, `astro:assets`, integraciones)
+- Astro 7 (render estático, `astro:assets`, integraciones)
 - React 19 (componentes interactivos puntuales)
 - TailwindCSS 4 vía `@tailwindcss/vite` (utilidades + estilos globales en `src/styles/global.css`)
 - GSAP 3 (ScrollSmoother, ScrollTrigger, SplitText, Draggable, Inertia, etc.)
 - Strapi GraphQL (contenido headless) + Zod (validación de tipos)
 - Rehype modular (shortcodes y reglas de links)
 
-Versiones relevantes (package.json): Astro ^5.13.x, React ^19.1.x, Tailwind ^4.1.x, GSAP ^3.13.x.
+Versiones relevantes (package.json): Astro ^7.3.x, React ^19.3.x, Tailwind ^4.3.x, GSAP ^3.15.x, Zod ^4.6.x.
 
 ## Estructura del proyecto
 
@@ -46,7 +46,7 @@ Públicos/estáticos:
 
 ## Contenido: Strapi GraphQL + Zod
 
-- `src/content/config.ts`:
+- `src/content.config.ts`:
   - Lee `STRAPI_URL` y `STRAPI_TOKEN` desde `import.meta.env` y construye headers de autenticación.
   - Ejecuta `validateStrapiConnection()` en tiempo de carga; si falla, aborta el build (útil para detectar mal configurado .env).
   - Define colecciones con loaders:
@@ -66,7 +66,11 @@ Públicos/estáticos:
 
 ## Markdown/HTML post-procesado (rehype)
 
-Configurado en `astro.config.ts` con `@astropub/md` y el plugin `rehype-modular`:
+Desde Astro 7 el procesador por defecto es Sätteri; el sitio se mantiene en el
+pipeline `unified()` de `@astrojs/markdown-remark` porque `rehype-modular` es un
+plugin rehype. Los plugins se declaran una sola vez en
+`src/utils/markdown-pipeline.ts` y los comparten `astro.config.ts` (ficheros `.md`)
+y `src/components/Markdown.astro` (texto enriquecido que llega de Strapi):
 
 - Shortcodes en texto, p. ej. `{{odometer:150}}` →
   `<span id="odometer"><span class="current">150</span></span>`.
@@ -83,8 +87,8 @@ Configurado en `astro.config.ts` con `@astropub/md` y el plugin `rehype-modular`
 
 ## Requisitos previos
 
-- Node.js LTS (recomendado 18+)
-- pnpm (el repo fija `packageManager: pnpm@10.x`)
+- Node.js 22.12 o superior (lo exige Astro 7; ver `.nvmrc`)
+- pnpm (el repo fija `packageManager: pnpm@9.15.9`)
 - Variables de entorno para Strapi:
   - `STRAPI_URL=https://<tu-cms>/`
   - `STRAPI_TOKEN=<token_de_acceso>`
@@ -154,6 +158,21 @@ if (reduce) { /* set() estado final y return */ }
 
 - El sitio es estático (output en `dist/`).
 - Asegúrate de definir `STRAPI_URL` y `STRAPI_TOKEN` en el entorno de build del proveedor (Vercel, Netlify, etc.), o el build fallará por la validación de Strapi.
+- `astro.config.ts` declara `site: "https://minkayni.org"`. De ahí salen la URL
+  canónica de cada página y la `url` del JSON-LD de la organización; si el
+  dominio cambia, hay que actualizarlo ahí.
+- **Página 404**: la build genera `dist/404.html`, pero un servidor estático no
+  la usa por su cuenta —devuelve 404 vacío o, peor, 200 con el index—. El
+  archivo `nginx.conf` de la raíz trae la configuración correcta (`error_page
+  404 /404.html` + `try_files` sin fallback a index). En Coolify se aplica en la
+  configuración personalizada de Nginx del recurso del frontend. Para
+  comprobarlo tras desplegar:
+
+  ```bash
+  curl -I https://minkayni.org/esta-ruta-no-existe
+  ```
+
+  Debe responder `HTTP/2 404` (no 200 ni 403).
 
 ## Medios de Strapi
 

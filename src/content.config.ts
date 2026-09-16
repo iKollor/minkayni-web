@@ -1,14 +1,14 @@
-// src/content/config.ts — versión simplificada
+// src/content.config.ts — versión simplificada
 import { defineCollection } from "astro:content";
 import type { Loader } from "astro/loaders";
-import { strapiLoader } from "../utils/loaders/strapi-loader";
-import { navigationLoader } from "../utils/loaders/strapi-navigation-loader";
-import { validateStrapiConnection } from "../utils/strapi-connection";
+import { strapiLoader } from "./utils/loaders/strapi-loader";
+import { navigationLoader } from "./utils/loaders/strapi-navigation-loader";
+import { validateStrapiConnection } from "./utils/strapi-connection";
 import {
   PostSchema,
   HomepageSchema,
   FooterSchema,
-} from "../schemas/strapi.graphql.zod";
+} from "./schemas/strapi.graphql.zod";
 import { z } from "zod";
 import {
   AboutPageSchema,
@@ -25,8 +25,10 @@ import {
   ListItemSchema,
   TestimonialEntrySchema,
   TeamMemberEntrySchema,
-} from "../schemas/pages.zod";
-import { NavigationTreeSchema } from "../schemas/navigation";
+  LegalTransparencySchema,
+  DonatePageSchema,
+} from "./schemas/pages.zod";
+import { NavigationTreeSchema } from "./schemas/navigation";
 
 const STRAPI_BASE = (import.meta.env.STRAPI_URL ?? "").trim();
 const STRAPI_TOKEN = (import.meta.env.STRAPI_TOKEN ?? "").trim();
@@ -381,6 +383,53 @@ const builderPageSelection = `
     seo { ${seoSelection} }
 `;
 
+const donatePageSelection = `
+    ${entryMetaSelection}
+    intro { ${headingSelection} }
+    accountsHeading { ${headingSelection} }
+    accounts(pagination: { limit: 100 }) { id bank accountType accountNumber holder taxId swift note }
+    transferNote
+    impactHeading { ${headingSelection} }
+    impactCards(pagination: { limit: 100 }) { ${cardSelection} }
+    otherWaysHeading { ${headingSelection} }
+    otherWays(pagination: { limit: 100 }) { ${cardSelection} }
+    contactButton { ${buttonSelection} }
+    whatsappLink { ${linkSelection} }
+    legalNote
+    seo { ${seoSelection} }
+`;
+
+const legalTransparencySelection = `
+    ${entryMetaSelection}
+    eyebrow
+    title
+    intro
+    legalName
+    tradeName
+    ruc
+    legalForm
+    legalStatus
+    ministryResolution
+    incorporationDate
+    suiosCode
+    boardRegistration
+    legalRepresentative
+    economicActivity
+    addressStreet
+    addressLocality
+    addressRegion
+    addressCountry
+    email
+    phone
+    website
+    records(pagination: { limit: 100 }) { id label value }
+    verificationLinks(pagination: { limit: 100 }) { ${linkSelection} }
+    documents(pagination: { limit: 100 }) { id title note file { ${uploadFileSelection} } }
+    note
+    pageLink { ${linkSelection} }
+    seo { ${seoSelection} }
+`;
+
 const globalSelection = `
     ${entryMetaSelection}
     siteName
@@ -461,7 +510,7 @@ const navigationHeader = defineCollection({
 });
 
 /* ── Single types de página ────────────────────────────────────────────── */
-const definePageSingle = <S extends z.ZodTypeAny>(rootField: string, selection: string, schema: S) =>
+const definePageSingle = <S extends z.ZodType>(rootField: string, selection: string, schema: S) =>
   defineCollection({
     loader: strapiConfigured
       ? strapiLoader({
@@ -492,6 +541,12 @@ const batucadaHistoryPage = definePageSingle(
   BatucadaHistoryPageSchema()
 );
 const globalSettings = definePageSingle("global", globalSelection, GlobalSettingsSchema());
+const legalTransparency = definePageSingle(
+  "legalTransparency",
+  legalTransparencySelection,
+  LegalTransparencySchema()
+);
+const donatePage = definePageSingle("donatePage", donatePageSelection, DonatePageSchema());
 
 /* Testimonios y Equipo (collection types en Strapi, orden por campo sort). */
 const testimonials = defineCollection({
@@ -548,5 +603,7 @@ export const collections = {
   batucadaEcosystemPage,
   batucadaHistoryPage,
   globalSettings,
+  legalTransparency,
+  donatePage,
   builderPages,
 };
