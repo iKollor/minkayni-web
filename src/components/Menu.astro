@@ -16,6 +16,9 @@ interface Props {
 
 const { buttons, socials, menuLabel = "Fundación MINKAYNI", contactEmail = "xavier.moreira@minkayni.org" } = Astro.props;
 
+/* Enlaces institucionales del pie del menú, junto al correo de contacto. */
+const secondaryLinks = [{ text: "Transparencia legal", href: "/transparencia" }];
+
 const hasHome = buttons.some((b) => b.path === "/");
 const navButtons = hasHome
     ? [...buttons]
@@ -26,28 +29,29 @@ const navButtons = hasHome
     <!-- blocks -->
     <div
         id="square-container"
-        class="w-screen h-screen flex flex-wrap justify-start content-start box-border overflow-hidden z-[20] pointer-events-none fixed top-0 left-0"
+        class="fixed inset-0 h-[100svh] w-full flex flex-wrap justify-start content-start box-border overflow-hidden z-[20] pointer-events-none"
     >
     </div>
 
     <!-- menu -->
     <div
-        class="opacity-0 content-overlay fixed top-0 w-screen h-screen bg-[var(--primary)] text-white z-[10] pointer-events-none"
+        class="opacity-0 content-overlay fixed inset-0 h-[100svh] w-full overflow-hidden bg-[var(--primary)] text-white z-[10] pointer-events-none"
     >
-        <div class="nav-links mx-auto flex h-full w-[86%] max-w-[1100px] flex-col justify-center gap-[clamp(0.4rem,1.6vh,1.2rem)] pt-[max(5.5rem,env(safe-area-inset-top))] pb-[max(1.75rem,env(safe-area-inset-bottom))]">
-            <p class="nav-reveal mb-[clamp(0.5rem,2vh,1.5rem)] text-[0.68rem] font-bold uppercase tracking-[0.3em] text-white/40">
+        <div class="nav-links mx-auto flex h-full w-[86%] max-w-[1100px] flex-col overflow-y-auto overscroll-contain pt-[calc(clamp(4rem,9vh,5.5rem)+env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+            <div class="m-auto flex w-full flex-col gap-[clamp(0.3rem,1.4vh,1.2rem)] py-2">
+            <p class="nav-reveal mb-[clamp(0.35rem,1.8vh,1.5rem)] text-[0.68rem] font-bold uppercase tracking-[0.3em] text-white/40">
                 {menuLabel}
             </p>
             {
                 navButtons.map((button, index) => (
                     <div class="nav-reveal">
-                        <div class="nav-link flex items-baseline gap-[clamp(0.9rem,2vw,1.5rem)]">
+                        <div class="nav-link flex min-h-[2.75rem] items-baseline gap-[clamp(0.9rem,2vw,1.5rem)]">
                             <span class="w-[2ch] shrink-0 font-display text-[clamp(0.8rem,1.6vh,1rem)] font-bold text-white/35" aria-hidden="true">
                                 0{index + 1}
                             </span>
                             <a
                                 href={button.path}
-                                class="py-[0.15em] font-display text-[clamp(2rem,6.5vh,3.75rem)] font-[800] leading-[1.05] tracking-wide text-white/70"
+                                class="flex min-h-[2.75rem] items-center py-[0.15em] font-display text-[clamp(1.5rem,min(6.5vh,10.5vw),3.75rem)] font-[800] leading-[1.05] tracking-wide text-white/70"
                             >
                                 <span
                                     data-text={button.title}
@@ -62,7 +66,7 @@ const navButtons = hasHome
                                 {button.items.map((subbutton) => (
                                     <a
                                         href={subbutton.path}
-                                        class="group inline-flex items-baseline gap-2 py-1 font-display text-[clamp(1rem,2.4vh,1.35rem)] font-bold text-white/55 transition-colors duration-300 hover:text-white focus-visible:text-white"
+                                        class="group inline-flex min-h-[2.5rem] items-center gap-2 py-1 font-display text-[clamp(0.95rem,min(2.4vh,4.5vw),1.35rem)] font-bold text-white/55 transition-colors duration-300 hover:text-white focus-visible:text-white"
                                     >
                                         <span class="text-[0.75em] text-white/35 transition-colors duration-300 group-hover:text-white/80" aria-hidden="true">↘</span>
                                         <span class="relative overflow-hidden pb-0.5">
@@ -104,13 +108,26 @@ const navButtons = hasHome
                             );
                         })()
                     }
-                    <a
-                        href={`mailto:${contactEmail}`}
-                        class="font-display text-sm font-bold text-white/60 transition-colors duration-300 hover:text-white"
-                    >
-                        {contactEmail}
-                    </a>
+                    <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+                        {
+                            secondaryLinks.map((link) => (
+                                <a
+                                    href={link.href}
+                                    class="font-display text-sm font-bold text-white/60 underline-offset-4 transition-colors duration-300 hover:text-white hover:underline focus-visible:text-white focus-visible:underline"
+                                >
+                                    {link.text}
+                                </a>
+                            ))
+                        }
+                        <a
+                            href={`mailto:${contactEmail}`}
+                            class="font-display text-sm font-bold text-white/60 underline-offset-4 transition-colors duration-300 hover:text-white hover:underline focus-visible:text-white focus-visible:underline"
+                        >
+                            {contactEmail}
+                        </a>
+                    </div>
                 </div>
+            </div>
             </div>
         </div>
     </div>

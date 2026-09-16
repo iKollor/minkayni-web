@@ -3,8 +3,8 @@ import ScrollTrigger from "gsap/ScrollTrigger";
 
 if (typeof window !== "undefined") {
     // evita doble inicialización
-    if (!(window as any).__MOMENTS_ANIM__) {
-        (window as any).__MOMENTS_ANIM__ = true;
+    if (!window.__MOMENTS_ANIM__) {
+        window.__MOMENTS_ANIM__ = true;
 
         gsap.registerPlugin(ScrollTrigger);
 

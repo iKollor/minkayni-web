@@ -1,0 +1,61 @@
+---
+/* ──────────────────────────────────────────────────────────────────────────
+   Línea legal del footer (visible en todo el sitio).
+
+   Versión compacta: una sola línea con lo mínimo verificable —razón social,
+   RUC, resolución de personería jurídica y ciudad— más el enlace a la página
+   completa. Es lo que hacen las ONG: el dato corto siempre a la vista, el
+   detalle en /transparencia.
+
+   Los datos legibles por máquina (dirección, correo, registros, identificadores)
+   ya viajan en el JSON-LD de schema.org/NGO que se emite en el <head> de todas
+   las páginas, así que acortar esta línea no afecta a los verificadores.
+
+   Contraste: crema al 70% sobre morado #6e00a3 ≈ 7:1 (AA holgado).
+   Contenido editable en Strapi (single type `legal-transparency`).
+─────────────────────────────────────────────────────────────────────────── */
+import { getLegalContent } from "./legalContent";
+
+const d = await getLegalContent();
+
+/* Forma corta de la resolución: "Resolución No. MIES-…-R, de 30 de junio…"
+   → "Resolución MIES-…-R". El texto completo vive en /transparencia. */
+const resolutionCode = (d.ministryResolution.match(/[A-Z]+(?:-[A-Z0-9]+)+/) ?? [])[0];
+
+const items = [
+    d.legalName,
+    d.ruc ? `RUC ${d.ruc}` : "",
+    resolutionCode ? `Resolución ${resolutionCode}` : "",
+    [d.addressLocality?.split(",").pop()?.trim(), d.addressCountry].filter(Boolean).join(", "),
+].filter(Boolean);
+---
+
+<section class="w-[90%] mx-auto border-t border-white/15 py-6" aria-label="Información legal de la organización">
+    <div class="flex flex-col gap-3 text-sm sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-8">
+        <p class="flex flex-wrap items-center gap-x-2 gap-y-1 text-white/80">
+            {
+                items.map((item, index) => (
+                    <>
+                        {index > 0 && (
+                            <span class="text-white/35" aria-hidden="true">
+                                ·
+                            </span>
+                        )}
+                        <span>{item}</span>
+                    </>
+                ))
+            }
+        </p>
+
+        {
+            d.pageLink?.href && (
+                <a
+                    href={d.pageLink.href}
+                    class="shrink-0 font-bold text-white/80 underline-offset-4 transition-colors duration-200 hover:text-white hover:underline focus-visible:text-white focus-visible:underline focus-visible:outline-none"
+                >
+                    {d.pageLink.text} <span aria-hidden="true">→</span>
+                </a>
+            )
+        }
+    </div>
+</section>

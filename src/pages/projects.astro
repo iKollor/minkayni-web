@@ -1,7 +1,7 @@
 ---
 import PageLayout from "@/layouts/PageLayout.astro";
 import Button from "@/components/Button.astro";
-import { Markdown } from "@astropub/md";
+import Markdown from "@/components/Markdown.astro";
 import ProjectExplorer, { type ProjectItem } from "@/components/projects/ProjectExplorer.astro";
 import { projectsFallback } from "@/data/pages/projects";
 import { loadPageContent } from "@/utils/page-content";
@@ -10,7 +10,16 @@ import { formatTitle } from "@/utils/rich-title";
 /* Contenido: single type `projects-page` en Strapi, con fallback local. */
 const d = await loadPageContent("projectsPage", projectsFallback);
 
-const projects = d.projects as unknown as ProjectItem[];
+/* El CMS declara anchor/category/title/href/accent como nullables, pero
+   ProjectExplorer los necesita presentes: en vez de forzar el tipo con un
+   doble cast, se descartan las tarjetas incompletas. Así una entrada a medio
+   llenar en Strapi no acaba pintando `undefined` en el DOM. */
+const projects: ProjectItem[] = (d.projects ?? []).flatMap((card) => {
+    if (!card) return [];
+    const { anchor, category, title, href, accent } = card;
+    if (!anchor || !category || !title || !href || !accent) return [];
+    return [{ ...card, anchor, category, title, href, accent } as ProjectItem];
+});
 
 /* Estilos por posición de los pasos DAARR (presentacional). */
 const stepStyles = [
@@ -22,7 +31,7 @@ const stepStyles = [
 ];
 ---
 
-<PageLayout title="Proyectos" linkColor="text-white" navbarThreshold={0.45}>
+<PageLayout title="Proyectos" description={d.seo.metaDescription}>
     <section class="mx-auto w-[90%] max-w-[1280px] py-20 sm:py-28" aria-labelledby="projects-intro-title">
         <div class="grid items-end gap-10 lg:grid-cols-[0.8fr_1.2fr]">
             <div>

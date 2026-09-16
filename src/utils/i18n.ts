@@ -9,7 +9,7 @@
    - Helpers: getStr(), getArr()
 ─────────────────────────────────────────────────────────────────────────── */
 
-type AnyObj = Record<string, any>;
+type AnyObj = Record<string, unknown>;
 type Bundled<T> = T & { _i18n?: Record<string, T>; _defaultLocale?: string };
 type EntryLike = { collection: string; data: unknown };
 
@@ -90,14 +90,14 @@ function localizeOne<T extends AnyObj>(obj: Bundled<T> | T, locale?: string): T 
     return { ...rest, ...slice } as T;
 }
 
-const isEntryLike = (x: any): x is EntryLike => !!x && typeof x === "object" && "collection" in x && "data" in x;
+const isEntryLike = (x: unknown): x is EntryLike => !!x && typeof x === "object" && "collection" in x && "data" in x;
 
 /* ===================== OVERLOADS ===================== */
 // ENTRY + KEY (con fallback opcional)
-export function getData<E extends EntryLike, K extends keyof EntryDataOf<E>, D extends Clean<EntryDataOf<E>[K]>>(src: E | null | undefined, key: K, locale?: string, fallback?: D): Clean<EntryDataOf<E>[K]> | D;
+export function getData<E extends EntryLike, K extends keyof EntryDataOf<E>, D extends Clean<EntryDataOf<E>[K]> | null>(src: E | null | undefined, key: K, locale?: string, fallback?: D): Clean<EntryDataOf<E>[K]> | D;
 
 // ENTRIES[] + KEY (con fallback opcional)
-export function getData<E extends EntryLike, K extends keyof EntryDataOf<E>, D extends Clean<EntryDataOf<E>[K]>>(src: Array<E> | null | undefined, key: K, locale?: string, fallback?: D): Array<Clean<EntryDataOf<E>[K]> | D>;
+export function getData<E extends EntryLike, K extends keyof EntryDataOf<E>, D extends Clean<EntryDataOf<E>[K]> | null>(src: Array<E> | null | undefined, key: K, locale?: string, fallback?: D): Array<Clean<EntryDataOf<E>[K]> | D>;
 
 // ENTRY → data localizado (sin clave) — **garantiza retorno** (lanza si no existe)
 export function getData<E extends EntryLike>(src: E | null | undefined, locale?: string): EntryDataOf<E>;
@@ -105,7 +105,11 @@ export function getData<E extends EntryLike>(src: E | null | undefined, locale?:
 // ENTRIES[] → data[] localizado (sin clave) — **garantiza retorno** (lanza si no existe)
 export function getData<E extends EntryLike>(src: Array<E> | null | undefined, locale?: string): Array<EntryDataOf<E>>;
 
-/* ===================== IMPLEMENTACIÓN ===================== */
+/* ===================== IMPLEMENTACIÓN =====================
+   Esta firma no es visible desde fuera: las cuatro sobrecargas de arriba son
+   el contrato público y están completamente tipadas. TypeScript exige que la
+   firma de implementación sea compatible con todas ellas, y `unknown` no lo
+   sería, así que el `any` es obligado aquí y queda contenido en el módulo. */
 export function getData(src: any, a?: any, b?: any, c?: any): any {
     const isArr = Array.isArray(src);
 
@@ -146,9 +150,9 @@ export function getData(src: any, a?: any, b?: any, c?: any): any {
     // Con clave: si src nullish → devuelve defaults ([], "" o fallback)
     if (src == null) return fallback !== undefined ? fallback : isArr ? [] : "";
 
-    const project = (entry: any) => {
+    const project = (entry: unknown) => {
         const data = isEntryLike(entry) ? entry.data : entry;
-        const localized = localizeOne<any>(data, locale);
+        const localized = localizeOne<AnyObj>(data as AnyObj, locale);
 
         // Sin clave: retorna todo el data localizado (no nullish aquí por el guard anterior)
         if (!key) return localized;
@@ -165,13 +169,13 @@ export function getData(src: any, a?: any, b?: any, c?: any): any {
         // Nullish → usar fallback si existe; si no, defaults por categoría (string vacío)
         if (out == null) {
             if (fallback !== undefined) return fallback;
-            return "" as any;
+            return "";
         }
 
         return out;
     };
 
-    return isArr ? (src as any[]).map(project) : project(src);
+    return isArr ? (src as unknown[]).map(project) : project(src);
 }
 
 /* ===================== HELPERS ERGONÓMICOS (tipados, sin any ni fallback) ===================== */
@@ -185,13 +189,13 @@ type StringKeys<T> = {
 
 // Claves cuyo valor es array (incluye readonly)
 type ArrayKeys<T> = {
-    [P in keyof T]-?: T[P] extends readonly any[] | any[] ? P : never;
+    [P in keyof T]-?: T[P] extends readonly unknown[] ? P : never;
 }[keyof T];
 
 /** Para campos de texto: asegura `string` */
 export function getStr<E extends EntryLike, K extends StringKeys<EntryDataOf<E>>>(src: E | null | undefined, key: K, locale?: string): string {
     // `getData` (sin fallback) devuelve Clean<EntryDataOf<E>[K]> → `string` por la restricción de K
-    const val = getData(src, key as any, locale) as NonNullish<EntryDataOf<E>[K]>;
+    const val = getData(src, key as keyof EntryDataOf<E>, locale) as NonNullish<EntryDataOf<E>[K]>;
     return typeof val === "string" ? val : "";
 }
 
@@ -199,7 +203,7 @@ export function getStr<E extends EntryLike, K extends StringKeys<EntryDataOf<E>>
 export function getArr<E extends EntryLike, K extends ArrayKeys<EntryDataOf<E>>>(src: E | null | undefined, key: K, locale?: string): Array<NonNullish<ArrayElement<EntryDataOf<E>[K]>>> {
     type Out = Array<NonNullish<ArrayElement<EntryDataOf<E>[K]>>>;
     // Llamamos sin fallback para no convertir el tipo en una unión
-    const val = getData(src, key as any, locale) as unknown;
+    const val: unknown = getData(src, key as keyof EntryDataOf<E>, locale);
 
     // Normalización robusta en runtime
     if (Array.isArray(val)) {

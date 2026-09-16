@@ -10,6 +10,7 @@ import type { Footer } from "../schemas/strapi.graphql.zod";
 import { formatCopyright } from "../scripts/components/Copyright";
 import { buildSocialItems } from "../scripts/components/socials";
 import Button from "./Button.astro";
+import LegalFooterBand from "./legal/LegalFooterBand.astro";
 
 /** Campos añadidos al single type `footer` (textos de aliados y CTA). */
 type FooterTexts = {
@@ -33,16 +34,26 @@ interface Props {
 
 // Iconos se manejan en scripts/components/socials.ts
 
+/* El árbol llega validado como NavItem[], pero el recorrido tolera también la
+   forma `name`/`href`/`children` por si el plugin de navegación de Strapi
+   cambia de convención. Se declara explícitamente en vez de usar `any`. */
+type LooseNavNode = NavItem & {
+    name?: string;
+    href?: string;
+    children?: LooseNavNode[];
+};
+
 function getNavGroupItemsByTitle(tree?: NavTree, title?: string): NavItem[] {
     if (!tree || !title) return [];
-    const queue = Array.isArray(tree) ? [...tree] : [tree as any];
+    const queue: LooseNavNode[] = Array.isArray(tree) ? [...(tree as LooseNavNode[])] : [tree as LooseNavNode];
     while (queue.length) {
-        const node = queue.shift() as any;
+        const node = queue.shift();
+        if (!node) continue;
         const nodeTitle = String(node.title ?? node.name ?? "");
         if (nodeTitle === title) {
-            if (Array.isArray(node.items)) return node.items as NavItem[];
-            if (Array.isArray(node.children)) return node.children as NavItem[];
-            return [node as NavItem];
+            if (Array.isArray(node.items)) return node.items;
+            if (Array.isArray(node.children)) return node.children;
+            return [node];
         }
         const children = node.items ?? node.children;
         if (Array.isArray(children)) queue.push(...children);
@@ -121,8 +132,9 @@ const partnerImages = await partners();
                 <ul class="text-2xl sm:text-3xl md:text-4xl space-y-3">
                     {
                         (navigationTree && Array.isArray(navigationTree) ? navigationTree : mainNavItems).map((item) => {
-                            const href = item.path ?? (item as any).href;
-                            const label = item.title ?? (item as any).name ?? "";
+                            const node = item as LooseNavNode;
+                            const href = node.path ?? node.href;
+                            const label = node.title ?? node.name ?? "";
                             return (
                                 <li>
                                     <a class="hover:text-secondary transition-all duration-200 ease-in-out after:bg-secondary after:w-0 after:absolute relative after:h-[2px] after:left-0 after:bottom-0 hover:after:w-full after:transition-all after:duration-200 after:ease-in-out" href={href}>
@@ -180,6 +192,9 @@ const partnerImages = await partners();
                 </nav>
             </div>
         </section>
+
+        <!-- Línea legal (visible en todo el sitio) -->
+        <LegalFooterBand />
     </div>
 
     <section class="bg-secondary py-5 md:px-10 flex flex-col md:flex-row items-center justify-center md:justify-between gap-3 text-sm md:text-base" aria-label="Información legal y créditos">

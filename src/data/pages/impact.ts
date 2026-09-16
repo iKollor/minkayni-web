@@ -208,4 +208,7 @@ export const impactFallback = {
         body: "Gran parte de este impacto se ha sostenido con voluntariado juvenil. Cada aliado nuevo permite llegar a más barrios sin depender de un solo proyecto.",
     },
     ctaButton: { href: "/about#contacto", defaultText: "Hagamos minka 💜", hoverText: "Invierte en comunidad ✨" },
+    /* Meta description propia: sin ella todas las páginas heredaban la
+       descripción global y competían entre sí en los buscadores. */
+    seo: { metaDescription: "Las cifras, los resultados medidos y el reconocimiento externo del trabajo de Fundación MINKAYNI y la Batucada Popular en los barrios de Guayaquil." },
 };

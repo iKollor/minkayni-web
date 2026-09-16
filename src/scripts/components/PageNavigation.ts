@@ -112,7 +112,7 @@ export const initPageNav = () => {
                 const rawItemOffset = li?.dataset?.scrollOffset;
                 let itemOffset = rawItemOffset !== undefined ? parseFloat(rawItemOffset) : cfg.scrollOffset;
                 if (!Number.isFinite(itemOffset)) itemOffset = cfg.scrollOffset;
-                gsap.to(window, { duration: cfg.scrollDuration, ease: "power2.inOut", scrollTo: { y: yBase + itemOffset, autoKill: true } as any });
+                gsap.to(window, { duration: cfg.scrollDuration, ease: "power2.inOut", scrollTo: { y: yBase + itemOffset, autoKill: true } });
             });
         });
 
@@ -136,7 +136,7 @@ export const initPageNav = () => {
                 gsap.to(textEl, {
                     duration: 0.1 + Math.random() * 0.12,
                     ease: "steps(1)",
-                    attr: { rotate: list(randArr(n, -5, 5, 0)), dx: list(randArr(n, -0.35, 0.35, 2)) } as any,
+                    attr: { rotate: list(randArr(n, -5, 5, 0)), dx: list(randArr(n, -0.35, 0.35, 2)) },
                     onComplete: loop,
                 });
             };
@@ -152,7 +152,7 @@ export const initPageNav = () => {
                 if (reset) {
                     const n = len(textEl);
                     const z = zeros(n);
-                    gsap.to(textEl, { duration: 0.12, ease: "steps(1)", attr: { rotate: list(z), dx: list(z) } as any, overwrite: "auto" });
+                    gsap.to(textEl, { duration: 0.12, ease: "steps(1)", attr: { rotate: list(z), dx: list(z) }, overwrite: "auto" });
                 }
             };
             animMap.set(li, { start, stop });
@@ -196,7 +196,7 @@ export const initPageNav = () => {
                     if (textEl) {
                         gsap.to(textEl, { fillOpacity: 0, strokeWidth: cfg.inactiveStrokeWidth, duration: cfg.highlightOut, ease: "power1.out", overwrite: "auto" });
                         const n = len(textEl);
-                        if (n) gsap.to(textEl, { duration: Math.min(cfg.highlightOut, 0.18), ease: "steps(1)", attr: { rotate: list(zeros(n)), dx: list(zeros(n)) } as any, overwrite: "auto" });
+                        if (n) gsap.to(textEl, { duration: Math.min(cfg.highlightOut, 0.18), ease: "steps(1)", attr: { rotate: list(zeros(n)), dx: list(zeros(n)) }, overwrite: "auto" });
                     }
                     gsap.to(li, { scale: 1, y: "0px", duration: Math.min(cfg.highlightOut, 0.2), ease: "power1.out", transformOrigin: "left center", overwrite: "auto" });
                     nav.dataset.currentCollapse = String(cfg.collapseThreshold);
@@ -282,7 +282,6 @@ export const initPageNav = () => {
                 },
             });
             // Estado inicial de solape
-            // @ts-ignore
             if (typeof footerST.isActive === "boolean") overlapActive = footerST.isActive;
         }
 
@@ -320,7 +319,7 @@ export const initPageNav = () => {
 
         if (import.meta.hot) {
             import.meta.hot.dispose(() => {
-                (triggers || []).forEach((st: any) => st?.kill && st.kill());
+                (triggers || []).forEach((st) => st?.kill && st.kill());
                 removeEventListener("scroll", toggleCollapse);
                 if (toggleBtn) toggleBtn.replaceWith(toggleBtn.cloneNode(true));
             });

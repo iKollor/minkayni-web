@@ -3,10 +3,11 @@
    trae datos, estos se mezclan por encima con withFallback(). */
 import type { ImageMetadata } from "astro";
 import type { CmsMedia } from "./types";
+import type { OrgCard } from "../../schemas/pages.zod";
 import foto from "../../assets/FOTO_BATUCADA.webp";
 import comunidad from "../../assets/batucada-popular/comunidad.webp";
 import marcha from "../../assets/batucada-popular/marcha.webp";
-import pandemia from "../../assets/historyimage.png";
+import pandemia from "../../assets/historyimage.webp";
 import eu from "../../assets/eu.png";
 import vistazo from "../../assets/vistazo.png";
 
@@ -152,7 +153,7 @@ export const aboutFallback = {
             accentColor: "#dedbd4",
             dark: false,
         },
-    ],
+    ] as OrgCard[],
     ecosystemLink: { text: "Recorre el ecosistema desde dentro", href: "/projects/batucada-popular/ecosistema" },
     teamHeading: {
         eyebrow: "Quiénes lo hacemos posible",
@@ -218,4 +219,7 @@ export const aboutFallback = {
     },
     contactButton: { href: "mailto:xavier.moreira@minkayni.org", defaultText: "Escríbenos 💌", hoverText: "Hagamos minka 🥁" },
     contactSecondary: { text: "Síguenos en Instagram", href: "https://www.instagram.com/batucada_popular_/" },
+    /* Meta description propia: sin ella todas las páginas heredaban la
+       descripción global y competían entre sí en los buscadores. */
+    seo: { metaDescription: "Organización social ecuatoriana sin fines de lucro nacida en el Suburbio de Guayaquil: arte, educación popular y organización comunitaria con niñez y juventudes." },
 };

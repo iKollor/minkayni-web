@@ -5,7 +5,7 @@ import Measure from "@/components/batucada/Measure.astro";
 import Pulseline from "@/components/batucada/Pulseline.astro";
 import Torn from "@/components/batucada/Torn.astro";
 import CmsImage from "@/components/CmsImage.astro";
-import { Markdown } from "@astropub/md";
+import Markdown from "@/components/Markdown.astro";
 import { bp } from "@/components/batucada/tokens";
 import BatucadaLogo from "@/assets/batucada-popular/logo-batucada-popular.svg";
 import { batucadaFallback } from "@/data/pages/batucada";
@@ -26,7 +26,7 @@ const introParagraphs = splitParagraphs(d.introBody ?? "");
 const sectorsJson = JSON.stringify(sectors.map(({ name, lat, lng }) => ({ name, lat, lng })));
 ---
 
-<PageLayout title="Batucada Popular" showHero={false} linkColor="text-white" navbarThreshold={0.85}>
+<PageLayout title="Batucada Popular" showHero={false} description={d.seo.metaDescription}>
     <article class="overflow-clip bg-white text-black">
         <!-- ============ HERO: campo azul de marca ============ -->
         <header

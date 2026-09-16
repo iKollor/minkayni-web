@@ -1,0 +1,77 @@
+---
+/* ──────────────────────────────────────────────────────────────────────────
+   404 — Página no encontrada.
+
+   Deliberadamente sin dependencias del CMS: si Strapi no responde, el 404
+   tiene que seguir funcionando. Usa la paleta y la tipografía del sitio
+   (crema #FFF6E5, morado #6e00a3, azul #3fa9f5, ámbar #f3a20b) y la metáfora
+   percusiva de la fundación en lugar de un mensaje de error genérico.
+
+   Accesibilidad: el "404" decorativo es aria-hidden y el número real se
+   anuncia en el h1; los accesos son enlaces reales con área táctil ≥44px y
+   foco visible.
+─────────────────────────────────────────────────────────────────────────── */
+import PageLayout from "../layouts/PageLayout.astro";
+import { Icon } from "astro-icon/components";
+
+const shortcuts = [
+    { title: "Inicio", text: "Volver al principio", href: "/", icon: "mdi:home-outline" },
+    { title: "Conócenos", text: "Quiénes somos y cómo trabajamos", href: "/about", icon: "mdi:account-group-outline" },
+    { title: "Proyectos", text: "La Batucada Popular y todo su ecosistema", href: "/projects", icon: "mdi:music-note-outline" },
+    { title: "Impacto", text: "Resultados verificados en los territorios", href: "/impact", icon: "mdi:chart-timeline-variant" },
+    { title: "Aporta hoy", text: "Suma tu donación al proyecto", href: "/donate", icon: "mdi:heart-outline" },
+    { title: "Transparencia legal", text: "Datos legales de la fundación", href: "/transparencia", icon: "mdi:shield-check-outline" },
+];
+---
+
+<PageLayout title="Página no encontrada" showHero={false} noindex description="La página que buscas no existe o cambió de dirección. Vuelve al inicio de Fundación Minkayni o explora los proyectos, el impacto y la información legal de la fundación.">
+    <section class="mx-auto mb-44 flex w-[90%] max-w-[1200px] flex-col justify-center py-28 sm:py-36" aria-labelledby="notfound-title">
+        <div class="relative" data-reveal>
+            <!-- Número decorativo: el h1 ya lleva el texto accesible -->
+            <p class="pointer-events-none select-none font-display text-[clamp(7rem,32vw,20rem)] font-black leading-[0.78] tracking-tighter text-primary/10" aria-hidden="true">404</p>
+
+            <div class="mt-[-8%]">
+                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">Error 404</p>
+                <h1 id="notfound-title" class="max-w-[15ch] font-display text-4xl font-black leading-[0.92] tracking-tight text-black sm:text-6xl lg:text-7xl">
+                    Esta página <span class="text-primary">se salió del compás</span>.
+                </h1>
+            </div>
+
+            <p class="mt-8 max-w-[58ch] text-lg leading-relaxed text-black/75">
+                La dirección que buscas no existe, cambió de nombre o el enlace llegó incompleto. El tambor sigue sonando en el resto del sitio: elige por dónde seguir.
+            </p>
+        </div>
+
+        <nav class="mt-14" aria-label="Secciones principales del sitio">
+            <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
+                {
+                    shortcuts.map((item) => (
+                        <li>
+                            <a
+                                href={item.href}
+                                class="group flex h-full min-h-[5.5rem] items-start gap-4 rounded-[1.75rem] border border-black/10 bg-white/60 px-6 py-5 transition hover:-translate-y-0.5 hover:border-primary hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                            >
+                                <Icon name={item.icon} class="mt-0.5 h-6 w-6 shrink-0 text-primary" aria-hidden="true" />
+                                <span>
+                                    <span class="flex items-center gap-2 font-display text-lg font-black leading-snug text-black">
+                                        {item.title}
+                                        <span class="translate-x-0 text-primary transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true">
+                                            →
+                                        </span>
+                                    </span>
+                                    <span class="mt-1 block text-sm leading-relaxed text-black/70">{item.text}</span>
+                                </span>
+                            </a>
+                        </li>
+                    ))
+                }
+            </ul>
+        </nav>
+
+        <p class="mt-12 text-sm leading-relaxed text-black/70">
+            ¿Llegaste aquí desde un enlace nuestro? Escríbenos a{" "}
+            <a href="mailto:admin@minkayni.org" class="font-bold text-primary underline underline-offset-4 transition hover:text-secondary-deep focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">admin@minkayni.org</a>{" "}
+            y lo arreglamos.
+        </p>
+    </section>
+</PageLayout>

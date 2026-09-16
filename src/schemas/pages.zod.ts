@@ -100,6 +100,10 @@ export const OrgCardSchema = () =>
         instagramUrl: z.string().nullish(),
     });
 
+/** Tarjeta de organización del ecosistema. Los fallbacks locales la usan para
+    declarar los campos que sólo llegan desde el CMS (logo, instagramUrl). */
+export type OrgCard = z.infer<ReturnType<typeof OrgCardSchema>>;
+
 export const SectorSchema = () =>
     z.object({
         id: z.string().nullish(),
@@ -406,3 +410,86 @@ export const GlobalSettingsSchema = () =>
         pageNav: z.array(LinkSchema().nullable()).nullish(),
     });
 export type GlobalSettings = z.infer<ReturnType<typeof GlobalSettingsSchema>>;
+
+/* ── Transparencia legal (single type `legal-transparency`) ──────────────
+   Bloque institucional que consumen tanto el footer (bloque compacto) como
+   la página /transparencia. Todo nullish: lo que falte en el CMS lo cubre
+   el fallback local `src/data/pages/legal.ts`. */
+export const LegalRecordSchema = () =>
+    z.object({
+        id: z.string().nullish(),
+        label: z.string().nullish(),
+        value: z.string().nullish(),
+    });
+
+export const LegalDocumentSchema = () =>
+    z.object({
+        id: z.string().nullish(),
+        title: z.string().nullish(),
+        note: z.string().nullish(),
+        file: media(),
+    });
+
+export const LegalTransparencySchema = () =>
+    z.object({
+        ...entryBase,
+        eyebrow: z.string().nullish(),
+        title: z.string().nullish(),
+        intro: z.string().nullish(),
+        legalName: z.string().nullish(),
+        tradeName: z.string().nullish(),
+        ruc: z.string().nullish(),
+        legalForm: z.string().nullish(),
+        legalStatus: z.string().nullish(),
+        ministryResolution: z.string().nullish(),
+        incorporationDate: z.string().nullish(),
+        suiosCode: z.string().nullish(),
+        boardRegistration: z.string().nullish(),
+        legalRepresentative: z.string().nullish(),
+        economicActivity: z.string().nullish(),
+        addressStreet: z.string().nullish(),
+        addressLocality: z.string().nullish(),
+        addressRegion: z.string().nullish(),
+        addressCountry: z.string().nullish(),
+        email: z.string().nullish(),
+        phone: z.string().nullish(),
+        website: z.string().nullish(),
+        records: z.array(LegalRecordSchema().nullable()).nullish(),
+        verificationLinks: z.array(LinkSchema().nullable()).nullish(),
+        documents: z.array(LegalDocumentSchema().nullable()).nullish(),
+        note: z.string().nullish(),
+        pageLink: LinkSchema().nullish(),
+        seo: SeoSchema().nullish(),
+    });
+export type LegalTransparency = z.infer<ReturnType<typeof LegalTransparencySchema>>;
+
+/* ── Página de donaciones (single type `donate-page`) ─────────────────── */
+export const BankAccountSchema = () =>
+    z.object({
+        id: z.string().nullish(),
+        bank: z.string().nullish(),
+        accountType: z.string().nullish(),
+        accountNumber: z.string().nullish(),
+        holder: z.string().nullish(),
+        taxId: z.string().nullish(),
+        swift: z.string().nullish(),
+        note: z.string().nullish(),
+    });
+
+export const DonatePageSchema = () =>
+    z.object({
+        ...entryBase,
+        intro: SectionHeadingSchema().nullish(),
+        accountsHeading: SectionHeadingSchema().nullish(),
+        accounts: z.array(BankAccountSchema().nullable()).nullish(),
+        transferNote: z.string().nullish(),
+        impactHeading: SectionHeadingSchema().nullish(),
+        impactCards: z.array(CardSchema().nullable()).nullish(),
+        otherWaysHeading: SectionHeadingSchema().nullish(),
+        otherWays: z.array(CardSchema().nullable()).nullish(),
+        contactButton: ActionButtonSchema().nullish(),
+        whatsappLink: LinkSchema().nullish(),
+        legalNote: z.string().nullish(),
+        seo: SeoSchema().nullish(),
+    });
+export type DonatePage = z.infer<ReturnType<typeof DonatePageSchema>>;

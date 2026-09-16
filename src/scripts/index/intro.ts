@@ -27,8 +27,7 @@ const showPageNav = (): void => {
 };
 
 const waitFontsReady = (cb: () => void): void => {
-    // @ts-ignore
-    const fonts = (document as any).fonts;
+    const fonts: FontFaceSet | undefined = document.fonts;
     if (fonts?.ready && typeof fonts.ready.then === "function") {
         fonts.ready.then(() => requestAnimationFrame(cb));
     } else {
@@ -343,12 +342,10 @@ export const initIntro = (prefersReduced: boolean): void => {
 
     try {
         video.setAttribute("playsinline", "");
-        // @ts-ignore
         video.setAttribute("webkit-playsinline", "");
         video.setAttribute("autoplay", "");
         video.muted = true;
-        // @ts-ignore
-        (video as any).playsInline = true;
+        video.playsInline = true;
         video.preload = "auto";
         video.style.visibility = "hidden";
     } catch { }
@@ -379,9 +376,9 @@ export const initIntro = (prefersReduced: boolean): void => {
 
     const tryPlay = (): void => {
         try {
-            const p = video.play();
-            if (p && typeof (p as any).then === "function") {
-                (p as Promise<void>)
+            const p: Promise<void> | undefined = video.play();
+            if (p && typeof p.then === "function") {
+                p
                     .then(() => {
                         if (startedAt == null) startedAt = performance.now();
                         video.style.visibility = "visible";
@@ -402,12 +399,12 @@ export const initIntro = (prefersReduced: boolean): void => {
 
     const unlock = () => {
         tryPlay();
-        window.removeEventListener("touchstart", unlock as any, { capture: false } as any);
-        window.removeEventListener("pointerdown", unlock as any, { capture: false } as any);
-        window.removeEventListener("click", unlock as any, { capture: false } as any);
+        window.removeEventListener("touchstart", unlock, { capture: false });
+        window.removeEventListener("pointerdown", unlock, { capture: false });
+        window.removeEventListener("click", unlock, { capture: false });
     };
-    window.addEventListener("touchstart", unlock as any, { once: true, passive: true } as any);
-    window.addEventListener("pointerdown", unlock as any, { once: true } as any);
-    window.addEventListener("click", unlock as any, { once: true } as any);
+    window.addEventListener("touchstart", unlock, { once: true, passive: true });
+    window.addEventListener("pointerdown", unlock, { once: true });
+    window.addEventListener("click", unlock, { once: true });
     tryPlay();
 };

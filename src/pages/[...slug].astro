@@ -34,9 +34,12 @@ interface Props {
 }
 const { page } = Astro.props;
 const blocks = (page.sections ?? []).filter((section): section is Record<string, unknown> => Boolean(section));
+
+/* La subpágina trae su propio SEO; sin esto heredaba la descripción global. */
+const description = page.seo?.metaDescription ?? page.description ?? undefined;
 ---
 
-<PageLayout title={page.title ?? ""} navbarThreshold={0.5}>
+<PageLayout title={page.title ?? ""} description={description}>
     <div class="pb-32 md:pb-64">
         <BlockRenderer {blocks} />
     </div>

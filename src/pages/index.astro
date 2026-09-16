@@ -9,7 +9,7 @@ import Nosotros from "../components/index/Nosotros.astro";
 import IntroVideo from "../components/IntroVideo.astro";
 import { BubbleBackground } from "@/components/animate-ui/components/backgrounds/bubble";
 
-import { Markdown } from "@astropub/md";
+import Markdown from "@/components/Markdown.astro";
 
 import { getCollection, getEntry } from "astro:content";
 
@@ -94,7 +94,7 @@ const projectsCta = homepage
     <div id="app-content" class="opacity-0 transition-opacity duration-500">
         <header>
             <div class="header__container w-full relative">
-                <div id="hero-background" class="bg__container absolute top-0 left-0 w-full h-[50vh] md:h-screen z-20 bg-[var(--primary)]">
+                <div id="hero-background" data-nav-theme="dark" class="bg__container absolute top-0 left-0 w-full h-[50vh] md:h-screen z-20 bg-[var(--primary)]">
                     <BubbleBackground
                         interactive={true}
                         colors={{
@@ -114,7 +114,7 @@ const projectsCta = homepage
                 </div>
                 <div class="bottom__section__container w-full md:w-[90%] min-h-[100svh] flex flex-col-reverse md:flex-row mx-auto pt-[70svh] justify-end items-center">
                     <div class="prose w-full md:w-1/2 h-[80%] text-[color:var(--text)] opacity-80 text-lg md:text-base max-w-[90%] md:max-w-[50%] text-center md:text-left leading-relaxed pt-5 md:pt-0" id="foundation-text">
-                        <Markdown of={legend} class="prose" />
+                        <Markdown of={legend} />
                     </div>
                 </div>
             </div>

@@ -147,4 +147,7 @@ export const batucadaFallback = {
     },
     ctaPrimary: { text: "Escríbenos por WhatsApp", href: "https://wa.me/593985261647" },
     ctaSecondary: { text: "Ver la Batucada en acción", href: "https://www.instagram.com/batucada_popular_/" },
+    /* Meta description propia: sin ella todas las páginas heredaban la
+       descripción global y competían entre sí en los buscadores. */
+    seo: { metaDescription: "Colectivo juvenil comunitario de Guayaquil que usa la percusión y la educación popular para fortalecer el liderazgo juvenil y prevenir el reclutamiento forzado." },
 };

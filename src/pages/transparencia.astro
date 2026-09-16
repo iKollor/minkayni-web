@@ -1,0 +1,164 @@
+---
+/* ──────────────────────────────────────────────────────────────────────────
+   OPCIÓN B — Página dedicada de Transparencia Legal (/transparencia).
+
+   Pensada para el enlace que se envía a Goodstack, TechSoup, Google for
+   Nonprofits y Microsoft Elevate: una sola URL pública, en HTML semántico,
+   con la identidad legal completa, el domicilio, el contacto institucional,
+   los enlaces de verificación del Estado ecuatoriano y los documentos
+   oficiales descargables.
+
+   Accesibilidad: <dl> para pares dato/valor, <address> para el domicilio,
+   jerarquía de encabezados sin saltos, foco visible en todos los enlaces y
+   contraste AA (texto #0a0801 sobre crema #FFF6E5 ≈17:1; blanco sobre
+   morado #6e00a3 ≈11:1). No depende de JavaScript.
+
+   Contenido editable en Strapi: single type `legal-transparency`.
+─────────────────────────────────────────────────────────────────────────── */
+import PageLayout from "../layouts/PageLayout.astro";
+import { Icon } from "astro-icon/components";
+import { getLegalContent, fullRows, formatAddress, documentUrl } from "../components/legal/legalContent";
+
+const d = await getLegalContent();
+const rows = fullRows(d);
+const address = formatAddress(d);
+const documents = (d.documents ?? []).filter((doc) => doc?.file?.url);
+const verificationLinks = (d.verificationLinks ?? []).filter((link) => link?.href && link?.text);
+const telHref = d.phone ? `tel:${d.phone.replace(/[^+\d]/g, "")}` : "";
+---
+
+<PageLayout title="Transparencia legal" description={d.seo.metaDescription}>
+    <!-- Identidad legal -->
+    <section class="mx-auto w-[90%] max-w-[1100px] py-16 sm:py-24" aria-labelledby="legal-identity-title">
+        <header class="max-w-[70ch]" data-reveal>
+            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.eyebrow}</p>
+            <h2 id="legal-identity-title" class="font-display text-4xl font-black leading-[0.95] text-black sm:text-6xl">{d.title}</h2>
+            <p class="mt-6 text-lg leading-relaxed text-black/75">{d.intro}</p>
+        </header>
+
+        <dl class="mt-12 divide-y divide-black/10 border-y border-black/10" data-reveal-group>
+            {
+                rows.map((row) => (
+                    <div class="grid gap-1 py-5 sm:grid-cols-[minmax(0,15rem)_1fr] sm:gap-8">
+                        <dt class="text-sm font-bold uppercase tracking-[0.14em] text-black/70">{row.label}</dt>
+                        <dd class="text-base font-semibold leading-snug text-black sm:text-lg">{row.value}</dd>
+                    </div>
+                ))
+            }
+        </dl>
+    </section>
+
+    <!-- Domicilio, contacto y verificación pública -->
+    <section class="mx-auto w-[94%] max-w-[1200px] rounded-[2.5rem] bg-primary px-6 py-14 text-white sm:px-12 lg:rounded-[4rem] lg:px-16 lg:py-20" aria-labelledby="legal-contact-title">
+        <h2 id="legal-contact-title" class="font-display text-3xl font-black leading-tight sm:text-5xl">Domicilio y contacto oficial</h2>
+
+        <div class="mt-10 grid gap-10 lg:grid-cols-2">
+            <address class="space-y-5 not-italic">
+                <p class="flex items-start gap-4 text-lg leading-snug">
+                    <Icon name="mdi:map-marker-outline" class="mt-1 h-6 w-6 shrink-0 text-secondary" aria-hidden="true" />
+                    <span>
+                        <span class="block text-sm font-bold uppercase tracking-[0.14em] text-white/80">Dirección física</span>
+                        <span class="mt-1 block font-semibold">{address}</span>
+                    </span>
+                </p>
+                {
+                    d.email && (
+                        <p class="flex items-start gap-4 text-lg leading-snug">
+                            <Icon name="mdi:email-outline" class="mt-1 h-6 w-6 shrink-0 text-secondary" aria-hidden="true" />
+                            <span>
+                                <span class="block text-sm font-bold uppercase tracking-[0.14em] text-white/80">Correo institucional</span>
+                                <a href={`mailto:${d.email}`} class="mt-1 block font-semibold underline decoration-secondary underline-offset-4 transition hover:text-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary">
+                                    {d.email}
+                                </a>
+                            </span>
+                        </p>
+                    )
+                }
+                {
+                    d.phone && (
+                        <p class="flex items-start gap-4 text-lg leading-snug">
+                            <Icon name="mdi:phone-outline" class="mt-1 h-6 w-6 shrink-0 text-secondary" aria-hidden="true" />
+                            <span>
+                                <span class="block text-sm font-bold uppercase tracking-[0.14em] text-white/80">Teléfono</span>
+                                <a href={telHref} class="mt-1 block font-semibold underline decoration-secondary underline-offset-4 transition hover:text-secondary">
+                                    {d.phone}
+                                </a>
+                            </span>
+                        </p>
+                    )
+                }
+                {
+                    d.website && (
+                        <p class="flex items-start gap-4 text-lg leading-snug">
+                            <Icon name="mdi:web" class="mt-1 h-6 w-6 shrink-0 text-secondary" aria-hidden="true" />
+                            <span>
+                                <span class="block text-sm font-bold uppercase tracking-[0.14em] text-white/80">Sitio web oficial</span>
+                                <a href={d.website} class="mt-1 block font-semibold underline decoration-secondary underline-offset-4 transition hover:text-secondary">
+                                    {d.website.replace(/^https?:\/\//, "")}
+                                </a>
+                            </span>
+                        </p>
+                    )
+                }
+            </address>
+
+            {
+                verificationLinks.length > 0 && (
+                    <div>
+                        <h3 class="text-sm font-bold uppercase tracking-[0.14em] text-white/80">Verificación en fuentes oficiales</h3>
+                        <ul class="mt-4 space-y-3">
+                            {verificationLinks.map((link) => (
+                                <li>
+                                    <a
+                                        href={link!.href!}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="inline-flex items-center gap-3 rounded-2xl bg-white/10 px-5 py-4 font-semibold transition hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+                                    >
+                                        <Icon name="mdi:shield-check-outline" class="h-5 w-5 shrink-0 text-secondary" aria-hidden="true" />
+                                        <span>{link!.text}</span>
+                                        <Icon name="mdi:external-link" class="h-4 w-4 shrink-0" aria-hidden="true" />
+                                        <span class="sr-only">(se abre en una pestaña nueva)</span>
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )
+            }
+        </div>
+    </section>
+
+    <!-- Documentos oficiales -->
+    <section class="mx-auto mb-44 w-[90%] max-w-[1100px] pb-40 pt-16 sm:pt-24" aria-labelledby="legal-documents-title">
+        <h2 id="legal-documents-title" class="font-display text-3xl font-black leading-tight text-primary sm:text-5xl">Documentos oficiales</h2>
+
+        {
+            documents.length > 0 ? (
+                <ul class="mt-10 grid gap-4 sm:grid-cols-2" data-reveal-group>
+                    {documents.map((doc) => (
+                        <li>
+                            <a
+                                href={documentUrl(doc!.file!.url)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="flex h-full items-start gap-4 rounded-3xl border border-black/10 bg-white/60 px-6 py-5 transition hover:border-primary hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                            >
+                                <Icon name="mdi:file-document-outline" class="mt-0.5 h-6 w-6 shrink-0 text-primary" aria-hidden="true" />
+                                <span>
+                                    <span class="block font-display text-lg font-bold leading-snug text-black">{doc!.title}</span>
+                                    {doc!.note && <span class="mt-1 block text-sm leading-relaxed text-black/70">{doc!.note}</span>}
+                                    <span class="sr-only">(documento PDF, se abre en una pestaña nueva)</span>
+                                </span>
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <p class="mt-8 max-w-[70ch] text-lg leading-relaxed text-black/75">Los certificados originales se entregan bajo solicitud para procesos de verificación y debida diligencia.</p>
+            )
+        }
+
+        {d.note && <p class="mt-10 max-w-[75ch] rounded-3xl bg-black/[0.04] px-6 py-5 text-sm leading-relaxed text-black/75">{d.note}</p>}
+    </section>
+</PageLayout>

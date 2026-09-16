@@ -1,4 +1,5 @@
 /* Fallback local de /projects/batucada-popular/ecosistema. */
+import type { OrgCard } from "../../schemas/pages.zod";
 
 export const batucadaEcosistemaFallback = {
     backLink: { text: "Batucada Popular", href: "/projects/batucada-popular/" },
@@ -43,7 +44,7 @@ export const batucadaEcosistemaFallback = {
             name: "CAIS — Paraíso de la Flor",
             text: "El Centro de Articulación e Innovación Social, proyectado en Paraíso de la Flor, se concibe como un ecosistema territorial para fortalecer la organización comunitaria, ampliar el acceso a servicios y generar respuestas innovadoras frente a las desigualdades sociales, económicas, ambientales y tecnológicas de los barrios populares de Guayaquil. Busca ser un espacio permanente de convergencia entre organizaciones sociales y comunitarias, organismos internacionales, universidades, empresas y los gobiernos nacional y local, con una gobernanza colaborativa.",
         },
-    ],
+    ] as OrgCard[],
     horizonsHeading: {
         eyebrow: "Hacia dónde vamos",
         title: "El horizonte: tres a cinco años.",
@@ -93,4 +94,7 @@ export const batucadaEcosistemaFallback = {
     },
     ctaPrimary: { text: "Escríbenos por WhatsApp", href: "https://wa.me/593985261647" },
     ctaSecondary: { text: "Volver al proyecto", href: "/projects/batucada-popular/" },
+    /* Meta description propia: sin ella todas las páginas heredaban la
+       descripción global y competían entre sí en los buscadores. */
+    seo: { metaDescription: "Las organizaciones, medios y escuelas que sostienen la Batucada Popular: investigación propia, organización adulta, comunicación y formación de liderazgos." },
 };

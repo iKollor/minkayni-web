@@ -228,4 +228,7 @@ export const projectsFallback = {
         "Cifras actualizadas a 2026 según el registro institucional de Fundación MINKAYNI y el perfil publicado por [Vistazo](https://www.vistazo.com/actualidad/nacional/2026-03-08-historia-mujer-convirtio-tambores-refugio-jovenes-violencia-guayaquil-GG10707818); contexto territorial documentado por [El Universo](https://www.eluniverso.com/noticias/informes/con-la-batucada-despejo-la-mente-y-me-alejo-de-robar-plan-de-serpaz-busca-que-los-jovenes-no-sean-reclutados-por-las-bandas-nota/) y [Plan V](https://planv.com.ec/historias/batucada-popular-guayaquil/).",
     ctaButton: { href: "/about#contacto", defaultText: "Conversemos 🥁", hoverText: "Hagamos minka 💜" },
     ctaSecondary: { text: "Síguenos en Instagram", href: "https://www.instagram.com/batucada_popular_/" },
+    /* Meta description propia: sin ella todas las páginas heredaban la
+       descripción global y competían entre sí en los buscadores. */
+    seo: { metaDescription: "La Batucada Popular y el ecosistema que crece a su alrededor: comunicación popular, liderazgo, economía circular, investigación y protección comunitaria." },
 };

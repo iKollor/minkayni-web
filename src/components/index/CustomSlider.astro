@@ -1,10 +1,10 @@
 ---
 import { StrapiBlocks } from "@sensinum/astro-strapi-blocks";
-import type { ComponentSectionsTeam } from "../../schemas/strapi.graphql.zod";
+import type { TeamMemberEntry } from "../../schemas/pages.zod";
 import { strapiMediaUrl } from "../../utils/media-url";
 
 interface Props {
-    members?: ComponentSectionsTeam[];
+    members?: TeamMemberEntry[];
 }
 const { members = [] } = Astro.props as Props;
 

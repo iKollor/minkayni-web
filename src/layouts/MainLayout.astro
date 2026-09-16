@@ -14,6 +14,12 @@ import { loadPageContent } from "../utils/page-content";
 
 interface Props {
     title: string;
+    /** Meta description propia de la página (SEO); si falta se usa la global. */
+    description?: string;
+    /** Imagen de vista previa al compartir; si falta se usa la del sitio. */
+    image?: string;
+    /** Texto alternativo de `image`. */
+    imageAlt?: string;
 }
 
 const navigationEntry = await getEntry("navigationHeader", "navigation:header:es");
@@ -32,12 +38,12 @@ const pageNavItems = site.pageNav
     .filter((item) => item?.href && item?.text)
     .map((item) => ({ href: item.href as string, text: item.text as string, ...(scrollConfig[item.href as string] ?? {}) }));
 
-const { title } = Astro.props;
+const { title, description, image, imageAlt } = Astro.props;
 ---
 
-<Head title={title}>
+<Head title={title} description={description} image={image} imageAlt={imageAlt}>
     <SiteGrain />
-    <Navbar buttons={navHeader} linkColor="text-white" />
+    <Navbar buttons={navHeader} />
     <Menu buttons={navHeader} socials={footer.Socials} menuLabel={site.menuLabel} contactEmail={site.contactEmail} />
     <PageNavigation items={pageNavItems} />
 

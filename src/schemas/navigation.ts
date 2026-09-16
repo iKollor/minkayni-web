@@ -1,7 +1,9 @@
-// @ts-nocheck
 
 // src/schemas/navigation.ts
-import { z, type ZodType, type ZodTypeDef } from "zod";
+import { z, type ZodType } from "zod";
+
+/** Valor primitivo admitido en los campos extra de un item de navegación. */
+export type NavPrimitive = string | number | boolean;
 
 /** SALIDA (lo que usa tu app) */
 export type NavItem = {
@@ -17,7 +19,7 @@ export type NavItem = {
     items?: NavItem[];
 
     /** objeto con tus custom fields (selects, flags, etc.) */
-    additionalFields?: Record<string, string | number | boolean | string[] | number[] | boolean[]>;
+    additionalFields?: Record<string, NavPrimitive | NavPrimitive[]>;
 };
 
 /** ENTRADA (desde Strapi; puede traer nulls) */
@@ -25,7 +27,7 @@ export type NavItemInput = Omit<NavItem, "path" | "items" | "additionalFields"> 
     path?: string | null;
     items?: NavItemInput[];
     // valores pueden venir null
-    additionalFields?: Record<string, string | number | boolean | (string | number | boolean)[] | null> | null;
+    additionalFields?: Record<string, NavPrimitive | NavPrimitive[] | null> | null;
 };
 
 export type NavTree = NavItem[];
@@ -38,22 +40,22 @@ const Prim = z.union([z.string(), z.number(), z.boolean()]);
  *  - input: Record<string, Prim | Prim[] | null> | null | undefined
  *  - output: Record<string, Prim | Prim[]> | undefined (filtra keys con null)
  */
-const AdditionalFieldsSchema: ZodType<Record<string, string | number | boolean | string[] | number[] | boolean[]> | undefined, ZodTypeDef, Record<string, string | number | boolean | (string | number | boolean)[] | null> | null | undefined> = z
+const AdditionalFieldsSchema: ZodType<Record<string, NavPrimitive | NavPrimitive[]> | undefined, Record<string, NavPrimitive | NavPrimitive[] | null> | null | undefined> = z
     .record(z.string(), z.union([Prim, z.array(Prim), z.null()]))
     .nullable()
     .optional()
     .transform((obj) => {
         if (!obj) return undefined;
-        const out: Record<string, string | number | boolean | string[] | number[] | boolean[]> = {};
+        const out: Record<string, NavPrimitive | NavPrimitive[]> = {};
         for (const [k, v] of Object.entries(obj)) {
             if (v === null) continue; // quitamos claves con null
-            out[k] = v as any; // v es Prim o Prim[]
+            out[k] = v;
         }
         return Object.keys(out).length ? out : undefined;
     });
 
 /** Schema recursivo principal */
-export const NavItemSchema: ZodType<NavItem, ZodTypeDef, NavItemInput> = z.lazy(() =>
+export const NavItemSchema: ZodType<NavItem, NavItemInput> = z.lazy(() =>
     z
         .object({
             title: z.string().min(1),
@@ -83,7 +85,6 @@ export const NavItemSchema: ZodType<NavItem, ZodTypeDef, NavItemInput> = z.lazy(
         })
         // Si el plugin te “plana” algunos fields extra al nivel raíz, los aceptamos como primitivos o arrays
         .catchall(z.union([Prim, z.array(Prim)]))
-        .passthrough()
         .refine((i) => i.type !== "EXTERNAL" || i.external === true, {
             message: "Los items EXTERNAL deben marcarse con external=true",
         })
@@ -93,6 +94,6 @@ export const NavItemSchema: ZodType<NavItem, ZodTypeDef, NavItemInput> = z.lazy(
 );
 
 /** Árbol tipado */
-export const NavigationTreeSchema: ZodType<NavTree, ZodTypeDef, NavTreeInput> = z.array(NavItemSchema);
+export const NavigationTreeSchema: ZodType<NavTree, NavTreeInput> = z.array(NavItemSchema);
 
 export type NavigationTree = NavTree;

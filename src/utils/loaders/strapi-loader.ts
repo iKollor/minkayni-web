@@ -231,8 +231,5 @@ export function strapiLoader({
         );
       }
     },
-    schema() {
-      throw new Error("Pasa tu schema Zod en defineCollection().");
-    },
   };
 }

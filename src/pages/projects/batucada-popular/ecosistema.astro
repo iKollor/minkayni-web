@@ -1,5 +1,6 @@
 ---
 import PageLayout from "@/layouts/PageLayout.astro";
+import CmsImage from "@/components/CmsImage.astro";
 import Pulseline from "@/components/batucada/Pulseline.astro";
 import Torn from "@/components/batucada/Torn.astro";
 import { bp } from "@/components/batucada/tokens";
@@ -17,7 +18,7 @@ const allies = d.allies;
 const cardShadows = ["shadow-[6px_6px_0_var(--color-bp-blue)]", "rotate-[0.6deg] shadow-[6px_6px_0_var(--accent)]", "-rotate-[0.6deg] shadow-[6px_6px_0_var(--primary)]"];
 ---
 
-<PageLayout title="Ecosistema — Batucada Popular" showHero={false} linkColor="text-white" navbarThreshold={0.5}>
+<PageLayout title="Ecosistema — Batucada Popular" showHero={false} description={d.seo.metaDescription}>
     <article class="overflow-clip bg-white text-black">
         <header class:list={[bp.edge, bp.fieldInk, "pt-[calc(90px+clamp(2.25rem,5vw,4.5rem))] pb-[clamp(2.25rem,5vw,4.5rem)]"]} aria-labelledby="eco-title">
             <a class="inline-flex min-h-11 items-center gap-2 border-b-2 border-current text-[0.78rem] font-black uppercase tracking-[0.14em] focus-visible:outline-[3px] focus-visible:outline-offset-4 focus-visible:outline-bp-blue" href={d.backLink.href} data-bp-hero><span aria-hidden="true">←</span> {d.backLink.text}</a>

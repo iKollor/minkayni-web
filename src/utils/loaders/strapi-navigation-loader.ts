@@ -49,10 +49,5 @@ export function navigationLoader({ slug = "header", locale = "es", url, token, c
                 clearTimeout(timeout);
             }
         },
-        schema() {
-            // Import diferido para evitar ciclos
-            const { NavigationTreeSchema } = require("../../schemas/navigation");
-            return NavigationTreeSchema;
-        },
     };
 }

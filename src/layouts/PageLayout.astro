@@ -8,19 +8,24 @@ import SiteGrain from "../components/SiteGrain.astro";
 import { getEntry } from "astro:content";
 import { getData } from "../utils/i18n";
 import Head from "./lib/head.astro";
-import type { LinkColor, UnderlineColor } from "@/components/NavButton.astro";
 import { fallbackFooter, fallbackNavigation, withBatucadaProject } from "../data/site";
 import { globalFallback } from "../data/pages/global";
 import { loadPageContent } from "../utils/page-content";
 
 interface Props {
     title: string;
+    /** Meta description propia de la página (SEO); si falta se usa la global. */
+    description?: string;
+    /** Excluye la página de los buscadores (404, borradores). */
+    noindex?: boolean;
+    /** Imagen de vista previa al compartir; si falta se usa la del sitio. */
+    image?: string;
+    /** Texto alternativo de `image`. */
+    imageAlt?: string;
     showHero?: boolean;
-    linkColor?: LinkColor;
-    underlineColor?: UnderlineColor;
     buttonClassName?: string;
-    enableMixBlend?: boolean;
-    navbarThreshold?: number;
+    /** Desactiva la tinta adaptativa del navbar (lo deja siempre en crema). */
+    enableNavTheming?: boolean;
 }
 
 const navigationEntry = await getEntry("navigationHeader", "navigation:header:es");
@@ -28,13 +33,14 @@ const footerEntry = await getEntry("footer", "footer");
 const navHeader = withBatucadaProject(navigationEntry ? getData(navigationEntry) : fallbackNavigation);
 const footer = footerEntry ? getData(footerEntry, "es") : fallbackFooter;
 const site = await loadPageContent("globalSettings", globalFallback);
-const { title, showHero = true, linkColor = "text-white", underlineColor, buttonClassName = "", enableMixBlend, navbarThreshold } = Astro.props;
+const { title, description, noindex, image, imageAlt, showHero = true, buttonClassName = "", enableNavTheming } = Astro.props;
+
 ---
 
-<Head title={title}>
+<Head title={title} description={description} noindex={noindex} image={image} imageAlt={imageAlt}>
     <SiteGrain />
 
-    <Navbar buttons={navHeader} linkColor={linkColor} underlineColor={underlineColor} buttonClassName={buttonClassName} enableMixBlend={enableMixBlend} threshold={navbarThreshold} />
+    <Navbar buttons={navHeader} buttonClassName={buttonClassName} enableTheming={enableNavTheming} />
     <Menu buttons={navHeader} socials={footer.Socials} menuLabel={site.menuLabel} contactEmail={site.contactEmail} />
 
     <div id="smooth-wrapper" class="overflow-x-hidden">

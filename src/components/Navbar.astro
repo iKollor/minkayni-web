@@ -5,54 +5,52 @@ import NavButton from "./NavButton.astro";
 import Button from "./Button.astro";
 
 import IsotipoIcon from "../assets/SVG/ISOTIPO_WHITE.svg";
-import LogoIcon from "../assets/SVG/LOGO.svg";
 import LogoIconWhite from "../assets/SVG/LOGO_WHITE.svg";
 import BurgerIcon from "./BurgerIcon.astro";
 import type { NavTree } from "../schemas/navigation";
-import type { LinkColor, UnderlineColor } from "./NavButton.astro";
 
 interface Props {
     buttons: NavTree;
-    threshold?: number;
-    linkColor?: LinkColor; // clase extra opcional
-    underlineColor?: UnderlineColor; // color del underline
-    buttonClassName?: string; // clase extra opcional
-    enableMixBlend?: boolean;
+    /** Clase extra para el botón CTA (no lo toca la tinta adaptativa). */
+    buttonClassName?: string;
+    /** Desactiva la tinta adaptativa y deja el navbar siempre en crema. */
+    enableTheming?: boolean;
 }
-// traer el pathname pero no existe en url aunque te devuelve toda la url
 
-const { buttons, threshold, linkColor, underlineColor, buttonClassName = "", enableMixBlend = true } = Astro.props;
+const { buttons, buttonClassName = "", enableTheming = true } = Astro.props;
 const submenuButtons = buttons
     .map((button, index) => ({ button, index }))
     .filter(({ button }) => Array.isArray(button.items) && button.items.length > 0);
 ---
 
-<div class="fixed w-full h-[90px] z-50 hidden" id="nav-container" data-threshold={threshold ?? 0.7} data-enable-mixblend={enableMixBlend}>
+<div class="fixed w-full h-[90px] z-50 hidden" id="nav-container" data-nav-theming={enableTheming}>
     <div class="mx-10 h-full overflow-hidden">
         <div class="h-full w-full">
             <div id="nav-switcher" class="max-lg:-translate-y-[100px]">
                 <div id="navBase" class="flex items-center h-[90px] justify-between text-lg text-white font-medium">
                     <a href="/" class="animate" aria-label="Ir al inicio">
-                        <IsotipoIcon class={`h-10 mr-10 ${linkColor}`} />
+                        <IsotipoIcon class="h-10 mr-10" />
                     </a>
                     <div class="flex items-center space-x-8 w-full animate">
-                        {buttons.map((button, index) => ((button.additionalFields?.style ?? "default") === "default" ? <NavButton button={button} index={index} linkColor={linkColor} underlineColor={underlineColor} /> : null))}
+                        {buttons.map((button, index) => ((button.additionalFields?.style ?? "default") === "default" ? <NavButton button={button} index={index} /> : null))}
                     </div>
                     <Reloj />
-                    {
-                        buttons.map((button) => {
-                            if (button.additionalFields?.style === "cta" && button.path) {
-                                return <Button href={button.path} defaultText={button.title} hoverText={String(button.additionalFields?.ctaText)} className={buttonClassName} />;
-                            }
-                            return null;
-                        })
-                    }
+                    <div class="nav-cta flex items-center">
+                        {
+                            buttons.map((button) => {
+                                if (button.additionalFields?.style === "cta" && button.path) {
+                                    return <Button href={button.path} defaultText={button.title} hoverText={String(button.additionalFields?.ctaText)} className={buttonClassName} />;
+                                }
+                                return null;
+                            })
+                        }
+                    </div>
                 </div>
                 <div id="navScrolled" class="flex items-center h-[90px] justify-between">
                     <a href="/" aria-label="Ir al inicio">
-                        {!enableMixBlend ? <LogoIcon class={`h-10 w-auto ${linkColor}`} /> : <LogoIconWhite class={`h-10 w-auto ${linkColor}`} />}
+                        <LogoIconWhite class="h-10 w-auto" />
                     </a>
-                    <BurgerIcon color={linkColor} />
+                    <BurgerIcon />
                 </div>
             </div>
         </div>
@@ -95,8 +93,43 @@ const submenuButtons = buttons
     }
 </div>
 
+<style is:global>
+    /* ── Tinta adaptativa del navbar ──────────────────────────────────────
+       `data-nav-theme` lo escribe el script según el fondo que haya debajo:
+         dark  → fondo oscuro  → tinta crema
+         light → fondo claro   → tinta negra
+       Todo el contenido usa `currentColor` (los SVG del logo, el isotipo y
+       la hamburguesa ya vienen con `stroke="currentColor"`), así que basta
+       con animar `color`. El CTA queda excluido con `.nav-cta`. */
+    #nav-container {
+        --nav-ink: var(--bg-white);
+    }
+
+    #nav-container[data-nav-theme="light"] {
+        --nav-ink: var(--text);
+    }
+
+    #nav-container :is(#navBase, #navScrolled),
+    #nav-container :is(#navBase, #navScrolled) :is(a, p, span, div, svg):not(.nav-cta):not(.nav-cta *) {
+        color: var(--nav-ink);
+        transition: color 350ms ease;
+    }
+
+    #nav-container :is(#navBase, #navScrolled) .underline:not(.nav-cta *) {
+        background-color: var(--nav-ink);
+        transition: background-color 350ms ease, transform 300ms ease;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        #nav-container :is(#navBase, #navScrolled),
+        #nav-container :is(#navBase, #navScrolled) * {
+            transition: none;
+        }
+    }
+</style>
+
 <script>
-    import { gsap, ScrollTrigger, ScrollSmoother } from "../scripts/main.ts";
+    import { gsap, ScrollTrigger } from "../scripts/main.ts";
 
     const initNavSwitcher = () => {
         const navSwitcher = document.getElementById("nav-switcher");
@@ -125,41 +158,161 @@ const submenuButtons = buttons
             requestAnimationFrame(() => ScrollTrigger.refresh());
         });
 
-        // Toggle mix-blend-difference al superar threshold del documento
+        /* ──────────────────────────────────────────────────────────────
+           Tinta adaptativa del navbar.
+
+           Sustituye al viejo `mix-blend-difference` sobre todo el navbar.
+           Aquel invertía TODO lo que hubiera dentro —incluido el botón de
+           donación, que salía naranja— y como `position: fixed` crea un
+           contexto de apilamiento, no había forma de excluir un hijo del
+           filtro sin sacarlo del contenedor.
+
+           En su lugar, el navbar mira qué hay justo debajo y adopta la
+           tinta que corresponde (crema sobre fondos oscuros, tinta negra
+           sobre claros) con una transición de color. El botón CTA conserva
+           sus colores de marca porque ya no hay filtro que lo toque.
+
+           Cómo decide, en orden:
+           1. `data-nav-theme` explícito en el elemento o un ancestro;
+           2. el color de fondo del primer elemento que pinte algo;
+           3. si solo hay imagen/degradado de fondo, el color de texto de
+              ese elemento (texto claro ⇒ fondo oscuro).
+        ────────────────────────────────────────────────────────────────── */
         const container = document.getElementById("nav-container");
         if (!container) return;
 
-        // data-enable-mixblend controla si la funcionalidad está activa (por defecto true)
-        const enableAttr = container.dataset.enableMixblend;
-        const enableMixBlendFlag = enableAttr === undefined ? true : enableAttr === "true" || enableAttr === "1";
+        const themingAttr = container.dataset.navTheming;
+        const themingEnabled = themingAttr === undefined ? true : themingAttr === "true" || themingAttr === "1";
+        if (!themingEnabled) return;
 
-        if (!enableMixBlendFlag) {
-            // Si está deshabilitado, asegurarse de que no haya mix-blend y salir
-            container.classList.remove("mix-blend-difference");
-        } else {
-            const applyBlend = (active: boolean) => {
-                container.classList.toggle("mix-blend-difference", active);
+        /* Normaliza cualquier color CSS (incluidos oklab/color-mix) a rgba */
+        const probe = document.createElement("canvas").getContext("2d");
+        const toRgba = (value: string): [number, number, number, number] => {
+            if (!probe || !value || value === "transparent") return [0, 0, 0, 0];
+            probe.fillStyle = "#000";
+            probe.fillStyle = value;
+            const out = probe.fillStyle as string;
+            if (out.startsWith("#")) {
+                const n = parseInt(out.slice(1), 16);
+                return [(n >> 16) & 255, (n >> 8) & 255, n & 255, 1];
+            }
+            const parts = out.match(/[\d.]+/g)?.map(Number) ?? [0, 0, 0, 0];
+            return [parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0, parts[3] ?? 1];
+        };
+
+        const luminance = ([r, g, b]: number[]) => {
+            const f = (v: number) => {
+                v /= 255;
+                return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
             };
+            return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+        };
 
-            const updateBlend = () => {
-                const smoother = ScrollSmoother.get?.();
-                const y = smoother ? smoother.scrollTop() : window.scrollY;
-                const raw = container.dataset.threshold;
-                const thresholdVal = raw ? parseFloat(raw) * window.innerHeight : window.innerHeight * 0.7;
-                applyBlend(y > thresholdVal);
-            };
+        const contrast = (a: number, b: number) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 
-            // ScrollTrigger para actualizar en scroll/resize y con Smooth
-            ScrollTrigger.create({
-                start: 0,
-                end: () => ScrollTrigger.maxScroll(window) || document.documentElement.scrollHeight - window.innerHeight,
-                onUpdate: updateBlend,
-                onRefresh: updateBlend,
-            });
+        /* Las dos tintas posibles del navbar, resueltas una vez desde el tema. */
+        const rootStyle = getComputedStyle(document.documentElement);
+        const creamLum = luminance(toRgba(rootStyle.getPropertyValue("--bg-white").trim() || "#FFF6E5"));
+        const inkLum = luminance(toRgba(rootStyle.getPropertyValue("--text").trim() || "#0A0801"));
 
-            // Estado inicial
-            updateBlend();
-        }
+        /* Elige la tinta que MÁS contraste da sobre ese fondo, en vez de un
+           umbral de luminancia: así los tonos medios de marca (el azul
+           #29aae1 de Batucada, el celeste del pie) reciben tinta negra, que
+           es la que usan esas secciones para su propio texto. */
+        const bestInkFor = (bg: number[]): "dark" | "light" => {
+            const bgLum = luminance(bg);
+            return contrast(creamLum, bgLum) >= contrast(inkLum, bgLum) ? "dark" : "light";
+        };
+
+        /** Tema del fondo en un punto de la pantalla. */
+        const themeAt = (x: number, y: number): "dark" | "light" | null => {
+            const stack = document.elementsFromPoint(x, y) as HTMLElement[];
+            for (const el of stack) {
+                /* el propio navbar y la rejilla de transición no cuentan */
+                if (container.contains(el) || el.closest("#nav-container, #square-container")) continue;
+
+                const marked = el.closest<HTMLElement>("[data-nav-theme]");
+                if (marked) return marked.dataset.navTheme === "dark" ? "dark" : "light";
+
+                const cs = getComputedStyle(el);
+                const bg = toRgba(cs.backgroundColor);
+                if (bg[3] >= 0.5) return bestInkFor(bg);
+                if (cs.backgroundImage && cs.backgroundImage !== "none") {
+                    /* solo degradado/imagen: nos guiamos por su color de texto */
+                    return luminance(toRgba(cs.color)) > 0.5 ? "dark" : "light";
+                }
+            }
+            return null;
+        };
+
+        /* Se muestrea donde de verdad hay contenido —logo, centro y botón/
+           hamburguesa— y gana la mayoría. Los puntos extremos importan:
+           las secciones "isla" (tarjetas moradas al 94% de ancho) dejan
+           crema en los márgenes, que es justo donde queda el logo cuando el
+           navbar ya está en su estado compacto. */
+        const resolveTheme = (): "dark" | "light" => {
+            const y = Math.round((container.offsetHeight || 90) / 2);
+            const w = window.innerWidth;
+            let dark = 0;
+            let light = 0;
+            for (const x of [60, Math.round(w / 2), w - 60]) {
+                const theme = themeAt(x, y);
+                if (theme === "dark") dark += 1;
+                else if (theme === "light") light += 1;
+            }
+            return dark > light ? "dark" : "light";
+        };
+
+        let lastRun = 0;
+        let pending = 0;
+        const applyTheme = () => {
+            lastRun = performance.now();
+            const theme = resolveTheme();
+            if (container.dataset.navTheme !== theme) container.dataset.navTheme = theme;
+        };
+
+        /* El muestreo fuerza recálculo de estilos: se limita a ~12 veces por
+           segundo, imperceptible frente a la transición de 350 ms. */
+        const scheduleTheme = () => {
+            const now = performance.now();
+            if (now - lastRun >= 80) {
+                applyTheme();
+                return;
+            }
+            if (pending) return;
+            pending = window.setTimeout(() => {
+                pending = 0;
+                applyTheme();
+            }, 80);
+        };
+
+        ScrollTrigger.create({
+            start: 0,
+            end: () => ScrollTrigger.maxScroll(window) || document.documentElement.scrollHeight - window.innerHeight,
+            onUpdate: scheduleTheme,
+            onRefresh: scheduleTheme,
+        });
+
+        window.addEventListener("resize", scheduleTheme, { passive: true });
+
+        /* El menú a pantalla completa tapa la página entera: mientras está
+           abierto el fondo del navbar es el del overlay. No sirve el muestreo
+           por puntos, porque el overlay solo se vuelve "clicable" a mitad de
+           la animación de apertura; se lee su color directamente. */
+        window.addEventListener("menu:state", (event) => {
+            const open = Boolean((event as CustomEvent).detail?.open);
+            if (!open) {
+                /* al cerrar, esperar a que el overlay desaparezca */
+                window.setTimeout(applyTheme, 260);
+                window.setTimeout(applyTheme, 720);
+                return;
+            }
+            const overlay = document.querySelector<HTMLElement>(".content-overlay");
+            const bg = overlay ? toRgba(getComputedStyle(overlay).backgroundColor) : null;
+            container.dataset.navTheme = bg && bg[3] >= 0.5 ? bestInkFor(bg) : "dark";
+        });
+
+        applyTheme();
     };
 
     const initNavbarSubmenus = () => {

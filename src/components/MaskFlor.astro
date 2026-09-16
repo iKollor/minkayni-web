@@ -5,13 +5,23 @@ interface Props {
     src?: ImageMetadata;
     alt?: string;
     className?: string;
+    /** Anchuras del srcset. La máscara siempre es cuadrada y no pasa de 28rem. */
+    widths?: number[];
+    /** Debe reflejar el tamaño que fija `className` en cada breakpoint. */
+    sizes?: string;
 }
 
-const { src, alt = "", className = "" } = Astro.props;
+/* Sin `widths` Astro sirve la imagen a su tamaño intrínseco: la foto de
+   portada son 6000x4000 px para un círculo de 288-448 px en pantalla.
+   `width` además acota el `src` de respaldo, que si no apunta a la original. */
+const DEFAULT_WIDTHS = [288, 448, 576, 896];
+const DEFAULT_SIZES = "(min-width: 1024px) 448px, (min-width: 640px) 384px, 288px";
+
+const { src, alt = "", className = "", widths = DEFAULT_WIDTHS, sizes = DEFAULT_SIZES } = Astro.props;
 ---
 
 <div class={`flower-mask ${className}`} role="img" aria-label={alt}>
-    {src ? <Image src={src} alt={alt} /> : null}
+    {src ? <Image src={src} alt={alt} width={widths[widths.length - 1]} widths={widths} sizes={sizes} /> : null}
 </div>
 
 <style>

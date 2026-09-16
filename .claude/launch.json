@@ -21,6 +21,18 @@
                 "4399"
             ],
             "port": 4399
+        },
+        {
+            "name": "astro-preview",
+            "runtimeExecutable": "npx",
+            "runtimeArgs": [
+                "astro",
+                "preview",
+                "--port",
+                "4400"
+            ],
+            "port": 4400,
+            "autoPort": true
         }
     ]
 }

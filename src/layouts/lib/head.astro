@@ -1,13 +1,21 @@
 ---
 import faviconSrc from "/public/favicon.png";
 import faviconSvgSrc from "/public/favicon.svg";
+import shareImageSrc from "../../assets/FOTO_BATUCADA.webp";
 import { getImage } from "astro:assets";
 import { globalFallback } from "../../data/pages/global";
 import { loadPageContent } from "../../utils/page-content";
+import OrganizationJsonLd from "../../components/legal/OrganizationJsonLd.astro";
 
 interface Props {
     title: string;
     description?: string;
+    /** Páginas que no deben indexarse (404, borradores): sin canonical y con robots noindex. */
+    noindex?: boolean;
+    /** Imagen para redes sociales. URL absoluta o ruta del sitio; si falta se usa la del CMS o la de por defecto. */
+    image?: string;
+    /** Texto alternativo de `image`. */
+    imageAlt?: string;
 }
 const appleTouchIcon = await getImage({
     src: faviconSrc,
@@ -16,12 +24,28 @@ const appleTouchIcon = await getImage({
     format: "png",
 });
 const faviconSvg = await getImage({ src: faviconSvgSrc, format: "svg" });
+/* Sustituye a /favicon.ico, que no existe en public/ y devolvía 404 en cada página. */
+const faviconPng = await getImage({ src: faviconSrc, width: 32, height: 32, format: "png" });
 
 /* SEO por defecto editable (single type `global` en Strapi). */
 const site = await loadPageContent("globalSettings", globalFallback);
-const { title, description = site.defaultSeo.metaDescription } = Astro.props;
+const { title, description = site.defaultSeo.metaDescription, noindex = false, image, imageAlt } = Astro.props;
 const siteTitle = site.defaultSeo.metaTitle || site.siteName;
 const fullTitle = title ? `${title} ${site.titleSuffix}` : siteTitle;
+
+/* URL canónica de la página (requiere `site` en astro.config.ts).
+   Una página de error no declara canónica: no es un destino real. */
+const canonical = !noindex && Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
+
+/* Imagen para compartir: la que pase la página, la del single type `global`
+   o, como último recurso, una foto del proyecto recortada a 1200x630 (la
+   proporción que esperan Facebook, LinkedIn y X). Las redes exigen URL
+   absoluta: una ruta relativa se ignora y la tarjeta sale sin imagen. */
+const defaultShareImage = await getImage({ src: shareImageSrc, width: 1200, height: 630, format: "webp" });
+const shareImagePath = image ?? (site.defaultSeo as { shareImage?: { url?: string } }).shareImage?.url ?? defaultShareImage.src;
+const shareImage = Astro.site ? new URL(shareImagePath, Astro.site).href : shareImagePath;
+const shareImageAlt = imageAlt ?? `${siteTitle} — Batucada Popular`;
+const ogUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
 
 /* preconnect a Strapi solo si la URL está configurada y es válida */
 const strapiOrigin = (() => {
@@ -38,11 +62,31 @@ const strapiOrigin = (() => {
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-        <link rel="icon" href="/favicon.ico" sizes="32x32" />
+        <link rel="icon" href={faviconPng.src} type="image/png" sizes="32x32" />
         <link rel="icon" href={faviconSvg.src} type="image/svg+xml" />
         <link rel="apple-touch-icon" href={appleTouchIcon.src} />
         <meta name="generator" content={Astro.generator} />
         <meta name="description" content={description} />
+        {canonical && <link rel="canonical" href={canonical} />}
+        {noindex && <meta name="robots" content="noindex, follow" />}
+
+        <!-- Open Graph / Twitter: sin esto, al compartir un enlace no hay
+             título, descripción ni imagen de vista previa. -->
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content={site.siteName} />
+        <meta property="og:locale" content="es_EC" />
+        <meta property="og:title" content={fullTitle} />
+        <meta property="og:description" content={description} />
+        {ogUrl && <meta property="og:url" content={ogUrl} />}
+        <meta property="og:image" content={shareImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={shareImageAlt} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={fullTitle} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={shareImage} />
+        <meta name="twitter:image:alt" content={shareImageAlt} />
         <!-- Preferencias de color del agente y color de UI del navegador (Safari iOS/desktop) -->
         <meta name="color-scheme" content="light dark" />
         <!-- Fallback general -->
@@ -58,7 +102,20 @@ const strapiOrigin = (() => {
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         {strapiOrigin && <link rel="preconnect" href={strapiOrigin} />}
 
+        <!-- Equipos lentos: marca <html data-low-power> antes del primer pintado
+             para que los fondos animados (Hero) se degraden sin parpadeo. -->
+        <script is:inline>
+            try {
+                var n = navigator;
+                var low = (n.hardwareConcurrency && n.hardwareConcurrency <= 2) || (n.deviceMemory && n.deviceMemory <= 2) || (n.connection && n.connection.saveData === true);
+                if (low) document.documentElement.setAttribute("data-low-power", "");
+            } catch (e) {}
+        </script>
+
         <title>{fullTitle}</title>
+
+        <!-- Identidad legal de la organización (schema.org/NGO) -->
+        <OrganizationJsonLd />
         <style>
             body[data-grain="off"] #grain-layer {
                 display: none;

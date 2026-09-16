@@ -2,6 +2,7 @@
 /* Renderiza la dynamic zone de una subpágina del constructor: cada bloque
    de Strapi (por __typename) se mapea a su sección visual del sitio.
    Bloques desconocidos se ignoran sin romper la página. */
+import type { AstroComponentFactory } from "astro/runtime/server/index.js";
 import BlockIntro from "./BlockIntro.astro";
 import BlockRichText from "./BlockRichText.astro";
 import BlockMedia from "./BlockMedia.astro";
@@ -20,7 +21,7 @@ interface Props {
 }
 const { blocks } = Astro.props;
 
-const registry: Record<string, (typeof BlockIntro | typeof BlockRichText)> = {
+const registry: Record<string, AstroComponentFactory> = {
     ComponentBlocksIntro: BlockIntro,
     ComponentBlocksRichText: BlockRichText,
     ComponentBlocksMedia: BlockMedia,
