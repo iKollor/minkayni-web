@@ -15,11 +15,18 @@ const { className, isAbsolute = true, showDecoration = true } = Astro.props as P
     <!-- Contenedor general -->
     <div class="relative h-[150px] md:h-[300px] text-white">
         <!-- Capa base (relleno) -->
+        <!-- Cúpula y contorno: una elipse de 140vw de ancho y alto fijo por
+             breakpoint. Con un círculo de vmax, el arco bajaba tanto hacia los
+             lados que salía por el fondo del recorte antes de llegar al borde
+             de la pantalla y se veían sus extremos. Así los extremos quedan
+             siempre a ±70vw (fuera de pantalla, sea cual sea el ancho) y la
+             caída en el borde es fija: 90px en móvil y 210px en escritorio,
+             por debajo del recorte incluso con los 40/60px del contorno. -->
         <div class="absolute inset-0 overflow-hidden">
             <!-- Cúpula grande (rellena) -->
-            <div class=`absolute left-1/2 top-0 -translate-x-1/2 rounded-full bg-current w-[100vmax] h-[100vmax] md:w-[200vmax] md:h-[200vmax] ${className}`></div>
+            <div class=`absolute left-1/2 top-0 -translate-x-1/2 w-[140vw] h-[600px] rounded-[50%] bg-current md:h-[1400px] ${className}`></div>
 
-            {showDecoration && <div class="absolute left-1/2 top-10 md:top-15 -translate-x-1/2 rounded-full border-[6px] border-primary w-[100vmax] h-[100vmax] md:w-[200vmax] md:h-[200vmax]" />}
+            {showDecoration && <div class="absolute left-1/2 top-10 md:top-15 -translate-x-1/2 w-[140vw] h-[600px] rounded-[50%] border-[6px] border-primary md:h-[1400px]" />}
         </div>
         {showDecoration && <ICON class="object-cover h-10 w-10 absolute right-1/2 top-11 md:top-16 translate-x-1/2 -translate-y-1/2 transform transform-origin-center" />}
     </div>
