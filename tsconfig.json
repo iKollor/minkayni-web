@@ -35,8 +35,6 @@
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
     "verbatimModuleSyntax": false,
-    "jsx": "react-jsx",
-    "jsxImportSource": "react",
     "paths": {
       "@/*": [
         "./src/*"

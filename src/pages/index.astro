@@ -7,7 +7,7 @@ import Moments from "../components/index/Moments.astro";
 import Testimonials from "../components/index/Testimonials.astro";
 import Nosotros from "../components/index/Nosotros.astro";
 import IntroVideo from "../components/IntroVideo.astro";
-import { BubbleBackground } from "@/components/animate-ui/components/backgrounds/bubble";
+import BubbleBackground from "@/components/index/BubbleBackground.astro";
 
 import Markdown from "@/components/Markdown.astro";
 
@@ -96,16 +96,14 @@ const projectsCta = homepage
             <div class="header__container w-full relative">
                 <div id="hero-background" data-nav-theme="dark" class="bg__container absolute top-0 left-0 w-full h-[50vh] md:h-screen z-20 bg-[var(--primary)]">
                     <BubbleBackground
-                        interactive={true}
+                        interactive
                         colors={{
-                            first: "140,100,255",
                             second: "18,113,255",
                             third: "140,100,255",
                             fourth: "63,169,245",
                             fifth: "140,100,255",
                             sixth: "63,169,245",
                         }}
-                        client:load
                     >
                         <div class="z-10 relative flex justify-center items-center h-full">
                             <Image class="logo pointer-events-none w-[70svw] sm:w-[50svw] md:w-[40svw] mb-2 mr-[2px]" src={Logo} alt="Logo" />

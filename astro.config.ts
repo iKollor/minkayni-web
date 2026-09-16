@@ -1,6 +1,5 @@
 import { defineConfig } from "astro/config";
 
-import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 
 import tailwindcss from "@tailwindcss/vite";
@@ -29,7 +28,6 @@ export default defineConfig({
     // Permite que herramientas (p. ej. previews) asignen puerto vía PORT
     server: process.env.PORT ? { port: Number(process.env.PORT) } : undefined,
     integrations: [
-        react(),
         icon(),
         sitemap({
             /* Las páginas `noindex` no pertenecen al sitemap: 404 no es un
@@ -44,7 +42,7 @@ export default defineConfig({
         plugins: [tailwindcss()],
         assetsInclude: ["**/*.mov"],
         optimizeDeps: {
-            include: ["react", "react-dom", "react/jsx-runtime", "motion/react", "gsap", "gsap/all", "gsap/ScrollTrigger", "gsap/SplitText", "leaflet"],
+            include: ["gsap", "gsap/all", "gsap/ScrollTrigger", "gsap/SplitText", "leaflet"],
         },
     },
     markdown: {

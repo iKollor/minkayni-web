@@ -68,12 +68,30 @@ export const initBatucadaMap = () => {
                 zoomControl: true,
             });
 
-            L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+            /* CARTO sirve las teselas raster sin clave, pero con una marca de
+               agua "API key required"; con `?key=` válida las sirve limpias.
+
+               Las claves de CARTO se restringen por dominio, así que una clave
+               que no cubra el dominio desde el que se sirve la página devuelve
+               403 y el mapa se quedaría EN BLANCO: peor que la marca de agua.
+               Por eso, al primer error de tesela se reintenta sin clave. */
+            const cartoKey = el.dataset.cartoKey;
+            const BASE_TILES = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+            const tileUrl = cartoKey ? `${BASE_TILES}?key=${encodeURIComponent(cartoKey)}` : BASE_TILES;
+
+            const tiles = L.tileLayer(tileUrl, {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
                 subdomains: "abcd",
                 maxZoom: 18,
                 minZoom: 10,
             }).addTo(map);
+
+            if (cartoKey) {
+                tiles.once("tileerror", () => {
+                    console.warn("[bp-map] CARTO rechazó la clave para este dominio; se usan las teselas sin clave (con marca de agua). Autoriza el dominio en https://carto.com/basemaps/apikey");
+                    tiles.setUrl(BASE_TILES);
+                });
+            }
 
             const bounds = L.latLngBounds(sectors.map((sector) => [sector.lat, sector.lng]));
 

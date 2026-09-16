@@ -1,0 +1,304 @@
+---
+/* ──────────────────────────────────────────────────────────────────────────
+   Fondo animado de la portada.
+
+   Port literal del componente React `animate-ui/backgrounds/bubble`: misma
+   geometría (orígenes de rotación, tamaños, posiciones), misma paleta, mismo
+   filtro "goo" y mismo seguimiento del cursor con muelle. Se reescribió sin
+   React porque las cuatro capas de fondo son rotaciones y traslaciones
+   lineales que CSS expresa de forma nativa, y sólo el rastro del cursor
+   necesita JavaScript: unas treinta líneas frente a los ~364 KB que pesaban
+   el runtime de React más `motion` sólo para este efecto decorativo.
+
+   Degradación, igual que en Hero.astro:
+   1. normal              → todas las capas animadas + goo
+   2. `data-low-power`    → sin animación ni filtro pesado (ver layouts/lib/head.astro)
+   3. `reduced-motion`    → estático
+   4. fuera de viewport   → animaciones en pausa (IntersectionObserver)
+─────────────────────────────────────────────────────────────────────────── */
+
+interface BubbleColors {
+    second: string;
+    third: string;
+    fourth: string;
+    fifth: string;
+    sixth: string;
+}
+
+interface Props {
+    /** Activa la capa que sigue al cursor. */
+    interactive?: boolean;
+    /** Colores en formato "R,G,B" (sin `rgb()`), como en el componente original. */
+    colors?: Partial<BubbleColors>;
+    class?: string;
+}
+
+const DEFAULT_COLORS: BubbleColors = {
+    second: "221,74,255",
+    third: "0,220,255",
+    fourth: "200,50,50",
+    fifth: "180,180,50",
+    sixth: "140,100,255",
+};
+
+const { interactive = false, colors: colorOverrides, class: className = "" } = Astro.props;
+const colors = { ...DEFAULT_COLORS, ...colorOverrides };
+
+const styleVars = [
+    `--second-color:${colors.second}`,
+    `--third-color:${colors.third}`,
+    `--fourth-color:${colors.fourth}`,
+    `--fifth-color:${colors.fifth}`,
+    `--sixth-color:${colors.sixth}`,
+].join(";");
+---
+
+<div class:list={["bubble-bg", className]} data-slot="bubble-background" style={styleVars}>
+    <svg xmlns="http://www.w3.org/2000/svg" class="absolute top-0 left-0 h-0 w-0" aria-hidden="true">
+        <defs>
+            <filter id="bubble-goo">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="16" result="blur"></feGaussianBlur>
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -8" result="goo"></feColorMatrix>
+                <feBlend in="SourceGraphic" in2="goo"></feBlend>
+            </filter>
+        </defs>
+    </svg>
+
+    <div class="bubble-bg__layers" aria-hidden="true">
+        <div class="bubble-bg__orbit bubble-bg__orbit--a"><span class="bubble-bg__blob bubble-bg__blob--second"></span></div>
+        <div class="bubble-bg__orbit bubble-bg__orbit--b"><span class="bubble-bg__blob bubble-bg__blob--third"></span></div>
+        <span class="bubble-bg__blob bubble-bg__blob--fourth"></span>
+        <div class="bubble-bg__orbit bubble-bg__orbit--c"><span class="bubble-bg__blob bubble-bg__blob--fifth"></span></div>
+        {interactive && <span class="bubble-bg__blob bubble-bg__blob--pointer" data-pointer-blob></span>}
+    </div>
+
+    <slot />
+</div>
+
+<style>
+    .bubble-bg {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        pointer-events: auto;
+        /* Equivalente a `bg-gradient-to-br from-violet-900 to-blue-900`: se ve
+           siempre, también si el navegador no soporta blend o filtros. */
+        background-image: linear-gradient(to bottom right, oklch(0.38 0.19 294), oklch(0.38 0.14 259));
+    }
+
+    .bubble-bg__layers {
+        position: absolute;
+        inset: 0;
+        filter: url(#bubble-goo) blur(40px);
+    }
+
+    .bubble-bg__orbit {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transform: translateZ(0);
+        will-change: transform;
+        animation: bubble-orbit linear infinite;
+    }
+
+    .bubble-bg__orbit--a {
+        transform-origin: calc(50% - 400px);
+        animation-duration: 20s;
+    }
+    .bubble-bg__orbit--b {
+        transform-origin: calc(50% + 400px);
+        animation-duration: 40s;
+    }
+    .bubble-bg__orbit--c {
+        transform-origin: calc(50% - 800px) calc(50% + 200px);
+        animation-duration: 20s;
+    }
+
+    .bubble-bg__blob {
+        position: absolute;
+        display: block;
+        border-radius: 9999px;
+        mix-blend-mode: hard-light;
+        will-change: transform;
+    }
+
+    .bubble-bg__blob--second {
+        top: 10%;
+        left: 10%;
+        width: 80%;
+        height: 80%;
+        background: radial-gradient(circle at center, rgba(var(--second-color), 0.8) 0%, rgba(var(--second-color), 0) 50%);
+    }
+
+    .bubble-bg__blob--third {
+        top: calc(50% + 200px);
+        left: calc(50% - 500px);
+        width: 80%;
+        height: 80%;
+        background: radial-gradient(circle at center, rgba(var(--third-color), 0.8) 0%, rgba(var(--third-color), 0) 50%);
+    }
+
+    .bubble-bg__blob--fourth {
+        top: 10%;
+        left: 10%;
+        width: 80%;
+        height: 80%;
+        opacity: 0.7;
+        background: radial-gradient(circle at center, rgba(var(--fourth-color), 0.8) 0%, rgba(var(--fourth-color), 0) 50%);
+        transform: translateZ(0);
+        animation: bubble-sway 40s ease-in-out infinite;
+    }
+
+    .bubble-bg__blob--fifth {
+        top: calc(50% - 80%);
+        left: calc(50% - 80%);
+        width: 160%;
+        height: 160%;
+        background: radial-gradient(circle at center, rgba(var(--fifth-color), 0.8) 0%, rgba(var(--fifth-color), 0) 50%);
+    }
+
+    .bubble-bg__blob--pointer {
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.7;
+        background: radial-gradient(circle at center, rgba(var(--sixth-color), 0.8) 0%, rgba(var(--sixth-color), 0) 50%);
+        transform: translate3d(0, 0, 0);
+    }
+
+    /* `from` y `to` deben usar la MISMA lista de funciones de transform. Con un
+       `from` implícito (`translateZ(0)`) el navegador interpola matrices, y la
+       matriz de `rotate(360deg)` es la identidad: la animación corre pero no se
+       ve mover nada. Declarando ambos extremos con `translateZ() rotate()` la
+       interpolación es función a función y el giro sí ocurre. */
+    @keyframes bubble-orbit {
+        from {
+            transform: translateZ(0) rotate(0deg);
+        }
+        to {
+            transform: translateZ(0) rotate(360deg);
+        }
+    }
+
+    /* El original anima x entre -50 y 50 px con easeInOut. */
+    @keyframes bubble-sway {
+        0%,
+        100% {
+            transform: translate3d(-50px, 0, 0);
+        }
+        50% {
+            transform: translate3d(50px, 0, 0);
+        }
+    }
+
+    /* Fuera del viewport no se anima: el navegador no repinta un filtro caro
+       que nadie está mirando. */
+    .bubble-bg[data-paused] .bubble-bg__orbit,
+    .bubble-bg[data-paused] .bubble-bg__blob--fourth {
+        animation-play-state: paused;
+    }
+
+    /* Equipos lentos: se conservan los colores, se retira el coste. */
+    :global(html[data-low-power]) .bubble-bg__layers {
+        filter: blur(30px);
+    }
+    :global(html[data-low-power]) .bubble-bg__orbit,
+    :global(html[data-low-power]) .bubble-bg__blob--fourth,
+    :global(html[data-low-power]) .bubble-bg__blob--pointer {
+        animation: none;
+        transition: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .bubble-bg__orbit,
+        .bubble-bg__blob--fourth {
+            animation: none;
+        }
+        .bubble-bg__blob--pointer {
+            display: none;
+        }
+    }
+</style>
+
+<script>
+    /* Muelle equivalente al `useSpring({ stiffness: 100, damping: 20 })` de
+       motion, integrado a mano. Sólo se ejecuta si la capa interactiva existe
+       (el componente se usó con `interactive`) y el usuario no pidió reducir
+       el movimiento. */
+    const STIFFNESS = 100;
+    const DAMPING = 20;
+    const MAX_STEP = 1 / 30; // evita saltos tras una pestaña en segundo plano
+
+    const initBubble = (root: HTMLElement) => {
+        if (root.dataset.bubbleReady) return;
+        root.dataset.bubbleReady = "1";
+
+        /* Pausa las animaciones cuando el fondo sale de pantalla. */
+        const io = new IntersectionObserver(
+            (entries) => {
+                const visible = entries[0]?.isIntersecting ?? true;
+                if (visible) delete root.dataset.paused;
+                else root.dataset.paused = "";
+            },
+            { rootMargin: "120px" }
+        );
+        io.observe(root);
+
+        const blob = root.querySelector<HTMLElement>("[data-pointer-blob]");
+        if (!blob) return;
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        if (document.documentElement.hasAttribute("data-low-power")) return;
+
+        let targetX = 0;
+        let targetY = 0;
+        let x = 0;
+        let y = 0;
+        let vx = 0;
+        let vy = 0;
+        let raf: number | null = null;
+        let last = 0;
+
+        const step = (now: number) => {
+            const dt = Math.min((now - last) / 1000 || 0, MAX_STEP);
+            last = now;
+
+            /* Integración explícita del muelle amortiguado, por eje. */
+            vx += (-STIFFNESS * (x - targetX) - DAMPING * vx) * dt;
+            vy += (-STIFFNESS * (y - targetY) - DAMPING * vy) * dt;
+            x += vx * dt;
+            y += vy * dt;
+
+            blob.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0)`;
+
+            const settled = Math.abs(x - targetX) < 0.1 && Math.abs(y - targetY) < 0.1 && Math.abs(vx) < 0.1 && Math.abs(vy) < 0.1;
+            if (settled) {
+                raf = null;
+                return;
+            }
+            raf = requestAnimationFrame(step);
+        };
+
+        const kick = () => {
+            if (raf != null) return;
+            last = performance.now();
+            raf = requestAnimationFrame(step);
+        };
+
+        const onPointerMove = (event: PointerEvent) => {
+            const rect = root.getBoundingClientRect();
+            targetX = event.clientX - (rect.left + rect.width / 2);
+            targetY = event.clientY - (rect.top + rect.height / 2);
+            kick();
+        };
+
+        window.addEventListener("pointermove", onPointerMove, { passive: true });
+    };
+
+    const boot = () => document.querySelectorAll<HTMLElement>("[data-slot='bubble-background']").forEach(initBubble);
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
+    else boot();
+</script>

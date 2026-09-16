@@ -24,6 +24,12 @@ const ecosystem = d.ecosystemTags;
 const figures = d.figures;
 const introParagraphs = splitParagraphs(d.introBody ?? "");
 const sectorsJson = JSON.stringify(sectors.map(({ name, lat, lng }) => ({ name, lat, lng })));
+
+/* Clave de las teselas CARTO. Sin ella las teselas raster se sirven con una
+   marca de agua "API key required". Lleva prefijo PUBLIC_ porque termina en el
+   navegador —es inevitable en cualquier clave de mapa—: la protección real es
+   restringirla por dominio en el panel de CARTO, no intentar ocultarla. */
+const cartoKey = import.meta.env.PUBLIC_CARTO_KEY ?? "";
 ---
 
 <PageLayout title="Batucada Popular" showHero={false} description={d.seo.metaDescription}>
@@ -224,7 +230,7 @@ const sectorsJson = JSON.stringify(sectors.map(({ name, lat, lng }) => ({ name, 
                 </div>
 
                 <div class="relative aspect-[4/3] border-[3px] border-white bg-[#e8e0d3] lg:aspect-auto lg:min-h-[clamp(26rem,62vh,40rem)]">
-                    <div id="bp-map" class="peer absolute inset-0 z-0" role="application" aria-label={`Mapa de Guayaquil con los ${sectors.length} sectores donde trabaja Batucada Popular`} aria-describedby="bp-map-status" aria-busy="true" data-state="idle" data-bp-sectors={sectorsJson}></div>
+                    <div id="bp-map" class="peer absolute inset-0 z-0" role="application" aria-label={`Mapa de Guayaquil con los ${sectors.length} sectores donde trabaja Batucada Popular`} aria-describedby="bp-map-status" aria-busy="true" data-state="idle" data-bp-sectors={sectorsJson} data-carto-key={cartoKey}></div>
                     <p id="bp-map-status" class="pointer-events-none absolute inset-x-0 bottom-3 z-[1] text-center text-[0.78rem] font-black uppercase tracking-[0.14em] text-black/70 peer-data-[state=ready]:hidden" data-bp-map-status role="status">Cargando mapa de los sectores…</p>
                     <button
                         type="button"

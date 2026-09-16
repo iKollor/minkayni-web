@@ -17,6 +17,8 @@ declare global {
         readonly STRAPI_URL: string;
         readonly STRAPI_TOKEN: string;
         readonly STRAPI_STRICT?: "true" | "false";
+        /** Clave de las teselas CARTO. Lleva prefijo PUBLIC_ porque acaba en el navegador. */
+        readonly PUBLIC_CARTO_KEY?: string;
         readonly STRAPI_CODEGEN_DEBUG?: "0" | "1";
     }
 

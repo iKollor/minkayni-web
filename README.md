@@ -1,17 +1,20 @@
-# Fundación Minkayni — Sitio estático con Astro, React, GSAP y Tailwind
+# Fundación Minkayni — Sitio estático con Astro, GSAP y Tailwind
 
-Este repositorio contiene el sitio de Fundación Minkayni construido con Astro v7, React 19, GSAP 3 y TailwindCSS v4. El contenido se obtiene desde Strapi vía GraphQL y se valida con esquemas Zod generados automáticamente. Además incluye un pipeline de Markdown/HTML con reglas personalizadas (rehype) y una arquitectura de animaciones basada en GSAP con ScrollSmoother/ScrollTrigger.
+Este repositorio contiene el sitio de Fundación Minkayni construido con Astro v7, GSAP 3 y TailwindCSS v4. El contenido se obtiene desde Strapi vía GraphQL y se valida con esquemas Zod generados automáticamente. Además incluye un pipeline de Markdown/HTML con reglas personalizadas (rehype) y una arquitectura de animaciones basada en GSAP con ScrollSmoother/ScrollTrigger.
 
 ## Stack principal
 
 - Astro 7 (render estático, `astro:assets`, integraciones)
-- React 19 (componentes interactivos puntuales)
 - TailwindCSS 4 vía `@tailwindcss/vite` (utilidades + estilos globales en `src/styles/global.css`)
 - GSAP 3 (ScrollSmoother, ScrollTrigger, SplitText, Draggable, Inertia, etc.)
 - Strapi GraphQL (contenido headless) + Zod (validación de tipos)
 - Rehype modular (shortcodes y reglas de links)
 
-Versiones relevantes (package.json): Astro ^7.3.x, React ^19.3.x, Tailwind ^4.3.x, GSAP ^3.15.x, Zod ^4.6.x.
+Versiones relevantes (package.json): Astro ^7.3.x, Tailwind ^4.3.x, GSAP ^3.15.x, Zod ^4.6.x.
+
+No hay framework de UI: el sitio no hidrata ningún island. El fondo animado de
+la portada (`components/index/BubbleBackground.astro`) se resolvió con CSS más
+un script mínimo, en lugar de los ~364 KB que costaba React + `motion`.
 
 ## Estructura del proyecto
 
@@ -19,11 +22,11 @@ Carpetas clave dentro de `src/`:
 
 - `layouts/MainLayout.astro`: layout global. Crea la capa de grano fija `#grain-layer` (video con fallback GIF) y envuelve el contenido en `#smooth-wrapper > #smooth-content`. Importa `src/scripts/main.ts` al final del body. Define meta PWA mínimas y estilos globales para ocultar `PageNavigation` en mobile.
 - `pages/`: páginas del sitio (routing por archivo). Ej.: `index.astro`.
-- `components/`: componentes Astro/React. Ej.: `index/Tag.astro` (demo animación SVG con GSAP), `Navbar`, `Footer`, `Menu` y `index/PageNavigation.astro`.
+- `components/`: componentes Astro. Ej.: `index/Tag.astro` (demo animación SVG con GSAP), `Navbar`, `Footer`, `Menu` y `index/PageNavigation.astro`.
 - `scripts/`: scripts de animación/UX. `main.ts` registra plugins GSAP y gestiona ScrollSmoother; `index/` contiene la intro, helpers, odometer y animaciones específicas de la home.
-- `content/`: configuración de contenido con `astro:content`. `content.ts` define colecciones con loaders Strapi y valida la conexión al iniciar.
+- `content.config.ts`: configuración de contenido con `astro:content`; define las colecciones con loaders de Strapi y valida la conexión al iniciar.
 - `utils/`: utilidades, incluyendo `loaders/strapi-loader.ts` (loader GraphQL-agnóstico para Strapi) y `rehype-modular.ts` (plugin rehype custom usado por Astro).
-- `styles/`: estilos globales y SCSS puntual (`Hamburguer.scss`, compilado con `sass-embedded`).
+- `styles/`: estilos globales (`global.css`).
 
 Públicos/estáticos:
 
@@ -42,7 +45,7 @@ Públicos/estáticos:
   - Usa un flag `data-initialized` para evitar inicializaciones múltiples (ver `components/index/Tag.astro`).
   - Respeta `prefers-reduced-motion`: garantiza estados finales estables sin animación si el usuario lo prefiere.
   - No cambies los selectores críticos sin actualizar los scripts: `#smooth-wrapper`, `#smooth-content`, `#intro-overlay`, `#grain-layer`, `#tagReveal`.
-- Capa de grano: `#grain-layer` muestra un video de ruido con fallback a GIF (clase `grain-gif-fallback` si el video no reproduce a tiempo). Puedes togglearlo en runtime con `window.toggleGrain()`.
+- Capa de grano: `#grain-layer` muestra un vídeo de ruido (~15 KB) con fallback a una imagen estática (clase `grain-still-fallback` si el vídeo no reproduce a tiempo). Puedes togglearlo en runtime con `window.toggleGrain()`.
 
 ## Contenido: Strapi GraphQL + Zod
 
@@ -82,7 +85,6 @@ y `src/components/Markdown.astro` (texto enriquecido que llega de Strapi):
 ## Estilos
 
 - Tailwind v4 via `@tailwindcss/vite` (sin postcss.config). Utilidades y resets en `src/styles/global.css`.
-- SCSS puntual en `src/styles/Hamburguer.scss` (usa `sass-embedded`).
 - Imágenes y favicons mediante `astro:assets` (ver `MainLayout.astro`). Si renombras assets, actualiza los imports que usan `getImage`/`Image`.
 
 ## Requisitos previos
@@ -100,7 +102,10 @@ STRAPI_URL=https://cms.ejemplo.com
 STRAPI_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-Importante: sin estas variables, `validateStrapiConnection()` fallará y no podrás ejecutar `dev/build`.
+Sin estas variables el sitio compila igualmente: cada página cae a su fallback
+local de `src/data/pages/*`. El build sólo aborta si defines `STRAPI_STRICT=true`
+(recomendado en producción, ver Despliegue). Lista completa de variables en
+`.env.example`.
 
 ## Scripts de desarrollo
 
@@ -128,13 +133,18 @@ Usa pnpm para todos los comandos.
 import { gsap, ScrollTrigger } from "../../scripts/main";
 ```
 
-2) Evita dobles inicializaciones con un flag de dataset:
+2) Evita dobles inicializaciones con un flag de dataset. Tipa el elemento en la
+   consulta; `dataset` existe en `HTMLElement`, así que no hace falta castear:
 
 ```ts
 const el = document.getElementById("mi-comp");
-if (!el || (el as any).dataset.initialized) return;
-(el as any).dataset.initialized = "1";
+if (!(el instanceof HTMLElement) || el.dataset.initialized) return;
+el.dataset.initialized = "1";
 ```
+
+   Si necesitas guardar más de una bandera, declara una interfaz para el estado
+   y haz un único cast con nombre (ver `scripts/components/CustomSlider.ts`) en
+   lugar de repartir `as any` por el fichero.
 
 3) Respeta `prefers-reduced-motion` y deja un estado final estable sin animación:
 
@@ -156,8 +166,42 @@ if (reduce) { /* set() estado final y return */ }
 
 ## Despliegue
 
-- El sitio es estático (output en `dist/`).
-- Asegúrate de definir `STRAPI_URL` y `STRAPI_TOKEN` en el entorno de build del proveedor (Vercel, Netlify, etc.), o el build fallará por la validación de Strapi.
+### Por qué estático y no adaptador Node
+
+`astro.config.ts` declara `output: "static"` de forma explícita. Se evaluó pasar
+a adaptador Node (híbrido o servidor) y no compensa: el sitio no tiene
+endpoints, formularios, cookies, sesión ni middleware, y todo el contenido de
+Strapi se resuelve en build mediante content loaders. Un adaptador añadiría un
+proceso Node y TTFB de render donde hoy Nginx entrega un fichero ya generado,
+sin ganar nada en SEO —el HTML pre-renderizado ya es lo óptimo para los
+rastreadores—.
+
+El único coste de este modelo es que **un cambio en el CMS no se ve hasta que
+se reconstruye**. Eso se resuelve con un webhook, no cambiando el modo de salida.
+
+### Webhook de Strapi → rebuild
+
+Para que publicar en Strapi regenere el sitio:
+
+1. En Coolify, en el recurso del frontend, genera una URL de despliegue por
+   webhook (Settings → Webhooks).
+2. En el admin de Strapi, **Settings → Webhooks → Create new webhook**, apunta a
+   esa URL con método `POST` y marca los eventos `entry.publish`,
+   `entry.unpublish` y `entry.delete`.
+
+Sin esto, cada cambio editorial exige lanzar el redeploy a mano.
+
+### Variables de entorno del build
+
+- `STRAPI_URL` y `STRAPI_TOKEN` son obligatorias en el entorno de build del
+  proveedor. Sin ellas el sitio compila igualmente, pero con el contenido de
+  respaldo de `src/data/pages/*` en lugar del del CMS.
+- `CARTO_KEY` alimenta las teselas del mapa de sectores; sin ella CARTO añade
+  una marca de agua «API key required».
+- **`STRAPI_STRICT=true` es recomendable en producción**: hace fallar el build
+  si Strapi no responde. Por defecto el build continúa con los fallbacks, lo
+  que es lo correcto en local pero significa que un CMS caído publicaría
+  contenido desactualizado sin avisar.
 - `astro.config.ts` declara `site: "https://minkayni.org"`. De ahí salen la URL
   canónica de cada página y la `url` del JSON-LD de la organización; si el
   dominio cambia, hay que actualizarlo ahí.
@@ -176,7 +220,7 @@ if (reduce) { /* set() estado final y return */ }
 
 ## Medios de Strapi
 
-El frontend permanece estático en Astro 5. Los medios remotos se generan como
+El frontend permanece estático en Astro 7. Los medios remotos se generan como
 `<STRAPI_URL>/media/<key>`; Strapi los reenvía internamente a `s3-media-edge`.
 El navegador no conoce `CDN_BASE_URL`, Garage ni `IMAGOR_SECRET`.
 
