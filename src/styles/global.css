@@ -148,6 +148,17 @@ html[data-site-menu-open] .site-scrollbar {
     visibility: hidden;
 }
 
+/* ── Logos de aliados (PartnersLoop) ──────────────────────────────────
+   LogoLoop fija solo la altura, así que un logo apaisado (Unicef) se
+   estiraba a 400px desde una imagen de 220 y salía pixelado, y uno cuadrado
+   quedaba enano. Cada logo se acota por alto y por ancho (2,6 veces el
+   alto): todos caben en una caja parecida y ninguno supera su imagen. */
+.partners-loop img {
+    height: auto;
+    max-height: var(--logoloop-logoHeight);
+    max-width: calc(var(--logoloop-logoHeight) * 2.6);
+}
+
 /* Con el panel escalonado abierto, la navegación en página no debe verse
    por encima (SiteMenu.tsx pone este atributo). */
 html[data-site-menu-open] .page-nav {

@@ -20,7 +20,7 @@
      al patrón actual: cada ítem entra con un desenfoque que se resuelve y un
      resorte corto, escalonado. Espera al evento `intro:finished` del vídeo de
      portada para no adelantarse a la intro. */
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'motion/react';
 import type { MenuLabels, MenuLanguage, MenuLink, MenuProject } from './menu-types';
@@ -60,6 +60,8 @@ export const MenuItem = ({ setActive, active, item, href, current, chevron, onPa
   const open = active === item;
   const labelRef = useRef<HTMLElement | null>(null);
   const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const [panelLeft, setPanelLeft] = useState<number | null>(null);
 
   /* Dónde cae el panel: bajo el centro del ítem. Se mide al abrir; el navbar
      es fijo, así que la posición no cambia mientras el panel está abierto. */
@@ -68,6 +70,19 @@ export const MenuItem = ({ setActive, active, item, href, current, chevron, onPa
     const rect = labelRef.current.getBoundingClientRect();
     setAnchor({ x: rect.left + rect.width / 2, y: rect.bottom });
   }, [open]);
+
+  /* Centrado bajo el ítem, pero nunca fuera de la ventana: con el ancho real
+     del panel (medido antes de pintar) se acota a un margen por cada lado. */
+  useLayoutEffect(() => {
+    if (!open || !anchor || !panelRef.current) {
+      setPanelLeft(null);
+      return;
+    }
+    const margin = 16;
+    const width = panelRef.current.offsetWidth;
+    const centered = anchor.x - width / 2;
+    setPanelLeft(Math.round(Math.min(Math.max(centered, margin), Math.max(margin, window.innerWidth - margin - width))));
+  }, [open, anchor]);
 
   const Label = href && !current ? 'a' : 'span';
   return (
@@ -117,9 +132,10 @@ export const MenuItem = ({ setActive, active, item, href, current, chevron, onPa
       {children && open && anchor && typeof document !== 'undefined'
         ? createPortal(
             <div
+              ref={panelRef}
               data-nav-menu-panel
-              className="fixed z-[60] -translate-x-1/2 pt-3"
-              style={{ left: anchor.x, top: anchor.y + 6 }}
+              className="fixed z-[60] pt-3"
+              style={{ left: panelLeft ?? 0, top: anchor.y + 6, visibility: panelLeft === null ? 'hidden' : undefined }}
               onMouseEnter={onPanelEnter}
               onMouseLeave={onPanelLeave}
             >

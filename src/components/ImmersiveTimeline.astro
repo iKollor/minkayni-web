@@ -11,6 +11,7 @@ import type { CmsMedia } from "../data/pages/types";
 import { splitParagraphs } from "../utils/rich-title";
 import flor from "../assets/SVG/misc/flor.svg";
 import { getLocale, useTranslations } from "../i18n";
+import TimelineYear from "./react/TimelineYear";
 
 const t = useTranslations(getLocale(Astro.url));
 
@@ -31,6 +32,11 @@ interface Props {
 
 const { items, ariaLabel = "Línea de tiempo" } = Astro.props;
 const chipOf = (item: TimelineEntry) => item.chip ?? item.period ?? "";
+/* El año que rueda en el panel: el chip como número (2010, 2016…). */
+const yearOf = (item: TimelineEntry) => Number.parseInt(chipOf(item), 10) || 0;
+/* La línea pequeña solo aporta algo cuando es un rango («2016 – 2019»); si
+   repite el año grande, se omite. */
+const periodLabel = (item: TimelineEntry) => (item.period && item.period !== chipOf(item) ? item.period : "");
 ---
 
 <div data-timeline aria-label={ariaLabel}>
@@ -52,8 +58,12 @@ const chipOf = (item: TimelineEntry) => item.chip ?? item.period ?? "";
         <!-- Panel fijo (desktop) -->
         <div class="hidden lg:block">
             <div data-tl-panel class="flex flex-col gap-2 pt-2">
-                <p class="overflow-hidden font-display text-6xl font-black leading-none text-primary xl:text-7xl" aria-hidden="true"><span class="block" data-tl-year>{chipOf(items[0] ?? {})}</span></p>
-                <p class="font-display text-lg font-bold uppercase tracking-[0.18em] text-black/60" data-tl-period>{items[0]?.period ?? ""}</p>
+                <p class="font-display text-6xl font-black leading-none text-primary xl:text-7xl" aria-hidden="true">
+                    <span class="block" data-tl-year data-year={yearOf(items[0] ?? {})}>
+                        <TimelineYear client:load initial={yearOf(items[0] ?? {})} fontSize={60} />
+                    </span>
+                </p>
+                <p class="font-display text-lg font-bold uppercase tracking-[0.18em] text-black/60" data-tl-period>{periodLabel(items[0] ?? {})}</p>
                 <p class="font-display text-sm font-bold text-black/40" data-tl-count>01 / {String(items.length).padStart(2, "0")}</p>
                 <div class="mt-8 h-24 w-24 opacity-60" data-float aria-hidden="true"><Image src={flor} alt="" class="h-full w-full object-cover" /></div>
             </div>
@@ -66,7 +76,7 @@ const chipOf = (item: TimelineEntry) => item.chip ?? item.period ?? "";
             </div>
             {
                 items.map((item, index) => (
-                    <li class="tl-item relative mb-16 pl-12 last:mb-0 sm:pl-14" data-tl-item data-chip={chipOf(item)} data-period={item.period ?? ""}>
+                    <li class="tl-item relative mb-16 pl-12 last:mb-0 sm:pl-14" data-tl-item data-chip={chipOf(item)} data-year={yearOf(item)} data-period={periodLabel(item)}>
                         <span class="tl-dot absolute left-0 top-1 flex h-[25px] w-[25px] items-center justify-center rounded-full border-[3px] border-primary bg-[#dedbd4] transition-all duration-300" aria-hidden="true">
                             <span class="tl-dot-core h-2 w-2 scale-0 rounded-full bg-primary transition-transform duration-300" />
                         </span>
@@ -115,10 +125,17 @@ const chipOf = (item: TimelineEntry) => item.chip ?? item.period ?? "";
         const setPanel = (i: number) => {
             if (i === current || !items[i]) return;
             current = i;
-            if (yearEl) yearEl.textContent = items[i].dataset.chip ?? "";
-            if (periodEl) periodEl.textContent = items[i].dataset.period ?? "";
+            /* El año lo rueda TimelineYear (Counter de reactbits): se le avisa
+               por evento y queda en data-year por si aún no ha hidratado. */
+            if (yearEl) {
+                yearEl.dataset.year = items[i].dataset.year ?? "";
+                window.dispatchEvent(new CustomEvent("timeline:year", { detail: { year: Number(items[i].dataset.year) } }));
+            }
+            if (periodEl) {
+                periodEl.textContent = items[i].dataset.period ?? "";
+                if (!reduced && periodEl.textContent) gsap.fromTo(periodEl, { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" });
+            }
             if (countEl) countEl.textContent = `${String(i + 1).padStart(2, "0")} / ${String(items.length).padStart(2, "0")}`;
-            if (yearEl && !reduced) gsap.fromTo(yearEl, { yPercent: 30, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.45, ease: "power2.out" });
         };
         setPanel(0);
 

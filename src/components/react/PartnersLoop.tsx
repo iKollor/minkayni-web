@@ -35,7 +35,8 @@ export default function PartnersLoop({ logos, ariaLabel }: Props) {
       fadeOut
       fadeOutColor="#FFF6E5"
       ariaLabel={ariaLabel}
-      className="py-6 md:py-10"
+      /* `partners-loop`: global.css acota cada logo por alto Y ancho. */
+      className="partners-loop py-6 md:py-10"
     />
   );
 }
