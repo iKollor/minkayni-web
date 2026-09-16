@@ -1,5 +1,6 @@
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
+import { onWidthResize } from "./viewport";
 
 if (typeof window !== "undefined") {
     // evita doble inicialización
@@ -118,9 +119,9 @@ if (typeof window !== "undefined") {
             }
         });
 
-        // refrescar ScrollTrigger en resize para recalcular medidas
-        window.addEventListener("resize", () => {
-            ScrollTrigger.refresh();
-        });
+        /* Refrescar medidas solo si cambia el ancho. La barra de direcciones
+           del móvil dispara `resize` al desplazarse, y un refresh ahí mueve la
+           sección bajo el dedo del usuario. */
+        onWidthResize(() => ScrollTrigger.refresh());
     }
 }

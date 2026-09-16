@@ -684,6 +684,38 @@ const teamMembers = defineCollection({
   schema: TeamMemberEntrySchema(),
 });
 
+/* Testimonios y Equipo en inglés. Hasta que el CMS desplegado tenga la
+   internacionalización activada en esos dos tipos, la consulta con `locale`
+   falla y el loader conserva la caché vacía: la portada inglesa sigue
+   mostrándolos en español, que es el comportamiento de respaldo del sitio. */
+const testimonialsEn = defineCollection({
+  loader: strapiConfigured
+    ? strapiLoader({
+        mode: "collection",
+        rootField: "testimonials",
+        selection: testimonialSelection,
+        client: clientHeaders,
+        cacheDurationInMs: contentCacheMs,
+        locale: "en",
+      })
+    : preserveCachedContent("testimonials:en"),
+  schema: TestimonialEntrySchema(),
+});
+
+const teamMembersEn = defineCollection({
+  loader: strapiConfigured
+    ? strapiLoader({
+        mode: "collection",
+        rootField: "teamMembers",
+        selection: teamMemberSelection,
+        client: clientHeaders,
+        cacheDurationInMs: contentCacheMs,
+        locale: "en",
+      })
+    : preserveCachedContent("teamMembers:en"),
+  schema: TeamMemberEntrySchema(),
+});
+
 /* Subpáginas del constructor (collection type `page` en Strapi). */
 const builderPages = defineCollection({
   loader: strapiConfigured
@@ -712,10 +744,6 @@ const builderPagesEn = defineCollection({
   schema: BuilderPageSchema(),
 });
 
-/* `testimonials` y `teamMembers` no aparecen duplicados a propósito: esos dos
-   collection types no tienen la internacionalización activada en Strapi, así
-   que solo existen en español. Para traducirlos hay que marcarlos como
-   localizados en el Content-Type Builder del CMS primero. */
 export const collections = {
   posts,
   homepage,
@@ -725,7 +753,9 @@ export const collections = {
   footer,
   footerEn,
   testimonials,
+  testimonialsEn,
   teamMembers,
+  teamMembersEn,
   aboutPage,
   aboutPageEn,
   impactPage,

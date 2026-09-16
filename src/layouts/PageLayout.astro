@@ -39,7 +39,7 @@ const { title, description, noindex, image, imageAlt, showHero = true, buttonCla
     <Menu buttons={navHeader} socials={footer.Socials} menuLabel={site.menuLabel} contactEmail={site.contactEmail} locale={locale} />
 
     <div id="smooth-wrapper" class="overflow-x-hidden">
-        <div id="smooth-content" class="flex flex-col min-h-screen">
+        <div id="smooth-content" class="flex flex-col min-h-svh">
             <main class="flex-1 w-full flex flex-col justify-start">
                 {showHero && <Hero text={title} />}
                 <slot />

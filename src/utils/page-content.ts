@@ -96,6 +96,28 @@ export async function localizeEntry<E extends { collection: string; data: unknow
     return { ...base, data: localizeLinks(withFallback(base.data, translated), locale) };
 }
 
+/**
+ * Superpone las entradas traducidas de una colección sobre las españolas.
+ *
+ * El orden y el conjunto los manda el español: una entrada sin traducir sigue
+ * saliendo (en español), y una traducción huérfana —sin original— no aparece.
+ * Se emparejan por `documentId`, que en Strapi es el mismo para todas las
+ * versiones de idioma de un documento.
+ */
+export function localizeCollection<T extends { documentId?: string | null }>(
+    base: T[],
+    translated: T[],
+    locale: Locale
+): T[] {
+    if (locale === defaultLocale || translated.length === 0) return base;
+
+    const byId = new Map(translated.filter((item) => item.documentId).map((item) => [item.documentId, item]));
+    return base.map((item) => {
+        const match = item.documentId ? byId.get(item.documentId) : undefined;
+        return match ? withFallback(item, match) : item;
+    });
+}
+
 export async function loadPageContent<T>(
     collection: SingleCollection,
     fallback: T,

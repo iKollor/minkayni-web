@@ -14,7 +14,7 @@ import Markdown from "@/components/Markdown.astro";
 import { getCollection, getEntry } from "astro:content";
 
 import { getData } from "../utils/i18n";
-import { localizeEntry } from "../utils/page-content";
+import { localizeCollection, localizeEntry } from "../utils/page-content";
 import { getLocale, localizePath, useTranslations } from "../i18n";
 import Projects from "../components/index/Projects.astro";
 import ProjectsCta from "../components/index/ProjectsCta.astro";
@@ -33,8 +33,26 @@ const homepage = await localizeEntry(await getEntry("homepage", "homepage"), "ho
 const bySort = (a: { sort?: number | null; createdAt?: string | null }, b: { sort?: number | null; createdAt?: string | null }) =>
     (a.sort ?? 0) - (b.sort ?? 0) || String(a.createdAt ?? "").localeCompare(String(b.createdAt ?? ""));
 
-const testimonials = (await getCollection("testimonials")).map((entry) => entry.data).sort(bySort);
-const teams = (await getCollection("teamMembers")).map((entry) => entry.data).sort(bySort);
+const readCollection = async (name: "testimonials" | "testimonialsEn" | "teamMembers" | "teamMembersEn") => {
+    try {
+        return (await getCollection(name)).map((entry) => entry.data);
+    } catch {
+        return [];
+    }
+};
+
+/* En inglés, cada testimonio o ficha traducida sustituye a su original; las
+   que aún no lo estén salen en español. */
+const testimonials = localizeCollection(
+    await readCollection("testimonials"),
+    locale === "en" ? await readCollection("testimonialsEn") : [],
+    locale
+).sort(bySort);
+const teams = localizeCollection(
+    await readCollection("teamMembers"),
+    locale === "en" ? await readCollection("teamMembersEn") : [],
+    locale
+).sort(bySort);
 const legend = getData(homepage, "legend", undefined, locale === "en" ? fallbackLegendEn : fallbackLegend);
 const testimonialsTitle = getData(homepage, "testimonialsTitle", undefined, homepageTextsFallback.testimonialsTitle) || homepageTextsFallback.testimonialsTitle;
 const teamTitle = getData(homepage, "teamTitle", undefined, homepageTextsFallback.teamTitle) || homepageTextsFallback.teamTitle;
@@ -126,7 +144,7 @@ const projectsCta = homepage
                      que el h1 del documento va aquí, disponible para lectores de
                      pantalla y rastreadores sin alterar el diseño. -->
                 <h1 class="sr-only">{t("home.title")}</h1>
-                <div id="hero-background" data-nav-theme="dark" class="bg__container absolute top-0 left-0 w-full h-[50vh] md:h-screen z-20 bg-[var(--primary)]">
+                <div id="hero-background" data-nav-theme="dark" class="bg__container absolute top-0 left-0 w-full h-[50svh] md:h-svh z-20 bg-[var(--primary)]">
                     <BubbleBackground
                         interactive
                         colors={{

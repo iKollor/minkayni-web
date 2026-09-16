@@ -427,3 +427,17 @@ body {
 .will-change-smooth {
     will-change: transform, opacity, background-color;
 }
+
+/* ── Titulares de Batucada Popular en inglés ─────────────────────────────
+   El inglés compone palabras más largas que el español: NEIGHBOURHOOD mide
+   413px a 40px en Sao Torpes, y la columna de un móvil de 375px mide 335.
+   Una palabra no se puede partir, así que a esa medida el h1 se salía de su
+   columna por debajo de la foto. La regla mide el titular contra su
+   contenedor (cqi) también en móvil, con un mínimo más bajo que el español,
+   y deja `overflow-wrap: anywhere` solo como red para pantallas de 320px.
+   Es una corrección tipográfica por idioma, no un cambio de diseño: el h1
+   español no se toca. */
+:lang(en) .bp-h1 {
+    font-size: clamp(1.75rem, min(9.2cqi, 5.4rem), 5.4rem);
+    overflow-wrap: anywhere;
+}

@@ -43,21 +43,21 @@ const navButtons = hasHome
     <div
         class="opacity-0 content-overlay fixed inset-0 w-full overflow-hidden bg-[var(--primary)] text-white z-[10] pointer-events-none"
     >
-        <div class="nav-links mx-auto flex h-full w-[86%] max-w-[1100px] flex-col overflow-y-auto overscroll-contain pt-[calc(clamp(4rem,9vh,5.5rem)+env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-            <div class="m-auto flex w-full flex-col gap-[clamp(0.3rem,1.4vh,1.2rem)] py-2">
-            <p class="nav-reveal mb-[clamp(0.35rem,1.8vh,1.5rem)] text-[0.68rem] font-bold uppercase tracking-[0.3em] text-white/40">
+        <div class="nav-links mx-auto flex h-full w-[86%] max-w-[1100px] flex-col overflow-y-auto overscroll-contain pt-[calc(clamp(4rem,9svh,5.5rem)+env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+            <div class="m-auto flex w-full flex-col gap-[clamp(0.3rem,1.4svh,1.2rem)] py-2">
+            <p class="nav-reveal mb-[clamp(0.35rem,1.8svh,1.5rem)] text-[0.68rem] font-bold uppercase tracking-[0.3em] text-white/40">
                 {menuLabel}
             </p>
             {
                 navButtons.map((button, index) => (
                     <div class="nav-reveal">
                         <div class="nav-link flex min-h-[2.75rem] items-baseline gap-[clamp(0.9rem,2vw,1.5rem)]">
-                            <span class="w-[2ch] shrink-0 font-display text-[clamp(0.8rem,1.6vh,1rem)] font-bold text-white/35" aria-hidden="true">
+                            <span class="w-[2ch] shrink-0 font-display text-[clamp(0.8rem,1.6svh,1rem)] font-bold text-white/35" aria-hidden="true">
                                 0{index + 1}
                             </span>
                             <a
                                 href={button.path}
-                                class="flex min-h-[2.75rem] items-center py-[0.15em] font-display text-[clamp(1.5rem,min(6.5vh,10.5vw),3.75rem)] font-[800] leading-[1.05] tracking-wide text-white/70"
+                                class="flex min-h-[2.75rem] items-center py-[0.15em] font-display text-[clamp(1.5rem,min(6.5svh,10.5vw),3.75rem)] font-[800] leading-[1.05] tracking-wide text-white/70"
                             >
                                 <span
                                     data-text={button.title}
@@ -72,7 +72,7 @@ const navButtons = hasHome
                                 {button.items.map((subbutton) => (
                                     <a
                                         href={subbutton.path}
-                                        class="group inline-flex min-h-[2.5rem] items-center gap-2 py-1 font-display text-[clamp(0.95rem,min(2.4vh,4.5vw),1.35rem)] font-bold text-white/55 transition-colors duration-300 hover:text-white focus-visible:text-white"
+                                        class="group inline-flex min-h-[2.5rem] items-center gap-2 py-1 font-display text-[clamp(0.95rem,min(2.4svh,4.5vw),1.35rem)] font-bold text-white/55 transition-colors duration-300 hover:text-white focus-visible:text-white"
                                     >
                                         <span class="text-[0.75em] text-white/35 transition-colors duration-300 group-hover:text-white/80" aria-hidden="true">↘</span>
                                         <span class="relative overflow-hidden pb-0.5">
@@ -86,7 +86,7 @@ const navButtons = hasHome
                     </div>
                 ))
             }
-            <div class="nav-reveal mt-[clamp(1rem,4vh,2.5rem)] border-t border-white/15 pt-[clamp(0.9rem,2.5vh,1.5rem)]">
+            <div class="nav-reveal mt-[clamp(1rem,4svh,2.5rem)] border-t border-white/15 pt-[clamp(0.9rem,2.5svh,1.5rem)]">
                 <div class="flex flex-wrap items-center justify-between gap-x-8 gap-y-4">
                     {
                         (() => {
@@ -115,7 +115,7 @@ const navButtons = hasHome
                         })()
                     }
                     <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
-                        <LanguageSwitcher locale={locale} variant="menu" class="text-white/60" />
+                        <LanguageSwitcher locale={locale} variant="menu" class="text-white [--ls-contrast:var(--primary)]" />
                         {
                             secondaryLinks.map((link) => (
                                 <a

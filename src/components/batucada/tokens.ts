@@ -27,7 +27,7 @@ export const bp = {
 
     /* tipografía */
     eyebrow: "text-[0.78rem] font-black uppercase tracking-[0.16em]",
-    h1: "font-bp uppercase tracking-[-0.03em] text-[clamp(2.5rem,5.2vw,5.4rem)] leading-[1] sm:leading-[0.94] text-balance",
+    h1: "bp-h1 font-bp uppercase tracking-[-0.03em] text-[clamp(2.25rem,min(5.2vw,9.2cqi),5.4rem)] leading-[1] sm:leading-[0.94] text-balance",
     h2: "font-bp uppercase tracking-[-0.03em] text-[clamp(2.1rem,4.1vw,4.5rem)] leading-[1] sm:leading-[0.96] mt-4 max-w-[20ch] sm:max-w-[16ch] text-balance",
     h3: "font-bp uppercase text-[clamp(1.3rem,1.5vw,1.7rem)]",
     mega: "font-bp uppercase tracking-[-0.04em] text-[clamp(3.2rem,9.5vw,9.5rem)] leading-[0.88] text-balance",

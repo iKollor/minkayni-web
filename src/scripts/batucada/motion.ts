@@ -1,5 +1,6 @@
 import { gsap, ScrollTrigger, waitForFontsReady } from "../main";
 import { initInPageAnchors } from "../anchors";
+import { onWidthResize } from "../viewport";
 
 /* Clave son 3-2 en semicorcheas de 70ms: golpes en 0, 3, 6, 10, 12.
    Es el patrón de stagger de todas las entradas — el ritmo del tema,
@@ -169,15 +170,9 @@ export const initPulseline = () => {
             gsap.ticker.add(tickerFn);
         };
 
-        let resizeCall: gsap.core.Tween | null = null;
-        window.addEventListener(
-            "resize",
-            () => {
-                resizeCall?.kill();
-                resizeCall = gsap.delayedCall(0.15, setup);
-            },
-            { passive: true },
-        );
+        /* Solo cuando cambia el ancho: la barra del navegador móvil dispara
+           `resize` al desplazarse y rehacer la marquesina ahí la reiniciaba. */
+        onWidthResize(setup);
 
         ScrollTrigger.create({
             trigger: root,

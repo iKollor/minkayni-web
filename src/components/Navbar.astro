@@ -127,16 +127,32 @@ const submenuButtons = buttons
        con animar `color`. El CTA queda excluido con `.nav-cta`. */
     #nav-container {
         --nav-ink: var(--bg-white);
+        /* Color del texto que va SOBRE la tinta (la píldora activa del
+           selector de idioma): el inverso de --nav-ink en cada tema. */
+        --nav-ink-contrast: var(--text);
     }
 
     #nav-container[data-nav-theme="light"] {
         --nav-ink: var(--text);
+        --nav-ink-contrast: var(--bg-white);
     }
 
     #nav-container :is(#navBase, #navScrolled),
     #nav-container :is(#navBase, #navScrolled) :is(a, p, span, div, svg):not(.nav-cta):not(.nav-cta *) {
         color: var(--nav-ink);
         transition: color 350ms ease;
+    }
+
+    /* La regla de arriba pinta TODOS los enlaces con la tinta; la píldora
+       activa del selector necesita justo lo contrario (tinta de fondo, texto
+       en el color de contraste). */
+    /* La regla genérica vale (2,2,1): dos ids, dos clases por los :not() y un
+       elemento. Esta tiene que superarla sin depender del orden: se añade el
+       ancestro .lang-switch y el propio elemento `a` → (2,3,1). */
+    #nav-container :is(#navBase, #navScrolled) .lang-switch a.lang-switch__option.is-active {
+        color: var(--nav-ink-contrast);
+        background-color: var(--nav-ink);
+        transition: color 350ms ease, background-color 350ms ease;
     }
 
     #nav-container :is(#navBase, #navScrolled) .underline:not(.nav-cta *) {

@@ -3,6 +3,13 @@ import { ScrollSmoother, ScrollTrigger, TextPlugin, SplitText, DrawSVGPlugin, Sc
 
 gsap.registerPlugin(ScrollSmoother, ScrollTrigger, TextPlugin, SplitText, DrawSVGPlugin, ScrollToPlugin, MotionPathPlugin, Draggable, InertiaPlugin);
 
+/* En móvil, ocultar la barra de direcciones dispara `resize` sin que cambie el
+   ancho. Sin esto, ScrollTrigger recalcula TODAS sus posiciones en pleno
+   desplazamiento y cada animación anclada al scroll da un salto. Es el ajuste
+   que GSAP documenta justo para este caso; el resize «real» (rotar, cambiar
+   el tamaño de la ventana) sigue refrescando con normalidad. */
+ScrollTrigger.config({ ignoreMobileResize: true });
+
 // Solicitar primero las variantes que usa SplitText. `document.fonts.ready`
 // por sí solo puede resolverse antes de que el contenido oculto pida su fuente.
 const fontsReady: Promise<void> = (async () => {
