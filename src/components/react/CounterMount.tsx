@@ -47,10 +47,13 @@ function CountUp({ target, prefix, suffix, fontSize, separator }: { target: numb
         borderRadius={0}
         horizontalPadding={0}
         gradientHeight={0}
-        /* Los dígitos van centrados en una caja de 1em; para que asienten en la
-           línea base del texto que los rodea, la caja baja un poco. */
-        containerStyle={{ verticalAlign: '-0.14em' }}
+        /* El contenedor alinea por línea base: la del primer dígito (Counter.tsx
+           le da una real) coincide así con la del texto que lo rodea. */
+        containerStyle={{ display: 'inline-flex', alignItems: 'baseline' }}
         counterStyle={{ lineHeight: 1, alignItems: 'center' }}
+        /* El resorte por defecto llega a la cifra en ~250 ms: un parpadeo, no un
+           conteo. Con duración explícita se ve rodar cada columna. */
+        spring={{ duration: 1600, bounce: 0 }}
       />
       {suffix}
     </>
@@ -93,6 +96,9 @@ export default function CounterMount() {
       if (el) mount(el);
     };
     window.addEventListener('count:reveal', onReveal);
+    /* Si la cascada llegó antes de que esta isla hidratara, el span ya viene
+       marcado como revelado: se monta ahora, sin esperar un evento que pasó. */
+    spans.filter(span => 'countRevealed' in span.dataset).forEach(mount);
 
     const observer = new IntersectionObserver(
       entries => {

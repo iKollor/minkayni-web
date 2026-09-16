@@ -18,7 +18,11 @@ export const animateParagraph = (prefersReduced: boolean): void => {
         const words: HTMLElement[] = split.words as HTMLElement[];
         const counters = Array.from(p.querySelectorAll<HTMLElement>("[data-count]"));
         const sequence = [...words, ...counters].sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
-        const reveal = (el: HTMLElement) => window.dispatchEvent(new CustomEvent("count:reveal", { detail: { el } }));
+        const reveal = (el: HTMLElement) => {
+            /* La marca queda en el DOM por si CounterMount hidrata después. */
+            el.dataset.countRevealed = "1";
+            window.dispatchEvent(new CustomEvent("count:reveal", { detail: { el } }));
+        };
         const ST = 0.03;
 
         gsap.set(p, { opacity: 1 });

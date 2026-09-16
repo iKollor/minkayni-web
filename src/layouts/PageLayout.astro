@@ -43,7 +43,7 @@ const { title, description, noindex, image, imageAlt, showHero = true, buttonCla
     <Navbar buttons={navHeader} buttonClassName={buttonClassName} enableTheming={enableNavTheming} locale={locale} menu={menu} />
     <SiteMenu client:load {...menu} />
     <PixelCurtain client:load />
-    <CounterMount client:idle />
+    <CounterMount client:load />
     <ScrollFloatTitles client:idle />
 
     <div id="smooth-wrapper" class="overflow-x-hidden">

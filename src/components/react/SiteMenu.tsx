@@ -19,7 +19,7 @@
      como en el menú anterior del sitio.
    - El botón es la hamburguesa animada de siempre (BurgerIcon.astro), fuera
      de este árbol: se hablan por eventos `site-menu:toggle` / `site-menu:state`. */
-import { useCallback, useEffect, useRef, useState, type ReactElement } from 'react';
+import { type ReactElement, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import type { MenuData } from './menu-types';
 
@@ -60,6 +60,9 @@ const socialIcon = (label: string) => {
 export default function SiteMenu({ items, projectsHref, projects, languages, socials, secondary, contactEmail, labels }: MenuData) {
   const [open, setOpen] = useState(false);
   const [projectsOpen, setProjectsOpen] = useState(false);
+  /* El HTML del servidor pinta el panel en pantalla; hasta que GSAP lo
+     coloca fuera, todo el bloque va invisible para que no parpadee al cargar. */
+  const [positioned, setPositioned] = useState(false);
   const openRef = useRef(false);
   const busyRef = useRef(false);
 
@@ -71,13 +74,14 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
 
   const layers = useCallback(() => Array.from(preLayersRef.current?.querySelectorAll<HTMLElement>('.sm-prelayer') ?? []), []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const ctx = gsap.context(() => {
       const panel = panelRef.current;
       if (!panel) return;
       gsap.set([panel, ...layers()], { xPercent: OFFSCREEN, opacity: 1 });
       if (preLayersRef.current) gsap.set(preLayersRef.current, { xPercent: 0, opacity: 1 });
     });
+    setPositioned(true);
     return () => ctx.revert();
   }, [layers]);
 
@@ -231,7 +235,7 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
     'sm-panel-item relative inline-block cursor-pointer pr-[1.4em] font-display text-[clamp(2rem,6.5vw,3.6rem)] font-[800] leading-none tracking-[-0.02em] text-[var(--bg-white)] no-underline transition-colors duration-150 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current';
 
   return (
-    <div className="sm-scope pointer-events-none fixed inset-0 z-40 overflow-hidden" data-open={open || undefined} aria-hidden={!open}>
+    <div className={`sm-scope pointer-events-none fixed inset-0 z-40 overflow-hidden ${positioned ? '' : 'invisible'}`} data-open={open || undefined} aria-hidden={!open}>
       <div ref={preLayersRef} className="sm-prelayers pointer-events-none absolute bottom-0 right-0 top-0 z-[5] w-full lg:w-[clamp(280px,42vw,520px)]" aria-hidden="true">
         {['var(--secondary)', 'var(--accent)'].map((c, i) => (
           <div key={i} className="sm-prelayer absolute right-0 top-0 h-full w-full lg:rounded-l-[3rem]" style={{ background: c }} />

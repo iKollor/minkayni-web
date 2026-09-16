@@ -46,7 +46,7 @@ const { title, description, image, imageAlt } = Astro.props;
     <Navbar buttons={navHeader} locale={locale} menu={menu} />
     <SiteMenu client:load {...menu} />
     <PixelCurtain client:load />
-    <CounterMount client:idle />
+    <CounterMount client:load />
     <ScrollFloatTitles client:idle />
     <PageNavigation items={pageNavItems} locale={locale} />
 

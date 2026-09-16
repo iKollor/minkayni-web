@@ -2,7 +2,7 @@
    una sola adaptación: además del punto decimal, `places` admite cualquier
    cadena como separador literal. El sitio muestra «1.200» en español y
    «1,200» en inglés, y el original solo sabía pintar «1200». */
-import { MotionValue, motion, useSpring, useTransform } from 'motion/react';
+import { MotionValue, motion, useSpring, useTransform, type SpringOptions } from 'motion/react';
 import type React from 'react';
 import { useEffect } from 'react';
 
@@ -52,9 +52,10 @@ interface DigitProps {
   value: number;
   height: number;
   digitStyle?: React.CSSProperties;
+  spring?: SpringOptions;
 }
 
-function Digit({ place, value, height, digitStyle }: DigitProps) {
+function Digit({ place, value, height, digitStyle, spring }: DigitProps) {
   // Separador literal: el punto decimal del original o el de miles del sitio.
   if (typeof place === 'string') {
     return (
@@ -68,7 +69,7 @@ function Digit({ place, value, height, digitStyle }: DigitProps) {
   }
 
   const valueRoundedToPlace = getValueRoundedToPlace(value, place);
-  const animatedValue = useSpring(valueRoundedToPlace);
+  const animatedValue = useSpring(valueRoundedToPlace, spring);
 
   useEffect(() => {
     animatedValue.set(valueRoundedToPlace);
@@ -78,11 +79,19 @@ function Digit({ place, value, height, digitStyle }: DigitProps) {
     height,
     position: 'relative',
     width: '1ch',
+    alignItems: 'center',
     fontVariantNumeric: 'tabular-nums'
   };
 
+  /* Adaptación: los dígitos van en absoluto, así que la caja no tendría línea
+     base propia y, dentro de un párrafo, quedaría desalineada del texto. Un
+     «0» invisible en flujo, en la misma caja y con el mismo centrado, le da
+     la línea base exacta del glifo que se ve. */
   return (
     <span className="relative inline-flex overflow-hidden" style={{ ...defaultStyle, ...digitStyle }}>
+      <span aria-hidden="true" style={{ visibility: 'hidden' }}>
+        0
+      </span>
       {Array.from({ length: 10 }, (_, i) => (
         <Number key={i} mv={animatedValue} number={i} height={height} />
       ))}
@@ -107,6 +116,8 @@ export interface CounterProps {
   containerStyle?: React.CSSProperties;
   counterStyle?: React.CSSProperties;
   digitStyle?: React.CSSProperties;
+  /** Resorte del conteo (motion `useSpring`); vacío → el de motion por defecto. */
+  spring?: SpringOptions;
   gradientHeight?: number;
   gradientFrom?: string;
   gradientTo?: string;
@@ -138,6 +149,7 @@ export default function Counter({
   containerStyle,
   counterStyle,
   digitStyle,
+  spring,
   gradientHeight = 16,
   gradientFrom = 'black',
   gradientTo = 'transparent',
@@ -188,7 +200,7 @@ export default function Counter({
     <span style={{ ...defaultContainerStyle, ...containerStyle }}>
       <span style={{ ...defaultCounterStyle, ...counterStyle }}>
         {places.map((place, index) => (
-          <Digit key={`${place}-${index}`} place={place} value={value} height={height} digitStyle={digitStyle} />
+          <Digit key={`${place}-${index}`} place={place} value={value} height={height} digitStyle={digitStyle} spring={spring} />
         ))}
       </span>
       {gradientHeight > 0 && (

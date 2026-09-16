@@ -225,7 +225,9 @@ const projectsCta = homepage
 
     if (typeof window !== "undefined") {
         const initTitles = () => {
-            const nodeList = document.querySelectorAll(".title, #title") as NodeListOf<HTMLElement>;
+            /* Los títulos con ScrollFloat (`data-scroll-float`) ya se animan letra
+               a letra; este fade-in-up encima tapaba ese efecto. */
+            const nodeList = document.querySelectorAll(".title:not([data-scroll-float]), #title:not([data-scroll-float])") as NodeListOf<HTMLElement>;
             const titles = Array.from(nodeList) as HTMLElement[];
             if (!titles.length) return;
 

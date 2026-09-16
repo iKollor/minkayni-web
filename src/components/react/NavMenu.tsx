@@ -123,7 +123,7 @@ export const MenuItem = ({ setActive, active, item, href, current, chevron, onPa
               onMouseEnter={onPanelEnter}
               onMouseLeave={onPanelLeave}
             >
-              <motion.div initial={{ opacity: 0, scale: 0.85, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={transition}>
+              <motion.div initial={{ opacity: 0, scale: 0.85, y: -10 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={transition} style={{ transformOrigin: 'top center' }}>
                 <motion.div
                   transition={transition}
                   layoutId="nav-menu-active"
@@ -212,8 +212,14 @@ export default function NavMenu({ items, projectsHref, projects, languages, labe
       done();
       return;
     }
+    /* `nav:reveal` llega cuando arranca la cascada del reloj y el CTA;
+       `intro:finished`, al acabar la intro, queda de respaldo. */
+    window.addEventListener('nav:reveal', done, { once: true });
     window.addEventListener('intro:finished', done, { once: true });
-    return () => window.removeEventListener('intro:finished', done);
+    return () => {
+      window.removeEventListener('nav:reveal', done);
+      window.removeEventListener('intro:finished', done);
+    };
   }, []);
 
   useEffect(() => {
@@ -239,6 +245,9 @@ export default function NavMenu({ items, projectsHref, projects, languages, labe
   return (
     <motion.nav
       aria-label={labels.navigation}
+      /* Invisible durante la intro, pero no debe recibir el puntero: el hover
+         abría el megamenú sobre una barra que aún no se veía. */
+      style={{ pointerEvents: ready || reduced ? undefined : 'none' }}
       variants={reduced ? undefined : listVariants}
       initial={reduced ? false : 'hidden'}
       animate={reduced ? undefined : ready ? 'visible' : 'hidden'}

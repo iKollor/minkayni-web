@@ -133,6 +133,8 @@ export const showContentNoIntro = (opts?: {
                     duration: 0.8,
                     ease: "power4.out",
                     stagger: 0.08,
+                    /* NavMenu (React) entra con esta misma cascada, no al acabar la intro. */
+                    onStart: () => window.dispatchEvent(new CustomEvent("nav:reveal")),
                     delay: cascadeDelay,
                 });
             }
@@ -187,6 +189,8 @@ export const showContentNoIntro = (opts?: {
                     duration: 0.8,
                     ease: "power4.out",
                     stagger: 0.08,
+                    /* NavMenu (React) entra con esta misma cascada, no al acabar la intro. */
+                    onStart: () => window.dispatchEvent(new CustomEvent("nav:reveal")),
                 },
                 cascadeDelay // ≈ 0.6s
             );
@@ -315,6 +319,8 @@ export const initIntro = (prefersReduced: boolean): void => {
                     duration: 0.8,
                     ease: "power4.out",
                     stagger: 0.08,
+                    /* NavMenu (React) entra con esta misma cascada, no al acabar la intro. */
+                    onStart: () => window.dispatchEvent(new CustomEvent("nav:reveal")),
                 },
                 2
             )
