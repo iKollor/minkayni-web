@@ -60,9 +60,7 @@ const animateIncrement = (newValue: number): void => {
     if (!c) return;
 
     const newStr = String(newValue);
-    const currents = Array.from(
-        c.querySelectorAll<HTMLElement>(".digit .current")
-    );
+    const currents = Array.from(c.querySelectorAll<HTMLElement>(".digit .current"));
     const oldStr = currents.map((s) => s.textContent || "").join("");
 
     for (let i = newStr.length - 1; i >= 0; i--) {
@@ -75,24 +73,43 @@ const animateIncrement = (newValue: number): void => {
     }
 };
 
+/* Cifra de destino: la que el CMS dejó escrita en el HTML mediante el
+   shortcode {{odometer:N}} de la leyenda. Antes estaba fijada a 150 en este
+   fichero, así que cambiar el valor en Strapi no tenía ningún efecto. */
+const readTarget = (fallback: number): number => {
+    const c = document.getElementById("odometer");
+    const digits = (c?.textContent ?? "").replace(/\D/g, "");
+    const value = Number(digits);
+    return digits && Number.isFinite(value) && value > 0 ? value : fallback;
+};
 
 export const startOdometer = (): void => {
     const c = document.getElementById("odometer") as (HTMLElement & { _started?: boolean }) | null;
     if (!c || c._started) return;
     c._started = true;
 
-    const TARGET = 150;
+    /* Se lee ANTES de initDigits(0), que vacía el contenedor. */
+    const TARGET = readTarget(150);
+    /* Tras alcanzar la cifra del CMS el contador sigue creciendo, para que la
+       portada transmita un proceso vivo. Ojo: a partir de ahí lo que se ve deja
+       de coincidir con Strapi (+1 cada 2 s). Si en algún momento la cifra debe
+       ser exacta, basta con no arrancar este intervalo. */
     const STEP = 1;
     const INTERVAL = 2000;
     const prefersReduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    if (prefersReduced) {
-        setNumberInstant(TARGET);
-        let v = TARGET;
+    const keepCounting = (from: number, animated: boolean) => {
+        let v = from;
         setInterval(() => {
             v += STEP;
-            setNumberInstant(v);
+            if (animated) animateIncrement(v);
+            else setNumberInstant(v);
         }, INTERVAL);
+    };
+
+    if (prefersReduced) {
+        setNumberInstant(TARGET);
+        keepCounting(TARGET, false);
         return;
     }
 
@@ -105,11 +122,7 @@ export const startOdometer = (): void => {
         onUpdate: () => setNumberInstant(Math.round(state.val)),
         onComplete: () => {
             setNumberInstant(TARGET);
-            let v = TARGET;
-            setInterval(() => {
-                v += STEP;
-                animateIncrement(v);
-            }, INTERVAL);
+            keepCounting(TARGET, true);
         },
     });
 };

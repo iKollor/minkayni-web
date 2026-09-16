@@ -127,7 +127,36 @@ const stats = (d.stats ?? []).filter((stat) => stat?.value && stat?.label);
             let bodySplit: SplitText | undefined;
             try {
                 if (headline) headlineSplit = new SplitText(headline, { type: "words,chars", wordsClass: "word", charsClass: "char" });
-                if (body) bodySplit = new SplitText(body, { type: "lines", linesClass: "line" });
+                /* Se divide cada <p> por separado, no el contenedor: con
+                   `type: "lines"` sobre el contenedor, SplitText saca las
+                   líneas al primer nivel y cada una hereda el `gap` del flex
+                   destinado a separar párrafos (28px de línea + 16px de gap).
+
+                   `autoSplit` vuelve a dividir cuando cambia el ancho: sin él,
+                   las líneas se calculan antes de que el panel llegue a su
+                   tamaño final y el texto sobrante de cada una cae a una
+                   segunda línea dentro del mismo div, dejando palabras sueltas. */
+                const bodyParagraphs = body?.querySelectorAll("p");
+                if (bodyParagraphs?.length) {
+                    bodySplit = SplitText.create(bodyParagraphs, {
+                        type: "lines",
+                        linesClass: "line",
+                        autoSplit: true,
+                        onSplit: (self) =>
+                            gsap.from(self.lines, {
+                                yPercent: 40,
+                                opacity: 0,
+                                stagger: 0.07,
+                                duration: 0.6,
+                                ease: "power3.out",
+                                scrollTrigger: {
+                                    trigger: section,
+                                    start: "top 75%",
+                                    toggleActions: "play none none reverse",
+                                },
+                            }),
+                    });
+                }
 
                 const timeline = gsap.timeline({
                     defaults: { ease: "power3.out" },
@@ -144,7 +173,6 @@ const stats = (d.stats ?? []).filter((stat) => stat?.value && stat?.label);
                     .from(eyebrow, { y: 24, opacity: 0, duration: 0.5 }, 0.15);
 
                 if (headlineSplit?.chars.length) timeline.from(headlineSplit.chars, { yPercent: 120, opacity: 0, stagger: { each: 0.02, from: "center" }, duration: 0.65 }, 0.25);
-                if (bodySplit?.lines.length) timeline.from(bodySplit.lines, { yPercent: 40, opacity: 0, stagger: 0.07, duration: 0.6 }, 0.45);
                 if (button) timeline.from(button, { y: 30, opacity: 0, duration: 0.5 }, 0.6);
 
                 const revealFallback = window.setTimeout(() => gsap.set(animated, { clearProps: "opacity,visibility" }), 1800);

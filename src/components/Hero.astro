@@ -1,42 +1,43 @@
 ---
 /* ──────────────────────────────────────────────────────────────────────────
-   Hero de las páginas internas (/about, /impact, /donate, /transparencia…).
+   Hero de las páginas internas (/about, /impact, /donate, /transparencia y las
+   subpáginas del constructor).
 
-   Fondo: reproduce el degradado animado de la portada (los "blobs" de
-   BubbleBackground) pero en CSS puro, sin React ni motion. Razones:
-   - la portada ya hidrata ese componente; repetirlo en cada subpágina
-     significaría ~40 KB de JS por página para un fondo decorativo;
-   - en CSS se puede apagar por completo en equipos lentos y con
-     `prefers-reduced-motion` sin coste de hidratación.
+   Usa el MISMO fondo que la portada: `BubbleBackground`, con seguimiento del
+   cursor. Antes reproducía ese degradado con una copia en CSS para no pagar el
+   coste de React; desde que el fondo se reescribió sin React (unas pocas
+   decenas de líneas de JS) mantener dos implementaciones del mismo efecto sólo
+   garantizaba que acabaran divergiendo.
 
-   Degradación (de mejor a peor equipo):
-   1. normal            → blobs animados con blur y hard-light
-   2. equipo lento      → `data-low-power` en <html> (ver layouts/lib/head.astro):
-                          mismos colores, sin animación ni blur pesado
-   3. reduced-motion    → estático
-   4. sin JS/CSS moderno→ degradado lineal de marca
+   La paleta es la de la portada. La degradación (equipos lentos,
+   `prefers-reduced-motion`, fuera de viewport) la trae el propio componente.
 
    Tipografía: el alto del fondo lo marca el contenedor del texto
    (`absolute inset-0`), así que nunca se desalinean.
 ─────────────────────────────────────────────────────────────────────────── */
 import "../styles/global.css";
+import BubbleBackground from "./index/BubbleBackground.astro";
 
 interface Props {
     text: string;
 }
 
 const { text } = Astro.props;
+
+/* Misma paleta que la portada (ver src/pages/index.astro). */
+const HERO_COLORS = {
+    second: "18,113,255",
+    third: "140,100,255",
+    fourth: "63,169,245",
+    fifth: "140,100,255",
+    sixth: "63,169,245",
+};
 ---
 
 <header id="hero" data-nav-theme="dark" class="relative flex w-full items-center justify-center overflow-hidden">
     <!-- Fondo animado (decorativo) -->
     <div class="hero-bg absolute inset-0 z-0" aria-hidden="true">
-        <div class="hero-blobs">
-            <span class="hero-blob hero-blob--1"></span>
-            <span class="hero-blob hero-blob--2"></span>
-            <span class="hero-blob hero-blob--3"></span>
-            <span class="hero-blob hero-blob--4"></span>
-        </div>
+        <BubbleBackground interactive colors={HERO_COLORS} />
     </div>
 
     <!-- Título -->
@@ -46,82 +47,15 @@ const { text } = Astro.props;
 </header>
 
 <style>
+    .hero-bg :global([data-slot="bubble-background"]) {
+        pointer-events: none;
+    }
+
     .hero-bg {
         border-bottom-left-radius: 30px;
         border-bottom-right-radius: 30px;
-        /* Base de marca: visible siempre, también si fallan blend/blur */
-        background: linear-gradient(130deg, var(--secondary) 0%, color-mix(in oklch, var(--secondary) 36%, var(--primary) 64%) 45%, var(--primary) 100%);
         overflow: hidden;
         contain: paint;
-    }
-
-    /* Capa de blobs: mismo tratamiento que la portada (blur + hard-light) */
-    .hero-blobs {
-        position: absolute;
-        inset: 0;
-        filter: blur(40px);
-        transform: translateZ(0);
-    }
-
-    .hero-blob {
-        position: absolute;
-        display: block;
-        border-radius: 9999px;
-        mix-blend-mode: hard-light;
-        will-change: transform;
-    }
-
-    /* Paleta idéntica a la portada (BubbleBackground de index.astro) */
-    .hero-blob--1 {
-        inset: 10% auto auto 10%;
-        width: 80%;
-        height: 80%;
-        background: radial-gradient(circle at center, rgb(18 113 255 / 0.8) 0%, rgb(18 113 255 / 0) 50%);
-        animation: hero-orbit 20s linear infinite;
-        transform-origin: calc(50% - 22vw) 50%;
-    }
-
-    .hero-blob--2 {
-        inset: auto auto -10% -5%;
-        width: 80%;
-        height: 80%;
-        background: radial-gradient(circle at center, rgb(140 100 255 / 0.8) 0%, rgb(140 100 255 / 0) 50%);
-        animation: hero-orbit 40s linear infinite reverse;
-        transform-origin: calc(50% + 20vw) 50%;
-    }
-
-    .hero-blob--3 {
-        inset: 8% auto auto 12%;
-        width: 80%;
-        height: 80%;
-        opacity: 0.7;
-        background: radial-gradient(circle at center, rgb(63 169 245 / 0.8) 0%, rgb(63 169 245 / 0) 50%);
-        animation: hero-sway 40s ease-in-out infinite;
-    }
-
-    .hero-blob--4 {
-        inset: -30% auto auto -30%;
-        width: 160%;
-        height: 160%;
-        background: radial-gradient(circle at center, rgb(140 100 255 / 0.8) 0%, rgb(140 100 255 / 0) 50%);
-        animation: hero-orbit 26s linear infinite;
-        transform-origin: calc(50% - 30vw) calc(50% + 10vh);
-    }
-
-    @keyframes hero-orbit {
-        to {
-            transform: rotate(360deg);
-        }
-    }
-
-    @keyframes hero-sway {
-        0%,
-        100% {
-            transform: translate3d(-4%, 0, 0);
-        }
-        50% {
-            transform: translate3d(4%, 2%, 0);
-        }
     }
 
     /* Título: grande, apretado y ópticamente centrado.
@@ -150,26 +84,4 @@ const { text } = Astro.props;
         }
     }
 
-    /* ── Degradación en equipos lentos y con reduced-motion ───────────────── */
-    :global(html[data-low-power]) .hero-blobs {
-        filter: none;
-        opacity: 0.55;
-    }
-
-    :global(html[data-low-power]) .hero-blob {
-        animation: none;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-        .hero-blob {
-            animation: none;
-        }
-    }
-
-    /* Sin soporte de mix-blend/blur: queda la base lineal, que ya es de marca */
-    @supports not (mix-blend-mode: hard-light) {
-        .hero-blobs {
-            display: none;
-        }
-    }
 </style>
