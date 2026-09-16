@@ -1,0 +1,38 @@
+---
+/* Barra de desplazamiento propia. Refleja el scroll nativo y lo controla
+   (arrastre, pista, teclado); la lógica vive en scripts/scrollbar.ts y los
+   estilos en global.css (.site-scrollbar). Arranca oculta: el script la
+   muestra solo si la página desborda y hay puntero fino. */
+import { useTranslations, type Locale } from "../i18n";
+
+interface Props {
+    locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<div class="site-scrollbar" data-site-scrollbar hidden>
+    <div class="site-scrollbar__track">
+        <div
+            class="site-scrollbar__thumb"
+            role="scrollbar"
+            tabindex="0"
+            aria-controls="smooth-content"
+            aria-orientation="vertical"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+            aria-label={t("scrollbar.label")}
+        >
+        </div>
+    </div>
+</div>
+
+<script>
+    import { initSiteScrollbar } from "../scripts/scrollbar";
+
+    const root = document.querySelector<HTMLElement>("[data-site-scrollbar]");
+    if (root) initSiteScrollbar(root);
+</script>

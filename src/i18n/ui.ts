@@ -30,6 +30,7 @@ export const ui = {
         "nav.toggle": "Alternar navegación",
         "nav.hide": "Ocultar navegación",
         "nav.show": "Mostrar navegación",
+        "scrollbar.label": "Desplazamiento de la página",
 
         /* Menú (panel escalonado y megamenú) */
         "menu.open": "Menú",
@@ -173,6 +174,7 @@ export const ui = {
         "nav.toggle": "Toggle navigation",
         "nav.hide": "Hide navigation",
         "nav.show": "Show navigation",
+        "scrollbar.label": "Page scroll",
 
         /* Menu (staggered panel and mega menu) */
         "menu.open": "Menu",

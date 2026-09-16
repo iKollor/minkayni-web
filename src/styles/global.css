@@ -53,6 +53,110 @@
     --bg-indigo-bright: hsl(240, 80%, 55%);
 }
 
+/* ── Barra de desplazamiento ───────────────────────────────────────────
+   Fina, en píldora y con la tinta de la marca; la pista queda transparente
+   para que se vea el fondo de la página. Chromium/Safari por los pseudo
+   -webkit-; Firefox por las propiedades estándar (si se le dieran a
+   Chromium, ignoraría los pseudo y perdería la píldora). */
+@supports selector(::-webkit-scrollbar) {
+    ::-webkit-scrollbar {
+        width: var(--scrollbar-width-px);
+        height: var(--scrollbar-width-px);
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: color-mix(in srgb, var(--primary) 55%, transparent);
+        background-clip: padding-box;
+        border: 3px solid transparent;
+        border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: color-mix(in srgb, var(--primary) 85%, transparent);
+    }
+    ::-webkit-scrollbar-corner {
+        background: transparent;
+    }
+}
+@supports not selector(::-webkit-scrollbar) {
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: color-mix(in srgb, var(--primary) 60%, transparent) transparent;
+    }
+}
+
+/* ── Barra de desplazamiento propia (SiteScrollbar.astro + scrollbar.ts) ─
+   Cuando está activa, la nativa de la página se oculta (el scroll sigue
+   siendo nativo). Las de los contenedores interiores conservan el estilo
+   de arriba. */
+html[data-site-scrollbar-active] {
+    scrollbar-width: none;
+}
+html[data-site-scrollbar-active]::-webkit-scrollbar {
+    display: none;
+}
+.site-scrollbar {
+    position: fixed;
+    top: 12px;
+    right: 4px;
+    bottom: 12px;
+    width: 14px;
+    z-index: 55;
+}
+.site-scrollbar__track {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--text) 9%, transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+.site-scrollbar.is-active .site-scrollbar__track {
+    opacity: 1;
+}
+.site-scrollbar__thumb {
+    position: absolute;
+    top: 0;
+    right: 4px;
+    width: 6px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary) 78%, transparent);
+    cursor: grab;
+    will-change: transform;
+    transition:
+        width 0.18s,
+        right 0.18s,
+        background-color 0.18s;
+}
+.site-scrollbar:hover .site-scrollbar__thumb,
+.site-scrollbar.is-dragging .site-scrollbar__thumb,
+.site-scrollbar__thumb:focus-visible {
+    right: 2px;
+    width: 10px;
+    background: var(--primary);
+}
+.site-scrollbar.is-dragging .site-scrollbar__thumb {
+    cursor: grabbing;
+}
+.site-scrollbar__thumb:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+/* Con el panel escalonado abierto, la barra queda detrás y no debe verse. */
+html[data-site-menu-open] .site-scrollbar {
+    visibility: hidden;
+}
+
+/* Con el panel escalonado abierto, la navegación en página no debe verse
+   por encima (SiteMenu.tsx pone este atributo). */
+html[data-site-menu-open] .page-nav {
+    /* !important: su propio script escribe visibility/opacity en línea. */
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
 html {
     font-family: "Aristotelica Pro Text", "Nunito", system-ui, sans-serif;
     font-synthesis: none;

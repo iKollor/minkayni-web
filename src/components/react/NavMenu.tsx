@@ -127,7 +127,10 @@ export const MenuItem = ({ setActive, active, item, href, current, chevron, onPa
                 <motion.div
                   transition={transition}
                   layoutId="nav-menu-active"
-                  className="max-h-[calc(100svh-7rem)] overflow-y-auto overflow-x-hidden rounded-[1.75rem] border border-black/10 bg-[var(--bg-white)] text-black shadow-[0_24px_60px_rgba(35,15,55,0.22)] backdrop-blur-sm"
+                  /* Sigue desplazándose si no cabe, pero sin barra visible: con
+                     el cambio de tamaño entre paneles (`layout`) asomaba un
+                     instante. */
+                  className="max-h-[calc(100svh-7rem)] overflow-y-auto overflow-x-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden rounded-[1.75rem] border border-black/10 bg-[var(--bg-white)] text-black shadow-[0_24px_60px_rgba(35,15,55,0.22)] backdrop-blur-sm"
                 >
                   <motion.div layout className="h-full w-max p-4">
                     {children}

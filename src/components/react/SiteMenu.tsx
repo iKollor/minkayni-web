@@ -2,16 +2,16 @@
    (reactbits.dev/components/staggered-menu) con los colores y las formas de
    la marca.
 
-   Qué se conserva del original: las capas previas que barren antes del panel,
-   el panel que entra desde la derecha, la entrada escalonada de los ítems
-   (yPercent 140 y 10° de giro → 0), la numeración que se enciende después y
-   el pie que aparece al final; tiempos, easings y escalonados idénticos.
+   Qué se conserva del original: las capas previas que entran antes del panel,
+   la entrada escalonada de los ítems (yPercent 140 y 10° de giro → 0) y el
+   pie que aparece al final; tiempos y escalonados de los ítems idénticos.
 
    Qué se adapta:
    - Colores: capas celeste y ámbar, panel morado, tinta crema.
-   - Forma: de escritorio (cuando el panel no ocupa todo el ancho) lleva el
-     borde izquierdo redondeado a 3rem, la identidad del sitio. A pantalla
-     completa no hay radio: con él, una esquina dejaba ver la página detrás.
+   - Forma: en vez de barrer desde la derecha, capas y panel son círculos
+     (`clip-path: circle()`) que nacen en la hamburguesa y crecen hasta tapar
+     toda la página; la identidad redonda del sitio sin esquinas descubiertas.
+   - Sin la numeración flotante de los ítems.
    - «Proyectos» no es un enlace sino un acordeón: al pulsarlo se despliegan
      todos los proyectos del CMS con su propio escalonado. El primero de la
      lista lleva a la página de proyectos.
@@ -23,7 +23,17 @@ import { type ReactElement, useCallback, useEffect, useLayoutEffect, useRef, use
 import { gsap } from 'gsap';
 import type { MenuData } from './menu-types';
 
-const OFFSCREEN = 100;
+/* Círculo de recorte centrado en la hamburguesa (o en la esquina superior
+   derecha si no está en pantalla). */
+const circleAt = (radius: number) => {
+  const rect = document.getElementById('site-menu-button')?.getBoundingClientRect();
+  const cx = rect && rect.width > 0 ? rect.left + rect.width / 2 : window.innerWidth - 48;
+  const cy = rect && rect.width > 0 ? rect.top + rect.height / 2 : 45;
+  return `circle(${radius}px at ${cx}px ${cy}px)`;
+};
+
+/* Radio que cubre la ventana entera desde cualquier origen. */
+const coverRadius = () => Math.hypot(window.innerWidth, window.innerHeight) * 1.05;
 
 /* Iconos de redes: trazos simples, un solo color (currentColor). */
 const SOCIAL_ICONS: Record<string, ReactElement> = {
@@ -78,8 +88,7 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
     const ctx = gsap.context(() => {
       const panel = panelRef.current;
       if (!panel) return;
-      gsap.set([panel, ...layers()], { xPercent: OFFSCREEN, opacity: 1 });
-      if (preLayersRef.current) gsap.set(preLayersRef.current, { xPercent: 0, opacity: 1 });
+      gsap.set([panel, ...layers()], { clipPath: circleAt(0), opacity: 1 });
     });
     setPositioned(true);
     return () => ctx.revert();
@@ -87,11 +96,9 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
 
   const resetItems = useCallback((panel: HTMLElement) => {
     const itemEls = panel.querySelectorAll<HTMLElement>('.sm-panel-itemLabel');
-    const numberEls = panel.querySelectorAll<HTMLElement>('.sm-panel-list[data-numbering] .sm-panel-item');
     const socialTitle = panel.querySelector<HTMLElement>('.sm-socials-title');
     const socialLinks = panel.querySelectorAll<HTMLElement>('.sm-socials-link');
     if (itemEls.length) gsap.set(itemEls, { yPercent: 140, rotate: 10 });
-    if (numberEls.length) gsap.set(numberEls, { ['--sm-num-opacity' as string]: 0 });
     if (socialTitle) gsap.set(socialTitle, { opacity: 0 });
     if (socialLinks.length) gsap.set(socialLinks, { y: 25, opacity: 0 });
   }, []);
@@ -104,28 +111,28 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
     closeTweenRef.current = null;
 
     const itemEls = Array.from(panel.querySelectorAll<HTMLElement>('.sm-panel-itemLabel'));
-    const numberEls = Array.from(panel.querySelectorAll<HTMLElement>('.sm-panel-list[data-numbering] .sm-panel-item'));
     const socialTitle = panel.querySelector<HTMLElement>('.sm-socials-title');
     const socialLinks = Array.from(panel.querySelectorAll<HTMLElement>('.sm-socials-link'));
     const layerEls = layers();
 
     resetItems(panel);
 
+    /* Cada capa es un círculo que crece desde la hamburguesa; el panel, el
+       último y el más lento, cubre a los anteriores. */
+    const closed = circleAt(0);
+    const opened = circleAt(coverRadius());
     const tl = gsap.timeline({ paused: true });
     layerEls.forEach((el, i) => {
-      tl.fromTo(el, { xPercent: OFFSCREEN }, { xPercent: 0, duration: 0.5, ease: 'power4.out' }, i * 0.07);
+      tl.fromTo(el, { clipPath: closed }, { clipPath: opened, duration: 0.6, ease: 'power3.out' }, i * 0.07);
     });
     const lastTime = layerEls.length ? (layerEls.length - 1) * 0.07 : 0;
     const panelInsertTime = lastTime + (layerEls.length ? 0.08 : 0);
-    const panelDuration = 0.65;
-    tl.fromTo(panel, { xPercent: OFFSCREEN }, { xPercent: 0, duration: panelDuration, ease: 'power4.out' }, panelInsertTime);
+    const panelDuration = 0.75;
+    tl.fromTo(panel, { clipPath: closed }, { clipPath: opened, duration: panelDuration, ease: 'power3.out' }, panelInsertTime);
 
     if (itemEls.length) {
       const itemsStart = panelInsertTime + panelDuration * 0.15;
       tl.to(itemEls, { yPercent: 0, rotate: 0, duration: 1, ease: 'power4.out', stagger: { each: 0.1, from: 'start' } }, itemsStart);
-      if (numberEls.length) {
-        tl.to(numberEls, { duration: 0.6, ease: 'power2.out', ['--sm-num-opacity' as string]: 1, stagger: { each: 0.08, from: 'start' } }, itemsStart + 0.1);
-      }
     }
     if (socialTitle || socialLinks.length) {
       const socialsStart = panelInsertTime + panelDuration * 0.4;
@@ -163,9 +170,10 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
     if (!panel) return;
     closeTweenRef.current?.kill();
     closeTweenRef.current = gsap.to([...layers(), panel], {
-      xPercent: OFFSCREEN,
-      duration: 0.32,
+      clipPath: circleAt(0),
+      duration: 0.4,
       ease: 'power3.in',
+      stagger: { each: 0.05, from: 'end' },
       overwrite: 'auto',
       onComplete: () => {
         resetItems(panel);
@@ -184,12 +192,24 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
         playClose();
         setProjectsOpen(false);
       }
+      /* global.css oculta con esto la navegación en página (`.page-nav`),
+         que se colaba por encima del panel. */
+      document.documentElement.toggleAttribute('data-site-menu-open', next);
       window.dispatchEvent(new CustomEvent('site-menu:state', { detail: { open: next } }));
       /* La hamburguesa (BurgerIcon.astro) sincroniza su icono con este evento. */
       window.dispatchEvent(new CustomEvent('menu:state', { detail: { open: next } }));
     },
     [playOpen, playClose]
   );
+
+  useEffect(() => {
+    const onResize = () => {
+      if (!openRef.current || busyRef.current || !panelRef.current) return;
+      gsap.set([panelRef.current, ...layers()], { clipPath: circleAt(coverRadius()) });
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [layers]);
 
   useEffect(() => {
     const onToggle = () => setState(!openRef.current);
@@ -232,45 +252,47 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
   const isProjects = (href: string) => href.replace(/\/$/, '') === projectsHref.replace(/\/$/, '');
 
   const itemClass =
-    'sm-panel-item relative inline-block cursor-pointer pr-[1.4em] font-display text-[clamp(2rem,6.5vw,3.6rem)] font-[800] leading-none tracking-[-0.02em] text-[var(--bg-white)] no-underline transition-colors duration-150 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current';
+    'sm-panel-item relative inline-block cursor-pointer font-display text-[clamp(2rem,6.5vw,3.6rem)] font-[800] leading-none tracking-[-0.02em] text-[var(--bg-white)] no-underline transition-colors duration-150 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current';
 
   return (
-    <div className={`sm-scope pointer-events-none fixed inset-0 z-40 overflow-hidden ${positioned ? '' : 'invisible'}`} data-open={open || undefined} aria-hidden={!open}>
-      <div ref={preLayersRef} className="sm-prelayers pointer-events-none absolute bottom-0 right-0 top-0 z-[5] w-full lg:w-[clamp(280px,42vw,520px)]" aria-hidden="true">
+    <div className={`sm-scope pointer-events-none fixed inset-0 z-[45] overflow-hidden ${positioned ? '' : 'invisible'}`} data-open={open || undefined} aria-hidden={!open}>
+      <div ref={preLayersRef} className="sm-prelayers pointer-events-none absolute inset-0 z-[5]" aria-hidden="true">
         {['var(--secondary)', 'var(--accent)'].map((c, i) => (
-          <div key={i} className="sm-prelayer absolute right-0 top-0 h-full w-full lg:rounded-l-[3rem]" style={{ background: c }} />
+          <div key={i} className="sm-prelayer absolute inset-0" style={{ background: c }} />
         ))}
       </div>
 
       <aside
         id="site-menu-panel"
         ref={panelRef}
-        className="sm-panel pointer-events-auto absolute right-0 top-0 z-10 flex h-full w-full flex-col overflow-y-auto bg-primary px-[clamp(1.5rem,4vw,3rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[calc(90px+clamp(1.5rem,4vh,3rem))] text-[var(--bg-white)] lg:w-[clamp(280px,42vw,520px)] lg:rounded-l-[3rem]"
+        className="sm-panel pointer-events-auto absolute right-0 top-0 z-10 flex h-full w-full flex-col overflow-y-auto bg-primary px-[clamp(1.5rem,4vw,3rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[calc(90px+clamp(1.5rem,4vh,3rem))] text-[var(--bg-white)]"
         aria-label={labels.navigation}
       >
-        <div className="flex flex-1 flex-col gap-6">
-          <ul className="sm-panel-list m-0 flex list-none flex-col gap-2 p-0" role="list" data-numbering="true">
+        <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6">
+          <ul className="sm-panel-list m-0 flex list-none flex-col gap-2 p-0" role="list">
             {items.map((it, idx) => (
               <li className="sm-panel-itemWrap relative overflow-hidden leading-none" key={it.href + idx}>
                 {isProjects(it.href) ? (
                   <>
                     <button
                       type="button"
-                      className={`${itemClass} inline-flex items-center gap-4 border-0 bg-transparent p-0 pr-[1.4em] text-left`}
+                      className={`${itemClass} border-0 bg-transparent p-0 text-left`}
                       aria-expanded={projectsOpen}
                       aria-controls="site-menu-projects"
                       onClick={toggleProjects}
-                      data-index={idx + 1}
                     >
                       <span className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform">
                         {it.label}
-                        <svg aria-hidden="true" width="0.5em" height="0.5em" viewBox="0 0 10 10" className={`ml-3 inline-block align-middle transition-transform duration-300 ${projectsOpen ? 'rotate-180' : ''}`}>
-                          <path d="M1 3l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                        <svg aria-hidden="true" width="0.55em" height="0.55em" viewBox="0 0 10 10" className={`ml-3 inline-block align-middle transition-transform duration-300 ${projectsOpen ? 'rotate-180' : ''}`}>
+                          <path d="M1 3l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </span>
                     </button>
-                    <ul id="site-menu-projects" ref={projectsListRef} className="m-0 mt-2 flex list-none flex-col gap-1 overflow-hidden p-0 pl-[3.5rem]" style={{ height: 0 }} role="list">
-                      <li className="overflow-hidden">
+                    {/* El aire sobre la lista va dentro (padding del primer li):
+                        así lo recorta el `height: 0` y, cerrado, «Projects» mide
+                        lo mismo que los demás ítems. */}
+                    <ul id="site-menu-projects" ref={projectsListRef} className="m-0 flex list-none flex-col gap-1 overflow-hidden p-0 pl-[3.5rem]" style={{ height: 0 }} role="list">
+                      <li className="overflow-hidden pt-3">
                         <a href={projectsHref} className="sm-sub-item block py-1.5 font-display text-[1.05rem] font-bold text-[var(--bg-white)] hover:text-accent">
                           <span className="sm-sub-itemLabel inline-block">{labels.allProjects} ↗</span>
                         </a>
@@ -285,7 +307,7 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
                     </ul>
                   </>
                 ) : (
-                  <a className={`${itemClass} ${it.current ? 'opacity-50' : ''}`} href={it.href} aria-current={it.current ? 'page' : undefined} data-index={idx + 1}>
+                  <a className={`${itemClass} ${it.current ? 'opacity-50' : ''}`} href={it.href} aria-current={it.current ? 'page' : undefined}>
                     <span className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform">{it.label}</span>
                   </a>
                 )}
@@ -350,10 +372,6 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
         </div>
       </aside>
 
-      <style>{`
-.sm-scope .sm-panel-list[data-numbering] { counter-reset: smItem; }
-.sm-scope .sm-panel-list[data-numbering] .sm-panel-item::after { counter-increment: smItem; content: counter(smItem, decimal-leading-zero); position: absolute; top: 0.1em; right: 0.35em; font-size: 0.32em; font-weight: 400; color: var(--accent); letter-spacing: 0; pointer-events: none; user-select: none; opacity: var(--sm-num-opacity, 0); }
-      `}</style>
     </div>
   );
 }

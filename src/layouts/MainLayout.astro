@@ -3,6 +3,7 @@ import "../styles/global.css";
 import Footer from "../components/Footer.astro";
 import Navbar from "../components/Navbar.astro";
 import SiteMenu from "../components/react/SiteMenu";
+import SiteScrollbar from "../components/SiteScrollbar.astro";
 import PixelCurtain from "../components/react/PixelCurtain";
 import CounterMount from "../components/react/CounterMount";
 import ScrollFloatTitles from "../components/react/ScrollFloatTitles";
@@ -45,6 +46,7 @@ const { title, description, image, imageAlt } = Astro.props;
     <SiteGrain />
     <Navbar buttons={navHeader} locale={locale} menu={menu} />
     <SiteMenu client:load {...menu} />
+    <SiteScrollbar locale={locale} />
     <PixelCurtain client:load />
     <CounterMount client:load />
     <ScrollFloatTitles client:idle />
