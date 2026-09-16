@@ -41,7 +41,9 @@ const submenuButtons = buttons
                         {buttons.map((button, index) => ((button.additionalFields?.style ?? "default") === "default" ? <NavButton button={button} index={index} /> : null))}
                     </div>
                     <Reloj locale={locale} />
-                    <LanguageSwitcher locale={locale} class="shrink-0" />
+                    {/* El margen no es decorativo: sin él el selector queda pegado
+                        al CTA y se lee como parte del botón. */}
+                    <LanguageSwitcher locale={locale} class="shrink-0 mr-8 xl:mr-10" />
                     <div class="nav-cta flex items-center">
                         {
                             buttons.map((button) => {
@@ -57,7 +59,22 @@ const submenuButtons = buttons
                     <a href={homeHref} aria-label={t("nav.goHome")}>
                         <LogoIconWhite class="h-10 w-auto" />
                     </a>
-                    <BurgerIcon />
+                    {/* Al hacer scroll, y en móvil, esta es la única barra visible:
+                        sin el selector aquí habría que abrir el menú para cambiar
+                        de idioma. Va junto a la hamburguesa, no suelto, para que
+                        `justify-between` no lo mande al centro. */}
+                    <div class="flex items-center gap-4 sm:gap-6">
+                        <LanguageSwitcher locale={locale} class="shrink-0" />
+                        {/* La hamburguesa se dibuja a la mitad de su tamaño
+                            (`scale-50 origin-right`) sobre una caja de 100px, así
+                            que arrastra 50px de espacio muerto a su izquierda. El
+                            margen negativo lo recupera sin tocar el icono: sin él
+                            ese hueco se come el aire del selector y lo pega al
+                            logotipo en pantallas estrechas. */}
+                        <div class="-ml-[50px] flex items-center">
+                            <BurgerIcon />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
