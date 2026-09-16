@@ -10,21 +10,31 @@ export const animateParagraph = (prefersReduced: boolean): void => {
     p.style.visibility = "visible";
 
     const doSplit = () => {
-        /* El contador (`[data-count]`) lo monta React por su cuenta: SplitText
-           no debe entrar en él, o partiría sus dígitos en palabras. */
+        /* El contador (`[data-count]`) lo monta React: SplitText no debe entrar
+           en él, o partiría sus dígitos en palabras. Pero sí entra en la
+           cascada, en su posición dentro del texto, y al llegarle el turno se
+           avisa a CounterMount para que arranque a contar justo entonces. */
         const split = new SplitText(p, { type: "words", ignore: "[data-count]" });
         const words: HTMLElement[] = split.words as HTMLElement[];
+        const counters = Array.from(p.querySelectorAll<HTMLElement>("[data-count]"));
+        const sequence = [...words, ...counters].sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
+        const reveal = (el: HTMLElement) => window.dispatchEvent(new CustomEvent("count:reveal", { detail: { el } }));
         const ST = 0.03;
 
         gsap.set(p, { opacity: 1 });
-        gsap.set(words, { opacity: 0, y: 12 });
+        gsap.set(sequence, { opacity: 0, y: 12 });
 
         if (prefersReduced) {
-            gsap.set(words, { opacity: 1, y: 0 });
+            gsap.set(sequence, { opacity: 1, y: 0 });
+            counters.forEach(reveal);
             return;
         }
 
-        gsap.timeline().to(words, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", stagger: ST }, 0);
+        const tl = gsap.timeline();
+        sequence.forEach((el, i) => {
+            const isCounter = counters.includes(el);
+            tl.to(el, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", onStart: isCounter ? () => reveal(el) : undefined }, i * ST);
+        });
     };
 
     waitForFontsReady(doSplit);

@@ -29,7 +29,7 @@ const modularConfig: ModularConfig = {
                 return {
                     type: "element",
                     tagName: "span",
-                    properties: { "data-count": num, className: ["tabular-nums", "font-semibold"] },
+                    properties: { "data-count": num, "data-count-manual": "", className: ["tabular-nums", "font-semibold"] },
                     children: [{ type: "text", value: num }],
                 };
             },

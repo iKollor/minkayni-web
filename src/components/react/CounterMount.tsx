@@ -47,7 +47,9 @@ function CountUp({ target, prefix, suffix, fontSize, separator }: { target: numb
         borderRadius={0}
         horizontalPadding={0}
         gradientHeight={0}
-        containerStyle={{ verticalAlign: 'baseline' }}
+        /* Los dígitos van centrados en una caja de 1em; para que asienten en la
+           línea base del texto que los rodea, la caja baja un poco. */
+        containerStyle={{ verticalAlign: '-0.14em' }}
         counterStyle={{ lineHeight: 1, alignItems: 'center' }}
       />
       {suffix}
@@ -82,6 +84,16 @@ export default function CounterMount() {
       );
     };
 
+    /* Los contadores «manuales» (la leyenda de la portada) no se montan al
+       entrar en pantalla: durante la intro contaban invisibles y al aparecer
+       ya marcaban el total. Los monta quien los revela (paragraph.ts) con el
+       evento `count:reveal`, en su turno dentro de la cascada del texto. */
+    const onReveal = (event: Event) => {
+      const el = (event as CustomEvent<{ el: HTMLElement }>).detail?.el;
+      if (el) mount(el);
+    };
+    window.addEventListener('count:reveal', onReveal);
+
     const observer = new IntersectionObserver(
       entries => {
         for (const entry of entries) {
@@ -92,9 +104,12 @@ export default function CounterMount() {
       },
       { rootMargin: '0px 0px -12% 0px' }
     );
-    spans.forEach(span => observer.observe(span));
+    spans.filter(span => !('countManual' in span.dataset)).forEach(span => observer.observe(span));
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('count:reveal', onReveal);
+    };
   }, []);
 
   return null;

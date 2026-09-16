@@ -5,24 +5,59 @@
    Qué se conserva del original: las capas previas que barren antes del panel,
    el panel que entra desde la derecha, la entrada escalonada de los ítems
    (yPercent 140 y 10° de giro → 0), la numeración que se enciende después y
-   los sociales al pie; tiempos, easings y escalonados idénticos.
+   el pie que aparece al final; tiempos, easings y escalonados idénticos.
 
    Qué se adapta:
    - Colores: capas celeste y ámbar, panel morado, tinta crema.
-   - Forma: el panel y las capas llevan el borde izquierdo redondeado
-     (3rem), que es la identidad del sitio; el original es un rectángulo.
+   - Forma: de escritorio (cuando el panel no ocupa todo el ancho) lleva el
+     borde izquierdo redondeado a 3rem, la identidad del sitio. A pantalla
+     completa no hay radio: con él, una esquina dejaba ver la página detrás.
    - «Proyectos» no es un enlace sino un acordeón: al pulsarlo se despliegan
      todos los proyectos del CMS con su propio escalonado. El primero de la
      lista lleva a la página de proyectos.
-   - Idiomas en el pie del panel, junto a los sociales.
-   - El botón vive aparte (MenuToggle.tsx) y se comunica por eventos. */
-import { useCallback, useEffect, useRef, useState } from 'react';
+   - Pie: iconos de redes, correo de contacto, transparencia legal e idiomas,
+     como en el menú anterior del sitio.
+   - El botón es la hamburguesa animada de siempre (BurgerIcon.astro), fuera
+     de este árbol: se hablan por eventos `site-menu:toggle` / `site-menu:state`. */
+import { useCallback, useEffect, useRef, useState, type ReactElement } from 'react';
 import { gsap } from 'gsap';
 import type { MenuData } from './menu-types';
 
 const OFFSCREEN = 100;
 
-export default function SiteMenu({ items, projectsHref, projects, languages, socials, secondary, labels }: MenuData) {
+/* Iconos de redes: trazos simples, un solo color (currentColor). */
+const SOCIAL_ICONS: Record<string, ReactElement> = {
+  facebook: (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="currentColor">
+      <path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.5c-1.5 0-1.96.93-1.96 1.89v2.26h3.32l-.53 3.5h-2.8V24C19.62 23.1 24 18.1 24 12.07" />
+    </svg>
+  ),
+  instagram: (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  ),
+  tiktok: (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="currentColor">
+      <path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
+    </svg>
+  ),
+  x: (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor">
+      <path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.4l-5.8-7.58-6.64 7.58H.47l8.6-9.83L0 1.15h7.59l5.24 6.93zM17.61 20.64h2.04L6.49 3.24H4.3z" />
+    </svg>
+  )
+};
+
+const socialIcon = (label: string) => {
+  const key = label.toLowerCase();
+  if (key.includes('x') && key.includes('twitter')) return SOCIAL_ICONS.x;
+  return SOCIAL_ICONS[key] ?? SOCIAL_ICONS[key.replace(/\s.*$/, '')] ?? null;
+};
+
+export default function SiteMenu({ items, projectsHref, projects, languages, socials, secondary, contactEmail, labels }: MenuData) {
   const [open, setOpen] = useState(false);
   const [projectsOpen, setProjectsOpen] = useState(false);
   const openRef = useRef(false);
@@ -146,7 +181,7 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
         setProjectsOpen(false);
       }
       window.dispatchEvent(new CustomEvent('site-menu:state', { detail: { open: next } }));
-      /* Compatibilidad con scripts que escuchaban al menú anterior. */
+      /* La hamburguesa (BurgerIcon.astro) sincroniza su icono con este evento. */
       window.dispatchEvent(new CustomEvent('menu:state', { detail: { open: next } }));
     },
     [playOpen, playClose]
@@ -183,7 +218,6 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
     if (!list) return;
     const labelEls = list.querySelectorAll<HTMLElement>('.sm-sub-itemLabel');
     if (next) {
-      gsap.set(list, { height: 'auto' });
       gsap.fromTo(list, { height: 0 }, { height: 'auto', duration: 0.5, ease: 'power4.out', clearProps: 'height' });
       gsap.fromTo(labelEls, { yPercent: 120, rotate: 6, opacity: 0 }, { yPercent: 0, rotate: 0, opacity: 1, duration: 0.7, ease: 'power4.out', stagger: { each: 0.05, from: 'start' } });
     } else {
@@ -193,18 +227,21 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
 
   const isProjects = (href: string) => href.replace(/\/$/, '') === projectsHref.replace(/\/$/, '');
 
+  const itemClass =
+    'sm-panel-item relative inline-block cursor-pointer pr-[1.4em] font-display text-[clamp(2rem,6.5vw,3.6rem)] font-[800] leading-none tracking-[-0.02em] text-[var(--bg-white)] no-underline transition-colors duration-150 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current';
+
   return (
     <div className="sm-scope pointer-events-none fixed inset-0 z-40 overflow-hidden" data-open={open || undefined} aria-hidden={!open}>
-      <div ref={preLayersRef} className="sm-prelayers pointer-events-none absolute bottom-0 right-0 top-0 z-[5] w-[clamp(280px,42vw,520px)] max-lg:w-full" aria-hidden="true">
+      <div ref={preLayersRef} className="sm-prelayers pointer-events-none absolute bottom-0 right-0 top-0 z-[5] w-full lg:w-[clamp(280px,42vw,520px)]" aria-hidden="true">
         {['var(--secondary)', 'var(--accent)'].map((c, i) => (
-          <div key={i} className="sm-prelayer absolute right-0 top-0 h-full w-full rounded-l-[3rem]" style={{ background: c }} />
+          <div key={i} className="sm-prelayer absolute right-0 top-0 h-full w-full lg:rounded-l-[3rem]" style={{ background: c }} />
         ))}
       </div>
 
       <aside
         id="site-menu-panel"
         ref={panelRef}
-        className="sm-panel pointer-events-auto absolute right-0 top-0 z-10 flex h-full w-[clamp(280px,42vw,520px)] flex-col overflow-y-auto rounded-l-[3rem] bg-primary px-[clamp(1.5rem,4vw,3rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[calc(90px+clamp(1.5rem,4vh,3rem))] text-[var(--bg-white)] max-lg:w-full"
+        className="sm-panel pointer-events-auto absolute right-0 top-0 z-10 flex h-full w-full flex-col overflow-y-auto bg-primary px-[clamp(1.5rem,4vw,3rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[calc(90px+clamp(1.5rem,4vh,3rem))] text-[var(--bg-white)] lg:w-[clamp(280px,42vw,520px)] lg:rounded-l-[3rem]"
         aria-label={labels.navigation}
       >
         <div className="flex flex-1 flex-col gap-6">
@@ -215,7 +252,7 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
                   <>
                     <button
                       type="button"
-                      className="sm-panel-item relative inline-flex cursor-pointer items-center gap-4 border-0 bg-transparent p-0 pr-[1.4em] text-left font-display text-[clamp(2rem,6.5vw,3.6rem)] font-[800] leading-none tracking-[-0.02em] text-[var(--bg-white)] transition-colors duration-150 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
+                      className={`${itemClass} inline-flex items-center gap-4 border-0 bg-transparent p-0 pr-[1.4em] text-left`}
                       aria-expanded={projectsOpen}
                       aria-controls="site-menu-projects"
                       onClick={toggleProjects}
@@ -244,12 +281,7 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
                     </ul>
                   </>
                 ) : (
-                  <a
-                    className={`sm-panel-item relative inline-block cursor-pointer pr-[1.4em] font-display text-[clamp(2rem,6.5vw,3.6rem)] font-[800] leading-none tracking-[-0.02em] text-[var(--bg-white)] no-underline transition-colors duration-150 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current ${it.current ? 'opacity-50' : ''}`}
-                    href={it.href}
-                    aria-current={it.current ? 'page' : undefined}
-                    data-index={idx + 1}
-                  >
+                  <a className={`${itemClass} ${it.current ? 'opacity-50' : ''}`} href={it.href} aria-current={it.current ? 'page' : undefined} data-index={idx + 1}>
                     <span className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform">{it.label}</span>
                   </a>
                 )}
@@ -257,46 +289,58 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
             ))}
           </ul>
 
-          <div className="sm-socials mt-auto flex flex-col gap-4 border-t border-white/15 pt-6" aria-label={labels.socials}>
-            <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-              <h3 className="sm-socials-title m-0 text-[0.68rem] font-bold uppercase tracking-[0.3em] text-accent">{labels.socials}</h3>
-              <ul className="sm-socials-list m-0 flex list-none flex-row flex-wrap items-center gap-4 p-0" role="list">
+          {/* Pie del panel: redes con icono, idiomas, transparencia y correo. */}
+          <div className="sm-socials mt-auto flex flex-col gap-5 border-t border-white/15 pt-6">
+            <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
+              <ul className="sm-socials-list m-0 flex list-none items-center gap-3 p-0" role="list" aria-label={labels.socials}>
                 {socials.map((s, i) => (
                   <li key={s.href + i}>
-                    <a href={s.href} target="_blank" rel="noopener noreferrer" className="sm-socials-link relative inline-block py-[2px] font-display text-[1rem] font-bold text-[var(--bg-white)]/80 no-underline transition-[color,opacity] duration-300 hover:text-accent">
-                      {s.label}
+                    <a
+                      href={s.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={s.label}
+                      title={s.label}
+                      className="sm-socials-link inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-[var(--bg-white)] transition-[background-color,color,transform] duration-300 hover:-translate-y-0.5 hover:bg-accent hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                    >
+                      {socialIcon(s.label) ?? <span className="text-[0.7rem] font-bold uppercase">{s.label.slice(0, 2)}</span>}
                     </a>
+                  </li>
+                ))}
+              </ul>
+              <ul className="m-0 flex list-none items-center gap-1 p-0" aria-label={labels.changeLanguage} role="list">
+                {languages.map(l => (
+                  <li key={l.code}>
+                    {l.current ? (
+                      <span aria-current="true" className="sm-socials-link inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[var(--bg-white)] px-3 font-display text-[0.78rem] font-bold uppercase tracking-[0.16em] text-primary">
+                        {l.short}
+                      </span>
+                    ) : (
+                      <a
+                        href={l.href}
+                        hrefLang={l.code}
+                        lang={l.code}
+                        aria-label={l.label}
+                        className="sm-socials-link inline-flex h-9 min-w-9 items-center justify-center rounded-full px-3 font-display text-[0.78rem] font-bold uppercase tracking-[0.16em] text-[var(--bg-white)]/70 no-underline transition-colors hover:bg-white/10 hover:text-[var(--bg-white)]"
+                      >
+                        {l.short}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-              <ul className="m-0 flex list-none items-center gap-4 p-0" aria-label={labels.changeLanguage} role="list">
-                {languages.map(l =>
-                  l.current ? (
-                    <li key={l.code}>
-                      <span aria-current="true" className="sm-socials-link font-display text-[0.9rem] font-bold uppercase tracking-[0.18em] text-[var(--bg-white)] underline decoration-accent decoration-2 underline-offset-[6px]">
-                        {l.label}
-                      </span>
-                    </li>
-                  ) : (
-                    <li key={l.code}>
-                      <a href={l.href} hrefLang={l.code} lang={l.code} className="sm-socials-link font-display text-[0.9rem] font-bold uppercase tracking-[0.18em] text-[var(--bg-white)]/60 no-underline transition-colors hover:text-accent">
-                        {l.label}
-                      </a>
-                    </li>
-                  )
-                )}
-              </ul>
-              <ul className="m-0 flex list-none flex-wrap items-center gap-4 p-0" role="list">
-                {secondary.map(s => (
-                  <li key={s.href}>
-                    <a href={s.href} className="sm-socials-link font-display text-[0.9rem] font-bold text-[var(--bg-white)]/70 underline-offset-4 transition-colors hover:text-accent hover:underline">
-                      {s.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+            <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+              {secondary.map(s => (
+                <a key={s.href} href={s.href} className="sm-socials-link font-display text-[0.9rem] font-bold text-[var(--bg-white)]/70 underline-offset-4 transition-colors hover:text-[var(--bg-white)] hover:underline">
+                  {s.label}
+                </a>
+              ))}
+              {contactEmail && (
+                <a href={`mailto:${contactEmail}`} className="sm-socials-link font-display text-[0.9rem] font-bold text-[var(--bg-white)]/70 underline-offset-4 transition-colors hover:text-[var(--bg-white)] hover:underline">
+                  {contactEmail}
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -305,8 +349,6 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
       <style>{`
 .sm-scope .sm-panel-list[data-numbering] { counter-reset: smItem; }
 .sm-scope .sm-panel-list[data-numbering] .sm-panel-item::after { counter-increment: smItem; content: counter(smItem, decimal-leading-zero); position: absolute; top: 0.1em; right: 0.35em; font-size: 0.32em; font-weight: 400; color: var(--accent); letter-spacing: 0; pointer-events: none; user-select: none; opacity: var(--sm-num-opacity, 0); }
-.sm-scope .sm-socials-list:hover .sm-socials-link:not(:hover) { opacity: 0.4; }
-.sm-scope .sm-socials-list .sm-socials-link:hover { opacity: 1; }
       `}</style>
     </div>
   );

@@ -17,16 +17,31 @@ export const initReveals = (): void => {
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) return;
 
+    /* Los títulos con ScrollFloat (`h2[data-scroll-float]`) ya tienen su
+       propia entrada, letra a letra y ligada al scroll. Si además el bloque que
+       los contiene hace fade-in-up, las dos animaciones se pisan y la del
+       título no se aprecia. Así que un bloque revelable que contenga un título
+       flotante anima a sus hijos MENOS ese título: el eyebrow y el párrafo
+       siguen entrando como antes, y el título queda solo para ScrollFloat. */
+    const FLOAT = "[data-scroll-float]";
+    const revealTargets = (el: HTMLElement): HTMLElement[] => {
+        if (el.matches(FLOAT)) return [];
+        if (!el.querySelector(FLOAT)) return [el];
+        return (Array.from(el.children) as HTMLElement[]).filter((child) => !child.matches(FLOAT) && !child.querySelector(FLOAT));
+    };
+
     document.querySelectorAll<HTMLElement>("[data-reveal]").forEach((el) => {
         if (el.dataset.revealReady) return;
         el.dataset.revealReady = "1";
         if (isInView(el)) return; // ya visible: no ocultar ni animar (evita el flash)
-        gsap.set(el, { opacity: 0, y: 44 });
+        const targets = revealTargets(el);
+        if (!targets.length) return;
+        gsap.set(targets, { opacity: 0, y: 44 });
         ScrollTrigger.create({
             trigger: el,
             start: "top 88%",
             once: true,
-            onEnter: () => gsap.to(el, { opacity: 1, y: 0, duration: 0.9, ease: "power2.out", delay: parseFloat(el.dataset.revealDelay || "0") }),
+            onEnter: () => gsap.to(targets, { opacity: 1, y: 0, duration: 0.9, ease: "power2.out", delay: parseFloat(el.dataset.revealDelay || "0") }),
         });
     });
 
@@ -34,7 +49,8 @@ export const initReveals = (): void => {
         if (group.dataset.revealReady) return;
         group.dataset.revealReady = "1";
         if (isInView(group)) return;
-        const kids = Array.from(group.children) as HTMLElement[];
+        const kids = (Array.from(group.children) as HTMLElement[]).filter((kid) => !kid.matches(FLOAT) && !kid.querySelector(FLOAT));
+        if (!kids.length) return;
         gsap.set(kids, { opacity: 0, y: 44 });
         ScrollTrigger.create({
             trigger: group,

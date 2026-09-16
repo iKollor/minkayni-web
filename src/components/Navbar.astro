@@ -6,7 +6,8 @@ import Button from "./Button.astro";
 import IsotipoIcon from "../assets/SVG/ISOTIPO_WHITE.svg";
 import LogoIconWhite from "../assets/SVG/LOGO_WHITE.svg";
 import NavMenu from "./react/NavMenu";
-import MenuToggle from "./react/MenuToggle";
+import LangMenu from "./react/LangMenu";
+import BurgerIcon from "./BurgerIcon.astro";
 import type { MenuData } from "./react/menu-types";
 import type { NavTree } from "../schemas/navigation";
 import { defaultLocale, localizePath, useTranslations, type Locale } from "../i18n";
@@ -57,9 +58,32 @@ const homeHref = localizePath("/", locale);
                     <a href={homeHref} aria-label={t("nav.goHome")}>
                         <LogoIconWhite class="h-10 w-auto" />
                     </a>
-                    {/* Botón del panel escalonado. El panel vive fuera del navbar
-                        (ver MenuToggle.tsx) y se hablan por eventos. */}
-                    <MenuToggle client:load openLabel={menu.labels.open} closeLabel={menu.labels.close} />
+                    {/* Idioma (mismo desplegable que en la barra completa) y la
+                        hamburguesa animada de siempre. El panel vive fuera del
+                        navbar y se hablan por eventos: el botón dispara
+                        `site-menu:toggle` y el panel confirma con `menu:state`,
+                        que BurgerIcon ya escuchaba para girar su icono. */}
+                    <div class="flex items-center gap-4 sm:gap-6">
+                        <LangMenu client:load languages={menu.languages} labels={menu.labels} />
+                        {/* La hamburguesa se dibuja a la mitad de su tamaño
+                            (`scale-50 origin-right`) sobre una caja de 100px y
+                            arrastra 50px de espacio muerto a su izquierda; el
+                            margen negativo lo recupera sin tocar el icono. */}
+                        <div class="-ml-[50px] flex items-center">
+                            <button
+                                type="button"
+                                id="site-menu-button"
+                                class="cursor-pointer border-0 bg-transparent p-0 text-current focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
+                                aria-label={menu.labels.open}
+                                aria-expanded="false"
+                                aria-controls="site-menu-panel"
+                                data-open-label={menu.labels.open}
+                                data-close-label={menu.labels.close}
+                            >
+                                <BurgerIcon />
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -304,11 +328,28 @@ const homeHref = localizePath("/", locale);
         applyTheme();
     };
 
+    /* Hamburguesa -> panel escalonado (SiteMenu.tsx): el botón dispara el
+       evento y el panel confirma el estado, que aquí se refleja en aria. */
+    const initMenuButton = () => {
+        const menuButton = document.getElementById("site-menu-button");
+        if (!menuButton) return;
+        menuButton.addEventListener("click", () => window.dispatchEvent(new CustomEvent("site-menu:toggle")));
+        window.addEventListener("site-menu:state", (event) => {
+            const detail = (event as CustomEvent).detail as { open?: boolean } | undefined;
+            const open = Boolean(detail && detail.open);
+            menuButton.setAttribute("aria-expanded", String(open));
+            const label = open ? menuButton.dataset.closeLabel : menuButton.dataset.openLabel;
+            if (label) menuButton.setAttribute("aria-label", label);
+        });
+    };
+
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", () => {
             initNavSwitcher();
+            initMenuButton();
         }, { once: true });
     } else {
         initNavSwitcher();
+        initMenuButton();
     }
 </script>

@@ -68,7 +68,9 @@ export const initBatucadaMotion = () => {
     document.querySelectorAll<HTMLElement>("[data-bp-scene]").forEach((scene) => {
         if (scene.getBoundingClientRect().top < window.innerHeight * 0.92) return;
 
-        const hits = Array.from(scene.querySelectorAll<HTMLElement>("[data-bp-hit]"));
+        /* Los títulos con ScrollFloat traen su propia entrada letra a letra: si
+           además entran con el resto de la escena, las dos animaciones se pisan. */
+        const hits = Array.from(scene.querySelectorAll<HTMLElement>("[data-bp-hit]")).filter((el) => !el.matches("[data-scroll-float]"));
         const lists = Array.from(scene.querySelectorAll<HTMLElement>("[data-bp-clave]"));
         const beats = Array.from(scene.querySelectorAll<HTMLElement>("[data-bp-beats] i"));
         const photos = Array.from(scene.querySelectorAll<HTMLElement>("[data-bp-photo] img"));

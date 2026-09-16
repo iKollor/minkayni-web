@@ -30,8 +30,9 @@ export function buildMenuData(opts: {
     footer: Footer;
     projects: ProjectItem[];
     currentPath: string;
+    contactEmail?: string;
 }): MenuData {
-    const { locale, navHeader, footer, projects, currentPath } = opts;
+    const { locale, navHeader, footer, projects, currentPath, contactEmail } = opts;
     const t = useTranslations(locale);
     const projectsHref = localizePath("/projects", locale);
 
@@ -69,6 +70,7 @@ export function buildMenuData(opts: {
         languages,
         socials: buildSocialItems(footer.Socials).map((s) => ({ label: s.label, href: s.href, external: true })),
         secondary: [{ label: t("nav.legalTransparency"), href: localizePath("/transparencia", locale) }],
+        contactEmail,
         labels: {
             open: t("menu.open"),
             close: t("menu.close"),

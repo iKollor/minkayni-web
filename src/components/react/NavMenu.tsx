@@ -56,7 +56,7 @@ interface MenuItemProps {
   children?: ReactNode;
 }
 
-const MenuItem = ({ setActive, active, item, href, current, chevron, onPanelEnter, onPanelLeave, children }: MenuItemProps) => {
+export const MenuItem = ({ setActive, active, item, href, current, chevron, onPanelEnter, onPanelLeave, children }: MenuItemProps) => {
   const open = active === item;
   const labelRef = useRef<HTMLElement | null>(null);
   const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
@@ -78,6 +78,21 @@ const MenuItem = ({ setActive, active, item, href, current, chevron, onPanelEnte
         aria-current={current ? 'page' : undefined}
         aria-haspopup={children ? 'true' : undefined}
         aria-expanded={children ? open : undefined}
+        role={children && !href ? 'button' : undefined}
+        tabIndex={children && !href ? 0 : undefined}
+        onClick={event => {
+          /* Sin hover (táctil), un ítem que solo abre un panel se abre al pulsarlo. */
+          if (children && !href) {
+            event.preventDefault();
+            setActive(open ? null : item);
+          }
+        }}
+        onKeyDown={event => {
+          if (children && !href && (event.key === 'Enter' || event.key === ' ')) {
+            event.preventDefault();
+            setActive(open ? null : item);
+          }
+        }}
         className={`group relative inline-flex cursor-pointer items-center gap-1.5 py-2 text-current no-underline focus:outline-none ${current ? 'pointer-events-none opacity-60' : ''}`}
       >
         <span className="relative">
@@ -144,7 +159,7 @@ const ProductItem = ({ title, description, href, src, alt }: MenuProject) =>
     </a>
   );
 
-const HoveredLink = ({ label, href, current }: MenuLanguage | (MenuLink & { current?: boolean })) =>
+export const HoveredLink = ({ label, href, current }: MenuLanguage | (MenuLink & { current?: boolean })) =>
   current ? (
     <span aria-current="true" className="flex items-center gap-2 rounded-xl px-3 py-2 font-display text-[0.95rem] font-bold text-primary">
       <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-primary" />

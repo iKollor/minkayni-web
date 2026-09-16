@@ -32,8 +32,8 @@ interface Props {
 /* El idioma sale de la URL: `/en/about` es inglés, `/about` español. Así
    ninguna página tiene que acordarse de declararlo. */
 const locale = getLocale(Astro.url);
-const { navHeader, footer, projects } = await loadLayoutContent(locale);
-const menu = buildMenuData({ locale, navHeader, footer, projects, currentPath: Astro.url.pathname });
+const { navHeader, footer, site, projects } = await loadLayoutContent(locale);
+const menu = buildMenuData({ locale, navHeader, footer, projects, currentPath: Astro.url.pathname, contactEmail: site.contactEmail });
 const { title, description, noindex, image, imageAlt, showHero = true, buttonClassName = "", enableNavTheming } = Astro.props;
 ---
 

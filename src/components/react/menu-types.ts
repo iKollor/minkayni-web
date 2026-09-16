@@ -47,5 +47,7 @@ export interface MenuData {
     socials: MenuLink[];
     /** Enlaces institucionales del pie del panel (transparencia legal…). */
     secondary: MenuLink[];
+    /** Correo de contacto (single type `global`), al pie del panel. */
+    contactEmail?: string;
     labels: MenuLabels;
 }
