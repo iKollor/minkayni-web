@@ -69,7 +69,13 @@ const styleVars = [
         <div class="bubble-bg__orbit bubble-bg__orbit--b"><span class="bubble-bg__blob bubble-bg__blob--third"></span></div>
         <span class="bubble-bg__blob bubble-bg__blob--fourth"></span>
         <div class="bubble-bg__orbit bubble-bg__orbit--c"><span class="bubble-bg__blob bubble-bg__blob--fifth"></span></div>
-        {interactive && <span class="bubble-bg__blob bubble-bg__blob--pointer" data-pointer-blob></span>}
+        {
+            interactive && (
+                <span class="bubble-bg__blob bubble-bg__blob--pointer" data-pointer-blob>
+                    <span class="bubble-bg__blob-shape" />
+                </span>
+            )
+        }
     </div>
 
     <slot />
@@ -160,14 +166,31 @@ const styleVars = [
         background: radial-gradient(circle at center, rgba(var(--fifth-color), 0.8) 0%, rgba(var(--fifth-color), 0) 50%);
     }
 
+    /* Envoltorio: sólo posición. El transform lo escribe el script, así que no
+       puede llevar animación CSS propia — la forma se anima en el hijo. */
     .bubble-bg__blob--pointer {
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0.7;
-        background: radial-gradient(circle at center, rgba(var(--sixth-color), 0.8) 0%, rgba(var(--sixth-color), 0) 50%);
+        top: -25%;
+        left: -25%;
+        width: 150%;
+        height: 150%;
+        opacity: 0.75;
         transform: translate3d(0, 0, 0);
+    }
+
+    /* Forma: tres gradientes descentrados en vez de uno concéntrico. Sumados
+       bajo el filtro goo dan un contorno irregular en lugar de un círculo
+       perfecto, y la deformación lenta evita que se lea como una figura fija. */
+    .bubble-bg__blob-shape {
+        position: absolute;
+        inset: 0;
+        display: block;
+        border-radius: 9999px;
+        background:
+            radial-gradient(circle at 44% 40%, rgba(var(--sixth-color), 0.8) 0%, rgba(var(--sixth-color), 0) 46%),
+            radial-gradient(circle at 63% 54%, rgba(var(--sixth-color), 0.62) 0%, rgba(var(--sixth-color), 0) 38%),
+            radial-gradient(circle at 48% 64%, rgba(var(--sixth-color), 0.55) 0%, rgba(var(--sixth-color), 0) 35%);
+        will-change: transform;
+        animation: bubble-morph 24s ease-in-out infinite;
     }
 
     /* `from` y `to` deben usar la MISMA lista de funciones de transform. Con un
@@ -181,6 +204,23 @@ const styleVars = [
         }
         to {
             transform: translateZ(0) rotate(360deg);
+        }
+    }
+
+    /* Deformación del blob del cursor: rotación y escalas ligeramente distintas
+       por eje, de modo que el contorno nunca repite la misma silueta. */
+    @keyframes bubble-morph {
+        0% {
+            transform: rotate(0deg) scale(1, 1);
+        }
+        33% {
+            transform: rotate(120deg) scale(1.12, 0.9);
+        }
+        66% {
+            transform: rotate(240deg) scale(0.92, 1.14);
+        }
+        100% {
+            transform: rotate(360deg) scale(1, 1);
         }
     }
 
@@ -208,6 +248,7 @@ const styleVars = [
     }
     :global(html[data-low-power]) .bubble-bg__orbit,
     :global(html[data-low-power]) .bubble-bg__blob--fourth,
+    :global(html[data-low-power]) .bubble-bg__blob-shape,
     :global(html[data-low-power]) .bubble-bg__blob--pointer {
         animation: none;
         transition: none;
@@ -238,11 +279,13 @@ const styleVars = [
         root.dataset.bubbleReady = "1";
 
         /* Pausa las animaciones cuando el fondo sale de pantalla. */
+        let onVisibilityChange: ((visible: boolean) => void) | null = null;
         const io = new IntersectionObserver(
             (entries) => {
                 const visible = entries[0]?.isIntersecting ?? true;
                 if (visible) delete root.dataset.paused;
                 else root.dataset.paused = "";
+                onVisibilityChange?.(visible);
             },
             { rootMargin: "120px" }
         );
@@ -262,9 +305,31 @@ const styleVars = [
         let raf: number | null = null;
         let last = 0;
 
+        /* Cuando el puntero no está sobre el degradado (o no hay puntero, como
+           en móvil) el blob no se queda quieto: recorre una figura de Lissajous
+           lenta. Dos frecuencias por eje, con razón irracional entre ellas, para
+           que el recorrido no se lea como un bucle corto. */
+        let pointerInside = false;
+
+        const autoTarget = (now: number, width: number, height: number) => {
+            const ampX = width * 0.34;
+            const ampY = height * 0.3;
+            return {
+                x: Math.sin(now * 0.000197) * ampX + Math.sin(now * 0.000431) * ampX * 0.3,
+                y: Math.cos(now * 0.000164) * ampY + Math.cos(now * 0.000377) * ampY * 0.28,
+            };
+        };
+
         const step = (now: number) => {
             const dt = Math.min((now - last) / 1000 || 0, MAX_STEP);
             last = now;
+
+            if (!pointerInside) {
+                const rect = root.getBoundingClientRect();
+                const auto = autoTarget(now, rect.width, rect.height);
+                targetX = auto.x;
+                targetY = auto.y;
+            }
 
             /* Integración explícita del muelle amortiguado, por eje. */
             vx += (-STIFFNESS * (x - targetX) - DAMPING * vx) * dt;
@@ -274,28 +339,43 @@ const styleVars = [
 
             blob.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0)`;
 
-            const settled = Math.abs(x - targetX) < 0.1 && Math.abs(y - targetY) < 0.1 && Math.abs(vx) < 0.1 && Math.abs(vy) < 0.1;
-            if (settled) {
-                raf = null;
-                return;
-            }
             raf = requestAnimationFrame(step);
         };
 
-        const kick = () => {
+        /* El bucle ya no se detiene al estabilizarse (la deriva es continua),
+           pero sí mientras el fondo está fuera de pantalla. */
+        const start = () => {
             if (raf != null) return;
             last = performance.now();
             raf = requestAnimationFrame(step);
         };
 
+        const stop = () => {
+            if (raf == null) return;
+            cancelAnimationFrame(raf);
+            raf = null;
+        };
+
         const onPointerMove = (event: PointerEvent) => {
             const rect = root.getBoundingClientRect();
+            pointerInside =
+                event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
+            if (!pointerInside) return;
             targetX = event.clientX - (rect.left + rect.width / 2);
             targetY = event.clientY - (rect.top + rect.height / 2);
-            kick();
+        };
+
+        /* Si el puntero abandona la ventana no llegan más `pointermove`: sin
+           esto el blob se quedaría clavado en la última posición del cursor. */
+        const releasePointer = () => {
+            pointerInside = false;
         };
 
         window.addEventListener("pointermove", onPointerMove, { passive: true });
+        window.addEventListener("pointerout", releasePointer, { passive: true });
+        window.addEventListener("blur", releasePointer);
+        onVisibilityChange = (visible: boolean) => (visible ? start() : stop());
+        start();
     };
 
     const boot = () => document.querySelectorAll<HTMLElement>("[data-slot='bubble-background']").forEach(initBubble);
