@@ -31,6 +31,7 @@ export const ui = {
         "nav.hide": "Ocultar navegación",
         "nav.show": "Mostrar navegación",
         "scrollbar.label": "Desplazamiento de la página",
+        "home.testimonialRole": "{role} de la {organization}",
 
         /* Menú (panel escalonado y megamenú) */
         "menu.open": "Menú",
@@ -175,6 +176,7 @@ export const ui = {
         "nav.hide": "Hide navigation",
         "nav.show": "Show navigation",
         "scrollbar.label": "Page scroll",
+        "home.testimonialRole": "{role} of the {organization}",
 
         /* Menu (staggered panel and mega menu) */
         "menu.open": "Menu",

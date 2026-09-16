@@ -4,12 +4,19 @@ import { StrapiBlocks } from "@sensinum/astro-strapi-blocks";
 import Blob from "../Blob.astro";
 import type { TestimonialEntry } from "../../schemas/pages.zod";
 import { strapiMediaUrl } from "../../utils/media-url";
+import { defaultLocale, useTranslations, type Locale } from "../../i18n";
 
 interface Props {
     testimonials: TestimonialEntry[];
     title?: string;
+    locale?: Locale;
 }
-const { testimonials, title = "Historias de cambio" } = Astro.props;
+const { testimonials, title = "Historias de cambio", locale = defaultLocale } = Astro.props;
+const t = useTranslations(locale);
+/* «Integrante de la Batucada Popular» / «Member of the Batucada Popular»: el
+   conector es del idioma, no del CMS. */
+const roleLine = (role?: string | null, organization?: string | null) =>
+    role && organization ? t("home.testimonialRole", { role, organization }) : (role ?? organization ?? "");
 const STRAPI_URL = import.meta.env.STRAPI_URL;
 ---
 
@@ -34,7 +41,7 @@ const STRAPI_URL = import.meta.env.STRAPI_URL;
                                 {t?.author_quote?.author}, {t?.age}
                             </p>
                             <p class="t-org-mobile font-bold text-sm opacity-90" data-org-mobile>
-                                {t?.author_role} de la {t?.organization}
+                                {roleLine(t?.author_role, t?.organization)}
                             </p>
                         </div>
                         <div class={"t-copy relative w-1/2 " + (leftAlign ? "text-right" : "text-left")} data-copy>
@@ -46,7 +53,7 @@ const STRAPI_URL = import.meta.env.STRAPI_URL;
                                 — {t?.author_quote?.author}, {t?.age}
                             </p>
                             <p class="t-org font-bold text-base opacity-90 hidden md:block" data-org>
-                                {t?.author_role} de la {t?.organization}
+                                {roleLine(t?.author_role, t?.organization)}
                             </p>
                         </div>
                     </section>

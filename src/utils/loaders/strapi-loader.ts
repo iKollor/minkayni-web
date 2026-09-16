@@ -120,8 +120,12 @@ export function strapiLoader({
   const collectionQuery = squash(`
         query ${cap(
           rootField
-        )}($page: Int!, $pageSize: Int!, $status: PublicationStatus) {
-            ${rootField}(pagination: { page: $page, pageSize: $pageSize }, status: $status) {
+        )}($page: Int!, $pageSize: Int!, $status: PublicationStatus${
+    locale ? ", $locale: I18NLocaleCode" : ""
+  }) {
+            ${rootField}(pagination: { page: $page, pageSize: $pageSize }, status: $status${
+    locale ? ", locale: $locale" : ""
+  }) {
                 ${selection}
             }
         }
@@ -185,7 +189,7 @@ export function strapiLoader({
         while (page <= MAX_PAGES) {
           const response = await request(
             collectionQuery,
-            { page, pageSize, status },
+            locale ? { page, pageSize, status, locale } : { page, pageSize, status },
             cap(rootField)
           );
           const nodes = asNodes(response[rootField]).filter(
@@ -223,7 +227,11 @@ export function strapiLoader({
         meta.set("ids", JSON.stringify([...seenIds]));
         meta.set("lastSynced", String(Date.now()));
 
-        logger.info(`[${rootField}] collection: stored ${stored} documents.`);
+        logger.info(
+          `[${rootField}] collection: stored ${stored} documents${
+            locale ? ` [locale=${locale}]` : ""
+          }.`
+        );
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         logger.warn(

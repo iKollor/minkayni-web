@@ -179,7 +179,7 @@ const projectsCta = homepage
         <section id="testimonials">
             {
                 testimonials.length > 0 ? (
-                    <Testimonials testimonials={testimonials} title={testimonialsTitle} />
+                    <Testimonials testimonials={testimonials} title={testimonialsTitle} locale={locale} />
                 ) : (
                     <div class="mx-auto w-[90%] max-w-[1200px] py-24 sm:py-32">
                         <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{testimonialsTitle}</p>
