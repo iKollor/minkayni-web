@@ -37,7 +37,12 @@ const submenuButtons = buttons
                     <a href={homeHref} class="animate" aria-label={t("nav.goHome")}>
                         <IsotipoIcon class="h-10 mr-10" />
                     </a>
-                    <div class="flex items-center space-x-8 w-full animate">
+                    {/* La lista mide lo que miden sus enlaces (`shrink-0`, sin partir
+                        palabras) y el reloj se queda con el resto. Antes ambos llevaban
+                        `w-full` y se repartían el hueco al 50%: con las etiquetas
+                        inglesas, más largas, la lista quedaba más estrecha que sus
+                        propios enlaces y «About us» se partía entre 1024 y 1200px. */}
+                    <div class="flex shrink-0 items-center gap-8 whitespace-nowrap animate">
                         {buttons.map((button, index) => ((button.additionalFields?.style ?? "default") === "default" ? <NavButton button={button} index={index} /> : null))}
                     </div>
                     <Reloj locale={locale} />
