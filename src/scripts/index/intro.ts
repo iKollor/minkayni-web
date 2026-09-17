@@ -1,6 +1,9 @@
 import { gsap, ScrollTrigger } from "../main.ts";
 import { $, on, setHeights, setRadius } from "./helpers";
 import { animateParagraph } from "./paragraph";
+import type { AnimationItem } from "lottie-web";
+
+type MotionElement = HTMLElement & { logoMotion?: AnimationItem };
 
 const NAV_STROKE_MULTIPLIER = 1.2;
 
@@ -220,8 +223,9 @@ export const initIntro = (prefersReduced: boolean): void => {
 
     const navTexts = document.querySelectorAll(".page-nav .nav-text");
     const overlay = $("#intro-overlay") as HTMLElement | null;
-    const stackedEl = document.querySelector("#intro-stacked") as HTMLElement | null;
-    const video = (stackedEl?.querySelector("video") || null) as HTMLVideoElement | null;
+    /* El logo animado es un Lottie (`LogoMotion.astro`), no un video. El nodo
+       expone la instancia en `logoMotion` y su estado en `data-state`. */
+    const motion = $("#intro-motion") as MotionElement | null;
     const content = $("#app-content") as HTMLElement | null;
     const skipBtn = $("#skip-intro") as HTMLElement | null;
 
@@ -259,7 +263,7 @@ export const initIntro = (prefersReduced: boolean): void => {
         setHeights("100svh");
         setRadius(null);
         try {
-            video?.pause();
+            motion?.logoMotion?.pause();
         } catch { }
 
         prepareNavStrokes(navTexts);
@@ -347,76 +351,54 @@ export const initIntro = (prefersReduced: boolean): void => {
         return;
     }
 
-    if (!stackedEl || !video) {
+    if (!motion) {
         finalizeImmediate();
         return;
     }
 
-    try {
-        video.setAttribute("playsinline", "");
-        video.setAttribute("webkit-playsinline", "");
-        video.setAttribute("autoplay", "");
-        video.muted = true;
-        video.playsInline = true;
-        video.preload = "auto";
-        video.style.visibility = "hidden";
-    } catch { }
-
     overlay?.classList.remove("intro-hidden");
 
-    on(video, ["playing"], () => {
+    /* El Lottie no necesita gesto del usuario para arrancar (no es media),
+       así que no hay «unlock» táctil: se reproduce en cuanto está listo. */
+    const startMotion = (): void => {
+        if (finished) return;
+        const anim = motion.logoMotion;
+        if (!anim) return;
         if (startedAt == null) startedAt = performance.now();
-        video.style.visibility = "visible";
-    });
+        if (motion.dataset.state === "complete") {
+            /* `prefers-reduced-motion` ya lo dejó en el último cuadro. */
+            finish();
+            return;
+        }
+        anim.play();
+        motion.dataset.state = "playing";
+    };
 
-    on(video, ["ended"], () => finish(), { once: true });
-    on(video, ["error"], () => finalizeImmediate(), { once: true });
-    on(video, ["stalled", "waiting", "suspend"], () => { }, { once: false });
+    on(motion, ["logomotion:play"], () => {
+        if (startedAt == null) startedAt = performance.now();
+    });
+    on(motion, ["logomotion:complete"], () => finish(), { once: true });
+    on(motion, ["logomotion:error"], () => finalizeImmediate(), { once: true });
 
     on(skipBtn, ["click"], () => {
-        try { video?.pause(); } catch { }
+        try { motion.logoMotion?.pause(); } catch { }
         finish();
     });
 
-    let playTimeout: number | undefined;
-    const scheduleFallback = (): void => {
-        if (playTimeout) return;
-        playTimeout = window.setTimeout(() => {
-            if (!finished) finalizeImmediate();
-        }, 3500);
-    };
+    switch (motion.dataset.state) {
+        case "error":
+            finalizeImmediate();
+            return;
+        case "loading":
+            on(motion, ["logomotion:ready"], () => startMotion(), { once: true });
+            break;
+        default:
+            startMotion();
+    }
 
-    const tryPlay = (): void => {
-        try {
-            const p: Promise<void> | undefined = video.play();
-            if (p && typeof p.then === "function") {
-                p
-                    .then(() => {
-                        if (startedAt == null) startedAt = performance.now();
-                        video.style.visibility = "visible";
-                        if (playTimeout) clearTimeout(playTimeout);
-                    })
-                    .catch(() => {
-                        scheduleFallback();
-                    });
-            } else {
-                video.style.visibility = "visible";
-            }
-        } catch {
-            scheduleFallback();
-        }
-    };
-
-    on(video, ["canplay", "canplaythrough"], () => tryPlay());
-
-    const unlock = () => {
-        tryPlay();
-        window.removeEventListener("touchstart", unlock, { capture: false });
-        window.removeEventListener("pointerdown", unlock, { capture: false });
-        window.removeEventListener("click", unlock, { capture: false });
-    };
-    window.addEventListener("touchstart", unlock, { once: true, passive: true });
-    window.addEventListener("pointerdown", unlock, { once: true });
-    window.addEventListener("click", unlock, { once: true });
-    tryPlay();
+    /* Si en 3,5 s el JSON no llegó (red lenta, bloqueado), el sitio se
+       muestra igual: la intro es mejora progresiva. */
+    window.setTimeout(() => {
+        if (!finished && startedAt == null) finalizeImmediate();
+    }, 3500);
 };

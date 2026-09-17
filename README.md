@@ -159,10 +159,11 @@ if (reduce) { /* set() estado final y return */ }
 ## Page Navigation e Intro
 
 - `PageNavigation` existe pero se oculta en mobile por CSS global definido en `MainLayout.astro`.
-- La intro (video/overlay) vive en `src/scripts/index/intro.ts`:
+- El logo animado de la intro es un **Lottie** (`src/assets/lottie/logo_intro.json`, ~40 KB gzip), no un video con alpha: `src/components/LogoMotion.astro` lo renderiza como SVG con `lottie-web` y es reutilizable en cualquier página (`<LogoMotion autoplay loop />`; emite `logomotion:ready|play|complete|error` y expone `el.logoMotion`). Es una réplica cuadro a cuadro del `logo_intro.webm` original; cómo se generó y cómo regenerarlo está en `scripts/intro-lottie/README.md`. Los videos de `src/assets/videos/` se conservan como referencia, ya no se cargan.
+- La intro (overlay) vive en `src/scripts/index/intro.ts`:
   - Añade `html.no-scroll` mientras corre y la retira al finalizar.
-  - Muestra/oculta `#intro-overlay` y anima navegación y párrafo principal con GSAP.
-  - Aplica un mínimo visible, fallback si el video no reproduce y respeta `prefers-reduced-motion`.
+  - Muestra/oculta `#intro-overlay`, arranca `#intro-motion` y anima navegación y párrafo principal con GSAP.
+  - Aplica un mínimo visible, fallback (logo estático) si el Lottie no carga y respeta `prefers-reduced-motion` (salta al cuadro final).
 
 ## Despliegue
 
