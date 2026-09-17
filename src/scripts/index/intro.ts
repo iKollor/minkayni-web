@@ -1,6 +1,7 @@
 import { gsap, ScrollTrigger } from "../main.ts";
 import { $, on, setHeights, setRadius } from "./helpers";
 import { animateParagraph } from "./paragraph";
+import type { AnimationItem } from "lottie-web";
 
 const NAV_STROKE_MULTIPLIER = 1.2;
 
@@ -220,21 +221,32 @@ export const initIntro = (prefersReduced: boolean): void => {
 
     const navTexts = document.querySelectorAll(".page-nav .nav-text");
     const overlay = $("#intro-overlay") as HTMLElement | null;
-    const stackedEl = document.querySelector("#intro-stacked") as HTMLElement | null;
-    const video = (stackedEl?.querySelector("video") || null) as HTMLVideoElement | null;
+    const stage = $("#intro-lottie") as HTMLElement | null;
     const content = $("#app-content") as HTMLElement | null;
     const skipBtn = $("#skip-intro") as HTMLElement | null;
 
-
     const MIN_VISIBLE_MS = 650;
+    const LOAD_TIMEOUT_MS = 3500;
+    /* La animación dura 5 s; este margen es para equipos lentos. */
+    const PLAY_BUDGET_MS = 9000;
+    let animation: AnimationItem | null = null;
     let startedAt: number | null = null;
     let finished = false;
+
+    /** Quita la animación del DOM y corta su bucle de render. */
+    const teardown = (): void => {
+        try {
+            animation?.destroy();
+        } catch { }
+        animation = null;
+        overlay?.remove();
+    };
 
     const finalizeImmediate = (): void => {
         if (finished) return;
         finished = true;
         document.body.removeAttribute("data-intro");
-        overlay?.remove();
+        teardown();
         content?.classList.replace("opacity-0", "opacity-100");
         setHeights(heroHeight());
         setRadius("30px");
@@ -258,9 +270,6 @@ export const initIntro = (prefersReduced: boolean): void => {
         document.body.removeAttribute("data-intro");
         setHeights("100svh");
         setRadius(null);
-        try {
-            video?.pause();
-        } catch { }
 
         prepareNavStrokes(navTexts);
 
@@ -292,7 +301,7 @@ export const initIntro = (prefersReduced: boolean): void => {
                     duration: 1,
                     ease: "bounce.out",
                     onStart: () => {
-                        overlay?.remove();
+                        teardown();
                         document.documentElement.classList.remove("no-scroll");
                         document.body.classList.remove("no-scroll");
                         (document.documentElement as HTMLElement).style.removeProperty("overflow-y");
@@ -327,9 +336,7 @@ export const initIntro = (prefersReduced: boolean): void => {
             .call(animateNavAndParagraph, [prefersReduced, navTexts], 0)
             .add(() => {
                 content?.style.removeProperty("clip-path");
-                const logoFallback = document.getElementById("intro-fallback-logo") as HTMLElement | null;
                 window.dispatchEvent(new CustomEvent("intro:finished"));
-                if (logoFallback) logoFallback.style.opacity = "0";
             });
     };
 
@@ -347,76 +354,68 @@ export const initIntro = (prefersReduced: boolean): void => {
         return;
     }
 
-    if (!stackedEl || !video) {
+    const src = stage?.dataset.src;
+    if (!stage || !src) {
         finalizeImmediate();
         return;
     }
 
-    try {
-        video.setAttribute("playsinline", "");
-        video.setAttribute("webkit-playsinline", "");
-        video.setAttribute("autoplay", "");
-        video.muted = true;
-        video.playsInline = true;
-        video.preload = "auto";
-        video.style.visibility = "hidden";
-    } catch { }
-
-    overlay?.classList.remove("intro-hidden");
-
-    on(video, ["playing"], () => {
-        if (startedAt == null) startedAt = performance.now();
-        video.style.visibility = "visible";
-    });
-
-    on(video, ["ended"], () => finish(), { once: true });
-    on(video, ["error"], () => finalizeImmediate(), { once: true });
-    on(video, ["stalled", "waiting", "suspend"], () => { }, { once: false });
+    /* Si la animación no llega a tiempo (red lenta, fallo de carga), el
+       contenido no espera: se muestra sin intro. */
+    const loadTimeout = window.setTimeout(() => finalizeImmediate(), LOAD_TIMEOUT_MS);
 
     on(skipBtn, ["click"], () => {
-        try { video?.pause(); } catch { }
+        clearTimeout(loadTimeout);
+        animation?.pause();
         finish();
     });
 
-    let playTimeout: number | undefined;
-    const scheduleFallback = (): void => {
-        if (playTimeout) return;
-        playTimeout = window.setTimeout(() => {
-            if (!finished) finalizeImmediate();
-        }, 3500);
-    };
+    /* lottie_light: solo el renderizador SVG, sin expresiones (la animación
+       no las usa). Se carga aparte para no pesar en quien no ve la intro. */
+    Promise.all([
+        import("lottie-web/build/player/lottie_light"),
+        fetch(src).then((res) => {
+            if (!res.ok) throw new Error(`intro: ${res.status}`);
+            return res.json();
+        }),
+    ])
+        .then(([{ default: lottie }, animationData]) => {
+            if (finished) return;
+            clearTimeout(loadTimeout);
 
-    const tryPlay = (): void => {
-        try {
-            const p: Promise<void> | undefined = video.play();
-            if (p && typeof p.then === "function") {
-                p
-                    .then(() => {
-                        if (startedAt == null) startedAt = performance.now();
-                        video.style.visibility = "visible";
-                        if (playTimeout) clearTimeout(playTimeout);
-                    })
-                    .catch(() => {
-                        scheduleFallback();
-                    });
-            } else {
-                video.style.visibility = "visible";
-            }
-        } catch {
-            scheduleFallback();
-        }
-    };
+            animation = lottie.loadAnimation({
+                container: stage,
+                renderer: "svg",
+                loop: false,
+                autoplay: false,
+                animationData,
+                rendererSettings: { preserveAspectRatio: "xMidYMid meet" },
+            });
+            animation.addEventListener("complete", () => finish());
+            animation.addEventListener("error", () => finalizeImmediate());
 
-    on(video, ["canplay", "canplaythrough"], () => tryPlay());
+            overlay?.classList.remove("intro-hidden");
+            startedAt = performance.now();
+            animation.play();
 
-    const unlock = () => {
-        tryPlay();
-        window.removeEventListener("touchstart", unlock, { capture: false });
-        window.removeEventListener("pointerdown", unlock, { capture: false });
-        window.removeEventListener("click", unlock, { capture: false });
-    };
-    window.addEventListener("touchstart", unlock, { once: true, passive: true });
-    window.addEventListener("pointerdown", unlock, { once: true });
-    window.addEventListener("click", unlock, { once: true });
-    tryPlay();
+            /* lottie-web avanza con requestAnimationFrame, que el navegador casi
+               detiene en una pestaña de fondo. Sin este tope la intro podría
+               tardar minutos en llegar a "complete" y el scroll seguiría
+               bloqueado, así que solo contamos el tiempo que estuvo a la vista. */
+            let visibleMs = 0;
+            let lastTick = performance.now();
+            const watchdog = window.setInterval(() => {
+                const now = performance.now();
+                if (!document.hidden) visibleMs += now - lastTick;
+                lastTick = now;
+                if (finished || visibleMs > PLAY_BUDGET_MS) {
+                    clearInterval(watchdog);
+                    finish();
+                }
+            }, 500);
+        })
+        .catch(() => {
+            clearTimeout(loadTimeout);
+            finalizeImmediate();
+        });
 };

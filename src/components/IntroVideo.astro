@@ -1,176 +1,23 @@
 ---
-import { Image } from "astro:assets";
-import Logo from "../assets/SVG/LOGO_HEADER_WHITE.svg";
-import logoIntroPC from "../assets/videos/logo_intro_stacked-hevc.mp4";
-import logoIntroMobile from "../assets/videos/logo_intro_stacked-1280-hevc.mp4";
-import logoIntroPCH264 from "../assets/videos/logo_intro_stacked-h264.mp4";
-import logoIntroMobileH264 from "../assets/videos/logo_intro_stacked-1280-h264.mp4";
-import logoIntroWebm from "../assets/videos/logo_intro.webm";
+/* La intro es una animación Lottie (vectorial, con transparencia real): se ve
+   igual en Safari/iOS, Android y escritorio, sin depender de códecs de vídeo.
+   La reproduce `src/scripts/index/intro.ts`; aquí solo vive el contenedor. */
+import logoIntro from "../assets/lottie/logo_intro.json?url";
 ---
 
+<!-- Quien pide menos movimiento nunca ve la intro: no tiene sentido descargarla. -->
+<link rel="preload" as="fetch" href={logoIntro} crossorigin="anonymous" media="(prefers-reduced-motion: no-preference)" />
+
 <div id="intro-overlay" class="intro-hidden fixed inset-0 z-10 flex items-center justify-center overflow-hidden bg-transparent transition-opacity duration-500 [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
-    <button id="skip-intro" class="absolute bottom-6 right-6 text-lg tracking-wider uppercase opacity-60 hover:opacity-100 transition-opacity cursor-pointer z-100"> Saltar </button>
+    <button id="skip-intro" type="button" class="absolute bottom-6 right-6 text-lg tracking-wider uppercase opacity-60 hover:opacity-100 transition-opacity cursor-pointer z-100"> Saltar </button>
 
-    <!-- Fallback estático (ahora es absolute vía CSS, no empuja nada) -->
-    <Image id="intro-fallback-logo" src={Logo} alt="Logo" class="pointer-events-none absolute inset-0 m-auto w-[min(90vw,900px)] opacity-0 invisible" />
-
-    <!-- Versión WebM (sin stacked alpha). Se intenta primero. -->
-    <video id="intro-webm" autoplay muted playsinline preload="auto" crossorigin="anonymous" class="hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[180svw] md:w-[100svw] aspect-[16/9] origin-center will-change-[transform] [contain:paint]">
-        <source src={logoIntroWebm} type="video/webm" />
-    </video>
-
-    <!-- Video apilado a ancho completo (stacked-alpha-video). Se usará solo si WebM no funciona o no está disponible. -->
-    <stacked-alpha-video id="intro-stacked" fit="cover" class="hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[180svw] md:w-[100svw] aspect-[16/9] origin-center will-change-[transform] [contain:paint]">
-        <video id="intro-stacked-video" autoplay muted playsinline preload="auto" crossorigin="anonymous">
-            <!-- Priorizar H.264 para compatibilidad en Windows 10, luego HEVC si está disponible -->
-            <source src={logoIntroPCH264} type="video/mp4" />
-            <source src={logoIntroPC} type="video/mp4" />
-            <source src={logoIntroMobileH264} type="video/mp4" />
-            <source src={logoIntroMobile} type="video/mp4" />
-        </video>
-    </stacked-alpha-video>
-
-    <script>
-        const stacked = document.getElementById("intro-stacked");
-        const stackedVideo = document.getElementById("intro-stacked-video") as HTMLVideoElement | null;
-        const webmVideo = document.getElementById("intro-webm") as HTMLVideoElement | null;
-        const fallback = document.getElementById("intro-fallback-logo");
-
-        const canPlayType = (mime: string) => {
-            try {
-                const t = document.createElement("video");
-                return t.canPlayType(mime);
-            } catch (e) {
-                return "";
-            }
-        };
-
-        const supportsWebM = !!(canPlayType('video/webm; codecs="vp9"') || canPlayType('video/webm; codecs="vp8"') || canPlayType("video/webm"));
-
-        const insertStackedLib = () => {
-            const s = document.createElement("script");
-            s.type = "module";
-            s.src = "https://cdn.jsdelivr.net/npm/stacked-alpha-video/+esm";
-            document.body.appendChild(s);
-        };
-
-        // Intentar WebM primero (sin stacked alpha). Si se reproduce -> mostrar y no cargar stacked.
-        if (webmVideo && supportsWebM) {
-            const onWebmCanPlay = () => {
-                webmVideo.classList.remove("hidden");
-                // Asegurar que el stacked (si existe) no siga reproduciéndose en segundo plano
-                if (stacked) stacked.classList.add("hidden");
-                if (stackedVideo) {
-                    try {
-                        stackedVideo.pause();
-                        stackedVideo.removeAttribute("autoplay");
-                        stackedVideo.preload = "none";
-                    } catch (e) {
-                        // ignore
-                    }
-                }
-                cleanupWebm();
-            };
-            const onWebmError = () => {
-                cleanupWebm();
-                tryStacked();
-            };
-            const cleanupWebm = () => {
-                webmVideo.removeEventListener("canplay", onWebmCanPlay);
-                webmVideo.removeEventListener("error", onWebmError);
-            };
-
-            if (webmVideo.readyState >= 2) {
-                onWebmCanPlay();
-            } else {
-                webmVideo.addEventListener("canplay", onWebmCanPlay, { once: true });
-                webmVideo.addEventListener("error", onWebmError, { once: true });
-                setTimeout(() => {
-                    if (webmVideo.readyState < 2) {
-                        cleanupWebm();
-                        tryStacked();
-                    }
-                }, 4000);
-            }
-        } else {
-            // Si WebM no está soportado o no existe, intentar cargar stacked-alpha-video
-            tryStacked();
-        }
-
-        function tryStacked() {
-            if (!stacked || !stackedVideo) {
-                if (stacked) stacked.style.display = "none";
-                if (fallback) {
-                    fallback.classList.remove("invisible");
-                    fallback.classList.remove("opacity-0");
-                }
-                return;
-            }
-
-            const onCanPlayStacked = () => {
-                cleanupStacked();
-                // Asegurar que la versión WebM (si existe) no siga reproduciéndose
-                if (webmVideo) {
-                    try {
-                        webmVideo.pause();
-                        webmVideo.removeAttribute("autoplay");
-                        webmVideo.preload = "none";
-                        webmVideo.classList.add("hidden");
-                    } catch (e) {
-                        // ignore
-                    }
-                }
-                if (stacked) {
-                    stacked.classList.remove("hidden");
-                }
-                insertStackedLib();
-            };
-            const onErrorStacked = () => {
-                cleanupStacked();
-                if (stacked) stacked.style.display = "none";
-                if (fallback) {
-                    fallback.classList.remove("invisible");
-                    fallback.classList.remove("opacity-0");
-                }
-            };
-            const cleanupStacked = () => {
-                stackedVideo.removeEventListener("canplay", onCanPlayStacked);
-                stackedVideo.removeEventListener("error", onErrorStacked);
-            };
-
-            if (stackedVideo.readyState >= 2) {
-                onCanPlayStacked();
-            } else {
-                stackedVideo.addEventListener("canplay", onCanPlayStacked, { once: true });
-                stackedVideo.addEventListener("error", onErrorStacked, { once: true });
-                setTimeout(() => {
-                    if (stackedVideo.readyState < 2) {
-                        cleanupStacked();
-                        if (stacked) stacked.style.display = "none";
-                        if (fallback) {
-                            fallback.classList.remove("invisible");
-                            fallback.classList.remove("opacity-0");
-                        }
-                    }
-                }, 6000);
-            }
-        }
-
-        tryStacked();
-    </script>
+    <!-- El logotipo ocupa 770 de los 1920 px de ancho del lienzo, así que para
+         que acabe midiendo `--logo-w` (el del hero) el lienzo va a 1920/770 de
+         ese ancho. Ambos quedan centrados en la ventana, uno sobre el otro. -->
+    <div id="intro-lottie" data-src={logoIntro} aria-hidden="true" class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(var(--logo-w)*1920/770)] aspect-[16/9] origin-center [contain:paint]"></div>
 </div>
 
 <style is:global>
-    /* Mantener el <video> interno fuera de vista sin retirarlo del flujo (evita WebGL warnings) */
-    stacked-alpha-video video {
-        position: absolute !important;
-        inset: -9999px auto auto -9999px !important;
-        width: 1px !important;
-        height: 1px !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
-    }
-
     .intro-hidden {
         opacity: 0;
         visibility: hidden;

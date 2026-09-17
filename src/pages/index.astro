@@ -121,11 +121,22 @@ const projectsCta = homepage
             /* Separación entre el degradado y la leyenda. En móvil el texto va
                debajo y necesita aire; en escritorio va al costado y no. */
             --hero-gap: 2.5rem;
+            /* Ancho del logotipo sobre el degradado. `IntroVideo.astro` escala
+               su lienzo a partir de este mismo valor, así que la animación
+               termina con el logotipo justo del tamaño del que queda aquí. */
+            --logo-w: 70svw;
+        }
+
+        @media (min-width: 640px) {
+            :root {
+                --logo-w: 50svw;
+            }
         }
 
         @media (min-width: 768px) {
             :root {
                 --hero-gap: 0px;
+                --logo-w: 40svw;
             }
         }
 
@@ -156,7 +167,7 @@ const projectsCta = homepage
                         }}
                     >
                         <div class="z-10 relative flex justify-center items-center h-full">
-                            <Image class="logo pointer-events-none w-[70svw] sm:w-[50svw] md:w-[40svw] mb-2 mr-[2px]" src={Logo} alt="Logo" />
+                            <Image class="logo pointer-events-none w-[var(--logo-w)] mb-2 mr-[2px]" src={Logo} alt="Logo" />
                         </div>
                     </BubbleBackground>
                 </div>
