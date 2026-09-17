@@ -333,6 +333,20 @@ const homeHref = localizePath("/", locale);
            primer muestreo ocurre con ella delante. Cuando se retira, hay que
            volver a mirar. Lo mismo al volver con «atrás» desde la caché. */
         window.addEventListener("curtain:done", applyTheme);
+
+        /* La portada pasa varios segundos con la intro delante. Su overlay es
+           transparente, así que el muestreo la atraviesa y llega al fondo
+           crema del documento: tinta negra. Cuando la intro termina aparece
+           debajo el degradado del hero, que pide tinta crema, y hasta ahora
+           nada volvía a mirar —en escritorio se salvaba de rebote porque al
+           crearse ScrollSmoother se refresca ScrollTrigger, pero en móvil y
+           en iOS no se crea—. `nav:reveal` llega cuando el navbar entra y
+           `intro:finished` al acabar del todo. */
+        window.addEventListener("nav:reveal", scheduleTheme);
+        window.addEventListener("intro:finished", () => {
+            applyTheme();
+            window.setTimeout(applyTheme, 320);
+        });
         window.addEventListener("pageshow", scheduleTheme);
         /* Las fuentes y las imágenes mueven el contenido después del primer
            muestreo; un repaso al terminar la carga lo deja en su sitio. */
