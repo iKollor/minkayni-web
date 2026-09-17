@@ -241,8 +241,12 @@ const homeHref = localizePath("/", locale);
         const themeAt = (x: number, y: number): "dark" | "light" | null => {
             const stack = document.elementsFromPoint(x, y) as HTMLElement[];
             for (const el of stack) {
-                /* el propio navbar y la rejilla de transición no cuentan */
-                if (container.contains(el) || el.closest("#nav-container, #square-container")) continue;
+                /* No cuentan ni el propio navbar ni lo que tapa la página
+                   entera de forma pasajera: la rejilla de transición y la
+                   cortina de píxeles, que al navegar cubre todo con el
+                   morado de marca y haría leer un fondo que no es el de
+                   esta página. */
+                if (container.contains(el) || el.closest("#nav-container, #square-container, [data-pixel-curtain]")) continue;
 
                 const marked = el.closest<HTMLElement>("[data-nav-theme]");
                 if (marked) return marked.dataset.navTheme === "dark" ? "dark" : "light";
@@ -320,10 +324,19 @@ const homeHref = localizePath("/", locale);
                 window.setTimeout(applyTheme, 720);
                 return;
             }
-            const overlay = document.querySelector<HTMLElement>(".content-overlay");
+            const overlay = document.querySelector<HTMLElement>("#site-menu-panel");
             const bg = overlay ? toRgba(getComputedStyle(overlay).backgroundColor) : null;
             container.dataset.navTheme = bg && bg[3] >= 0.5 ? bestInkFor(bg) : "dark";
         });
+
+        /* Al navegar, la página nueva se pinta bajo la cortina de píxeles: el
+           primer muestreo ocurre con ella delante. Cuando se retira, hay que
+           volver a mirar. Lo mismo al volver con «atrás» desde la caché. */
+        window.addEventListener("curtain:done", applyTheme);
+        window.addEventListener("pageshow", scheduleTheme);
+        /* Las fuentes y las imágenes mueven el contenido después del primer
+           muestreo; un repaso al terminar la carga lo deja en su sitio. */
+        window.addEventListener("load", scheduleTheme, { once: true });
 
         applyTheme();
     };

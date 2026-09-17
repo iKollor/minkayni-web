@@ -267,9 +267,18 @@ export default function PixelCurtain({
     };
   }, []);
 
+  /* El navbar elige su tinta mirando lo que hay justo debajo; mientras la
+     cortina cubre, esa lectura da el color de la cortina. Se le avisa en
+     cuanto deja de tapar para que vuelva a mirar la página de verdad. */
+  useEffect(() => {
+    if (phase !== 'idle') return;
+    window.dispatchEvent(new CustomEvent('curtain:done'));
+  }, [phase]);
+
   return (
     <div
       aria-hidden="true"
+      data-pixel-curtain
       data-phase={phase}
       style={{
         position: 'fixed',
