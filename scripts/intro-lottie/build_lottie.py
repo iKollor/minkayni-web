@@ -1,3 +1,5 @@
+import os
+W=os.environ.get("INTRO_WORK",os.path.join(os.path.dirname(os.path.abspath(__file__)),"work"))
 """Assemble the Minkayni logo intro as a Lottie (bodymovin) JSON from the per-frame measurements."""
 import json, math, numpy as np, glob
 from PIL import Image, ImageDraw
@@ -142,14 +144,18 @@ def figure_layers(name, frames, color_hint):
             d=np.r_[0,np.cumsum(np.linalg.norm(np.diff(sp,axis=0),axis=1))]; t=np.linspace(105,d[-1],8)
             sp=np.stack([np.interp(t,d,sp[:,0]),np.interp(t,d,sp[:,1])],1)
         spine_keys.append((f,catmull(sp)))
-        if F["arm"] and not (name=="P" and f in BLURRED): arm=np.array(F["arm"]); last_arm=arm
+        if F["arm"] and not (name=="P" and f in BLURRED):
+            a=np.array(F["arm"])
+            # el brazo nace en el hombro (extremo superior del cuerpo), no en la
+            # unión del esqueleto, que queda más abajo y dejaba un «bulto» visible
+            arm=np.array([sp[0],(sp[0]+a[1])/2*0.35+a[1]*0.65,a[2]]); last_arm=arm
         else: arm=np.repeat(sp[:1],3,0)
-        arm_keys.append((f,poly(arm)))
+        arm_keys.append((f,catmull(arm)))
         width_keys.append((f,F["width"]))
         soft.append((f,F["soft"]))
     # widths: shrink at the zoom is real; keep measured but clamp 84..98 before 51
     width_keys=[(f,(min(max(w,92),98) if f<51 else w)) for f,w in width_keys]
-    if name=="P": width_keys=[(f,(50 if f==54 else w)) for f,w in width_keys]
+    if name=="P": width_keys=[(f,(50 if f==54 else 40 if f==55 else w)) for f,w in width_keys]
     s,e=grad_keys_screen(frames=[f for f,_ in spine_keys])
     blur=[(f,(0 if f in PAN_FRAMES else soft_to_blur(sf))) for f,sf in soft]
     shapes=[big_rect(),{"ty":"gr","nm":"spine","it":[{"ty":"sh","ks":path_kf(spine_keys),"nm":"spine"},{"ty":"sh","ks":path_kf(arm_keys),"nm":"arm"},gradient("gs",s,e,kf_scalar(width_keys)),{"ty":"tr",**transform()}]}]
@@ -164,7 +170,7 @@ def head_layer(name, HEADS, D, frames, extra_blur=None):
     return layer(name,shapes,ip=frames[0],op=frames[-1]+1,effects=eff)
 
 # ---------------------------------------------------------------- M body f54..80 and heads
-M_FRAMES=list(range(54,81))
+M_FRAMES=list(range(56,81))
 def m_layers():
     keys=[]; wk=[]; soft=[]
     for f in M_FRAMES:
@@ -173,9 +179,10 @@ def m_layers():
     s,e=grad_keys_screen(frames=M_FRAMES)
     blur=[(f,(0 if f in PAN_FRAMES else soft_to_blur(sf))) for f,sf in soft]
     shapes=[big_rect(),{"ty":"gr","nm":"M","it":[{"ty":"sh","ks":path_kf(keys),"nm":"M"},gradient("gs",s,e,kf_scalar(wk)),{"ty":"tr",**transform()}]}]
-    return layer("iso-body",shapes,ip=54,op=81,effects=[blur_effect(compact(blur))])
+    ks={"o":kf_scalar([(80,100),(84,0)]),"r":static(0),"p":static([0,0,0]),"a":static([0,0,0]),"s":static([100,100,100])}
+    return layer("iso-body",shapes,ip=56,op=85,ks=ks,effects=[blur_effect(compact(blur))])
 # heads after 54 from misc (L,R)
-for f in M_FRAMES:
+for f in range(54,81):
     hs=misc["iso"][str(f)]["heads"]
     if len(hs)>=1: HEAD_P[f]=(hs[0][0],hs[0][1]); HEAD_D_P[f]=hs[0][2]
     if len(hs)>=2 and hs[-1][0]>hs[0][0]+100 and hs[-1][1]<430: HEAD_B[f]=(hs[-1][0],hs[-1][1]); HEAD_D_B[f]=hs[-1][2]
@@ -183,8 +190,10 @@ for f in M_FRAMES:
 HEAD_B[59]=(1040,398); HEAD_B[60]=(985,395); HEAD_B[61]=(800,380); HEAD_B[62]=(741,368)
 for f in (60,61): HEAD_D_P[f]=37.5
 for f in (59,60,61,62): HEAD_D_B[f]=38.5
-for f in range(55,81):
+for f in range(55,85):
     HEAD_D_P.setdefault(f,38.5); HEAD_D_B.setdefault(f,38.5)
+    HEAD_P.setdefault(f,HEAD_P[80]); HEAD_B.setdefault(f,HEAD_B[80])
+HEAD_P[119]=HEAD_P[80]; HEAD_B[119]=HEAD_B[80]
 
 # ---------------------------------------------------------------- final iso (exact geometry) from f81
 ISO_S=0.7188; ISO_OFF=np.array([574.0,360.6])
@@ -208,8 +217,8 @@ def iso_layer(frames):
     shapes=[{"ty":"gr","nm":"bbox","it":[{"ty":"rc","d":1,"s":static([8000,8000]),"p":static(a),"r":static(0)},{"ty":"fl","c":static([0,0,0,1]),"o":static(0),"r":1},{"ty":"tr",**transform()}]},
             {"ty":"gr","nm":"iso","it":[{"ty":"sh","ks":static(G["iso"][0]),"nm":"M"},gradient("gs",gs,ge,static(ISO_STROKE)),{"ty":"tr",**transform()}]},
             {"ty":"gr","nm":"heads","it":circles+[gradient("gf",gs,ge),{"ty":"tr",**transform()}]}]
-    ks={"o":static(100),"r":kf_scalar(rot),"p":kf(pos),"a":static(a+[0]),"s":kf(sc)}
-    return layer("iso",shapes,ip=frames[0],op=NF,ks=ks,effects=[blur_effect(compact(bl))])
+    ks={"o":kf_scalar([(80,0),(84,100)]),"r":kf_scalar(rot),"p":kf(pos),"a":static(a+[0]),"s":kf(sc)}
+    return layer("iso",shapes,ip=80,op=NF,ks=ks)
 
 # ---------------------------------------------------------------- letters
 TEXT_S=0.7268; TEXT_OFF=np.array([576.5,362.4]); LETTER_OUTLINE=2.9
@@ -362,12 +371,13 @@ for nm in ["i","k","y","i2","n","n2","a"]:   # 'a' below 'k'
     scene.append(letter_layer(nm))
 scene.append(n_reveal_layer("n",n_t,n_pos,False))
 scene.append(n_reveal_layer("n2",n2_t,n2_pos,True))
-scene.append(iso_layer(list(range(55,81))))
+scene.append(iso_layer([119]))
+scene.append(m_layers())
 zoom_blur=[(f,soft_to_blur(fig[f]["P"]["soft"]) if fig[f].get("P") else 0) for f in range(51,54)]
-scene.append(head_layer("head-L",HEAD_P,HEAD_D_P,list(range(0,55)),extra_blur=[(f,0) for f in (0,)]+[(f,(0 if f in PAN_FRAMES else soft_to_blur(fig[f]["P"]["soft"] if f<54 and fig[f].get("P") else misc["iso"][str(f)]["soft"] if f>=54 else 0))) for f in range(1,55)]))
-scene.append(head_layer("head-R",HEAD_B,HEAD_D_B,list(range(26,55)),extra_blur=[(f,(0 if f in PAN_FRAMES else soft_to_blur(fig[f]["B"]["soft"] if f<54 and fig[f].get("B") else misc["iso"][str(f)]["soft"] if f>=54 else 0))) for f in range(26,55)]))
-scene.append(figure_layers("P",list(range(0,55)),"purple"))
-scene.append(figure_layers("B",list(range(26,55)),"blue"))
+scene.append(head_layer("head-L",HEAD_P,HEAD_D_P,list(range(0,85)),extra_blur=[(f,0) for f in (0,)]+[(f,(0 if f in PAN_FRAMES else soft_to_blur(fig[f]["P"]["soft"] if f<54 and fig[f].get("P") else misc["iso"][str(f)]["soft"] if f>=54 else 0))) for f in range(1,85)]))
+scene.append(head_layer("head-R",HEAD_B,HEAD_D_B,list(range(26,85)),extra_blur=[(f,(0 if f in PAN_FRAMES else soft_to_blur(fig[f]["B"]["soft"] if f<54 and fig[f].get("B") else misc["iso"][str(f)]["soft"] if f>=54 else 0))) for f in range(26,85)]))
+scene.append(figure_layers("P",list(range(0,56)),"purple"))
+scene.append(figure_layers("B",list(range(26,56)),"blue"))
 for i,L in enumerate(scene): L["ind"]=i+1
 root_layer={"ddd":0,"ind":1,"ty":0,"nm":"scene","refId":"scene","sr":1,"ks":{"o":static(100),"r":static(0),"p":static([W/2,H/2,0]),"a":static([W/2,H/2,0]),"s":static([100,100,100])},"ao":0,"w":W,"h":H,"ip":0,"op":NF,"st":0,"bm":0,
             "ef":[blur_effect(compact(scene_blur),dims=2,name="Pan blur")]}

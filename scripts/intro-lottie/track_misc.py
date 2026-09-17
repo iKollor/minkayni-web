@@ -29,6 +29,11 @@ for f in range(0,120):
     if f>=54:
         op=m["opaque"].copy()
         hs=heads(op,dmin=28,dmax=70)
+        hs_top=sorted([h for h in hs if h["cy"]<450],key=lambda h:h["cx"])
+        if len(hs_top)>=2:
+            # sólo la región del isotipo (excluye la «i» que aparece pegada a la pierna derecha)
+            xl=int(hs_top[0]["cx"]-70); xr=int(hs_top[-1]["cx"]+30); yt=int(min(h["cy"] for h in hs_top)-60)
+            reg=np.zeros_like(op); reg[max(yt,0):660, max(xl,0):min(xr,W)]=True; op=op&reg
         lab,n=ndimage.label(op)
         sizes=ndimage.sum(op,lab,range(1,n+1))
         k=int(np.argmax(sizes))+1; cm=lab==k
