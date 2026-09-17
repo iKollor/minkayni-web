@@ -93,13 +93,12 @@ for f in range(NF):
         if xs+4>xe: m=((pr or 800)+(bl or 1900))/2; xs,xe=m-2,m+2
         grad[f]=(xs,xe)
     elif f==54:
-        hs=misc["iso"]["54"]["heads"]; grad[f]=(hs[0][0]-27,hs[-1][0]+27)
+        grad[f]=(905,925)   # las figuras aún tienen su color propio; el brazo azul sigue azul
     else:
         g=misc["gradient"].get(str(f))
         grad[f]=(g["xs"],g["xe"]) if g else grad[f-1]
 # smooth 55..62 lightly (noisy during pan)
-for f in (55,):
-    hs=misc["iso"][str(f)]["heads"]; grad[f]=(hs[0][0]-22,hs[-1][0]+22)
+grad[55]=(915,955)   # medido: el degradado empieza a cruzar entre figuras en f56
 def grad_keys_screen(y=540, frames=range(NF)):
     return [(f,[grad[f][0],y]) for f in frames],[(f,[grad[f][1],y]) for f in frames]
 
@@ -143,7 +142,7 @@ def figure_layers(name, frames, color_hint):
             d=np.r_[0,np.cumsum(np.linalg.norm(np.diff(sp,axis=0),axis=1))]; t=np.linspace(105,d[-1],8)
             sp=np.stack([np.interp(t,d,sp[:,0]),np.interp(t,d,sp[:,1])],1)
         spine_keys.append((f,catmull(sp)))
-        if F["arm"] and f not in BLURRED: arm=np.array(F["arm"]); last_arm=arm
+        if F["arm"] and not (name=="P" and f in BLURRED): arm=np.array(F["arm"]); last_arm=arm
         else: arm=np.repeat(sp[:1],3,0)
         arm_keys.append((f,poly(arm)))
         width_keys.append((f,F["width"]))
