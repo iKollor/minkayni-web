@@ -1,5 +1,45 @@
 # Pipeline del Lottie de la intro (`src/assets/lottie/logo_intro.json`)
 
+## Versión actual: híbrido After Effects + medición
+
+`src/assets/lottie/logo_intro.json` se genera con `build_hybrid.py` a partir de:
+
+- `ae/logo_intro_ae.json`: export de Bodymovin de la comp `MAIN ANIMATION`
+  del proyecto original. De aquí salen las letras «inkayni» (con sus rebotes
+  de BOUNCr ya horneados) y el tagline con su trazo de escritura.
+- `ae/logo_intro_medido.json`: la versión medida sobre el video (pipeline de
+  abajo). De aquí salen las dos figuras, el isotipo «M» elástico y el
+  desenfoque de movimiento, porque en AE están hechos con CC Bend It y motion
+  blur de capa, que Lottie no puede exportar.
+
+Lo que `build_hybrid.py` corrige del export de AE para que lottie-web lo
+reproduzca igual que After Effects:
+
+- La cámara 3D (`Cámara 1` sobre `Nulo 2`) no existe en lottie-web: se hornea
+  cuadro a cuadro en un nulo 2D padre de `TEXTO` (barrido y zoom).
+- `Gradación de degradado` es un efecto no soportado: se sustituye por un
+  relleno de degradado con los mismos puntos y colores, usando `TEXTO` como
+  mate alfa.
+- Las «n» estaban construidas con contorno + Desplazar trazados + dos
+  Recortar trazados; lottie-web no calcula igual el desplazamiento y se
+  quedaban a medias. Se sustituyen por su línea central con un solo trim con
+  las mismas claves.
+- Se eliminan los pseudoefectos de BOUNCr y los Combinar trazados (no hacen
+  falta: los contornos ya tienen el sentido correcto).
+- Se añade desenfoque gaussiano a las letras a partir del blur medido en el
+  video.
+
+```bash
+cd scripts/intro-lottie
+python3 build_hybrid.py            # escribe src/assets/lottie/logo_intro.json
+# opcional: build_hybrid.py <export_ae.json> <medido.json> <salida.json>
+```
+
+Para reexportar desde AE: comp de 1920×1080 a 24 fps y 5 s, Glyphs activado,
+expresiones convertidas a keyframes, capas de referencia y fondo apagadas.
+
+## Pipeline de medición (base de `ae/logo_intro_medido.json`)
+
 El motion graphic del logotipo que usa `LogoMotion.astro` no se exportó desde
 After Effects: se **reconstruyó cuadro a cuadro** a partir del
 `logo_intro.webm` original (1920×1080, 24 fps, 120 cuadros) para que la
