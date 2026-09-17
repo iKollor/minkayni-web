@@ -8,6 +8,13 @@
    los enlaces de verificación del Estado ecuatoriano y los documentos
    oficiales descargables.
 
+   Los tres datos que un revisor —o un rastreador automático— busca para
+   confirmar que la organización existe y opera desde este dominio son la
+   DIRECCIÓN FÍSICA, el CORREO @minkayni.org y el TELÉFONO. Por eso viven en
+   su propia sección, en texto plano y SIN animación de entrada: ni
+   `data-reveal` ni `data-scroll-float`. Nada de lo que hay ahí depende de
+   que el visitante haga scroll ni de que el navegador ejecute JavaScript.
+
    Accesibilidad: <dl> para pares dato/valor, <address> para el domicilio,
    jerarquía de encabezados sin saltos, foco visible en todos los enlaces y
    contraste AA (texto #0a0801 sobre crema #FFF6E5 ≈17:1; blanco sobre
@@ -27,12 +34,25 @@ const rows = fullRows(d, locale);
 const address = formatAddress(d);
 const documents = (d.documents ?? []).filter((doc) => doc?.file?.url);
 const verificationLinks = (d.verificationLinks ?? []).filter((link) => link?.href && link?.text);
+
+/* `tel:` necesita el número sin espacios; el texto visible conserva el
+   formato legible (+593 98 526 1647). */
 const telHref = d.phone ? `tel:${d.phone.replace(/[^+\d]/g, "")}` : "";
+
+/* Contacto oficial como pares dato/valor. `text` es SIEMPRE el valor en
+   claro: el correo y el teléfono se leen tal cual aunque el enlace no se
+   pueda seguir (impresión, lector de texto, rastreador sin JavaScript). */
+const contactRows = [
+    { icon: "mdi:map-marker-outline", label: t("transparency.physicalAddress"), text: address, href: "" },
+    { icon: "mdi:email-outline", label: t("transparency.email"), text: d.email, href: d.email ? `mailto:${d.email}` : "" },
+    { icon: "mdi:phone-outline", label: t("transparency.phone"), text: d.phone, href: telHref },
+    { icon: "mdi:web", label: t("transparency.website"), text: d.website, href: d.website },
+].filter((row) => Boolean(row.text));
 ---
 
 <PageLayout title={t("nav.legalTransparency")} description={d.seo.metaDescription}>
     <!-- Identidad legal -->
-    <section class="mx-auto w-[90%] max-w-[1100px] py-16 sm:py-24" aria-labelledby="legal-identity-title">
+    <section class="mx-auto w-[90%] max-w-[1100px] pt-16 sm:pt-24" aria-labelledby="legal-identity-title">
         <header class="max-w-[70ch]" data-reveal>
             <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.eyebrow}</p>
             <h2 data-scroll-float id="legal-identity-title" class="font-display text-4xl font-black leading-[0.95] text-black sm:text-6xl">{d.title}</h2>
@@ -51,90 +71,77 @@ const telHref = d.phone ? `tel:${d.phone.replace(/[^+\d]/g, "")}` : "";
         </dl>
     </section>
 
-    <!-- Domicilio, contacto y verificación pública -->
-    <section class="mx-auto w-[94%] max-w-[1200px] rounded-[2.5rem] bg-primary px-6 py-14 text-white sm:px-12 lg:rounded-[4rem] lg:px-16 lg:py-20" aria-labelledby="legal-contact-title">
-        <h2 data-scroll-float id="legal-contact-title" class="font-display text-3xl font-black leading-tight sm:text-5xl">{t("transparency.address")}</h2>
+    <!-- Domicilio y contacto oficial.
 
-        <div class="mt-10 grid gap-10 lg:grid-cols-2">
-            <address class="space-y-5 not-italic">
-                <p class="flex items-start gap-4 text-lg leading-snug">
-                    <Icon name="mdi:map-marker-outline" class="mt-1 h-6 w-6 shrink-0 text-secondary" aria-hidden="true" />
-                    <span>
-                        <span class="block text-sm font-bold uppercase tracking-[0.14em] text-white/80">{t("transparency.physicalAddress")}</span>
-                        <span class="mt-1 block font-semibold">{address}</span>
-                    </span>
-                </p>
-                {
-                    d.email && (
-                        <p class="flex items-start gap-4 text-lg leading-snug">
-                            <Icon name="mdi:email-outline" class="mt-1 h-6 w-6 shrink-0 text-secondary" aria-hidden="true" />
-                            <span>
-                                <span class="block text-sm font-bold uppercase tracking-[0.14em] text-white/80">{t("transparency.email")}</span>
-                                <a href={`mailto:${d.email}`} class="mt-1 block font-semibold underline decoration-secondary underline-offset-4 transition hover:text-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary">
-                                    {d.email}
-                                </a>
-                            </span>
-                        </p>
-                    )
-                }
-                {
-                    d.phone && (
-                        <p class="flex items-start gap-4 text-lg leading-snug">
-                            <Icon name="mdi:phone-outline" class="mt-1 h-6 w-6 shrink-0 text-secondary" aria-hidden="true" />
-                            <span>
-                                <span class="block text-sm font-bold uppercase tracking-[0.14em] text-white/80">{t("transparency.phone")}</span>
-                                <a href={telHref} class="mt-1 block font-semibold underline decoration-secondary underline-offset-4 transition hover:text-secondary">
-                                    {d.phone}
-                                </a>
-                            </span>
-                        </p>
-                    )
-                }
-                {
-                    d.website && (
-                        <p class="flex items-start gap-4 text-lg leading-snug">
-                            <Icon name="mdi:web" class="mt-1 h-6 w-6 shrink-0 text-secondary" aria-hidden="true" />
-                            <span>
-                                <span class="block text-sm font-bold uppercase tracking-[0.14em] text-white/80">{t("transparency.website")}</span>
-                                <a href={d.website} class="mt-1 block font-semibold underline decoration-secondary underline-offset-4 transition hover:text-secondary">
-                                    {d.website.replace(/^https?:\/\//, "")}
-                                </a>
-                            </span>
-                        </p>
-                    )
-                }
-            </address>
+         Bloque deliberadamente estático: sin `data-reveal` en la sección ni
+         `data-scroll-float` en el título. Es el dato que se verifica, así que
+         se ve al cargar la página, sin esperar al scroll ni a GSAP. -->
+    <section class="mx-auto w-[90%] max-w-[1100px] pt-16 sm:pt-20" aria-labelledby="legal-contact-title">
+        <h2 id="legal-contact-title" class="font-display text-3xl font-black leading-tight text-primary sm:text-4xl">{t("transparency.address")}</h2>
 
-            {
-                verificationLinks.length > 0 && (
-                    <div>
-                        <h3 class="text-sm font-bold uppercase tracking-[0.14em] text-white/80">{t("transparency.officialSources")}</h3>
-                        <ul class="mt-4 space-y-3">
-                            {verificationLinks.map((link) => (
-                                <li>
+        <address class="mt-8 not-italic">
+            <dl class="divide-y divide-black/10 border-y border-black/10">
+                {
+                    contactRows.map((row) => (
+                        <div class="grid gap-1 py-5 sm:grid-cols-[minmax(0,15rem)_1fr] sm:gap-8">
+                            <dt class="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.14em] text-black/70">
+                                <Icon name={row.icon} class="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                                {row.label}
+                            </dt>
+                            <dd class="text-base font-semibold leading-snug text-black sm:text-lg">
+                                {row.href ? (
                                     <a
-                                        href={link!.href!}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        class="inline-flex items-center gap-3 rounded-2xl bg-white/10 px-5 py-4 font-semibold transition hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+                                        href={row.href}
+                                        class="underline decoration-primary/40 underline-offset-4 transition hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                                     >
-                                        <Icon name="mdi:shield-check-outline" class="h-5 w-5 shrink-0 text-secondary" aria-hidden="true" />
-                                        <span>{link!.text}</span>
-                                        <Icon name="mdi:external-link" class="h-4 w-4 shrink-0" aria-hidden="true" />
-                                        <span class="sr-only">{t("transparency.opensNewTab")}</span>
+                                        {row.text}
                                     </a>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )
-            }
-        </div>
+                                ) : (
+                                    row.text
+                                )}
+                            </dd>
+                        </div>
+                    ))
+                }
+            </dl>
+        </address>
     </section>
+
+    <!-- Verificación en fuentes oficiales del Estado ecuatoriano -->
+    {
+        verificationLinks.length > 0 && (
+            <section
+                class="mx-auto mt-16 w-[94%] max-w-[1200px] rounded-[2.5rem] bg-primary px-6 py-14 text-white sm:px-12 lg:rounded-[4rem] lg:px-16 lg:py-20"
+                aria-labelledby="legal-sources-title"
+            >
+                <h2 data-scroll-float id="legal-sources-title" class="font-display text-3xl font-black leading-tight sm:text-5xl">
+                    {t("transparency.officialSources")}
+                </h2>
+
+                <ul class="mt-10 grid gap-3 sm:grid-cols-2">
+                    {verificationLinks.map((link) => (
+                        <li>
+                            <a
+                                href={link!.href!}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="flex h-full items-center gap-3 rounded-2xl bg-white/10 px-5 py-4 font-semibold transition hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+                            >
+                                <Icon name="mdi:shield-check-outline" class="h-5 w-5 shrink-0 text-secondary" aria-hidden="true" />
+                                <span>{link!.text}</span>
+                                <Icon name="mdi:external-link" class="h-4 w-4 shrink-0" aria-hidden="true" />
+                                <span class="sr-only">{t("transparency.opensNewTab")}</span>
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            </section>
+        )
+    }
 
     <!-- Documentos oficiales -->
     <section class="mx-auto mb-44 w-[90%] max-w-[1100px] pb-40 pt-16 sm:pt-24" aria-labelledby="legal-documents-title">
-        <h2 data-scroll-float id="legal-documents-title" class="font-display text-3xl font-black leading-tight text-primary sm:text-5xl">Documentos oficiales</h2>
+        <h2 data-scroll-float id="legal-documents-title" class="font-display text-3xl font-black leading-tight text-primary sm:text-5xl">{t("transparency.documents")}</h2>
 
         {
             documents.length > 0 ? (

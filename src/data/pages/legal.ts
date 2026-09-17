@@ -34,7 +34,11 @@ export const legalFallback = {
     addressRegion: "Guayas",
     addressCountry: "Ecuador",
     email: "admin@minkayni.org",
-    phone: "",
+    /* Teléfono institucional: el mismo número que el sitio ya publica en
+       /donar y /batucada (global.ts → whatsappUrl). Se repite a propósito —
+       un verificador que cruce el sitio con el registro debe encontrar
+       SIEMPRE el mismo número, no uno distinto por página. */
+    phone: "+593 98 526 1647",
     website: "https://minkayni.org",
 
     /* Datos adicionales opcionales (repetible en el CMS) */

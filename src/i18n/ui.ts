@@ -128,6 +128,7 @@ export const ui = {
         "transparency.officialSources": "Verificación en fuentes oficiales",
         "transparency.opensNewTab": "(se abre en una pestaña nueva)",
         "transparency.opensPdf": "(documento PDF, se abre en una pestaña nueva)",
+        "transparency.documents": "Documentos oficiales",
         "transparency.certificates": "Los certificados originales se entregan bajo solicitud para procesos de verificación y debida diligencia.",
 
         /* 404 */
@@ -273,6 +274,7 @@ export const ui = {
         "transparency.officialSources": "Verification against official sources",
         "transparency.opensNewTab": "(opens in a new tab)",
         "transparency.opensPdf": "(PDF document, opens in a new tab)",
+        "transparency.documents": "Official documents",
         "transparency.certificates": "Original certificates are provided on request for verification and due diligence processes.",
 
         /* 404 */
