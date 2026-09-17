@@ -24,6 +24,38 @@ export function formatAddress(d: LegalContent): string {
     return [d.addressStreet, d.addressLocality, d.addressRegion, d.addressCountry].map((part) => (part ?? "").trim()).filter(Boolean).join(", ");
 }
 
+/** Solo el número del registro SUIOS: "0000130796 — Sistema Unificado…" → "0000130796". */
+export function suiosNumber(d: LegalContent): string {
+    return (d.suiosCode ?? "").split("—")[0].trim();
+}
+
+/** Dominio sin protocolo ni barra final: "https://minkayni.org/" → "minkayni.org". */
+export function domainName(d: LegalContent): string {
+    return (d.website ?? "").replace(/^https?:\/\//, "").replace(/\/+$/, "");
+}
+
+/**
+ * Titularidad del dominio en una frase.
+ *
+ * Google for Nonprofits pide literalmente «texto en tu dominio oficial que
+ * indique que el dominio está relacionado» con la organización. La frase se
+ * COMPONE de los campos ya verificados (dominio, razón social, RUC, SUIOS) en
+ * vez de escribirse a mano: si mañana cambia el RUC en el CMS, la línea cambia
+ * con él. Una frase suelta que contradiga la tabla de arriba es justo lo que
+ * hace que un verificador rechace la solicitud.
+ */
+export function domainOwnershipLine(d: LegalContent, locale: Locale = defaultLocale): string {
+    const t = useTranslations(locale);
+    const domain = domainName(d);
+    if (!domain || !d.legalName) return "";
+    return t("transparency.domainOwnership", {
+        domain,
+        legalName: d.legalName,
+        ruc: d.ruc,
+        suios: suiosNumber(d),
+    });
+}
+
 /** Identidad legal mínima: lo que exigen Goodstack, TechSoup, Google y Microsoft. */
 export function coreRows(d: LegalContent, locale: Locale = defaultLocale): LegalRow[] {
     const t = useTranslations(locale);
@@ -86,7 +118,7 @@ export function organizationJsonLd(d: LegalContent, siteUrl: string) {
         location: { "@type": "Place", address },
         identifier: [
             d.ruc ? { "@type": "PropertyValue", name: "RUC (SRI Ecuador)", value: d.ruc } : null,
-            d.suiosCode ? { "@type": "PropertyValue", name: "Registro SUIOS", value: d.suiosCode.split("—")[0].trim() } : null,
+            d.suiosCode ? { "@type": "PropertyValue", name: "Registro SUIOS", value: suiosNumber(d) } : null,
             d.ministryResolution ? { "@type": "PropertyValue", name: "Resolución MIES", value: d.ministryResolution } : null,
         ].filter(Boolean),
         contactPoint: d.email
