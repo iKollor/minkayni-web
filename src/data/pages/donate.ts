@@ -85,10 +85,14 @@ export const donateFallback = {
         { name: "Remitly", description: "Disponible desde Estados Unidos, España y varios países más, con depósito directo a bancos ecuatorianos.", href: "https://www.remitly.com/", linkText: "Enviar con Remitly", fee: "Depósito directo", icon: "mdi:cellphone-arrow-down" },
     ] as DonationMethod[],
 
+    /* La clave se llama `english` por historia —era un aviso en inglés para
+       donantes extranjeros cuando el sitio solo existía en español— y así la
+       conserva el tipo `donatePage` del CMS. Ahora va en el idioma de la
+       página: esta es la versión española; la inglesa, en donateFallbackEn. */
     english: {
-        title: "Donating from outside Ecuador",
-        body: "Fundación MINKAYNI is a non-profit based in Guayaquil, Ecuador. The country's official currency is the US dollar, so a gift in USD reaches us with no currency conversion.",
-        note: "Use the account details on this page — the wire section lists everything your bank will ask for — or send the funds through Wise or Remitly, usually far cheaper than a bank wire. Email the receipt to admin@minkayni.org and we will send you our donation certificate. A direct gift to a foreign charity is normally not tax-deductible in your own country; if your organisation needs a deductible receipt, write to us and we will look for a route together.",
+        title: "Donar desde fuera de Ecuador",
+        body: "La Fundación MINKAYNI es una organización sin fines de lucro con sede en Guayaquil, Ecuador. La moneda oficial del país es el dólar estadounidense, así que una donación en USD nos llega sin conversión de moneda.",
+        note: "Usa los datos de cuenta de esta página —la sección del giro reúne todo lo que te pedirá tu banco— o envía el dinero con Wise o Remitly, que suelen costar mucho menos que un giro bancario. Manda el comprobante a admin@minkayni.org y te enviamos nuestro certificado de donación. Una donación directa a una organización extranjera normalmente no es deducible de impuestos en tu país; si tu organización necesita un recibo deducible, escríbenos y buscamos juntos una vía.",
     },
 
     faqHeading: {
@@ -217,6 +221,12 @@ export const donateFallbackEn: DonateContent = {
         { name: "Wise", description: "Sends to Ecuadorian bank accounts in dollars, with a low fee and no currency conversion. Arrives within hours.", href: "https://wise.com/", linkText: "Send with Wise", fee: "Low fee", icon: "mdi:bank-transfer-out" },
         { name: "Remitly", description: "Available from the United States, Spain and several other countries, with direct deposit to Ecuadorian banks.", href: "https://www.remitly.com/", linkText: "Send with Remitly", fee: "Direct deposit", icon: "mdi:cellphone-arrow-down" },
     ] as DonationMethod[],
+
+    english: {
+        title: "Donating from outside Ecuador",
+        body: "Fundación MINKAYNI is a non-profit based in Guayaquil, Ecuador. The country's official currency is the US dollar, so a gift in USD reaches us with no currency conversion.",
+        note: "Use the account details on this page — the wire section lists everything your bank will ask for — or send the funds through Wise or Remitly, usually far cheaper than a bank wire. Email the receipt to admin@minkayni.org and we will send you our donation certificate. A direct gift to a foreign charity is normally not tax-deductible in your own country; if your organisation needs a deductible receipt, write to us and we will look for a route together.",
+    },
 
     faqHeading: {
         eyebrow: "Before you give",

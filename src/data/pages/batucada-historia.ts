@@ -109,7 +109,6 @@ export const batucadaHistoriaFallback = {
     senseHighlight: "Desde los barrios también se producen conocimientos, respuestas y caminos para defender la vida.",
     senseImage: null as CmsMedia,
     senseLocalImage: MarchPhoto as ImageMetadata | undefined,
-    senseImageAlt: "Jóvenes de Batucada Popular marchando con sus tambores en una calle de Guayaquil",
     ctaHeading: {
         eyebrow: "Sigue el recorrido",
         title: "La batucada no suena sola.",

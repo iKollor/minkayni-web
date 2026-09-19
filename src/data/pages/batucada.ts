@@ -13,7 +13,6 @@ export const batucadaFallback = {
     heroSecondary: { text: "Ver metodología", href: "#metodologia" },
     heroImage: null as CmsMedia,
     heroLocalImage: HeroPhoto as ImageMetadata | undefined,
-    heroImageAlt: "Jóvenes de Batucada Popular tocando tambores durante una presentación",
     introHeading: {
         eyebrow: "Un proceso construido desde los territorios",
         title: "Cuando el tambor convoca, la comunidad *responde*.",
@@ -45,7 +44,6 @@ export const batucadaFallback = {
     pulseHighlight: "No se trata solo de aprender música. Se trata de pertenecer.",
     pulseImage: null as CmsMedia,
     pulseLocalImage: CommunityPhoto as ImageMetadata | undefined,
-    pulseImageAlt: "Integrantes de Batucada Popular compartiendo juntas después de una presentación",
     methodHeading: {
         eyebrow: "Metodología DAARR",
         title: "Escuchar. Hacer. Acompañar. Aprender de nuevo.",

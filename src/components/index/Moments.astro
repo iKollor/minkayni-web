@@ -8,6 +8,11 @@ import { strapiMediaSrcSet, strapiMediaUrl } from "../../utils/media-url";
 import { getLocale, useTranslations } from "../../i18n";
 
 const t = useTranslations(getLocale(Astro.url));
+/* Los pies de foto llegan tal cual de las redes, en español: fuera de la
+   versión española se marcan con `lang` para que lectores de pantalla y
+   traductores del navegador los lean como lo que son. Traducirlos a mano no
+   sirve, porque la sincronización los reescribe. */
+const captionLang = getLocale(Astro.url) === "es" ? undefined : "es";
 
 const STRAPI_URL = import.meta.env.STRAPI_URL ?? "";
 const posts = await getCollection("posts");
@@ -39,6 +44,7 @@ const items = posts.filter((p) => p?.data?.source?.url);
                                         loop
                                         playsinline
                                         aria-label={post.caption || `Reel ${post.external_id}`}
+                                        lang={post.caption ? captionLang : undefined}
                                     />
                                 ) : (
                                     <img
@@ -46,7 +52,8 @@ const items = posts.filter((p) => p?.data?.source?.url);
                                         src={mediaUrl}
                                         srcset={mediaSrcSet || undefined}
                                         sizes="(min-width: 768px) 500px, 250px"
-                                        alt={post.caption || `Publicación ${post.external_id}`}
+                                        alt={post.caption || t("news.postFallback", { id: post.external_id ?? "" })}
+                                        lang={post.caption ? captionLang : undefined}
                                         width="960"
                                         height="960"
                                         loading="lazy"
@@ -60,7 +67,7 @@ const items = posts.filter((p) => p?.data?.source?.url);
                                 <div class="absolute left-3 right-3 top-3 z-20 flex items-center justify-between pointer-events-auto p-2">
                                     <div class="flex items-center">{post.media_kind === "reel" ? <Image src={reelIcon} alt="reel" class="w-8 h-8 object-contain drop-shadow-md invert" /> : <Icon name="mdi:images" class="w-6 h-6 text-white drop-shadow-md" />}</div>
                                     <div>
-                                        <a href={post.permalink} target="_blank" rel="noopener noreferrer" aria-label="Open permalink" class="inline-flex items-center justify-center p-1.5 rounded bg-black/40 hover:bg-black/60">
+                                        <a href={post.permalink} target="_blank" rel="noopener noreferrer" aria-label={t("news.openPost")} class="inline-flex items-center justify-center p-1.5 rounded bg-black/40 hover:bg-black/60">
                                             <Icon name="mdi:external-link" class="w-5 h-5 text-white" />
                                         </a>
                                     </div>
@@ -69,7 +76,7 @@ const items = posts.filter((p) => p?.data?.source?.url);
                                 {/* Caption: ocupa 20% height y queda abajo; ellipsis si es largo */}
                                 <div class="absolute left-0 right-0 bottom-0 h-[50%] flex items-end z-20">
                                     <div class="w-full h-fit p-3 bg-gradient-to-t from-black/90 to-transparent">
-                                        <p class="text-base text-white leading-tight overflow-hidden line-clamp-4 m-2">{post.caption}</p>
+                                        <p class="text-base text-white leading-tight overflow-hidden line-clamp-4 m-2" lang={captionLang}>{post.caption}</p>
                                     </div>
                                 </div>
                             </div>

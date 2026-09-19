@@ -41,20 +41,20 @@ type Account = (typeof d.accounts)[number];
 /* Datos que pide una transferencia nacional. */
 const localRows = (account: Account) =>
     [
-        { label: "Banco", value: account.bank, copy: false, lead: false },
-        { label: "Tipo de cuenta", value: account.accountType, copy: false, lead: false },
-        { label: "Número de cuenta", value: account.accountNumber, copy: true, lead: true },
-        { label: "Titular", value: account.holder, copy: false, lead: false },
-        { label: "RUC", value: account.taxId, copy: true, lead: false },
+        { label: t("donate.bank"), value: account.bank, copy: false, lead: false },
+        { label: t("donate.accountType"), value: account.accountType, copy: false, lead: false },
+        { label: t("donate.accountNumber"), value: account.accountNumber, copy: true, lead: true },
+        { label: t("donate.holder"), value: account.holder, copy: false, lead: false },
+        { label: t("donate.taxId"), value: account.taxId, copy: true, lead: false },
     ].filter((row) => Boolean(row.value));
 
 /* Lo que un banco extranjero pide ADEMÁS de lo anterior. */
 const wireRows = (account: Account) =>
     [
-        { label: "Código SWIFT / BIC", value: account.swift, copy: true, lead: true },
-        { label: "Dirección del titular", value: account.holderAddress, copy: true, lead: false },
-        { label: "Dirección del banco", value: account.bankAddress, copy: true, lead: false },
-        { label: "Moneda", value: account.currency, copy: false, lead: false },
+        { label: t("donate.swift"), value: account.swift, copy: true, lead: true },
+        { label: t("donate.holderAddress"), value: account.holderAddress, copy: true, lead: false },
+        { label: t("donate.bankAddress"), value: account.bankAddress, copy: true, lead: false },
+        { label: t("donate.currency"), value: account.currency, copy: false, lead: false },
     ].filter((row) => Boolean(row.value));
 
 /* Un solo bloque de texto con todo el giro: es lo que el donante pega en el
@@ -77,7 +77,7 @@ const faq = d.faq.filter((item) => item?.question && item?.answer);
 
         {
             d.channelLinks.length > 0 && (
-                <nav class="mt-9 flex flex-wrap gap-3" aria-label="Atajos" data-reveal>
+                <nav class="mt-9 flex flex-wrap gap-3" aria-label={t("donate.shortcuts")} data-reveal>
                     {d.channelLinks.map((link) => (
                         <a
                             href={link.href}
@@ -120,7 +120,7 @@ const faq = d.faq.filter((item) => item?.question && item?.answer);
                                                 data-label={row.label}
                                             >
                                                 <Icon name="mdi:content-copy" class="h-4 w-4" aria-hidden="true" />
-                                                <span class="copy-btn-text">Copiar</span>
+                                                <span class="copy-btn-text">{t("donate.copy")}</span>
                                             </button>
                                         )}
                                     </dd>
@@ -150,7 +150,7 @@ const faq = d.faq.filter((item) => item?.question && item?.answer);
                                                         data-label={row.label}
                                                     >
                                                         <Icon name="mdi:content-copy" class="h-4 w-4" aria-hidden="true" />
-                                                        <span class="copy-btn-text">Copiar</span>
+                                                        <span class="copy-btn-text">{t("donate.copy")}</span>
                                                     </button>
                                                 )}
                                             </dd>
@@ -195,7 +195,16 @@ const faq = d.faq.filter((item) => item?.question && item?.answer);
             }
         </div>
 
-        <p class="sr-only" role="status" aria-live="polite" id="copy-status"></p>
+        <p
+            class="sr-only"
+            role="status"
+            aria-live="polite"
+            id="copy-status"
+            data-copied={t("donate.copiedShort")}
+            data-copied-item={t("donate.copiedItem")}
+            data-copy-failed={t("donate.copyFailed")}
+        >
+        </p>
     </section>
 
     <!-- Pasarelas de pago en línea -->
@@ -242,7 +251,7 @@ const faq = d.faq.filter((item) => item?.question && item?.answer);
                     </ul>
 
                     {d.english?.title && (
-                        <article lang="en" class="rounded-[2rem] bg-accent p-7 text-black sm:p-8">
+                        <article class="rounded-[2rem] bg-accent p-7 text-black sm:p-8">
                             <h3 class="font-display text-2xl font-black leading-tight">{d.english.title}</h3>
                             {d.english.body && <p class="mt-3 text-base leading-relaxed text-black/80">{d.english.body}</p>}
                             {d.english.note && <p class="mt-3 text-sm leading-relaxed text-black/70">{d.english.note}</p>}
@@ -351,18 +360,20 @@ const faq = d.faq.filter((item) => item?.question && item?.answer);
     document.querySelectorAll<HTMLButtonElement>(".copy-btn").forEach((btn) => {
         btn.addEventListener("click", async () => {
             const value = btn.dataset.copy ?? "";
-            const label = btn.dataset.label ?? "dato";
+            const label = btn.dataset.label ?? "";
             const text = btn.querySelector(".copy-btn-text");
-            const original = text?.textContent ?? "Copiar";
+            const original = text?.textContent ?? "";
+            /* Los textos llegan traducidos en data-* de #copy-status. */
+            const fill = (template: string | undefined) => (template ?? "").replace("{label}", label).replace("{value}", value);
             try {
                 await navigator.clipboard.writeText(value);
-                if (text) text.textContent = "Copiado";
-                if (status) status.textContent = `${label} copiado.`;
+                if (text && status?.dataset.copied) text.textContent = status.dataset.copied;
+                if (status) status.textContent = fill(status.dataset.copiedItem);
                 window.setTimeout(() => {
                     if (text) text.textContent = original;
                 }, 2000);
             } catch {
-                if (status) status.textContent = `No se pudo copiar automáticamente. ${label}: ${value}`;
+                if (status) status.textContent = fill(status.dataset.copyFailed);
             }
         });
     });

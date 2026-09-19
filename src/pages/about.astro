@@ -204,7 +204,7 @@ const actionCardStyles = [
                             href={p.href}
                             target="_blank"
                             rel="noopener noreferrer"
-                            aria-label={`Leer en ${p.outlet}`}
+                            aria-label={t("about.readIn", { outlet: p.outlet })}
                             class="transition hover:-translate-y-1"
                         >
                             <CmsImage media={p.logo} fallback={p.localLogo} alt={p.outlet ?? ""} widths={[64, 128]} class={p.logoClass ?? "w-16"} />

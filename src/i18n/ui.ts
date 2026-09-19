@@ -76,6 +76,9 @@ export const ui = {
             "Cada taller, cada tambor y cada jornada en un barrio se sostiene con aportes de gente que cree en esto.",
         "news.ctaButton": "Aporta hoy 💜",
         "news.tags": "Etiquetas",
+        "news.openPost": "Abrir la publicación",
+        "news.postFallback": "Publicación {id}",
+        "intro.skip": "Saltar",
 
         /* Estados vacíos y de carga */
         "empty.description": "Sin descripción disponible.",
@@ -105,6 +108,7 @@ export const ui = {
         "about.title": "Conócenos",
         "about.missionVision": "Misión y visión",
         "about.historyTimeline": "Historia de la fundación",
+        "about.readIn": "Leer en {outlet}",
 
         /* Proyectos */
         "projects.filter": "Filtrar proyectos y líneas de acción",
@@ -113,6 +117,7 @@ export const ui = {
         /* Batucada Popular */
         "batucada.timeline": "Línea de tiempo de la Batucada Popular",
         "batucada.jumpToPeriod": "Saltar a una época",
+        "batucada.mapLabel": "Mapa de Guayaquil con los {count} sectores donde trabaja Batucada Popular",
         "batucada.navWhoWeAre": "Quiénes somos",
         "batucada.navHowWeWork": "Cómo trabajamos",
         "batucada.navWhereItSounds": "Dónde suena",
@@ -122,6 +127,21 @@ export const ui = {
         "donate.copyAll": "Copiar todos los datos",
         "donate.copied": "Datos copiados",
         "donate.wireDetails": "Datos del giro",
+        "donate.shortcuts": "Atajos",
+        "donate.copy": "Copiar",
+        "donate.copiedShort": "Copiado",
+        /* Sin concordancia de género: «Copiado: dirección del banco». */
+        "donate.copiedItem": "Copiado: {label}.",
+        "donate.copyFailed": "No se pudo copiar automáticamente. {label}: {value}",
+        "donate.bank": "Banco",
+        "donate.accountType": "Tipo de cuenta",
+        "donate.accountNumber": "Número de cuenta",
+        "donate.holder": "Titular",
+        "donate.taxId": "RUC",
+        "donate.swift": "Código SWIFT / BIC",
+        "donate.holderAddress": "Dirección del titular",
+        "donate.bankAddress": "Dirección del banco",
+        "donate.currency": "Moneda",
 
         /* Transparencia: etiquetas de la ficha legal. Los valores NO se
            traducen —son los que constan en los registros del Estado— pero
@@ -178,6 +198,12 @@ export const ui = {
         "alt.daniel": "Daniel, integrante de la Batucada Popular",
         "alt.performing": "Integrantes de Batucada Popular en presentación",
         "alt.logo": "Logotipo de la Fundación Minkayni",
+        /* Las fotos de Batucada son medios del CMS, pero su texto alternativo
+           no tiene campo propio allí (el de la Media Library no se traduce),
+           así que vive aquí. */
+        "alt.batucadaHero": "Jóvenes de Batucada Popular tocando tambores durante una presentación",
+        "alt.batucadaPulse": "Integrantes de Batucada Popular compartiendo juntas después de una presentación",
+        "alt.batucadaSense": "Jóvenes de Batucada Popular marchando con sus tambores en una calle de Guayaquil",
     },
 
     en: {
@@ -230,7 +256,7 @@ export const ui = {
             "What the Minkayni Foundation does, told as it happens: workshops in the neighbourhoods of Guayaquil, Batucada Popular performances, partnerships and awards.",
         "news.eyebrow": "From the territory",
         "news.lead":
-            "Every session in a neighbourhood, every performance and every partnership is recorded here as it happens. These are the same words we use to tell it on our social channels, gathered so they can be read in one go.",
+            "Every session in a neighbourhood, every performance and every partnership is recorded here as it happens. These are the same words we use to tell it on our social channels, kept in the original Spanish and gathered so they can be read in one go.",
         "news.updated": "Latest entry:",
         "news.count": "{count} posts",
         "news.viewOriginal": "See the original post",
@@ -241,6 +267,9 @@ export const ui = {
             "Every workshop, every drum and every session in a neighbourhood is held up by people who believe in this.",
         "news.ctaButton": "Give today 💜",
         "news.tags": "Tags",
+        "news.openPost": "Open the post",
+        "news.postFallback": "Post {id}",
+        "intro.skip": "Skip",
 
         /* Empty and loading states */
         "empty.description": "No description available.",
@@ -270,6 +299,7 @@ export const ui = {
         "about.title": "About us",
         "about.missionVision": "Mission and vision",
         "about.historyTimeline": "History of the foundation",
+        "about.readIn": "Read in {outlet}",
 
         /* Projects */
         "projects.filter": "Filter projects and lines of action",
@@ -278,6 +308,7 @@ export const ui = {
         /* Batucada Popular */
         "batucada.timeline": "Batucada Popular timeline",
         "batucada.jumpToPeriod": "Jump to a period",
+        "batucada.mapLabel": "Map of Guayaquil showing the {count} sectors where Batucada Popular works",
         "batucada.navWhoWeAre": "Who we are",
         "batucada.navHowWeWork": "How we work",
         "batucada.navWhereItSounds": "Where it plays",
@@ -287,6 +318,21 @@ export const ui = {
         "donate.copyAll": "Copy all details",
         "donate.copied": "Details copied",
         "donate.wireDetails": "Wire details",
+        "donate.shortcuts": "Shortcuts",
+        "donate.copy": "Copy",
+        "donate.copiedShort": "Copied",
+        "donate.copiedItem": "Copied: {label}.",
+        "donate.copyFailed": "Couldn't copy automatically. {label}: {value}",
+        "donate.bank": "Bank",
+        "donate.accountType": "Account type",
+        "donate.accountNumber": "Account number",
+        "donate.holder": "Account holder",
+        /* El nombre del registro se conserva: es lo que pide el banco. */
+        "donate.taxId": "Tax ID (RUC)",
+        "donate.swift": "SWIFT / BIC code",
+        "donate.holderAddress": "Account holder's address",
+        "donate.bankAddress": "Bank address",
+        "donate.currency": "Currency",
 
         /* Transparency: labels of the legal record. The values are NOT
            translated —they are what the state registries hold— but the
@@ -343,6 +389,9 @@ export const ui = {
         "alt.daniel": "Daniel, a member of Batucada Popular",
         "alt.performing": "Batucada Popular members performing",
         "alt.logo": "Minkayni Foundation logo",
+        "alt.batucadaHero": "Young Batucada Popular members playing drums during a performance",
+        "alt.batucadaPulse": "Batucada Popular members spending time together after a performance",
+        "alt.batucadaSense": "Young Batucada Popular members marching with their drums along a street in Guayaquil",
     },
 } as const;
 

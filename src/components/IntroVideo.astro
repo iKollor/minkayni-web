@@ -3,6 +3,9 @@
    igual en Safari/iOS, Android y escritorio, sin depender de códecs de vídeo.
    La reproduce `src/scripts/index/intro.ts`; aquí solo vive el contenedor. */
 import logoIntro from "../assets/lottie/logo_intro.json?url";
+import { getLocale, useTranslations } from "../i18n";
+
+const t = useTranslations(getLocale(Astro.url));
 ---
 
 <!-- Sin `preload`: la intro ya no se reproduce en todas las visitas (ver
@@ -11,7 +14,7 @@ import logoIntro from "../assets/lottie/logo_intro.json?url";
      desde `intro.ts`, que es quien conoce la decisión. -->
 
 <div id="intro-overlay" class="intro-hidden fixed inset-0 z-10 flex items-center justify-center overflow-hidden bg-transparent transition-opacity duration-500 [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
-    <button id="skip-intro" type="button" class="absolute bottom-6 right-6 text-lg tracking-wider uppercase opacity-60 hover:opacity-100 transition-opacity cursor-pointer z-100"> Saltar </button>
+    <button id="skip-intro" type="button" class="absolute bottom-6 right-6 text-lg tracking-wider uppercase opacity-60 hover:opacity-100 transition-opacity cursor-pointer z-100">{t("intro.skip")}</button>
 
     <!-- El logotipo ocupa 770 de los 1920 px de ancho del lienzo, así que para
          que acabe midiendo `--logo-w` (el del hero) el lienzo va a 1920/770 de
