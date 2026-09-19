@@ -30,6 +30,8 @@ const RESERVED = new Set([
     /* Reservada desde que existe el inglés: `/en` es el prefijo de idioma, y
        una subpágina con ese slug se lo comería entero. */
     "en",
+    /* La vista previa de borradores del panel de Strapi vive en /preview. */
+    "preview",
 ]);
 
 const readCollection = async (name: "builderPages" | "builderPagesEn"): Promise<BuilderPage[]> => {

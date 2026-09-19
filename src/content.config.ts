@@ -354,7 +354,7 @@ const batucadaHistoryPageSelection = `
 /* Subpáginas del constructor: dynamic zone discriminada por __typename.
    Los campos heading/cards/items llevan ALIAS únicos por fragmento: GraphQL
    rechaza el mismo nombre con nulabilidad distinta entre tipos de la unión.
-   BlockRenderer los normaliza de vuelta a heading/cards/items. */
+   normalize.ts (components/react/builder) los devuelve a heading/cards/items. */
 const builderSectionsSelection = `
     sections {
         __typename

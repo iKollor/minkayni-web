@@ -80,6 +80,14 @@ export const ui = {
         "news.postFallback": "Publicación {id}",
         "intro.skip": "Saltar",
 
+        /* Vista previa de borradores del constructor (panel de Strapi) */
+        "preview.title": "Vista previa",
+        "preview.badge": "Vista previa del borrador · sin publicar",
+        "preview.loading": "Cargando el borrador…",
+        "preview.errorAuth": "Este enlace de vista previa no es válido o ha caducado. Vuelve a abrirlo desde el panel de Strapi.",
+        "preview.errorNotFound": "Este documento no existe o no tiene contenido en este idioma.",
+        "preview.errorNetwork": "No se pudo leer el borrador desde el CMS.",
+
         /* Estados vacíos y de carga */
         "empty.description": "Sin descripción disponible.",
         "empty.posts": "Sin publicaciones disponibles.",
@@ -270,6 +278,14 @@ export const ui = {
         "news.openPost": "Open the post",
         "news.postFallback": "Post {id}",
         "intro.skip": "Skip",
+
+        /* Draft preview (Strapi panel) */
+        "preview.title": "Preview",
+        "preview.badge": "Draft preview · not published",
+        "preview.loading": "Loading the draft…",
+        "preview.errorAuth": "This preview link is invalid or has expired. Open it again from the Strapi panel.",
+        "preview.errorNotFound": "This document doesn't exist or has no content in this language.",
+        "preview.errorNetwork": "The draft could not be loaded from the CMS.",
 
         /* Empty and loading states */
         "empty.description": "No description available.",

@@ -65,8 +65,10 @@ export default function CounterMount() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const separator = document.documentElement.lang.startsWith('en') ? ',' : '.';
+    /* Sin retorno temprano aunque ahora no haya cifras: la vista previa del
+       constructor (BuilderPreview.tsx) las pinta después de hidratar esta isla
+       y las anuncia con `count:reveal`, así que el oyente tiene que existir. */
     const spans = Array.from(document.querySelectorAll<HTMLElement>('[data-count]'));
-    if (!spans.length) return;
 
     const mount = (el: HTMLElement) => {
       if (ROOTS.has(el)) return;

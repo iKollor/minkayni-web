@@ -183,6 +183,68 @@ html[data-site-menu-open] .page-nav {
     clip-path: inset(0 -100vw);
 }
 
+/* ── Botón mágico (Button.astro y BuilderBlocks.tsx) ───────────────────
+   Estaba dentro de Button.astro, con ámbito de componente. Aquí es global
+   porque el mismo marcado lo pinta también React en el constructor de
+   subpáginas, y porque las clases `.word` las crea SplitText en tiempo de
+   ejecución, sin el atributo de ámbito de Astro. */
+    :root {
+        --btn-text-size: 18px;
+        --btn-px: 1.3rem;
+        --btn-py: 0.45em;
+
+        --btn-bg: var(--secondary);
+        --btn-text: var(--bg-white);
+
+        --btn-bg-hover: #4cede1;
+        --glow-a: #00f8f1;
+        --glow-b: #ffbd1e;
+        --glow-c: #fe848f;
+
+        --btn-radius: 9999px;
+        --glow-blur: 5px;
+        --glow-speed: 5s;
+    }
+
+    .glow-outer {
+        background: linear-gradient(-20deg, var(--glow-a), color-mix(in oklab, var(--glow-a) 20%, transparent) 16.5%, var(--glow-a) 33%, color-mix(in oklab, var(--glow-a) 10%, transparent) 49.5%, var(--glow-a) 66%, color-mix(in oklab, var(--glow-a) 0%, transparent) 85.5%, var(--glow-a) 100%);
+    }
+    .glow-inner {
+        background: linear-gradient(20deg, var(--glow-a), color-mix(in oklab, var(--glow-b) 12%, transparent) 16.5%, var(--glow-c) 33%, color-mix(in oklab, var(--glow-c) 12%, transparent) 49.5%, var(--glow-a) 66%, color-mix(in oklab, var(--glow-a) 40%, transparent) 85.5%, var(--glow-b) 100%);
+        mix-blend-mode: overlay;
+    }
+    .glow-outer,
+    .glow-inner {
+        background-size: 100% 200%;
+        background-position: 0% 100%;
+        filter: blur(var(--glow-blur));
+        opacity: 0;
+    }
+
+    /* Estado inicial multi‑instancia: ocultar hover antes de JS */
+    /* El contenedor hover debe ser visible; la animación gestiona cada .word */
+    [data-magic-btn] [data-role="label-hover"] {
+        opacity: 1;
+    }
+    [data-magic-btn][data-magic-btn-ready] [data-role="label-hover"],
+    [data-magic-btn][data-magic-btn-ready] [data-role="label-default"] {
+        transform: none;
+    }
+
+    /* Palabras de SplitText */
+    .word {
+        display: inline-block;
+        white-space: pre;
+        will-change: transform, opacity;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .will-animate {
+            transition: none !important;
+            animation: none !important;
+        }
+    }
+
 html {
     font-family: "Aristotelica Pro Text", "Nunito", system-ui, sans-serif;
     font-synthesis: none;

@@ -1,0 +1,30 @@
+---
+/* Vista previa de borradores del constructor (botón «Vista previa» del
+   panel de Strapi). Página estática con una sola isla que pide el borrador
+   al CMS desde el navegador: ver BuilderPreview.tsx. `noindex`, fuera del
+   sitemap y sin canonical: no es un destino público. */
+import PageLayout from "@/layouts/PageLayout.astro";
+import BuilderPreview from "@/components/react/BuilderPreview";
+import { getLocale, useTranslations } from "@/i18n";
+
+const locale = getLocale(Astro.url);
+const t = useTranslations(locale);
+const STRAPI_URL = (import.meta.env.STRAPI_URL ?? "").trim();
+---
+
+<PageLayout title={t("preview.title")} noindex>
+    <div class="pb-32 md:pb-64">
+        <BuilderPreview
+            client:only="react"
+            strapiUrl={STRAPI_URL}
+            locale={locale}
+            labels={{
+                badge: t("preview.badge"),
+                loading: t("preview.loading"),
+                errorAuth: t("preview.errorAuth"),
+                errorNotFound: t("preview.errorNotFound"),
+                errorNetwork: t("preview.errorNetwork"),
+            }}
+        />
+    </div>
+</PageLayout>

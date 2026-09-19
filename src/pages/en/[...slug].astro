@@ -5,8 +5,7 @@
    de `/en`: una ruta dinámica necesita su propio `getStaticPaths`, porque es
    ahí donde Astro decide qué URLs existen. La lista y la mezcla de idiomas
    viven en `builderPagePaths`, compartidas con `/[...slug]`. */
-import PageLayout from "@/layouts/PageLayout.astro";
-import BlockRenderer from "@/components/blocks/BlockRenderer.astro";
+import BuilderPageView from "@/components/blocks/BuilderPageView.astro";
 import { builderPagePaths } from "@/utils/builder-pages";
 import type { BuilderPage } from "@/schemas/pages.zod";
 
@@ -18,29 +17,6 @@ interface Props {
     page: BuilderPage;
 }
 const { page } = Astro.props;
-const blocks = (page.sections ?? []).filter((section): section is Record<string, unknown> => Boolean(section));
-
-const description = page.seo?.metaDescription ?? page.description ?? undefined;
 ---
 
-<PageLayout title={page.title ?? ""} description={description}>
-    <div class="pb-32 md:pb-64">
-        <BlockRenderer {blocks} />
-    </div>
-</PageLayout>
-
-<script>
-    import { initBatucadaAnchors } from "../../scripts/batucada/motion";
-    import { initReveals } from "../../scripts/reveals";
-
-    const initBuilderPage = () => {
-        initBatucadaAnchors();
-        initReveals();
-    };
-
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initBuilderPage, { once: true });
-    } else {
-        initBuilderPage();
-    }
-</script>
+<BuilderPageView {page} />

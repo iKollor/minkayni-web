@@ -31,6 +31,7 @@
         "hast-util-select": "^6.0.4",
         "leaflet": "^1.9.4",
         "lottie-web": "^5.13.0",
+        "marked": "^16",
         "motion": "^13.4.0",
         "react": "^19.3.0",
         "react-dom": "^19.3.0",

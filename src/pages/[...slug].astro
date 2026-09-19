@@ -2,9 +2,8 @@
 /* Subpáginas del constructor de Strapi (collection type `page`).
    Cada entrada publicada genera la ruta /<slug> en build; las rutas
    estáticas del sitio tienen prioridad y además se filtran por seguridad.
-   Reveals y odómetro usan el mismo patrón que /about e /impact. */
-import PageLayout from "@/layouts/PageLayout.astro";
-import BlockRenderer from "@/components/blocks/BlockRenderer.astro";
+   El cuerpo vive en BuilderPageView, compartido con la ruta inglesa. */
+import BuilderPageView from "@/components/blocks/BuilderPageView.astro";
 import { builderPagePaths } from "@/utils/builder-pages";
 import type { BuilderPage } from "@/schemas/pages.zod";
 
@@ -16,30 +15,6 @@ interface Props {
     page: BuilderPage;
 }
 const { page } = Astro.props;
-const blocks = (page.sections ?? []).filter((section): section is Record<string, unknown> => Boolean(section));
-
-/* La subpágina trae su propio SEO; sin esto heredaba la descripción global. */
-const description = page.seo?.metaDescription ?? page.description ?? undefined;
 ---
 
-<PageLayout title={page.title ?? ""} description={description}>
-    <div class="pb-32 md:pb-64">
-        <BlockRenderer {blocks} />
-    </div>
-</PageLayout>
-
-<script>
-    import { initBatucadaAnchors } from "../scripts/batucada/motion";
-    import { initReveals } from "../scripts/reveals";
-
-    const initBuilderPage = () => {
-        initBatucadaAnchors(); // anclas internas con offset por navbar fija
-        initReveals();
-    };
-
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initBuilderPage, { once: true });
-    } else {
-        initBuilderPage();
-    }
-</script>
+<BuilderPageView {page} />

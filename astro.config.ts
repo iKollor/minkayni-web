@@ -97,8 +97,9 @@ export default defineConfig({
         react(),
         sitemap({
             /* Las páginas `noindex` no pertenecen al sitemap: 404 no es un
-               destino real y /transparencia se enlaza desde el footer. */
-            filter: (page) => !page.includes("/404"),
+               destino real, /preview es la vista previa de borradores del
+               panel de Strapi y /transparencia se enlaza desde el footer. */
+            filter: (page) => !page.includes("/404") && !page.includes("/preview"),
             /* Con esto el sitemap emite `xhtml:link rel="alternate"` entre las
                dos versiones de cada página. Sin declararlo, un buscador trata
                /about y /en/about como páginas distintas sin relación y puede
