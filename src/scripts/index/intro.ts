@@ -2,6 +2,7 @@ import { gsap, ScrollTrigger } from "../main.ts";
 import { $, on, setHeights, setRadius } from "./helpers";
 import { animateParagraph } from "./paragraph";
 import type { AnimationItem } from "lottie-web";
+import { esVisitaNueva } from "../visita";
 
 const NAV_STROKE_MULTIPLIER = 1.2;
 
@@ -350,6 +351,13 @@ export const initIntro = (prefersReduced: boolean): void => {
     document.documentElement.classList.add("no-scroll");
 
     if (scrollY > 50 || prefersReduced) {
+        finalizeImmediate();
+        return;
+    }
+
+    /* Quien ya estuvo aquí hace un rato no vuelve a pagar los cinco segundos:
+       entra directo al contenido. Ver src/scripts/visita.ts. */
+    if (!esVisitaNueva) {
         finalizeImmediate();
         return;
     }

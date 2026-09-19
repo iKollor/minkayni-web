@@ -3,6 +3,10 @@ import { ScrollSmoother, ScrollTrigger, TextPlugin, SplitText, DrawSVGPlugin, Sc
 
 gsap.registerPlugin(ScrollSmoother, ScrollTrigger, TextPlugin, SplitText, DrawSVGPlugin, ScrollToPlugin, MotionPathPlugin, Draggable, InertiaPlugin);
 
+/* Sella el paso por el sitio en CADA página: la intro de la portada mide
+   inactividad, no tiempo desde que se vio. Importado por efecto, sin API. */
+import "./visita";
+
 /* En móvil, ocultar la barra de direcciones dispara `resize` sin que cambie el
    ancho. Sin esto, ScrollTrigger recalcula TODAS sus posiciones en pleno
    desplazamiento y cada animación anclada al scroll da un salto. Es el ajuste

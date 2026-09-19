@@ -5,8 +5,10 @@
 import logoIntro from "../assets/lottie/logo_intro.json?url";
 ---
 
-<!-- Quien pide menos movimiento nunca ve la intro: no tiene sentido descargarla. -->
-<link rel="preload" as="fetch" href={logoIntro} crossorigin="anonymous" media="(prefers-reduced-motion: no-preference)" />
+<!-- Sin `preload`: la intro ya no se reproduce en todas las visitas (ver
+     src/scripts/visita.ts), así que precargar sus 55 KB desde el HTML los
+     gastaba en la mayoría de cargas para nada. Quien sí va a verla los pide
+     desde `intro.ts`, que es quien conoce la decisión. -->
 
 <div id="intro-overlay" class="intro-hidden fixed inset-0 z-10 flex items-center justify-center overflow-hidden bg-transparent transition-opacity duration-500 [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
     <button id="skip-intro" type="button" class="absolute bottom-6 right-6 text-lg tracking-wider uppercase opacity-60 hover:opacity-100 transition-opacity cursor-pointer z-100"> Saltar </button>
