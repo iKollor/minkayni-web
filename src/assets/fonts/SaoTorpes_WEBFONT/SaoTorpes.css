@@ -1,7 +1,6 @@
 @font-face {
     font-family: 'Sao Torpes';
-    src: url('SaoTorpesRegular.woff2') format('woff2'),
-        url('SaoTorpesRegular.woff') format('woff');
+    src: url('SaoTorpesRegular.subset.woff2') format('woff2');
     font-weight: normal;
     font-style: normal;
     font-display: swap;

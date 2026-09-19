@@ -66,7 +66,10 @@ const readState = (el: HTMLElement): SliderState =>
     // Text switcher
     const createTextSwitcher = (wrap?: HTMLElement | null) => {
         if (!wrap) return null;
-        Object.assign(wrap.style, { position: "relative", display: "block", overflow: "hidden" });
+        /* Recorte solo vertical, como .clip-reveal de global.css (aquí en línea
+           porque el estilo del envoltorio se escribe desde JS): el cruce de
+           textos se tapa arriba y abajo, y la J de «Johanna» conserva el gancho. */
+        Object.assign(wrap.style, { position: "relative", display: "block", clipPath: "inset(0 -100vw)" });
         const layer = () => {
             const s = document.createElement("span");
             s.style.cssText = "position:absolute;inset:0;display:inline-block;opacity:0;transform:translateY(8px);will-change:opacity,transform";

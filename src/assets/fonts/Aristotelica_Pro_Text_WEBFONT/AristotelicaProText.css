@@ -1,80 +1,108 @@
+/* Métricas corregidas ─────────────────────────────────────────────────
+   Los WOFF de Aristotelica declaran una caja de línea (ascenso 0,65 em,
+   descenso 0,17 em) más baja que su propia tinta: las mayúsculas
+   acentuadas suben hasta 0,88 em y las colas de g/j/p bajan 0,22 em. Con
+   esa caja, cualquier contenedor con overflow oculto (los envoltorios de
+   las animaciones de revelado, sobre todo) recortaba tildes y colas.
+   Los *-override devuelven a la caja el alto real de la tinta; el resto
+   de tipografías del sitio (Nunito, Sao Torpes, Special Gothic) ya vienen
+   bien medidas y no necesitan nada. */
+
 @font-face {
     font-family: "Aristotelica Pro Text";
-    src: url("AristotelicaProTx-Hln.woff2") format("woff2"),
-        url("AristotelicaProTx-Hln.woff") format("woff");
+    src: url("AristotelicaProTx-Hln.subset.woff2") format("woff2");
     font-weight: 100;
     font-style: normal;
     font-display: swap;
+    ascent-override: 88%;
+    descent-override: 22%;
+    line-gap-override: 0%;
 }
 
 @font-face {
     font-family: "Aristotelica Pro Text";
-    src: url("AristotelicaProTx-Extlt.woff2") format("woff2"),
-        url("AristotelicaProTx-Extlt.woff") format("woff");
+    src: url("AristotelicaProTx-Extlt.subset.woff2") format("woff2");
     font-weight: 200;
     font-style: normal;
     font-display: swap;
+    ascent-override: 88%;
+    descent-override: 22%;
+    line-gap-override: 0%;
 }
 
 @font-face {
     font-family: "Aristotelica Pro Text";
-    src: url("AristotelicaProTx-Lt.woff2") format("woff2"),
-        url("AristotelicaProTx-Lt.woff") format("woff");
+    src: url("AristotelicaProTx-Lt.subset.woff2") format("woff2");
     font-weight: 300;
     font-style: normal;
     font-display: swap;
+    ascent-override: 88%;
+    descent-override: 22%;
+    line-gap-override: 0%;
 }
 
 @font-face {
     font-family: "Aristotelica Pro Text";
-    src: url("AristotelicaProTx-Rg.woff2") format("woff2"),
-        url("AristotelicaProTx-Rg.woff") format("woff");
+    src: url("AristotelicaProTx-Rg.subset.woff2") format("woff2");
     font-weight: 400;
     font-style: normal;
     font-display: swap;
+    ascent-override: 88%;
+    descent-override: 22%;
+    line-gap-override: 0%;
 }
 
 @font-face {
     font-family: "Aristotelica Pro Text";
-    src: url("AristotelicaProTx-Dmbld.woff2") format("woff2"),
-        url("AristotelicaProTx-Dmbld.woff") format("woff");
+    src: url("AristotelicaProTx-Dmbld.subset.woff2") format("woff2");
     font-weight: 500;
     font-style: normal;
     font-display: swap;
+    ascent-override: 88%;
+    descent-override: 22%;
+    line-gap-override: 0%;
 }
 
 @font-face {
     font-family: "Aristotelica Pro Text";
-    src: url("AristotelicaProTx-Bld.woff2") format("woff2"),
-        url("AristotelicaProTx-Bld.woff") format("woff");
+    src: url("AristotelicaProTx-Bld.subset.woff2") format("woff2");
     font-weight: 600;
     font-style: normal;
     font-display: swap;
+    ascent-override: 88%;
+    descent-override: 22%;
+    line-gap-override: 0%;
 }
 
 @font-face {
     font-family: "Aristotelica Pro Text";
-    src: url("AristotelicaProTx-Bld.woff2") format("woff2"),
-        url("AristotelicaProTx-Bld.woff") format("woff");
+    src: url("AristotelicaProTx-Bld.subset.woff2") format("woff2");
     font-weight: 700;
     font-style: normal;
     font-display: swap;
+    ascent-override: 88%;
+    descent-override: 22%;
+    line-gap-override: 0%;
 }
 
 @font-face {
     font-family: "Aristotelica Pro Text";
-    src: url("AristotelicaProTx-Hv.woff2") format("woff2"),
-        url("AristotelicaProTx-Hv.woff") format("woff");
+    src: url("AristotelicaProTx-Hv.subset.woff2") format("woff2");
     font-weight: 800;
     font-style: normal;
     font-display: swap;
+    ascent-override: 88%;
+    descent-override: 22%;
+    line-gap-override: 0%;
 }
 
 @font-face {
     font-family: "Aristotelica Pro Text";
-    src: url("AristotelicaProTx-Ft.woff2") format("woff2"),
-        url("AristotelicaProTx-Ft.woff") format("woff");
+    src: url("AristotelicaProTx-Ft.subset.woff2") format("woff2");
     font-weight: 900;
     font-style: normal;
     font-display: swap;
+    ascent-override: 88%;
+    descent-override: 22%;
+    line-gap-override: 0%;
 }

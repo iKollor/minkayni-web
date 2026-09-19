@@ -251,8 +251,11 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
 
   const isProjects = (href: string) => href.replace(/\/$/, '') === projectsHref.replace(/\/$/, '');
 
+  /* 1,15 y no leading-none: la tinta de Aristotelica ocupa 1,10 em de alto
+     (ver las métricas del @font-face) y el envoltorio de la animación de
+     revelado recorta lo que sobresalga; así las tildes y las colas respiran. */
   const itemClass =
-    'sm-panel-item relative inline-block cursor-pointer font-display text-[clamp(2rem,6.5vw,3.6rem)] font-[800] leading-none tracking-[-0.02em] text-[var(--bg-white)] no-underline transition-colors duration-150 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current';
+    'sm-panel-item relative inline-block cursor-pointer font-display text-[clamp(2rem,6.5vw,3.6rem)] font-[800] leading-[1.15] tracking-[-0.02em] text-[var(--bg-white)] no-underline transition-colors duration-150 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current';
 
   return (
     <div className={`sm-scope pointer-events-none fixed inset-0 z-[45] overflow-hidden ${positioned ? '' : 'invisible'}`} data-open={open || undefined} aria-hidden={!open}>
@@ -270,8 +273,12 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
       >
         <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6">
           <ul className="sm-panel-list m-0 flex list-none flex-col gap-2 p-0" role="list">
+            {/* El envoltorio recorta solo en vertical: el revelado necesita tapar
+                el texto por arriba y por abajo, pero la J de Aristotelica saca el
+                gancho 0,09 em a la izquierda del origen y un overflow oculto se lo
+                comía (Join us). */}
             {items.map((it, idx) => (
-              <li className="sm-panel-itemWrap relative overflow-hidden leading-none" key={it.href + idx}>
+              <li className="sm-panel-itemWrap relative clip-reveal leading-none" key={it.href + idx}>
                 {isProjects(it.href) ? (
                   <>
                     <button
@@ -292,13 +299,13 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
                         así lo recorta el `height: 0` y, cerrado, «Projects» mide
                         lo mismo que los demás ítems. */}
                     <ul id="site-menu-projects" ref={projectsListRef} className="m-0 flex list-none flex-col gap-1 overflow-hidden p-0 pl-[3.5rem]" style={{ height: 0 }} role="list">
-                      <li className="overflow-hidden pt-3">
+                      <li className="clip-reveal pt-3">
                         <a href={projectsHref} className="sm-sub-item block py-1.5 font-display text-[1.05rem] font-bold text-[var(--bg-white)] hover:text-accent">
                           <span className="sm-sub-itemLabel inline-block">{labels.allProjects} ↗</span>
                         </a>
                       </li>
                       {projects.map(p => (
-                        <li key={p.href + p.title} className="overflow-hidden">
+                        <li key={p.href + p.title} className="clip-reveal">
                           <a href={p.href} className="sm-sub-item block py-1.5 font-display text-[1.05rem] font-bold text-[var(--bg-white)]/75 transition-colors hover:text-accent">
                             <span className="sm-sub-itemLabel inline-block">{p.title}</span>
                           </a>

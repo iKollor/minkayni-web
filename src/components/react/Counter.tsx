@@ -88,7 +88,7 @@ function Digit({ place, value, height, digitStyle, spring }: DigitProps) {
      «0» invisible en flujo, en la misma caja y con el mismo centrado, le da
      la línea base exacta del glifo que se ve. */
   return (
-    <span className="relative inline-flex overflow-hidden" style={{ ...defaultStyle, ...digitStyle }}>
+    <span className="relative inline-flex clip-reveal" style={{ ...defaultStyle, ...digitStyle }}>
       <span aria-hidden="true" style={{ visibility: 'hidden' }}>
         0
       </span>
@@ -167,7 +167,9 @@ export default function Counter({
     fontSize,
     display: 'flex',
     gap,
-    overflow: 'hidden',
+    /* Recorte solo vertical, como .clip-reveal de global.css: con overflow
+       oculto, la tinta que sobresale del avance del último dígito se perdía. */
+    clipPath: 'inset(0 -100vw)',
     borderRadius,
     paddingLeft: horizontalPadding,
     paddingRight: horizontalPadding,

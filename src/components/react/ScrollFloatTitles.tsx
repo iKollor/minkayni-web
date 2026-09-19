@@ -85,9 +85,13 @@ export default function ScrollFloatTitles() {
         el.appendChild(inner);
 
         /* El original recorta con overflow-hidden para que las letras suban
-           desde fuera. Los títulos del sitio usan interlineados muy prietos,
-           así que se deja un poco de aire abajo para no cortar descendentes. */
-        el.style.overflow = 'hidden';
+           desde fuera, pero eso recorta también a los lados y estos títulos se
+           ajustan al ancho de su texto: con tracking-tight el último glifo se
+           quedaba fuera (el signo de «…ally?», la ese de «Our Allies»).
+           .clip-reveal recorta solo en vertical (ver global.css). El aire de
+           abajo sigue haciendo falta: los interlineados son muy prietos y la
+           tinta de Aristotelica mide 1,10 em. */
+        el.classList.add('clip-reveal');
         el.style.paddingBottom = '0.14em';
         el.style.marginBottom = `calc(${getComputedStyle(el).marginBottom} - 0.14em)`;
 

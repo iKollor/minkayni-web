@@ -168,6 +168,21 @@ html[data-site-menu-open] .page-nav {
     pointer-events: none !important;
 }
 
+/* ── Recorte de revelado ───────────────────────────────────────────────
+   Las animaciones de entrada tapan el texto por arriba y por abajo mientras
+   entra; nunca por los lados. Un overflow oculto recorta en los cuatro, y
+   Aristotelica saca tinta fuera del avance de varios glifos: la J el gancho
+   0,09 em a la izquierda, la f 0,035 em a la derecha, y con letter-spacing
+   negativo (tracking-tight) el último carácter de cualquier caja ajustada al
+   contenido se queda 0,025 em fuera. De ahí «Join us» sin gancho o «…ally?»
+   sin la cola del signo.
+
+   Esta clase recorta solo en vertical. Úsala en todo envoltorio de animación
+   en lugar de overflow-hidden. */
+.clip-reveal {
+    clip-path: inset(0 -100vw);
+}
+
 html {
     font-family: "Aristotelica Pro Text", "Nunito", system-ui, sans-serif;
     font-synthesis: none;
