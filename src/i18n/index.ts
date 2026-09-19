@@ -53,6 +53,7 @@ const isLocale = (value: string): value is Locale => (locales as readonly string
    inglés en el sitio español, así que no hay nada que traducir. */
 const TRANSLATED_PATHS: Record<string, Partial<Record<Locale, string>>> = {
     "/transparencia": { en: "/transparency" },
+    "/novedades": { en: "/news" },
     "/projects/batucada-popular/historia": { en: "/projects/batucada-popular/history" },
     "/projects/batucada-popular/ecosistema": { en: "/projects/batucada-popular/ecosystem" },
 };

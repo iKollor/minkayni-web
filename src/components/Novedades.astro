@@ -1,0 +1,177 @@
+---
+/* Lista de novedades, compartida por /novedades y /en/news.
+ *
+ * Es HTML plano a propósito: sin islas, sin animación al hacer scroll y sin
+ * más JavaScript que el del sitio. La página existe para que se lea —una
+ * persona y un rastreador— y para que el sitio deje de parecer congelado
+ * desde 2020. Cada entrada lleva su `<time datetime>`, su texto completo y el
+ * enlace al original.
+ *
+ * Los datos salen de src/utils/novedades.ts; ahí está el porqué del troceo del
+ * pie de foto en titular y cuerpo.
+ */
+import { Icon } from "astro-icon/components";
+
+import type { Novedad } from "../utils/novedades";
+import { localizePath, useTranslations, type Locale } from "../i18n";
+
+interface Props {
+    novedades: Novedad[];
+    locale: Locale;
+}
+
+const { novedades, locale } = Astro.props;
+const t = useTranslations(locale);
+const donar = localizePath("/donate", locale);
+
+/* Un listado fechado es la señal de frescura que un buscador entiende sin
+   adivinar. `SocialMediaPosting` es el tipo exacto: son publicaciones de las
+   redes de la fundación reproducidas aquí con su texto completo, no artículos
+   escritos para la web. */
+const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: t("news.title"),
+    description: t("news.metaDescription"),
+    inLanguage: locale === "es" ? "es-EC" : "en",
+    url: Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined,
+    mainEntity: {
+        "@type": "ItemList",
+        numberOfItems: novedades.length,
+        itemListElement: novedades.slice(0, 30).map((novedad, indice) => ({
+            "@type": "ListItem",
+            position: indice + 1,
+            item: {
+                "@type": "SocialMediaPosting",
+                headline: novedad.titular,
+                datePublished: novedad.fechaIso,
+                url: novedad.permalink,
+                author: { "@type": "Organization", name: "Fundación Minkayni" },
+            },
+        })),
+    },
+};
+---
+
+<div class="mx-auto w-[90%] max-w-[1100px] py-16 sm:py-24">
+    <header class="max-w-[70ch]">
+        <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{t("news.eyebrow")}</p>
+        <p class="text-lg leading-relaxed text-black/75">{t("news.lead")}</p>
+
+        {
+            novedades.length > 0 && (
+                <p class="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-black/60">
+                    <span>
+                        {t("news.updated")}{" "}
+                        <time datetime={novedades[0].fechaIso} class="font-bold text-black/80">
+                            {novedades[0].fechaTexto}
+                        </time>
+                    </span>
+                    <span aria-hidden="true">·</span>
+                    <span>{t("news.count", { count: novedades.length })}</span>
+                </p>
+            )
+        }
+    </header>
+
+    {
+        novedades.length === 0 ? (
+            <p class="mt-16 text-lg text-black/60">{t("empty.posts")}</p>
+        ) : (
+            <ol class="mt-14 list-none space-y-14 border-t border-black/10 p-0 sm:mt-20 sm:space-y-20">
+                {novedades.map((novedad) => (
+                    <li>
+                        <article class="grid gap-6 pt-14 sm:pt-20 md:grid-cols-[minmax(0,18rem)_1fr] md:gap-10">
+                            {/* La foto va con `alt` vacío a propósito: el titular
+                                y el cuerpo que vienen al lado ya cuentan lo que
+                                pasó, y describirla otra vez solo hace que un
+                                lector de pantalla lo oiga dos veces. */}
+                            {novedad.imagen ? (
+                                <img
+                                    class="w-full rounded-2xl bg-black/5 object-cover shadow-sm md:sticky md:top-28"
+                                    src={novedad.imagen.src}
+                                    srcset={novedad.imagen.srcset || undefined}
+                                    sizes="(min-width: 768px) 18rem, 90vw"
+                                    width={novedad.imagen.ancho}
+                                    height={novedad.imagen.alto}
+                                    alt=""
+                                    loading="lazy"
+                                    decoding="async"
+                                />
+                            ) : (
+                                <div class="hidden md:block" aria-hidden="true" />
+                            )}
+
+                            <div class="max-w-[68ch]">
+                                <time
+                                    datetime={novedad.fechaIso}
+                                    class="text-sm font-bold uppercase tracking-[0.18em] text-primary"
+                                >
+                                    {novedad.fechaTexto}
+                                </time>
+
+                                <h2 class="mt-3 font-display text-2xl font-black leading-tight text-black sm:text-3xl">
+                                    {novedad.titular}
+                                </h2>
+
+                                {novedad.parrafos.length > 0 && (
+                                    <div class="mt-5 space-y-4 text-base leading-relaxed text-black/75">
+                                        {novedad.parrafos.map((parrafo) => (
+                                            <p>{parrafo}</p>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {novedad.etiquetas.length > 0 && (
+                                    <ul
+                                        class="mt-6 flex list-none flex-wrap gap-2 p-0"
+                                        aria-label={t("news.tags")}
+                                    >
+                                        {novedad.etiquetas.map((etiqueta) => (
+                                            <li class="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+                                                #{etiqueta}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+
+                                <p class="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                                    <a
+                                        class="inline-flex items-center gap-1.5 font-bold text-primary underline underline-offset-4 transition hover:text-secondary-deep focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                                        href={novedad.permalink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        {novedad.tipo === "reel" ? t("news.viewOriginalReel") : t("news.viewOriginal")}
+                                        <Icon name="mdi:open-in-new" class="h-4 w-4" aria-hidden="true" />
+                                    </a>
+                                    {novedad.meGusta !== undefined && (
+                                        <span class="text-black/50">{t("news.likes", { count: novedad.meGusta })}</span>
+                                    )}
+                                </p>
+                            </div>
+                        </article>
+                    </li>
+                ))}
+            </ol>
+        )
+    }
+
+    <aside
+        class="mt-20 rounded-3xl bg-primary px-8 py-12 text-center text-white sm:mt-28 sm:px-14 sm:py-16"
+        aria-labelledby="novedades-cta"
+    >
+        <h2 id="novedades-cta" class="font-display text-3xl font-black leading-tight sm:text-4xl">
+            {t("news.ctaTitle")}
+        </h2>
+        <p class="mx-auto mt-4 max-w-[52ch] text-lg leading-relaxed text-white/85">{t("news.ctaBody")}</p>
+        <a
+            class="mt-8 inline-block rounded-full bg-white px-8 py-4 font-display text-lg font-black text-primary transition hover:scale-[1.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+            href={donar}
+        >
+            {t("news.ctaButton")}
+        </a>
+    </aside>
+</div>
+
+<script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />

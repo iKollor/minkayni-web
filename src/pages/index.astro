@@ -183,6 +183,15 @@ const projectsCta = homepage
             <section class="max-w-[1200px] mx-auto my-16 px-4"><Tag /></section>
             <section class="my-24">
                 <Moments />
+                <!-- El carrusel enseña las últimas fotos y nada más: sin texto
+                     ni fecha. Este enlace lleva al listado completo, que sí es
+                     contenido leíble y rastreable. Ver src/utils/novedades.ts. -->
+                <p class="mt-10 text-center">
+                    <a
+                        class="font-display text-lg font-black text-primary underline underline-offset-4 transition hover:text-secondary-deep focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+                        href={localizePath("/novedades", locale)}>{t("news.title")} →</a
+                    >
+                </p>
             </section>
             <!-- Reemplazado: ahora cargamos el módulo de animaciones de Moments -->
             <script src="../scripts/moments.ts"></script>

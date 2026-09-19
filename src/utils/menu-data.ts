@@ -69,7 +69,14 @@ export function buildMenuData(opts: {
         projects: menuProjects,
         languages,
         socials: buildSocialItems(footer.Socials).map((s) => ({ label: s.label, href: s.href, external: true })),
-        secondary: [{ label: t("nav.legalTransparency"), href: localizePath("/transparencia", locale) }],
+        /* Lista secundaria del menú: las páginas que no vienen del árbol del
+           CMS. Novedades va aquí porque el plugin Navigation no la conoce y,
+           sin un enlace, una página fechada que nadie encuentra no cuenta
+           como contenido actualizado para nadie. */
+        secondary: [
+            { label: t("news.title"), href: localizePath("/novedades", locale) },
+            { label: t("nav.legalTransparency"), href: localizePath("/transparencia", locale) },
+        ],
         contactEmail,
         labels: {
             open: t("menu.open"),

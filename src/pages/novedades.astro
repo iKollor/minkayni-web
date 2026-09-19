@@ -1,0 +1,17 @@
+---
+/* Novedades (/novedades). La versión inglesa vive en /en/news; las dos pintan
+   el mismo componente y solo cambian de idioma. Ver src/utils/novedades.ts
+   para el porqué de la página. */
+import PageLayout from "../layouts/PageLayout.astro";
+import Novedades from "../components/Novedades.astro";
+import { cargarNovedades } from "../utils/novedades";
+import { getLocale, useTranslations } from "../i18n";
+
+const locale = getLocale(Astro.url);
+const t = useTranslations(locale);
+const novedades = await cargarNovedades(locale);
+---
+
+<PageLayout title={t("news.title")} description={t("news.metaDescription")}>
+    <Novedades {novedades} {locale} />
+</PageLayout>

@@ -59,6 +59,24 @@ export const ui = {
         "footer.socialNetworks": "Redes sociales",
         "footer.partnersCarousel": "Carrusel de logos de empresas colaboradoras",
 
+        /* Novedades */
+        "news.title": "Novedades",
+        "news.metaDescription":
+            "Lo que hace la Fundación Minkayni, contado cuando pasa: talleres en los barrios de Guayaquil, presentaciones de la Batucada Popular, alianzas y reconocimientos.",
+        "news.eyebrow": "Desde el territorio",
+        "news.lead":
+            "Cada jornada en un barrio, cada presentación y cada alianza queda anotada aquí en cuanto ocurre. Son las mismas palabras con las que las contamos en nuestras redes, reunidas para que se puedan leer de corrido.",
+        "news.updated": "Última novedad:",
+        "news.count": "{count} publicaciones",
+        "news.viewOriginal": "Ver la publicación original",
+        "news.viewOriginalReel": "Ver el vídeo original",
+        "news.likes": "{count} me gusta",
+        "news.ctaTitle": "¿Quieres que esto siga sonando?",
+        "news.ctaBody":
+            "Cada taller, cada tambor y cada jornada en un barrio se sostiene con aportes de gente que cree en esto.",
+        "news.ctaButton": "Aporta hoy 💜",
+        "news.tags": "Etiquetas",
+
         /* Estados vacíos y de carga */
         "empty.description": "Sin descripción disponible.",
         "empty.posts": "Sin publicaciones disponibles.",
@@ -205,6 +223,24 @@ export const ui = {
         "footer.orgLegalInfo": "Legal information about the organisation",
         "footer.socialNetworks": "Social networks",
         "footer.partnersCarousel": "Carousel of partner organisation logos",
+
+        /* News */
+        "news.title": "News",
+        "news.metaDescription":
+            "What the Minkayni Foundation does, told as it happens: workshops in the neighbourhoods of Guayaquil, Batucada Popular performances, partnerships and awards.",
+        "news.eyebrow": "From the territory",
+        "news.lead":
+            "Every session in a neighbourhood, every performance and every partnership is recorded here as it happens. These are the same words we use to tell it on our social channels, gathered so they can be read in one go.",
+        "news.updated": "Latest entry:",
+        "news.count": "{count} posts",
+        "news.viewOriginal": "See the original post",
+        "news.viewOriginalReel": "Watch the original video",
+        "news.likes": "{count} likes",
+        "news.ctaTitle": "Want to keep this sounding?",
+        "news.ctaBody":
+            "Every workshop, every drum and every session in a neighbourhood is held up by people who believe in this.",
+        "news.ctaButton": "Give today 💜",
+        "news.tags": "Tags",
 
         /* Empty and loading states */
         "empty.description": "No description available.",
