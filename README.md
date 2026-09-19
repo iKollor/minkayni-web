@@ -220,9 +220,24 @@ Sin esto, cada cambio editorial exige lanzar el redeploy a mano.
 
 ## Medios de Strapi
 
-El frontend permanece estático en Astro 7. Los medios remotos se generan como
-`<STRAPI_URL>/media/<key>`; Strapi los reenvía internamente a `s3-media-edge`.
-El navegador no conoce `CDN_BASE_URL`, Garage ni `IMAGOR_SECRET`.
+El frontend permanece estático en Astro 7. Los medios remotos se emiten como
+`https://www.minkayni.org/media/<archivo>` (`src/utils/media-url.ts`): Nginx
+reenvía `/media/<archivo>` a `<STRAPI_URL>/media/uploads/<archivo>` y lo guarda
+en caché (bloque `location /media/` de `nginx.conf`), y Strapi lo sirve desde
+`s3-media-edge`. El `uploads/` es la carpeta interna del almacén de Strapi y
+no aparece en ninguna URL pública.
+Así el visitante —y los proxies de imágenes de Gmail, WhatsApp o Google— solo
+ven el dominio de la web. El navegador no conoce `CDN_BASE_URL`, Garage ni
+`IMAGOR_SECRET`. `PUBLIC_MEDIA_ORIGIN` permite emitir otro origen (p. ej. en un
+entorno de pruebas sin ese proxy).
+
+Para comprobarlo tras desplegar:
+
+```bash
+curl -sI https://www.minkayni.org/media/<un-fichero-del-cms> | grep -i -E "^(HTTP|x-cache|cache-control)"
+```
+
+La primera petición responde `X-Cache: MISS` y la siguiente `HIT`.
 
 Variables de build del frontend en Coolify:
 

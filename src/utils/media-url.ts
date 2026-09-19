@@ -1,6 +1,26 @@
 const RASTER_IMAGE = /\.(?:jpe?g|png|webp|avif|gif)$/i;
 const LEGACY_MEDIA_HOSTS = new Set(["img.minkayni.org"]);
 
+/* Origen público de los medios. Los ficheros del CMS se sirven desde el
+   propio dominio de la web, en `/media/<archivo>`: Nginx (ver nginx.conf)
+   reenvía esa ruta a `<STRAPI_URL>/media/uploads/<archivo>` y la guarda en
+   caché, así el visitante —y los proxies de imágenes de Gmail, WhatsApp o
+   Google— solo ven `www.minkayni.org`, y el `uploads/` (la carpeta interna
+   del almacén de Strapi) no aparece en ninguna URL pública. Es absoluta y no relativa para que sirva igual en
+   `og:image`, JSON-LD y en `astro dev`, donde no hay proxy delante.
+   `PUBLIC_MEDIA_ORIGIN` permite apuntar a otro sitio (p. ej. un entorno de
+   pruebas) sin tocar el código. */
+const MEDIA_ORIGIN_DEFAULT = "https://www.minkayni.org";
+export function mediaOrigin(): string {
+    const env = (import.meta as unknown as { env?: Record<string, string | undefined> }).env ?? {};
+    const configured = env.PUBLIC_MEDIA_ORIGIN ?? (typeof process !== "undefined" ? process.env.PUBLIC_MEDIA_ORIGIN : undefined);
+    try {
+        return new URL(configured || MEDIA_ORIGIN_DEFAULT).origin;
+    } catch {
+        return MEDIA_ORIGIN_DEFAULT;
+    }
+}
+
 function decodedSegment(segment: string): string | null {
     try {
         return decodeURIComponent(segment);
@@ -66,7 +86,7 @@ function normalizedBase(strapiBase: string): string {
 
 function isRecognizedOrigin(src: string, sourceUrl: URL, base: string): boolean {
     const isAbsolute = /^(?:https?:)?\/\//i.test(src);
-    return !isAbsolute || sourceUrl.origin === base || LEGACY_MEDIA_HOSTS.has(sourceUrl.hostname.toLowerCase());
+    return !isAbsolute || sourceUrl.origin === base || sourceUrl.origin === mediaOrigin() || LEGACY_MEDIA_HOSTS.has(sourceUrl.hostname.toLowerCase());
 }
 
 export function strapiMediaUrl(src: string | null | undefined, strapiBase: string, width = 0): string {
@@ -90,15 +110,15 @@ export function strapiMediaUrl(src: string | null | undefined, strapiBase: strin
     const key = mediaKey(sourceUrl.pathname);
     if (!key) return src;
 
-    const url = `${base}/media/${key}`;
+    // La clave canónica del CMS es `uploads/<archivo>`; en público va sin el prefijo.
+    const url = `${mediaOrigin()}/media/${key.replace(/^uploads\//, "")}`;
     const safeWidth = Math.min(Math.max(Math.trunc(width), 16), 3840);
     return width > 0 && RASTER_IMAGE.test(key) ? `${url}?w=${safeWidth}` : url;
 }
 
 export function strapiMediaSrcSet(src: string | null | undefined, strapiBase: string, widths: readonly number[]): string {
     const original = strapiMediaUrl(src, strapiBase);
-    const base = normalizedBase(strapiBase);
-    if (!base || !original.startsWith(`${base}/media/`)) return "";
+    if (!original.startsWith(`${mediaOrigin()}/media/`)) return "";
     if (!RASTER_IMAGE.test(new URL(original).pathname)) return "";
 
     return [...new Set(widths)]
