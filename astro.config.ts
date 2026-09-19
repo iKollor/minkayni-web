@@ -12,6 +12,7 @@ import react from "@astrojs/react";
 
 import { unified } from "@astrojs/markdown-remark";
 import { rehypePlugins } from "./src/utils/markdown-pipeline";
+import { rutasRedirigidas } from "./src/data/redirects";
 
 /* Servicio de imágenes declarado explícitamente y tolerante a fallos.
 
@@ -52,8 +53,14 @@ function resolveImageService() {
 export default defineConfig({
     /* Dominio público del sitio. Lo usan `Astro.site` (canonical, JSON-LD de
        la organización) y cualquier generador de sitemap/feed. Sin esto los
-       verificadores externos no ven una URL canónica declarada. */
-    site: "https://minkayni.org",
+       verificadores externos no ven una URL canónica declarada.
+
+       Va CON www porque es lo que sirve de verdad: `minkayni.org` responde una
+       redirección hacia `www.minkayni.org`. Mientras esto dijo el dominio sin
+       www, cada canonical, cada hreflang y las veinte URL del sitemap
+       apuntaban a una dirección que redirige, que es justo la incoherencia que
+       un revisor (o Googlebot) cuenta como salto de más. */
+    site: "https://www.minkayni.org",
     /* Estático puro, declarado explícitamente en lugar de heredar el valor por
        defecto. Se evaluó pasar a adaptador Node (híbrido o servidor) y no
        compensa: no hay endpoints, formularios, cookies, sesión ni middleware,
@@ -105,19 +112,11 @@ export default defineConfig({
             },
         }),
     ],
-    redirects: {
-        "/batucada-popular": "/projects/batucada-popular/",
-        /* El ítem "Súmate" de la navegación de Strapi apunta a /join, que no
-           existe: era un enlace muerto en las once páginas. Se redirige al
-           mismo destino que el CTA "Quiero unirme" del footer. Lo correcto es
-           además corregir la URL en el plugin Navigation del CMS. */
-        "/join": "/about#contacto",
-        /* Los mismos dos atajos dentro del sitio inglés. Un enlace antiguo
-           compartido por alguien no sabe de idiomas, y /en/join escrito a mano
-           es una suposición razonable de quien navega en inglés. */
-        "/en/batucada-popular": "/en/projects/batucada-popular/",
-        "/en/join": "/en/about#contacto",
-    },
+    /* La tabla vive en src/data/redirects.ts porque no la usa solo el build:
+       `loadNavigation()` la aplica también al árbol del CMS, para que el menú
+       enlace al destino real en vez de pasar por la página de redirección.
+       Ver el comentario de cabecera de ese fichero. */
+    redirects: rutasRedirigidas(),
     vite: {
         plugins: [tailwindcss()],
         assetsInclude: ["**/*.mov"],

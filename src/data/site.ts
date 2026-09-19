@@ -1,6 +1,7 @@
 import type { NavTree } from "../schemas/navigation";
 import type { Footer } from "../schemas/strapi.graphql.zod";
 import { localizePath, type Locale } from "../i18n";
+import { destinoReal } from "./redirects";
 
 export const fallbackNavigation: NavTree = [
     { title: "Inicio", type: "INTERNAL", path: "/", items: [], additionalFields: { style: "default" } },
@@ -13,6 +14,7 @@ export const fallbackNavigation: NavTree = [
         items: [{ title: "Batucada Popular", type: "INTERNAL", path: "/projects/batucada-popular/", items: [] }],
         additionalFields: { style: "default" },
     },
+    { title: "Novedades", type: "INTERNAL", path: "/novedades", items: [], additionalFields: { style: "default" } },
     { title: "Súmate", type: "INTERNAL", path: "/about#contacto", items: [], additionalFields: { style: "cta", ctaText: "Hagamos minka" } },
 ];
 
@@ -31,6 +33,7 @@ export const fallbackNavigationEn: NavTree = [
         items: [{ title: "Batucada Popular", type: "INTERNAL", path: "/projects/batucada-popular/", items: [] }],
         additionalFields: { style: "default" },
     },
+    { title: "News", type: "INTERNAL", path: "/novedades", items: [], additionalFields: { style: "default" } },
     {
         title: "Join us",
         type: "INTERNAL",
@@ -51,6 +54,21 @@ export const localizeNavigation = (navigation: NavTree, locale: Locale): NavTree
         items: item.items?.map((child) => ({
             ...child,
             path: child.path ? localizePath(child.path, locale) : child.path,
+        })),
+    }));
+
+/* El árbol que llega del plugin Navigation puede apuntar a rutas que ya no
+   existen: hoy "Súmate" guarda `/join`, que solo es una redirección. Un ítem
+   del menú principal no debe llevar a una página de rebote, así que aquí se
+   sustituye por su destino real antes de que nadie lo pinte. Ver
+   src/data/redirects.ts. */
+export const repararRutas = (navigation: NavTree): NavTree =>
+    navigation.map((item) => ({
+        ...item,
+        path: item.path ? destinoReal(item.path) : item.path,
+        items: item.items?.map((child) => ({
+            ...child,
+            path: child.path ? destinoReal(child.path) : child.path,
         })),
     }));
 

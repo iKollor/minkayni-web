@@ -16,6 +16,7 @@ import {
     fallbackNavigation,
     fallbackNavigationEn,
     localizeNavigation,
+    repararRutas,
     withBatucadaProject,
 } from "../data/site";
 import { globalFallback } from "../data/pages/global";
@@ -49,7 +50,9 @@ const loadNavigation = async (locale: Locale): Promise<NavTree> => {
        plugin Navigation. Se trata igual que si Strapi no respondiera. */
     const source = tree && tree.length > 0 ? tree : locale === defaultLocale ? fallbackNavigation : fallbackNavigationEn;
 
-    return localizeNavigation(withBatucadaProject(source), locale);
+    /* `repararRutas` primero: las rutas del CMS llegan sin prefijo de idioma,
+       que es justo como las guarda la tabla de redirecciones. */
+    return localizeNavigation(repararRutas(withBatucadaProject(source)), locale);
 };
 
 const loadFooter = async (locale: Locale): Promise<Footer> => {

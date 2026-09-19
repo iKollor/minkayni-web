@@ -1,0 +1,77 @@
+---
+/* Medición para Google Ad Grants.
+ *
+ * La política de Ad Grants exige seguimiento de conversiones: una cuenta que
+ * no puede demostrar qué hace la gente al llegar acaba suspendida. Hasta ahora
+ * el sitio no tenía ninguna etiqueta.
+ *
+ * Nada de esto se emite si no hay identificador configurado, así que el
+ * repositorio no lleva ningún rastreador encendido por defecto y en local el
+ * sitio sigue sin pedir nada a Google. Se activa poniendo las variables en el
+ * entorno del despliegue (ver .env.example).
+ *
+ * Qué se mide, además de la página vista: los tres gestos que para la
+ * fundación son una conversión de verdad —abrir la página de aporte, escribir
+ * por WhatsApp y escribir por correo—. Van como eventos con nombre propio para
+ * poder marcarlos como conversión en el panel de Google Ads sin volver a tocar
+ * el código.
+ *
+ * Privacidad: `anonymize_ip` y sin señales de publicidad personalizada. Si
+ * algún día el sitio necesita un aviso de cookies (tráfico europeo, por
+ * ejemplo), el sitio a tocar es este y solo este.
+ */
+const medicion = import.meta.env.PUBLIC_GA_MEASUREMENT_ID?.trim();
+const conversiones = import.meta.env.PUBLIC_ADS_CONVERSION_ID?.trim();
+
+/* El primero de los dos manda sobre la carga del script; el segundo se
+   configura encima si existe, que es como Google recomienda enlazar Analytics
+   con Ads sin cargar gtag.js dos veces. */
+const etiquetas = [medicion, conversiones].filter(Boolean) as string[];
+const activo = etiquetas.length > 0;
+---
+
+{
+    activo && (
+        <>
+            <link rel="preconnect" href="https://www.googletagmanager.com" />
+            <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${etiquetas[0]}`} />
+            <script is:inline define:vars={{ etiquetas }}>
+                window.dataLayer = window.dataLayer || [];
+                function gtag() {
+                    window.dataLayer.push(arguments);
+                }
+                window.gtag = gtag;
+                gtag("js", new Date());
+                for (const etiqueta of etiquetas) {
+                    gtag("config", etiqueta, { anonymize_ip: true, allow_google_signals: false });
+                }
+
+                /* Un solo oyente en el documento en lugar de uno por enlace:
+                   el menú y las tarjetas se montan y desmontan con React, y
+                   los oyentes individuales se perderían en cada cambio. */
+                document.addEventListener(
+                    "click",
+                    (evento) => {
+                        const enlace = evento.target instanceof Element ? evento.target.closest("a[href]") : null;
+                        if (!enlace) return;
+                        const href = enlace.getAttribute("href") || "";
+
+                        let nombre = null;
+                        if (href.startsWith("mailto:")) nombre = "contacto_email";
+                        else if (href.includes("wa.me") || href.includes("whatsapp")) nombre = "contacto_whatsapp";
+                        else if (/(^|\/)(en\/)?donate\/?($|[#?])/.test(href)) nombre = "abrir_aporte";
+                        if (!nombre) return;
+
+                        gtag("event", nombre, {
+                            /* Desde dónde se pulsó: sirve para saber si el CTA
+                               del pie rinde igual que el del menú. */
+                            pagina: location.pathname,
+                            destino: href,
+                        });
+                    },
+                    { passive: true },
+                );
+            </script>
+        </>
+    )
+}

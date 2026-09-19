@@ -5,9 +5,20 @@ import shareImageSrc from "../../assets/FOTO_BATUCADA.webp";
 import { getImage } from "astro:assets";
 import { globalFallback } from "../../data/pages/global";
 import { loadPageContent } from "../../utils/page-content";
+import Analytics from "../../components/Analytics.astro";
 import OrganizationJsonLd from "../../components/legal/OrganizationJsonLd.astro";
 import PageJsonLd from "../../components/legal/PageJsonLd.astro";
 import { alternatePaths, defaultLocale, getLocale, htmlLang, ogLocale } from "../../i18n";
+
+/* Las tres variantes que pinta casi todo el texto del sitio. Se declaran aquí
+   para poder precargarlas: descubiertas solo desde el CSS de @font-face, el
+   navegador no las pide hasta haber construido el árbol de estilos, y hasta
+   entonces el texto se ve con la fuente del sistema y luego salta. Los demás
+   pesos siguen bajo demanda; precargarlos todos sería volver al problema que
+   resolvió el recorte de las fuentes (ver tools/fonts/subset.py). */
+import fontDisplayFat from "../../assets/fonts/Aristotelica_Pro_Display_WEBFONT/AristotelicaProDisp-Ft.subset.woff2?url";
+import fontDisplayBold from "../../assets/fonts/Aristotelica_Pro_Display_WEBFONT/AristotelicaProDisp-Bld.subset.woff2?url";
+import fontTextRegular from "../../assets/fonts/Aristotelica_Pro_Text_WEBFONT/AristotelicaProTx-Rg.subset.woff2?url";
 
 interface Props {
     title: string;
@@ -85,6 +96,12 @@ const strapiOrigin = (() => {
         <link rel="icon" href={faviconSvg.src} type="image/svg+xml" />
         <link rel="apple-touch-icon" href={appleTouchIcon.src} />
         <meta name="generator" content={Astro.generator} />
+
+        <!-- Ver los imports de arriba: sin esto el texto se pinta primero con
+             la fuente del sistema y salta al cargar la propia. -->
+        <link rel="preload" as="font" type="font/woff2" href={fontDisplayFat} crossorigin="anonymous" />
+        <link rel="preload" as="font" type="font/woff2" href={fontTextRegular} crossorigin="anonymous" />
+        <link rel="preload" as="font" type="font/woff2" href={fontDisplayBold} crossorigin="anonymous" />
         <meta name="description" content={description} />
         {canonical && <link rel="canonical" href={canonical} />}
         {alternates.map((alt) => <link rel="alternate" hreflang={htmlLang[alt.locale]} href={alt.href} />)}
@@ -123,6 +140,9 @@ const strapiOrigin = (() => {
         <!-- black-translucent permite que el fondo de la página se vea detrás de la barra de estado -->
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         {strapiOrigin && <link rel="preconnect" href={strapiOrigin} />}
+
+        <!-- Medición para Ad Grants. No emite nada si no hay id configurado. -->
+        <Analytics />
 
         <!-- Equipos lentos: marca <html data-low-power> antes del primer pintado
              para que los fondos animados (Hero) se degraden sin parpadeo. -->

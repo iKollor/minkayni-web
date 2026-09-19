@@ -1,5 +1,5 @@
-# Fundación Minkayni — https://minkayni.org
+# Fundación Minkayni — https://www.minkayni.org
 User-agent: *
 Allow: /
 
-Sitemap: https://minkayni.org/sitemap-index.xml
+Sitemap: https://www.minkayni.org/sitemap-index.xml

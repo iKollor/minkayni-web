@@ -8,8 +8,10 @@
         "preview": "astro preview",
         "astro": "astro",
         "check": "astro check",
+        "test": "tsx --test tests/*.test.ts",
         "test:media": "tsx --test tests/media-url.test.ts",
         "test:strapi": "tsx --test tests/strapi-connection.test.ts",
+        "test:ad-grants": "tsx --test tests/ad-grants.test.ts",
         "zod:gen": "graphql-codegen --config src/utils/codegen.ts",
         "zod:gen:lazy": "tsx src/utils/codegen_lazy.ts"
     },
