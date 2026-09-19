@@ -10,9 +10,6 @@ import icon from "astro-icon";
 
 import react from "@astrojs/react";
 
-import node from "@astrojs/node";
-import type { AstroIntegration } from "astro";
-
 import { unified } from "@astrojs/markdown-remark";
 import { rehypePlugins } from "./src/utils/markdown-pipeline";
 import { rutasRedirigidas } from "./src/data/redirects";
@@ -52,26 +49,6 @@ function resolveImageService() {
     }
 }
 
-/* Build de vista previa de borradores (`PREVIEW_MODE=1`).
-
-   Es la única excepción al estático puro de abajo, y no toca producción: se
-   despliega como un servicio aparte con el adaptador de Node, y lo único que
-   se genera en el momento es la ruta de vista previa del constructor, que el
-   panel de Strapi abre en su iframe. Todo lo demás sigue prerenderizado igual
-   que en producción. Ver src/utils/preview.ts. */
-const previewMode = ["1", "true"].includes((process.env.PREVIEW_MODE ?? "").toLowerCase());
-
-const previewRoutes = (): AstroIntegration => ({
-    name: "minkayni-preview-routes",
-    hooks: {
-        "astro:config:setup": ({ injectRoute }) => {
-            for (const pattern of ["/preview/page/[documentId]", "/en/preview/page/[documentId]"]) {
-                injectRoute({ pattern, entrypoint: "./src/preview/draft.astro", prerender: false });
-            }
-        },
-    },
-});
-
 // https://astro.build/config
 export default defineConfig({
     /* Dominio público del sitio. Lo usan `Astro.site` (canonical, JSON-LD de
@@ -92,13 +69,8 @@ export default defineConfig({
        sirve un fichero ya hecho, sin ganar nada en SEO: el HTML pre-renderizado
        ya es lo óptimo para los rastreadores. El coste real de este modelo es
        que un cambio en el CMS exige rebuild; se resuelve con un webhook de
-       Strapi hacia el despliegue, no cambiando de modo de salida.
-
-       Excepción: la build de vista previa (ver `previewMode` arriba) añade el
-       adaptador de Node solo para generar borradores al vuelo, en un servicio
-       aparte. En producción `adapter` queda sin definir. */
+       Strapi hacia el despliegue, no cambiando de modo de salida. */
     output: "static",
-    adapter: previewMode ? node({ mode: "standalone" }) : undefined,
     /* Dos idiomas, con el español sin prefijo: `/about` sigue siendo la URL
        de siempre y el inglés cuelga de `/en/about`. Prefijar también el
        español habría obligado a redirigir las once páginas ya indexadas sin
@@ -118,7 +90,6 @@ export default defineConfig({
     // Permite que herramientas (p. ej. previews) asignen puerto vía PORT
     server: process.env.PORT ? { port: Number(process.env.PORT) } : undefined,
     integrations: [
-        ...(previewMode ? [previewRoutes()] : []),
         icon(),
         /* React vuelve, pero solo como islas: los componentes de menú, contador,
            logos, títulos y transición se hidratan uno a uno con `client:*`; el
