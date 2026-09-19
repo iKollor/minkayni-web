@@ -1,0 +1,45 @@
+---
+/* Cuerpo de una subpágina del constructor (collection type `page`).
+
+   Lo comparten las rutas publicadas (`/[...slug]` y `/en/[...slug]`) y la
+   vista previa de borradores (`src/preview/draft.astro`): así lo que el
+   editor ve en el panel de Strapi es literalmente la misma página que saldrá
+   al publicar, no una imitación. */
+import PageLayout from "@/layouts/PageLayout.astro";
+import BlockRenderer from "@/components/blocks/BlockRenderer.astro";
+import type { BuilderPage } from "@/schemas/pages.zod";
+
+interface Props {
+    page: BuilderPage;
+    /** La vista previa no debe acabar en ningún buscador. */
+    noindex?: boolean;
+}
+
+const { page, noindex = false } = Astro.props;
+const blocks = (page.sections ?? []).filter((section): section is Record<string, unknown> => Boolean(section));
+
+/* La subpágina trae su propio SEO; sin esto heredaba la descripción global. */
+const description = page.seo?.metaDescription ?? page.description ?? undefined;
+---
+
+<PageLayout title={page.title ?? ""} description={description} noindex={noindex}>
+    <div class="pb-32 md:pb-64">
+        <BlockRenderer {blocks} />
+    </div>
+</PageLayout>
+
+<script>
+    import { initBatucadaAnchors } from "../../scripts/batucada/motion";
+    import { initReveals } from "../../scripts/reveals";
+
+    const initBuilderPage = () => {
+        initBatucadaAnchors(); // anclas internas con offset por navbar fija
+        initReveals();
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initBuilderPage, { once: true });
+    } else {
+        initBuilderPage();
+    }
+</script>

@@ -55,11 +55,19 @@ export async function builderPagePaths(locale: Locale) {
 
     const translated = new Map((await readCollection("builderPagesEn")).map((page) => [page.slug?.trim(), page]));
 
-    return spanish.map((page) => {
-        const match = translated.get(page.slug);
-        const merged = match ? withFallback(page, match) : page;
-        /* Igual que en loadPageContent: los enlaces internos que escribe el
-           editor van sin prefijo y se les pone aquí. */
-        return { params: { slug: page.slug }, props: { page: localizeLinks(merged, locale) } };
-    });
+    return spanish.map((page) => ({
+        params: { slug: page.slug },
+        props: { page: localizeBuilderPage(page, translated.get(page.slug), locale) },
+    }));
+}
+
+/** La traducción se superpone a la española (lo vacío sale en español) y los
+    enlaces internos reciben el prefijo del idioma. La usan las rutas
+    publicadas y la vista previa de borradores, para que se comporten igual. */
+export function localizeBuilderPage(spanish: BuilderPage, translation: BuilderPage | null | undefined, locale: Locale): BuilderPage {
+    if (locale === defaultLocale) return spanish;
+    const merged = translation ? withFallback(spanish, translation) : spanish;
+    /* Igual que en loadPageContent: los enlaces internos que escribe el
+       editor van sin prefijo y se les pone aquí. */
+    return localizeLinks(merged, locale);
 }

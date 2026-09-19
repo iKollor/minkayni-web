@@ -374,7 +374,10 @@ const builderSectionsSelection = `
     }
 `;
 
-const builderPageSelection = `
+/* Exportada: la vista previa de borradores (src/utils/preview.ts) pide el
+   mismo documento en tiempo de petición y debe traer exactamente los mismos
+   campos que el loader. */
+export const builderPageSelection = `
     ${entryMetaSelection}
     title
     slug
