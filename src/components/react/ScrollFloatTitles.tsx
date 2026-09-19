@@ -16,7 +16,11 @@
      («neighbourh / oods»).
    - Un lector de pantalla leería las letras una a una, así que el h2 recibe
      `aria-label` con el texto completo y el contenido partido queda
-     `aria-hidden`. */
+     `aria-hidden`.
+
+   Los títulos que aparecen DESPUÉS de cargar (la vista previa de borradores
+   del constructor pinta el contenido tras pedirlo al CMS) se anuncian con el
+   evento `scrollfloat:scan` y reciben la misma animación. */
 import { useEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -64,58 +68,71 @@ const splitTextNodes = (root: HTMLElement): HTMLElement[] => {
   return chars;
 };
 
+/* Títulos aún sin tratar. */
+const pendingHeadings = () =>
+  Array.from(document.querySelectorAll<HTMLElement>('h2[data-scroll-float]')).filter(
+    el => !el.dataset.scrollFloatReady && !el.classList.contains('sr-only') && (el.textContent ?? '').trim()
+  );
+
+const enhance = (headings: HTMLElement[]) =>
+  gsap.context(() => {
+    for (const el of headings) {
+      el.dataset.scrollFloatReady = '1';
+      el.setAttribute('aria-label', (el.textContent ?? '').replace(/\s+/g, ' ').trim());
+
+      const inner = document.createElement('span');
+      inner.setAttribute('aria-hidden', 'true');
+      inner.className = 'inline-block max-w-full';
+      while (el.firstChild) inner.appendChild(el.firstChild);
+      el.appendChild(inner);
+
+      /* El original recorta con overflow-hidden para que las letras suban
+         desde fuera, pero eso recorta también a los lados y estos títulos se
+         ajustan al ancho de su texto: con tracking-tight el último glifo se
+         quedaba fuera (el signo de «…ally?», la ese de «Our Allies»).
+         .clip-reveal recorta solo en vertical (ver global.css). El aire de
+         abajo sigue haciendo falta: los interlineados son muy prietos y la
+         tinta de Aristotelica mide 1,10 em. */
+      el.classList.add('clip-reveal');
+      el.style.paddingBottom = '0.14em';
+      el.style.marginBottom = `calc(${getComputedStyle(el).marginBottom} - 0.14em)`;
+
+      const chars = splitTextNodes(inner);
+      if (!chars.length) continue;
+
+      gsap.fromTo(
+        chars,
+        { willChange: 'opacity, transform', opacity: 0, yPercent: 120, scaleY: 2.3, scaleX: 0.7, transformOrigin: '50% 0%' },
+        {
+          duration: ANIMATION.duration,
+          ease: ANIMATION.ease,
+          opacity: 1,
+          yPercent: 0,
+          scaleY: 1,
+          scaleX: 1,
+          stagger: ANIMATION.stagger,
+          scrollTrigger: { trigger: el, start: ANIMATION.scrollStart, end: ANIMATION.scrollEnd, scrub: true }
+        }
+      );
+    }
+  });
+
 export default function ScrollFloatTitles() {
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    const headings = Array.from(document.querySelectorAll<HTMLElement>('h2[data-scroll-float]')).filter(
-      el => !el.dataset.scrollFloatReady && !el.classList.contains('sr-only') && (el.textContent ?? '').trim()
-    );
-    if (!headings.length) return;
+    const contexts: gsap.Context[] = [];
+    const scan = () => {
+      const headings = pendingHeadings();
+      if (headings.length) contexts.push(enhance(headings));
+    };
 
-    const ctx = gsap.context(() => {
-      for (const el of headings) {
-        el.dataset.scrollFloatReady = '1';
-        el.setAttribute('aria-label', (el.textContent ?? '').replace(/\s+/g, ' ').trim());
-
-        const inner = document.createElement('span');
-        inner.setAttribute('aria-hidden', 'true');
-        inner.className = 'inline-block max-w-full';
-        while (el.firstChild) inner.appendChild(el.firstChild);
-        el.appendChild(inner);
-
-        /* El original recorta con overflow-hidden para que las letras suban
-           desde fuera, pero eso recorta también a los lados y estos títulos se
-           ajustan al ancho de su texto: con tracking-tight el último glifo se
-           quedaba fuera (el signo de «…ally?», la ese de «Our Allies»).
-           .clip-reveal recorta solo en vertical (ver global.css). El aire de
-           abajo sigue haciendo falta: los interlineados son muy prietos y la
-           tinta de Aristotelica mide 1,10 em. */
-        el.classList.add('clip-reveal');
-        el.style.paddingBottom = '0.14em';
-        el.style.marginBottom = `calc(${getComputedStyle(el).marginBottom} - 0.14em)`;
-
-        const chars = splitTextNodes(inner);
-        if (!chars.length) continue;
-
-        gsap.fromTo(
-          chars,
-          { willChange: 'opacity, transform', opacity: 0, yPercent: 120, scaleY: 2.3, scaleX: 0.7, transformOrigin: '50% 0%' },
-          {
-            duration: ANIMATION.duration,
-            ease: ANIMATION.ease,
-            opacity: 1,
-            yPercent: 0,
-            scaleY: 1,
-            scaleX: 1,
-            stagger: ANIMATION.stagger,
-            scrollTrigger: { trigger: el, start: ANIMATION.scrollStart, end: ANIMATION.scrollEnd, scrub: true }
-          }
-        );
-      }
-    });
-
-    return () => ctx.revert();
+    scan();
+    window.addEventListener('scrollfloat:scan', scan);
+    return () => {
+      window.removeEventListener('scrollfloat:scan', scan);
+      contexts.forEach(ctx => ctx.revert());
+    };
   }, []);
 
   return null;

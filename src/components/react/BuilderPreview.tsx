@@ -12,9 +12,12 @@
    ese documento, idioma y estado. El CMS lo comprueba en una ruta propia
    (`/api/preview/page/:id`); sin token válido no devuelve nada.
 
-   Diferencias con la página publicada, asumidas: el Markdown se convierte
-   con `marked` en vez del pipeline de build (los atajos propios del sitio no
-   se ven), y las animaciones de entrada arrancan después de pintar.
+   Paridad con la página publicada: el Markdown se convierte en el navegador
+   con las mismas reglas del sitio (render-markdown-browser.ts), y tras pintar
+   se arrancan los mismos scripts e islas que en una página publicada
+   (reveals, botón mágico, contadores, títulos ScrollFloat), así que el editor
+   ve también las animaciones. La única diferencia real es que el contenido
+   llega tras una petición, no con el HTML.
 ─────────────────────────────────────────────────────────────────────────── */
 import { useEffect, useState } from "react";
 import BuilderBlocks from "./builder/BuilderBlocks";
@@ -70,9 +73,9 @@ export default function BuilderPreview({ strapiUrl, locale, labels }: Props) {
                 const merged = payload.base ? withFallback(payload.base, payload.data) : payload.data;
                 const page = localizeLinks(merged, locale);
 
-                const { marked } = await import("marked");
+                const { renderMarkdownInBrowser } = await import("@/utils/render-markdown-browser");
                 const blocks = normalizeBlocks(page.sections).map((block) =>
-                    block.type === "richText" && block.body ? { ...block, bodyHtml: marked.parse(block.body, { async: false }) as string } : block
+                    block.type === "richText" && block.body ? { ...block, bodyHtml: renderMarkdownInBrowser(block.body) } : block
                 );
                 setState({ kind: "ready", title: page.title ?? "", blocks });
             } catch (error) {
@@ -85,9 +88,10 @@ export default function BuilderPreview({ strapiUrl, locale, labels }: Props) {
         return () => controller.abort();
     }, [strapiUrl, locale, labels]);
 
-    /* Ya pintado: los mismos arranques que una página publicada, para que
-       reveals, botones y contadores se comporten igual. Los contadores los
-       monta CounterMount al recibir `count:reveal` por cada cifra. */
+    /* Ya pintado: los mismos arranques que una página publicada. Los
+       contadores los monta CounterMount al recibir `count:reveal`; los títulos
+       los parte ScrollFloatTitles al recibir `scrollfloat:scan`; y ScrollTrigger
+       recalcula posiciones porque la página acaba de cambiar de alto. */
     useEffect(() => {
         if (state.kind !== "ready") return;
         if (state.title) {
@@ -96,11 +100,13 @@ export default function BuilderPreview({ strapiUrl, locale, labels }: Props) {
             if (heroTitle) heroTitle.textContent = state.title;
         }
         let cancelled = false;
-        Promise.all([import("@/scripts/reveals"), import("@/scripts/magic-button")]).then(([reveals, buttons]) => {
+        Promise.all([import("@/scripts/reveals"), import("@/scripts/magic-button"), import("@/scripts/main")]).then(([reveals, buttons, main]) => {
             if (cancelled) return;
             reveals.initReveals();
             buttons.initMagicButtons();
+            window.dispatchEvent(new Event("scrollfloat:scan"));
             document.querySelectorAll<HTMLElement>("[data-count]").forEach((el) => window.dispatchEvent(new CustomEvent("count:reveal", { detail: { el } })));
+            main.ScrollTrigger.refresh();
         });
         return () => {
             cancelled = true;
