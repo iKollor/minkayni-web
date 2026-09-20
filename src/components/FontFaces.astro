@@ -7,8 +7,9 @@
    el modelo de PageSpeed (Lantern) suma al LCP todo lo que termina de bajar
    antes de que se pinte el elemento más grande: en móvil simulado, casi dos
    segundos de LCP por unas fuentes que el texto no necesita para verse. Aquí
-   un script en línea añade las @font-face en la primera tarea después de
-   entregar el primer cuadro: el primer pintado sale con las caras
+   un script en línea añade las @font-face cuando el documento está
+   parseado y se ha entregado un cuadro con él entero: el primer pintado
+   sale con las caras
    locales de respaldo, que llevan las métricas de Aristotelica (ver
    styles/fonts-fallback.css) para que el cambio no mueva el texto, y las
    propias llegan unos cientos de milisegundos después. Sin JavaScript, el
@@ -67,13 +68,29 @@ const css = hojas
             document.head.appendChild(hoja);
             listo();
         };
-        /* requestAnimationFrame corre ANTES de pintar el cuadro; la tarea que
-           se encola desde ahí corre después de que ese cuadro se haya
-           entregado. Y un plazo de seguridad por si la pestaña está oculta
-           (ahí no hay cuadros) o algo retrasa el primero. */
-        requestAnimationFrame(function () {
-            setTimeout(declarar, 0);
-        });
+        /* Cuándo: con el documento ya parseado (`readyState` deja de ser
+           "loading": está todo el texto en el DOM, y aún no han corrido los
+           scripts diferidos) y un cuadro más tarde. requestAnimationFrame
+           corre ANTES de pintar ese cuadro y la tarea encolada desde ahí,
+           después de entregarlo: así el cuadro lleva la página entera con
+           las caras de respaldo y Chrome ya ha anotado el LCP. Declarar las
+           fuentes en el primer cuadro a secas no valía: con el HTML aún
+           llegando, ese cuadro solo tenía el hero, y la leyenda se pintaba
+           después con la fuente pendiente, que Chrome no cuenta como LCP
+           hasta que la fuente entra (PageSpeed: LCP 4,5 s). Y un plazo de
+           seguridad por si la pestaña está oculta (no hay cuadros). */
+        var arrancar = function () {
+            requestAnimationFrame(function () {
+                setTimeout(declarar, 0);
+            });
+        };
+        if (document.readyState !== "loading") {
+            arrancar();
+        } else {
+            document.addEventListener("readystatechange", function () {
+                if (document.readyState !== "loading") arrancar();
+            });
+        }
         setTimeout(declarar, 2500);
     });
 </script>

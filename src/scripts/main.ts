@@ -18,7 +18,30 @@ import "./visita";
    desplazamiento y cada animación anclada al scroll da un salto. Es el ajuste
    que GSAP documenta justo para este caso; el resize «real» (rotar, cambiar
    el tamaño de la ventana) sigue refrescando con normalidad. */
-ScrollTrigger.config({ ignoreMobileResize: true });
+ScrollTrigger.config({ ignoreMobileResize: true, autoRefreshEvents: "visibilitychange,load,resize" });
+
+/* Un solo `ScrollTrigger.refresh()` por cuadro. Cada componente pide el suyo
+   al arrancar (navbar, intro, momentos, testimonios, carrusel, nav lateral…):
+   en la portada eran siete u ocho seguidos, y cada uno vuelve a medir todos
+   los disparadores contra un DOM recién escrito —PageSpeed los veía como
+   tareas largas de GSAP de 200–300 ms en escritorio—. Aquí se agrupan en
+   uno en el siguiente cuadro; ningún llamador lee posiciones justo después.
+   El refresco automático de DOMContentLoaded sobra por lo mismo: el de
+   `load` (ya con imágenes y fuentes) es el que deja las posiciones buenas. */
+const refreshOriginal = ScrollTrigger.refresh.bind(ScrollTrigger);
+let refreshPendiente = false;
+let refreshSeguro = true;
+ScrollTrigger.refresh = ((safe?: boolean) => {
+    refreshSeguro = refreshSeguro && safe !== false;
+    if (refreshPendiente) return;
+    refreshPendiente = true;
+    requestAnimationFrame(() => {
+        refreshPendiente = false;
+        const seguro = refreshSeguro;
+        refreshSeguro = true;
+        refreshOriginal(seguro);
+    });
+}) as typeof ScrollTrigger.refresh;
 
 // Solicitar primero las variantes que usa SplitText. `document.fonts.ready`
 // por sí solo puede resolverse antes de que el contenido oculto pida su fuente.
