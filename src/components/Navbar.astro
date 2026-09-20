@@ -22,9 +22,11 @@ interface Props {
     buttonClassName?: string;
     /** Desactiva la tinta adaptativa y deja el navbar siempre en crema. */
     enableTheming?: boolean;
+    /** La página trae la intro de la portada: el navbar espera tapado y entra en cascada al terminar. */
+    intro?: boolean;
 }
 
-const { buttons, menu, buttonClassName = "", enableTheming = true, locale = defaultLocale } = Astro.props;
+const { buttons, menu, buttonClassName = "", enableTheming = true, locale = defaultLocale, intro = false } = Astro.props;
 /* Enlaces de la barra: los de estilo normal, en su orden. El CTA se pinta aparte. */
 const barItems = menu.items.filter((item) => buttons.some((b) => b.path === item.href && (b.additionalFields?.style ?? "default") === "default"));
 const t = useTranslations(locale);
@@ -41,7 +43,7 @@ const homeHref = localizePath("/", locale);
                     </a>
                     {/* Megamenú de escritorio (Aceternity navbar-menu): enlaces,
                         desplegable de proyectos y selector de idioma. */}
-                    <NavMenu client:load items={barItems} projectsHref={menu.projectsHref} projects={menu.projects} languages={menu.languages} labels={menu.labels} />
+                    <NavMenu client:load items={barItems} projectsHref={menu.projectsHref} projects={menu.projects} languages={menu.languages} labels={menu.labels} intro={intro} />
                     <Reloj locale={locale} />
                     <div class="nav-cta flex items-center">
                         {
@@ -91,13 +93,16 @@ const homeHref = localizePath("/", locale);
 </div>
 
 <style is:global>
-    /* ── Visible sin JavaScript ───────────────────────────────────────────
-       El navbar entra en cascada (intro.ts / showContentNoIntro), y para que
-       no parpadee antes de esa entrada se oculta hasta que el script lo
-       muestra (`style.display = "block"`). Pero solo si hay script: sin
-       JavaScript —o si el bundle no llega— el menú se ve tal cual viene en
-       el HTML. `data-js` lo escribe head.astro antes del primer pintado. */
-    html[data-js] #nav-container {
+    /* ── Visible desde el primer cuadro ───────────────────────────────────
+       El navbar viene en el HTML y se pinta con la página. Antes se ocultaba
+       bajo `html[data-js]` hasta que el script lo mostraba y lo hacía entrar
+       en cascada; con los scripts detrás del contenido, en móvil eso era una
+       barra invisible durante dos segundos (PageSpeed lo cargaba al Speed
+       Index). La cascada queda para cuando de verdad hay algo que revelar:
+       la intro de la portada, que tapa la página entera. `data-intro` lo
+       escribe head.astro antes del primer pintado, solo cuando la intro va a
+       reproducirse, e intro.ts lo retira al acabar. */
+    html[data-intro="pending"] #nav-container {
         display: none;
     }
     /* El megamenú (NavMenu.tsx) se sirve con sus ítems en el estado inicial

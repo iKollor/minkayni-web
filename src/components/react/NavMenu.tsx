@@ -197,11 +197,15 @@ export interface NavMenuProps {
   projects: MenuProject[];
   languages: MenuLanguage[];
   labels: MenuLabels;
+  /** La página trae la intro de la portada: los ítems esperan ocultos y entran en cascada al terminar. */
+  intro?: boolean;
 }
 
-export default function NavMenu({ items, projectsHref, projects, languages, labels }: NavMenuProps) {
+export default function NavMenu({ items, projectsHref, projects, languages, labels, intro = false }: NavMenuProps) {
   const [active, setActive] = useState<string | null>(null);
-  const [ready, setReady] = useState(false);
+  /* Sin intro, visible ya en el HTML que sale del servidor: la barra se
+     pinta con el primer cuadro y la hidratación no tiene nada que revelar. */
+  const [ready, setReady] = useState(!intro);
   const reduced = useReducedMotion();
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -225,6 +229,7 @@ export default function NavMenu({ items, projectsHref, projects, languages, labe
      `intro:finished`; en las demás páginas el aviso llega nada más cargar.
      Si la isla hidrata cuando ya pasó, el estado del documento lo dice. */
   useEffect(() => {
+    if (!intro) return;
     const done = () => setReady(true);
     const introRunning = document.getElementById('intro-overlay') || document.documentElement.classList.contains('no-scroll') || document.body.hasAttribute('data-intro');
     if (!introRunning) {
@@ -239,7 +244,7 @@ export default function NavMenu({ items, projectsHref, projects, languages, labe
       window.removeEventListener('nav:reveal', done);
       window.removeEventListener('intro:finished', done);
     };
-  }, []);
+  }, [intro]);
 
   useEffect(() => {
     if (active === null) return;

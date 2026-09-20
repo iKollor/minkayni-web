@@ -51,7 +51,7 @@ const intro = import.meta.env.PUBLIC_HOME_INTRO === "on";
 
 <Head title={title} description={description} image={image} imageAlt={imageAlt} intro={intro}>
     <SiteGrain />
-    <Navbar buttons={navHeader} locale={locale} menu={menu} />
+    <Navbar buttons={navHeader} locale={locale} menu={menu} intro={intro} />
     {/* Los contadores hidratan en idle: entran con el scroll o al final de la
         cascada de la leyenda, que ya espera a las fuentes. El panel del menú
         sigue en `client:load`: tiene que responder a la hamburguesa en cuanto

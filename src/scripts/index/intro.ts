@@ -117,7 +117,9 @@ export const showContentNoIntro = (opts?: {
     const targetHeight = opts?.height ?? heroHeight();
     const targetRadius = opts?.radius ?? "30px";
     const emitEvent = opts?.emitEvent ?? true;
-    const doCascade = opts?.cascade ?? true;
+    /* Sin cascada salvo que se pida: el navbar ya viene pintado en el HTML
+       (ver Navbar.astro) y esconderlo para hacerlo entrar sería un parpadeo. */
+    const doCascade = opts?.cascade ?? false;
     const cascadeDelay = opts?.cascadeDelay ?? 0.6;
 
     /* Esenciales de TODA página (el navbar y el scroll viven fuera del

@@ -362,6 +362,9 @@ test("la portada y el menú vienen visibles en el HTML", () => {
         assert.doesNotMatch(html, /id="app-content"[^>]*class="[^"]*\bopacity-0\b/, `${ruta}: #app-content oculto en el HTML`);
         assert.doesNotMatch(html, /class="[^"]*\bhidden\b[^"]*"[^>]*id="nav-container"/, `${ruta}: #nav-container oculto en el HTML`);
         assert.match(html, /<div[^>]+id="nav-container"/, `${ruta}: sin navbar`);
+        /* Y tampoco escondido por CSS hasta que llegue el script: solo la
+           intro (`html[data-intro]`) puede taparlo. */
+        assert.doesNotMatch(html, /html\[data-js\][^{]*#nav-container/, `${ruta}: #nav-container oculto hasta el JS`);
     }
 });
 
