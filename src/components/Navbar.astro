@@ -31,7 +31,7 @@ const t = useTranslations(locale);
 const homeHref = localizePath("/", locale);
 ---
 
-<div class="fixed w-full h-[90px] z-50 hidden" id="nav-container" data-nav-theming={enableTheming}>
+<div class="fixed w-full h-[90px] z-50" id="nav-container" data-nav-theming={enableTheming}>
     <div class="mx-10 h-full overflow-hidden">
         <div class="h-full w-full">
             <div id="nav-switcher" class="max-lg:-translate-y-[100px]">
@@ -91,6 +91,36 @@ const homeHref = localizePath("/", locale);
 </div>
 
 <style is:global>
+    /* ── Visible sin JavaScript ───────────────────────────────────────────
+       El navbar entra en cascada (intro.ts / showContentNoIntro), y para que
+       no parpadee antes de esa entrada se oculta hasta que el script lo
+       muestra. Pero solo si hay script: sin JavaScript —o si el bundle no
+       llega— el menú se ve tal cual viene en el HTML. `data-js` lo escribe
+       head.astro antes del primer pintado. La animación de seguridad lo
+       destapa a los cinco segundos aunque el script fallara a medias. */
+    html[data-js] #nav-container {
+        display: none;
+        animation: nav-container-safety 0s linear 5s forwards;
+    }
+    @keyframes nav-container-safety {
+        to {
+            display: block;
+        }
+    }
+    /* El megamenú (NavMenu.tsx) se sirve con sus ítems en el estado inicial
+       de la cascada —transparentes, desenfocados y sin puntero— y es la
+       hidratación quien los revela. Sin JavaScript no hay hidratación, así
+       que aquí se anula ese estado y los enlaces quedan a la vista y
+       pulsables. */
+    html:not([data-js]) #navBase nav[aria-label] {
+        pointer-events: auto !important;
+    }
+    html:not([data-js]) #navBase nav[aria-label] > [style] {
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+    }
+
     /* ── Tinta adaptativa del navbar ──────────────────────────────────────
        `data-nav-theme` lo escribe el script según el fondo que haya debajo:
          dark  → fondo oscuro  → tinta crema

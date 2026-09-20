@@ -2,7 +2,6 @@ import { gsap, ScrollTrigger } from "../main.ts";
 import { $, on, setHeights, setRadius } from "./helpers";
 import { animateParagraph } from "./paragraph";
 import type { AnimationItem } from "lottie-web";
-import { esVisitaNueva } from "../visita";
 
 const NAV_STROKE_MULTIPLIER = 1.2;
 
@@ -64,6 +63,13 @@ const animateNavAndParagraph = (
             3
         )
         .call(animateParagraph, [prefersReduced], 1);
+};
+
+/** `html[data-intro="pending"]` lo pone head.astro antes del primer pintado
+    y es lo que mantiene tapado #app-content (ver index.astro). Se retira en
+    cuanto el contenido debe verse, por el camino que sea. */
+const introResuelta = (): void => {
+    document.documentElement.removeAttribute("data-intro");
 };
 
 /* ------------------------- API pública añadida ------------------------- */
@@ -155,6 +161,7 @@ export const showContentNoIntro = (opts?: {
 
     // Mostrar contenido base
     overlay?.remove();
+    introResuelta();
     content?.classList.replace("opacity-0", "opacity-100");
     setHeights(targetHeight);
     setRadius(targetRadius);
@@ -248,6 +255,7 @@ export const initIntro = (prefersReduced: boolean): void => {
         finished = true;
         document.body.removeAttribute("data-intro");
         teardown();
+        introResuelta();
         content?.classList.replace("opacity-0", "opacity-100");
         setHeights(heroHeight());
         setRadius("30px");
@@ -267,6 +275,7 @@ export const initIntro = (prefersReduced: boolean): void => {
     };
 
     const runPostIntro = (): void => {
+        introResuelta();
         content?.classList.replace("opacity-0", "opacity-100");
         document.body.removeAttribute("data-intro");
         setHeights("100svh");
@@ -348,19 +357,18 @@ export const initIntro = (prefersReduced: boolean): void => {
         setTimeout(runPostIntro, Math.max(0, MIN_VISIBLE_MS - elapsed));
     };
 
+    /* La decisión de reproducir la intro ya está tomada: la tomó el script
+       en línea de head.astro antes del primer pintado, con la misma regla
+       que había aquí (visita nueva —ver src/scripts/visita.ts—, sin
+       `prefers-reduced-motion`, sin ahorro de datos ni red lenta). Si no
+       marcó la página, el contenido ya está a la vista y no hay nada que
+       tapar: se salta directamente al estado final. */
+    if (document.documentElement.dataset.intro !== "pending" || scrollY > 50 || prefersReduced) {
+        finalizeImmediate();
+        return;
+    }
+
     document.documentElement.classList.add("no-scroll");
-
-    if (scrollY > 50 || prefersReduced) {
-        finalizeImmediate();
-        return;
-    }
-
-    /* Quien ya estuvo aquí hace un rato no vuelve a pagar los cinco segundos:
-       entra directo al contenido. Ver src/scripts/visita.ts. */
-    if (!esVisitaNueva) {
-        finalizeImmediate();
-        return;
-    }
 
     const src = stage?.dataset.src;
     if (!stage || !src) {

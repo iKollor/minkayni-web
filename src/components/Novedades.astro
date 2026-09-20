@@ -14,14 +14,26 @@ import { Icon } from "astro-icon/components";
 
 import type { Novedad } from "../utils/novedades";
 import { localizePath, useTranslations, type Locale } from "../i18n";
+import { buildSocialItems } from "../scripts/components/socials";
+import { fallbackFooter } from "../data/site";
+import { globalFallback } from "../data/pages/global";
+import type { Footer } from "../schemas/strapi.graphql.zod";
 
 interface Props {
     novedades: Novedad[];
     locale: Locale;
+    /** Redes del single type `footer`; sin CMS se usan las del respaldo. */
+    socials?: Footer["Socials"] | null;
+    /** Correo de contacto del single type `global`. */
+    contactEmail?: string | null;
 }
 
-const { novedades, locale } = Astro.props;
+const { novedades, locale, socials = fallbackFooter.Socials, contactEmail = globalFallback.contactEmail } = Astro.props;
 const t = useTranslations(locale);
+const socialItems = buildSocialItems(socials ?? fallbackFooter.Socials);
+const contacto = localizePath("/about#contacto", locale);
+const proyectos = localizePath("/projects", locale);
+const impacto = localizePath("/impact", locale);
 /* Titular y párrafos son el texto original de la publicación, en español
    (ver Moments.astro: la sincronización lo reescribe, no se traduce). */
 const postLang = locale === "es" ? undefined : "es";
@@ -56,7 +68,10 @@ const jsonLd = {
 };
 ---
 
-<div class="mx-auto w-[90%] max-w-[1100px] py-16 sm:py-24">
+{/* `data-cms-empty` marca una build sin publicaciones del CMS (local sin
+    Strapi). La auditoría de Ad Grants (tests/ad-grants.test.ts) lo lee para
+    no juzgar la cantidad de contenido de una página cuyo cuerpo no llegó. */}
+<div class="mx-auto w-[90%] max-w-[1100px] py-16 sm:py-24" data-cms-empty={novedades.length === 0 ? "" : undefined}>
     <header class="max-w-[70ch]">
         <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{t("news.eyebrow")}</p>
         <p class="text-lg leading-relaxed text-black/75">{t("news.lead")}</p>
@@ -160,8 +175,45 @@ const jsonLd = {
         )
     }
 
+    <!-- Cómo seguir la actividad y cómo participar. Es texto fijo del sitio:
+         no depende de que el CMS haya devuelto publicaciones, así que la
+         página nunca se queda en un titular y un botón. -->
+    <section class="mt-20 grid gap-8 rounded-3xl border border-black/10 bg-white/50 px-8 py-10 sm:mt-28 sm:px-12 md:grid-cols-[1.2fr_1fr] md:gap-12" aria-labelledby="novedades-follow">
+        <div class="max-w-[60ch]">
+            <h2 id="novedades-follow" class="font-display text-3xl font-black leading-tight text-black sm:text-4xl">{t("news.followTitle")}</h2>
+            <p class="mt-4 text-lg leading-relaxed text-black/75">{t("news.followBody")}</p>
+            <ul class="mt-6 list-none space-y-2 p-0 text-base">
+                <li>
+                    <a href={contacto} class="font-bold text-primary underline underline-offset-4 hover:text-secondary-deep focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">{t("news.followContact")}</a>
+                    {contactEmail && (
+                        <span class="text-black/60">
+                            {" "}· <a href={`mailto:${contactEmail}`} class="underline underline-offset-4 hover:text-primary">{contactEmail}</a>
+                        </span>
+                    )}
+                </li>
+                <li><a href={proyectos} class="font-bold text-primary underline underline-offset-4 hover:text-secondary-deep focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">{t("news.followProjects")}</a></li>
+                <li><a href={impacto} class="font-bold text-primary underline underline-offset-4 hover:text-secondary-deep focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">{t("news.followImpact")}</a></li>
+            </ul>
+        </div>
+        <nav aria-label={t("news.followSocials")}>
+            <p class="text-sm font-bold uppercase tracking-[0.22em] text-primary">{t("news.followSocials")}</p>
+            <ul class="mt-4 list-none space-y-3 p-0">
+                {socialItems.map(({ href, icon, label }) => (
+                    <li>
+                        <a href={href} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-3 font-display text-lg font-bold text-black transition hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+                            <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-white" aria-hidden="true">
+                                <Icon name={icon} class="h-5 w-5" />
+                            </span>
+                            {label}
+                        </a>
+                    </li>
+                ))}
+            </ul>
+        </nav>
+    </section>
+
     <aside
-        class="mt-20 rounded-3xl bg-primary px-8 py-12 text-center text-white sm:mt-28 sm:px-14 sm:py-16"
+        class="mt-16 rounded-3xl bg-primary px-8 py-12 text-center text-white sm:mt-20 sm:px-14 sm:py-16"
         aria-labelledby="novedades-cta"
     >
         <h2 id="novedades-cta" class="font-display text-3xl font-black leading-tight sm:text-4xl">

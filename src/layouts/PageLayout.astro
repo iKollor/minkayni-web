@@ -34,7 +34,7 @@ interface Props {
    ninguna página tiene que acordarse de declararlo. */
 const locale = getLocale(Astro.url);
 const { navHeader, footer, site, projects } = await loadLayoutContent(locale);
-const menu = buildMenuData({ locale, navHeader, footer, projects, currentPath: Astro.url.pathname, contactEmail: site.contactEmail });
+const menu = await buildMenuData({ locale, navHeader, footer, projects, currentPath: Astro.url.pathname, contactEmail: site.contactEmail });
 const { title, description, noindex, image, imageAlt, showHero = true, buttonClassName = "", enableNavTheming } = Astro.props;
 ---
 
@@ -42,10 +42,15 @@ const { title, description, noindex, image, imageAlt, showHero = true, buttonCla
     <SiteGrain />
 
     <Navbar buttons={navHeader} buttonClassName={buttonClassName} enableTheming={enableNavTheming} locale={locale} menu={menu} />
-    <SiteMenu client:load {...menu} />
+    {/* `client:idle` en lo que no hace falta para pintar ni para el primer
+        toque: el panel del menú se abre con un botón y los contadores entran
+        con el scroll o al final de la cascada de la leyenda, que ya espera a
+        las fuentes. La cortina sigue en `client:load`: tapa la página al
+        llegar desde otra y tiene que retirarse cuanto antes. */}
+    <SiteMenu client:idle {...menu} />
     <SiteScrollbar locale={locale} />
     <PixelCurtain client:load />
-    <CounterMount client:load />
+    <CounterMount client:idle />
     <ScrollFloatTitles client:idle />
 
     <div id="smooth-wrapper" class="overflow-x-hidden">
@@ -53,7 +58,7 @@ const { title, description, noindex, image, imageAlt, showHero = true, buttonCla
             <main class="flex-1 w-full flex flex-col justify-start">
                 {showHero && <Hero text={title} />}
                 <slot />
-                <Footer primaryLinks={navHeader} {footer} secondaryLinks="Proyectos" locale={locale} />
+                <Footer primaryLinks={navHeader} {footer} secondaryLinks="Proyectos" locale={locale} extraLinks={menu.secondary} />
             </main>
         </div>
     </div>

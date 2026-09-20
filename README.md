@@ -255,6 +255,50 @@ CDN_BASE_URL=https://img.minkayni.org
 Después de cambiar estas variables se requiere un redeploy completo, porque el
 contenido de Strapi se obtiene durante el build estático.
 
+## Google Ad Grants: qué exige el sitio y cómo se comprueba
+
+La [política de sitios web de Ad Grants](https://support.google.com/grants/answer/1657899)
+pide, en resumen, que el sitio cargue rápido, se navegue con facilidad y
+tenga contenido abundante y actualizado con llamadas a la acción. La
+activación se rechazó dos veces por eso, y `tests/ad-grants.test.ts` audita
+la build (`pnpm build && pnpm test`) contra cada reproche: presupuestos de
+peso (HTML, fuentes, JavaScript, imágenes enlazadas), nada de fuentes de
+terceros, portada y menú visibles en el HTML, enlaces internos y anclas sin
+roturas, sin páginas de demostración publicadas, título/descripción/`h1` en
+cada página, enlace a aportes y a contacto desde todas, canónicas y
+`hreflang` coherentes, sitemap y `robots.txt`. Si un cambio legítimo rompe un
+presupuesto, se sube el número y se documenta el porqué en el propio test.
+
+Convenciones que salen de ahí:
+
+- **Nada oculto en el HTML.** Todo lo que revela una animación viene visible
+  en el documento y solo se esconde bajo `html[data-js]` (hay JavaScript) o
+  `html[data-intro="pending"]` (la intro de la portada va a reproducirse).
+  Los dos atributos los escribe un script en línea de `src/layouts/lib/head.astro`
+  antes del primer pintado, y cada regla que oculta algo lleva una animación
+  de seguridad que lo destapa pasados unos segundos por si el script falla.
+- **Fuentes propias.** Todas viven en `src/assets/fonts/`, recortadas
+  (`.subset.woff2`). Nada de `fonts.googleapis.com`: cada hoja externa era
+  una petición bloqueante antes del primer pintado.
+- **Intro de la portada.** Solo se reproduce en visitas nuevas (dos horas de
+  inactividad, ver `src/scripts/visita.ts`), y nunca con
+  `prefers-reduced-motion`, ahorro de datos, red 2G/3G, equipo lento o una
+  URL con ancla. `PUBLIC_HOME_INTRO=off` en el entorno de build la apaga del
+  todo: es la palanca si la revisión vuelve a reprochar la carga de la portada.
+- **Llamadas a la acción.** La página de aportes (`/donate`) y el contacto
+  (`/about#contacto`) se enlazan desde el pie, el panel del menú y la sección
+  «Cómo puedes ayudar» de la portada, además de los CTA propios de cada
+  página. El árbol del CMS puede cambiar; esos enlaces no dependen de él.
+- **Medición.** `PUBLIC_GA_MEASUREMENT_ID` / `PUBLIC_ADS_CONVERSION_ID` activan
+  la etiqueta (ver `src/components/Analytics.astro`); sin ellas no se carga
+  nada. Ad Grants exige seguimiento de conversiones para mantener la cuenta.
+
+Para medir en local como lo hace Google (móvil con red y CPU limitadas):
+`pnpm build`, servir `dist/` y pasar Lighthouse sobre `/`, `/about/`,
+`/donate/` y `/novedades/`. Un perfil limpio equivale a una visita nueva: la
+portada reproduce la intro, así que mide también con la intro apagada para
+separar lo que cuesta la animación de lo que cuesta la página.
+
 ## Solución de problemas
 
 - Build/Dev falla con “Strapi connection is invalid”:

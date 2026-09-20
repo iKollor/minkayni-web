@@ -9,6 +9,7 @@ import Analytics from "../../components/Analytics.astro";
 import OrganizationJsonLd from "../../components/legal/OrganizationJsonLd.astro";
 import PageJsonLd from "../../components/legal/PageJsonLd.astro";
 import { alternatePaths, defaultLocale, getLocale, htmlLang, ogLocale } from "../../i18n";
+import { CADUCIDAD_VISITA_MS, CLAVE_VISITA } from "../../scripts/visita-config";
 
 /* Las tres variantes que pinta casi todo el texto del sitio. Se declaran aquí
    para poder precargarlas: descubiertas solo desde el CSS de @font-face, el
@@ -29,6 +30,8 @@ interface Props {
     image?: string;
     /** Texto alternativo de `image`. */
     imageAlt?: string;
+    /** La página trae la intro de la portada (IntroVideo). Solo la portada. */
+    intro?: boolean;
 }
 const appleTouchIcon = await getImage({
     src: faviconSrc,
@@ -44,7 +47,7 @@ const faviconPng = await getImage({ src: faviconSrc, width: 32, height: 32, form
    de la página. */
 const locale = getLocale(Astro.url);
 const site = await loadPageContent("globalSettings", globalFallback, locale);
-const { title, description = site.defaultSeo.metaDescription, noindex = false, image, imageAlt } = Astro.props;
+const { title, description = site.defaultSeo.metaDescription, noindex = false, image, imageAlt, intro = false } = Astro.props;
 const siteTitle = site.defaultSeo.metaTitle || site.siteName;
 const fullTitle = title ? `${title} ${site.titleSuffix}` : siteTitle;
 
@@ -144,13 +147,43 @@ const strapiOrigin = (() => {
         <!-- Medición para Ad Grants. No emite nada si no hay id configurado. -->
         <Analytics />
 
-        <!-- Equipos lentos: marca <html data-low-power> antes del primer pintado
-             para que los fondos animados (Hero) se degraden sin parpadeo. -->
-        <script is:inline>
+        {/* Decisiones que hay que tomar ANTES del primer pintado, para que el
+             HTML no esconda nada «por si acaso»:
+
+             - `data-js`: hay JavaScript. Las reglas que ocultan algo hasta que
+               una animación lo revele cuelgan de este atributo, así que sin
+               JS (o si el bundle no llega) el contenido y el menú se ven tal
+               cual vienen en el HTML. Es lo que exige la política de sitios
+               de Ad Grants y lo que un rastreador necesita.
+             - `data-low-power`: equipo lento; los fondos animados (Hero) se
+               degradan sin parpadeo.
+             - `data-intro="pending"`: solo en la portada, y solo cuando la
+               intro va a reproducirse de verdad (visita nueva, sin
+               `prefers-reduced-motion`, sin ahorro de datos ni red lenta, sin
+               ancla en la URL). Es la misma regla que aplica `intro.ts`; se
+               decide aquí para que quien NO va a ver la intro reciba la
+               portada pintada desde el primer cuadro en vez de una pantalla
+               en blanco hasta que carga el script. */}
+        <script is:inline define:vars={{ intro, clave: CLAVE_VISITA, caducidad: CADUCIDAD_VISITA_MS }}>
             try {
+                var html = document.documentElement;
                 var n = navigator;
-                var low = (n.hardwareConcurrency && n.hardwareConcurrency <= 2) || (n.deviceMemory && n.deviceMemory <= 2) || (n.connection && n.connection.saveData === true);
-                if (low) document.documentElement.setAttribute("data-low-power", "");
+                var c = n.connection;
+                html.setAttribute("data-js", "");
+                var low = (n.hardwareConcurrency && n.hardwareConcurrency <= 2) || (n.deviceMemory && n.deviceMemory <= 2) || (c && c.saveData === true);
+                if (low) html.setAttribute("data-low-power", "");
+                if (intro) {
+                    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    var lenta = !!(c && (c.saveData === true || /(^|[^4-9])[23]g$/.test(String(c.effectiveType || ""))));
+                    var nueva = true;
+                    try {
+                        var sello = Number(localStorage.getItem(clave));
+                        nueva = !(sello > 0) || Date.now() - sello >= caducidad;
+                    } catch (e) {
+                        /* Sin almacenamiento no hay memoria: ante la duda, la intro se ve. */
+                    }
+                    if (nueva && !reduce && !lenta && !low && !location.hash) html.setAttribute("data-intro", "pending");
+                }
             } catch (e) {}
         </script>
 

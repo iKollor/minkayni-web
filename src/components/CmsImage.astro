@@ -51,7 +51,20 @@ const resolvedAlt = alt || media?.alternativeText || "";
         fallback.format === "svg" ? (
             <Image src={fallback} alt={resolvedAlt} class={className} loading={loading} />
         ) : (
-            <Image src={fallback} alt={resolvedAlt} class={className} loading={loading} widths={widths.filter((w) => w <= fallback.width)} sizes={sizes} />
+            /* `width` acota el `src` de respaldo al mayor tamaño del srcset. Sin
+               él Astro emite en `src` la imagen a su tamaño original: la foto de
+               la Batucada, de 6000 px, salía como un WebP de 680 KB que
+               descargaba cualquier navegador sin soporte de srcset (y el
+               rastreador de imágenes de Google). */
+            <Image
+                src={fallback}
+                alt={resolvedAlt}
+                class={className}
+                loading={loading}
+                width={Math.min(fallback.width, Math.max(...widths))}
+                widths={widths.filter((w) => w <= fallback.width)}
+                sizes={sizes}
+            />
         )
     ) : null
 }

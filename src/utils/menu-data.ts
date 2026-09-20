@@ -12,26 +12,34 @@ import type { Footer } from "../schemas/strapi.graphql.zod";
 import type { ProjectItem } from "../components/projects/ProjectExplorer.astro";
 import { buildSocialItems } from "../scripts/components/socials";
 import { strapiMediaUrl } from "./media-url";
+import { getImage } from "astro:assets";
 import { locales, localeName, localizePath, stripLocale, useTranslations, type Locale } from "../i18n";
 
 const STRAPI_URL = import.meta.env.STRAPI_URL ?? "";
 
 const samePage = (a: string, b: string) => stripLocale(a).replace(/\/$/, "") === stripLocale(b).replace(/\/$/, "");
 
-const projectImage = (project: ProjectItem): string | undefined => {
+/* La miniatura del megamenú se pinta a 240 px de ancho. La del CMS ya llega
+   redimensionada por el proxy de medios; la local de respaldo pasa por
+   astro:assets por la misma razón: antes se enviaba el original de la foto
+   de la Batucada (367 KB) para una tarjeta de 240 px. */
+const projectImage = async (project: ProjectItem): Promise<string | undefined> => {
     const cmsUrl = project.image?.url;
     if (cmsUrl) return strapiMediaUrl(cmsUrl, STRAPI_URL, 280);
-    return project.localImage?.src;
+    if (!project.localImage) return undefined;
+    if (project.localImage.format === "svg") return project.localImage.src;
+    const { src } = await getImage({ src: project.localImage, width: 480, format: "webp" });
+    return src;
 };
 
-export function buildMenuData(opts: {
+export async function buildMenuData(opts: {
     locale: Locale;
     navHeader: NavTree;
     footer: Footer;
     projects: ProjectItem[];
     currentPath: string;
     contactEmail?: string;
-}): MenuData {
+}): Promise<MenuData> {
     const { locale, navHeader, footer, projects, currentPath, contactEmail } = opts;
     const t = useTranslations(locale);
     const projectsHref = localizePath("/projects", locale);
@@ -47,13 +55,15 @@ export function buildMenuData(opts: {
 
     /* Cada proyecto enlaza a su tarjeta en la página de proyectos, salvo los
        que tienen página propia (Batucada Popular y sus subpáginas). */
-    const menuProjects: MenuProject[] = projects.map((p) => ({
-        title: p.title,
-        description: p.summary ?? p.detail ?? "",
-        href: p.href.startsWith("/projects/") ? localizePath(p.href, locale) : `${projectsHref}#${p.anchor}`,
-        src: projectImage(p),
-        alt: p.imageAlt ?? p.title,
-    }));
+    const menuProjects: MenuProject[] = await Promise.all(
+        projects.map(async (p) => ({
+            title: p.title,
+            description: p.summary ?? p.detail ?? "",
+            href: p.href.startsWith("/projects/") ? localizePath(p.href, locale) : `${projectsHref}#${p.anchor}`,
+            src: await projectImage(p),
+            alt: p.imageAlt ?? p.title,
+        })),
+    );
 
     const languages = locales.map((code) => ({
         code,
@@ -72,8 +82,12 @@ export function buildMenuData(opts: {
         /* Lista secundaria del menú: las páginas que no vienen del árbol del
            CMS. Novedades va aquí porque el plugin Navigation no la conoce y,
            sin un enlace, una página fechada que nadie encuentra no cuenta
-           como contenido actualizado para nadie. */
+           como contenido actualizado para nadie. «Aporta hoy» va la primera
+           por la misma razón: la página de aportes solo se enlazaba desde el
+           404 y desde Novedades, y la revisión de Ad Grants pide llamadas a
+           la acción alcanzables desde cualquier página. El pie las repite. */
         secondary: [
+            { label: t("page.donate"), href: localizePath("/donate", locale) },
             { label: t("news.title"), href: localizePath("/novedades", locale) },
             { label: t("nav.legalTransparency"), href: localizePath("/transparencia", locale) },
         ],

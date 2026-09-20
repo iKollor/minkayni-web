@@ -1,0 +1,19 @@
+/* Special Gothic Expanded One (Google Fonts, licencia SIL Open Font License).
+
+   Antes se pedía a fonts.googleapis.com desde global.css junto con Nunito,
+   Poppins y Quicksand. Esas tres no las usaba ninguna regla del sitio, y las
+   cuatro hojas externas eran bloqueantes: en móvil retrasaban el primer
+   pintado de todas las páginas unos 800 ms (medido con Lighthouse) para
+   traer una fuente que solo pintan los titulares de Batucada Popular.
+
+   Ahora se sirve desde el propio dominio, ya recortada al alfabeto latino
+   (es el subconjunto que Google entrega para `unicode-range` latin: cubre el
+   español completo, incluidas tildes, ñ y los signos de apertura). */
+@font-face {
+    font-family: "Special Gothic Expanded One";
+    src: url("SpecialGothicExpandedOne-Rg.subset.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}

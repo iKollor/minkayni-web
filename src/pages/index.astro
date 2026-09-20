@@ -18,6 +18,9 @@ import { localizeCollection, localizeEntry } from "../utils/page-content";
 import { getLocale, localizePath, useTranslations } from "../i18n";
 import Projects from "../components/index/Projects.astro";
 import ProjectsCta from "../components/index/ProjectsCta.astro";
+import HelpCta from "../components/index/HelpCta.astro";
+import { loadPageContent } from "../utils/page-content";
+import { globalFallback } from "../data/pages/global";
 import { fallbackLegend, fallbackLegendEn } from "../data/site";
 import { homepageTextsFallback } from "../data/pages/global";
 
@@ -57,6 +60,11 @@ const legend = getData(homepage, "legend", undefined, locale === "en" ? fallback
 const testimonialsTitle = getData(homepage, "testimonialsTitle", undefined, homepageTextsFallback.testimonialsTitle) || homepageTextsFallback.testimonialsTitle;
 const teamTitle = getData(homepage, "teamTitle", undefined, homepageTextsFallback.teamTitle) || homepageTextsFallback.teamTitle;
 const featuredProject = homepage ? getData(homepage, "featuredProject", undefined, null) : null;
+/* Contacto (correo y WhatsApp) del single type `global`, para la sección de
+   cierre «Cómo puedes ayudar». */
+const site = await loadPageContent("globalSettings", globalFallback, locale);
+/* Misma regla que MainLayout: la intro se apaga con PUBLIC_HOME_INTRO=off. */
+const intro = import.meta.env.PUBLIC_HOME_INTRO !== "off";
 const projectsCta = homepage
     ? {
           heading: getData(homepage, "projectsCtaHeading", undefined, null),
@@ -103,9 +111,41 @@ const projectsCta = homepage
             width: auto;
         }
 
-        #foundation-text {
+        /* ── Nada oculto en el HTML ──────────────────────────────────────
+           El contenido de la portada viene visible en el documento. Solo se
+           esconde cuando hay JavaScript y una animación va a revelarlo:
+
+           - `html[data-intro="pending"]` (lo escribe head.astro antes del
+             primer pintado, solo en visitas nuevas): la intro tapa la página
+             y `intro.ts` la destapa al terminar.
+           - `html[data-js]`: la leyenda entra palabra a palabra
+             (scripts/index/paragraph.ts); sin JS se lee tal cual.
+
+           Cada regla lleva una animación de seguridad que devuelve la
+           visibilidad pasado un tiempo, por si el script no llega a
+           ejecutarse: nunca una pantalla en blanco por un fallo de red. */
+        html[data-intro="pending"] #app-content {
+            opacity: 0;
+            animation: app-content-safety 0.5s ease 12s forwards;
+        }
+        html[data-js] #foundation-text {
             opacity: 0;
             visibility: hidden;
+            animation: foundation-text-safety 0.4s ease 6s forwards;
+        }
+        html[data-intro="pending"] #foundation-text {
+            animation-delay: 16s;
+        }
+        @keyframes app-content-safety {
+            to {
+                opacity: 1;
+            }
+        }
+        @keyframes foundation-text-safety {
+            to {
+                opacity: 1;
+                visibility: visible;
+            }
         }
         #hero-background {
             contain: paint;
@@ -145,10 +185,11 @@ const projectsCta = homepage
         }
     </style>
 
-    <IntroVideo />
+    {intro && <IntroVideo />}
 
-    <!-- Contenido principal -->
-    <div id="app-content" class="opacity-0 transition-opacity duration-500">
+    <!-- Contenido principal. Visible en el HTML: solo lo tapa la intro
+         mientras se reproduce (ver el <style> de arriba). -->
+    <div id="app-content" class="transition-opacity duration-500">
         <header>
             <div class="header__container w-full relative">
                 <!-- El título visual de la portada es el logotipo (una imagen), así
@@ -230,8 +271,9 @@ const projectsCta = homepage
         </section>
         <section id="projects">
             <Projects content={featuredProject} />
-            <ProjectsCta content={projectsCta} />
+            <ProjectsCta content={projectsCta} last={false} />
         </section>
+        <HelpCta contactEmail={site.contactEmail} whatsappUrl={site.whatsappUrl} />
     </div>
     <script>
         import { init } from "../scripts/index/init.ts";

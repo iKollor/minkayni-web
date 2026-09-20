@@ -1,9 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap');
+/* Todas las tipografías se sirven desde el propio dominio. Las hojas de
+   fonts.googleapis.com que había aquí (Nunito, Poppins, Quicksand y Special
+   Gothic) eran cuatro peticiones bloqueantes a un tercero en cada página;
+   tres de esas familias no las usaba ninguna regla. Ver SpecialGothic.css. */
 @import url(../assets/fonts/Aristotelica_Pro_Display_WEBFONT/AristotelicaProDisplay.css);
 @import url(../assets/fonts/Aristotelica_Pro_Text_WEBFONT/AristotelicaProText.css);
 @import url(../assets/fonts/SaoTorpes_WEBFONT/SaoTorpes.css);
-@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&display=swap');
+@import url(../assets/fonts/SpecialGothic_WEBFONT/SpecialGothic.css);
 @import "tailwindcss";
 
 @theme {
@@ -225,6 +227,11 @@ html[data-site-menu-open] .page-nav {
     /* El contenedor hover debe ser visible; la animación gestiona cada .word */
     [data-magic-btn] [data-role="label-hover"] {
         opacity: 1;
+    }
+    /* Sin JavaScript nadie coloca la etiqueta alternativa fuera de la caja y
+       las dos se pintaban una encima de otra. `data-js` lo escribe head.astro. */
+    html:not([data-js]) [data-magic-btn] [data-role="label-hover"] {
+        display: none;
     }
     [data-magic-btn][data-magic-btn-ready] [data-role="label-hover"],
     [data-magic-btn][data-magic-btn-ready] [data-role="label-default"] {

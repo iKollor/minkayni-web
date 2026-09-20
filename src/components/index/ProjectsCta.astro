@@ -11,6 +11,8 @@ import { getLocale, useTranslations } from "../../i18n";
 const t = useTranslations(getLocale(Astro.url));
 
 interface Props {
+    /** `false` cuando otra sección viene detrás y pone ella el margen al pie. */
+    last?: boolean;
     content?: {
         heading?: { eyebrow?: string | null; title?: string | null; body?: string | null } | null;
         tags?: Array<{ text?: string | null } | null> | null;
@@ -18,13 +20,21 @@ interface Props {
     } | null;
 }
 
-const { content } = Astro.props;
+const { content, last = true } = Astro.props;
 const d = withFallback(projectsCtaFallback, content);
 const tags = d.tags.filter((tag) => tag?.text);
 const exploreHref = d.button.href || "/projects";
 ---
 
-<section class="mx-auto mb-44 mt-16 w-[94%] max-w-[1440px] overflow-hidden rounded-[2.75rem] bg-accent px-6 py-14 text-black sm:px-12 md:mb-80 md:mt-24 lg:rounded-[5rem] lg:px-20 lg:py-20" aria-labelledby="projects-cta-title">
+<section
+    class:list={[
+        "mx-auto mt-16 w-[94%] max-w-[1440px] overflow-hidden rounded-[2.75rem] bg-accent px-6 py-14 text-black sm:px-12 md:mt-24 lg:rounded-[5rem] lg:px-20 lg:py-20",
+        /* El margen inferior grande deja sitio al arco del pie. Cuando otra
+           sección cierra la página (HelpCta), ese aire lo pone ella. */
+        last ? "mb-44 md:mb-80" : "mb-0",
+    ]}
+    aria-labelledby="projects-cta-title"
+>
     <div class="mx-auto flex max-w-[900px] flex-col items-center text-center">
         <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.heading.eyebrow}</p>
         <h2 data-scroll-float id="projects-cta-title" class="title font-display text-5xl font-black leading-[0.95] sm:text-7xl" set:html={formatTitle(d.heading.title, "text-primary")} />

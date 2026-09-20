@@ -14,11 +14,7 @@
  * `localStorage` puede lanzar (modo privado, cookies bloqueadas). Si falla,
  * se responde "visita nueva": ante la duda, la intro se ve. */
 
-const CLAVE = "minkayni:ultima-visita";
-
-/** Inactividad a partir de la cual la intro vuelve a considerarse una
-    bienvenida y no una repetición. */
-const CADUCIDAD_MS = 2 * 60 * 60 * 1000;
+import { CADUCIDAD_VISITA_MS as CADUCIDAD_MS, CLAVE_VISITA as CLAVE } from "./visita-config";
 
 const sellar = (): void => {
     try {

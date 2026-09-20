@@ -58,6 +58,25 @@ export const ui = {
         "footer.orgLegalInfo": "Información legal de la organización",
         "footer.socialNetworks": "Redes sociales",
         "footer.partnersCarousel": "Carrusel de logos de empresas colaboradoras",
+        "footer.donateCta": "Aporta hoy 💜",
+
+        /* Portada · «Cómo puedes ayudar». Son cadenas de interfaz: cada
+           tarjeta desaparece con el componente que la pinta (HelpCta.astro). */
+        "help.eyebrow": "Cómo puedes ayudar",
+        "help.title": "Cada tambor *suena* porque alguien se sumó.",
+        "help.body":
+            "La Fundación Minkayni sostiene procesos formativos en doce sectores de Guayaquil con aportes, tiempo y alianzas de personas e instituciones que creen en el trabajo comunitario. Hay tres formas de entrar al compás.",
+        "help.donateTitle": "Aporta hoy",
+        "help.donateText": "Una donación cubre instrumentos, mantenimiento, procesos formativos y la logística de llegar a cada barrio. Publicamos en qué se usa cada aporte.",
+        "help.donateLink": "Ver cómo aportar",
+        "help.volunteerTitle": "Súmate como voluntario o voluntaria",
+        "help.volunteerText": "Músicos, docentes, comunicadores y gente con ganas de acompañar: los ensayos y las jornadas en territorio siempre necesitan manos.",
+        "help.volunteerLink": "Escríbenos",
+        "help.partnerTitle": "Alianzas institucionales",
+        "help.partnerText": "Empresas, universidades, colectivos y organismos de cooperación pueden financiar, acoger o replicar la metodología de la Batucada Popular.",
+        "help.partnerLink": "Conversemos",
+        "help.contactNote": "También puedes escribirnos por WhatsApp o correo. Respondemos desde Guayaquil, Ecuador.",
+        "help.whatsapp": "WhatsApp",
 
         /* Novedades */
         "news.title": "Novedades",
@@ -78,6 +97,13 @@ export const ui = {
         "news.tags": "Etiquetas",
         "news.openPost": "Abrir la publicación",
         "news.postFallback": "Publicación {id}",
+        "news.followTitle": "Síguenos y participa",
+        "news.followBody":
+            "Las novedades salen primero en nuestras redes: ahí anunciamos los ensayos abiertos, las presentaciones en los barrios y las convocatorias para sumarse. Si quieres que la Batucada Popular llegue a tu sector, a tu escuela o a tu institución, escríbenos y coordinamos una visita.",
+        "news.followSocials": "Nuestras redes",
+        "news.followContact": "Escríbenos para coordinar una visita",
+        "news.followProjects": "Conoce los proyectos",
+        "news.followImpact": "Mira el impacto en los territorios",
         "intro.skip": "Saltar",
 
         /* Vista previa de borradores del constructor (panel de Strapi) */
@@ -257,6 +283,24 @@ export const ui = {
         "footer.orgLegalInfo": "Legal information about the organisation",
         "footer.socialNetworks": "Social networks",
         "footer.partnersCarousel": "Carousel of partner organisation logos",
+        "footer.donateCta": "Give today 💜",
+
+        /* Homepage · "How you can help" */
+        "help.eyebrow": "How you can help",
+        "help.title": "Every drum *sounds* because someone joined in.",
+        "help.body":
+            "The Minkayni Foundation keeps training processes running in twelve neighbourhoods of Guayaquil thanks to donations, time and partnerships from people and institutions who believe in community work. There are three ways to join the beat.",
+        "help.donateTitle": "Give today",
+        "help.donateText": "A donation covers instruments, maintenance, training processes and the logistics of reaching every neighbourhood. We publish what each contribution is used for.",
+        "help.donateLink": "See how to give",
+        "help.volunteerTitle": "Join as a volunteer",
+        "help.volunteerText": "Musicians, teachers, communicators and anyone willing to accompany: rehearsals and sessions in the neighbourhoods always need hands.",
+        "help.volunteerLink": "Write to us",
+        "help.partnerTitle": "Institutional partnerships",
+        "help.partnerText": "Companies, universities, collectives and cooperation agencies can fund, host or replicate the Batucada Popular methodology.",
+        "help.partnerLink": "Let's talk",
+        "help.contactNote": "You can also reach us on WhatsApp or by email. We reply from Guayaquil, Ecuador.",
+        "help.whatsapp": "WhatsApp",
 
         /* News */
         "news.title": "News",
@@ -277,6 +321,13 @@ export const ui = {
         "news.tags": "Tags",
         "news.openPost": "Open the post",
         "news.postFallback": "Post {id}",
+        "news.followTitle": "Follow us and take part",
+        "news.followBody":
+            "News breaks first on our social channels: that is where we announce open rehearsals, performances in the neighbourhoods and calls to join. If you want Batucada Popular to reach your neighbourhood, your school or your organisation, write to us and we will arrange a visit.",
+        "news.followSocials": "Our channels",
+        "news.followContact": "Write to us to arrange a visit",
+        "news.followProjects": "Discover the projects",
+        "news.followImpact": "See the impact in the neighbourhoods",
         "intro.skip": "Skip",
 
         /* Draft preview (Strapi panel) */

@@ -60,7 +60,6 @@ const stats = (d.stats ?? []).filter((stat) => stat?.value && stat?.label);
                     fallback={logoSrc}
                     alt="Batucada Popular"
                     class="batucada-wordmark h-auto w-[62%] max-w-[300px] select-none drop-shadow-[0_10px_40px_rgba(0,0,0,0.6)] sm:max-w-[380px] lg:max-w-[440px]"
-                    loading="eager"
                     widths={[440, 880]}
                 />
             </div>
@@ -145,6 +144,12 @@ const stats = (d.stats ?? []).filter((stat) => stat?.value && stat?.label);
                         type: "lines",
                         linesClass: "line",
                         autoSplit: true,
+                        /* Por defecto SplitText copia el texto a un `aria-label`
+                           del elemento partido; en un <p> ese atributo está
+                           prohibido por ARIA y Lighthouse lo marca. Las líneas
+                           son <div> con el texto tal cual, así que el lector de
+                           pantalla lo lee seguido sin ayuda. */
+                        aria: "none",
                         onSplit: (self) =>
                             gsap.from(self.lines, {
                                 yPercent: 40,

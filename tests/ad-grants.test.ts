@@ -8,6 +8,12 @@
  * destino— y por eso están aquí: para que ninguna vuelva a colarse sin que
  * salte una prueba.
  *
+ * La segunda ronda (20 de septiembre) añadió lo que Lighthouse seguía
+ * señalando: cuatro hojas de fuentes de Google bloqueando el primer pintado,
+ * la portada y el menú escondidos en el HTML hasta que corría el script, un
+ * WebP de 680 KB como `src` de respaldo, logotipos SVG de 300 KB y ninguna
+ * página —salvo el 404— que enlazara a la de aportes.
+ *
  * Se ejecuta sobre `dist/`, así que exige haber construido el sitio antes:
  *
  *     pnpm build && pnpm test
@@ -156,6 +162,50 @@ test("cada página precarga las fuentes que pinta casi todo el texto", () => {
     }
 });
 
+test("ninguna página ni hoja de estilos pide fuentes a terceros", () => {
+    /* global.css importaba cuatro hojas de fonts.googleapis.com (tres de
+       familias que ninguna regla usaba). Cada una era una petición
+       bloqueante a otro dominio antes del primer pintado: unos 800 ms en
+       móvil. Todas las fuentes se sirven ahora desde el propio dominio. */
+    const externas: string[] = [];
+    for (const archivo of [...paginas(), ...listar(DIST, (p) => p.endsWith(".css"))]) {
+        const contenido = leer(archivo);
+        if (/fonts\.googleapis\.com|fonts\.gstatic\.com|use\.typekit|fonts\.bunny/.test(contenido)) externas.push(relativo(archivo));
+    }
+    assert.deepEqual(externas, [], "hay fuentes de terceros");
+});
+
+test("ninguna imagen que enlaza una página pesa más de la cuenta", () => {
+    /* La foto de la Batucada salía en `src` a 6000 px (680 KB) aunque el
+       srcset ofreciera variantes de 720 a 1920 px; los logotipos SVG venían
+       sin optimizar (300 KB). Presupuesto por archivo referenciado desde el
+       HTML como imagen, en cualquiera de sus variantes. */
+    const MAX_IMAGEN = 250 * KB;
+    const gordas = new Map<string, number>();
+    for (const archivo of paginas()) {
+        const html = sinCodigo(leer(archivo));
+        const urls = new Set<string>();
+        for (const [, src] of html.matchAll(/<img[^>]+src="(\/[^"]+)"/g)) urls.add(src);
+        for (const [, srcset] of html.matchAll(/<img[^>]+srcset="([^"]+)"/g)) {
+            for (const parte of srcset.split(",")) {
+                const url = parte.trim().split(/\s+/)[0];
+                if (url?.startsWith("/")) urls.add(url);
+            }
+        }
+        for (const url of urls) {
+            const fichero = path.join(DIST, url.split(/[?#]/)[0]);
+            if (!fs.existsSync(fichero)) continue;
+            const bytes = fs.statSync(fichero).size;
+            if (bytes > MAX_IMAGEN) gordas.set(url, bytes);
+        }
+    }
+    assert.deepEqual(
+        [...gordas.entries()].map(([u, b]) => `${u}: ${Math.round(b / KB)} KB`),
+        [],
+        `imágenes enlazadas por encima de ${MAX_IMAGEN / KB} KB`,
+    );
+});
+
 test("la intro pesada no se precarga desde el HTML", () => {
     /* La animación solo se reproduce en la primera visita (src/scripts/visita.ts),
        así que pedir su JSON desde el `<head>` gastaba 55 KB en el resto. */
@@ -225,8 +275,16 @@ test("las páginas de redirección no se indexan", () => {
 /* ------------- «contenido abundante y llamadas a la acción» ---------------- */
 
 test("cada página tiene contenido propio suficiente", () => {
+    /* Las páginas `noindex` (404, vista previa de borradores) no son destinos
+       de la campaña ni del buscador: no cuentan. Tampoco se juzga una página
+       cuyo cuerpo viene del CMS y esta build no lo recibió (`data-cms-empty`,
+       ver Novedades.astro): eso es una build local sin Strapi, no una página
+       pobre. Se avisa para que no pase inadvertido. */
+    const sinCms = paginasReales().filter((p) => /\sdata-cms-empty(=""|\s|>)/.test(leer(p)));
+    if (sinCms.length) console.warn(`[ad-grants] sin contenido del CMS en esta build: ${sinCms.map(rutaDe).join(", ")}`);
+
     const flojas = paginasReales()
-        .filter((p) => !rutaDe(p).includes("404"))
+        .filter((p) => !esNoindex(leer(p)) && !sinCms.includes(p))
         .map((p) => ({ ruta: rutaDe(p), palabras: texto(leer(p)).split(" ").filter(Boolean).length }))
         .filter((x) => x.palabras < MIN_PALABRAS);
 
@@ -273,6 +331,37 @@ test("cada página ofrece una llamada a la acción", () => {
         return !/href="[^"]*\/donate/.test(html) && !/href="mailto:/.test(html) && !/href="[^"]*#contacto/.test(html);
     });
     assert.deepEqual(sinCta.map(rutaDe), [], "páginas sin ninguna llamada a la acción");
+});
+
+test("desde cualquier página se llega a la de aportes y a contacto", () => {
+    /* En la primera revisión la página de aportes solo se enlazaba desde el
+       404 y desde Novedades. Ahora la enlazan el pie y el panel del menú, así
+       que tiene que aparecer en todas; lo mismo con el contacto. */
+    const faltan: string[] = [];
+    for (const archivo of paginasReales()) {
+        const html = sinCodigo(leer(archivo));
+        const ruta = rutaDe(archivo);
+        const donate = ruta.startsWith("/en/") ? /href="\/en\/donate\/?"/ : /href="\/donate\/?"/;
+        if (!donate.test(html)) faltan.push(`${ruta} -> aportes`);
+        if (!/href="[^"]*#contacto"/.test(html) && !/href="mailto:/.test(html)) faltan.push(`${ruta} -> contacto`);
+    }
+    assert.deepEqual(faltan, [], "páginas sin enlace a aportes o a contacto");
+});
+
+test("la portada y el menú vienen visibles en el HTML", () => {
+    /* La portada escondía todo el contenido (`opacity-0`) y el menú
+       (`hidden`) hasta que el script los revelaba: un rastreador o un
+       navegador sin JavaScript veían una página en blanco, y Lighthouse
+       medía el primer pintado de contenido al terminar la intro. Ahora solo
+       se ocultan bajo `html[data-js]` / `html[data-intro]`, que escribe un
+       script en línea antes del primer pintado y solo si hay JavaScript. */
+    for (const archivo of paginasReales()) {
+        const html = leer(archivo);
+        const ruta = rutaDe(archivo);
+        assert.doesNotMatch(html, /id="app-content"[^>]*class="[^"]*\bopacity-0\b/, `${ruta}: #app-content oculto en el HTML`);
+        assert.doesNotMatch(html, /class="[^"]*\bhidden\b[^"]*"[^>]*id="nav-container"/, `${ruta}: #nav-container oculto en el HTML`);
+        assert.match(html, /<div[^>]+id="nav-container"/, `${ruta}: sin navbar`);
+    }
 });
 
 /* ----------------------- Coherencia de dominio y SEO ----------------------- */

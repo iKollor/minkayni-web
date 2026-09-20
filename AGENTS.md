@@ -34,7 +34,8 @@ El arranque y el build requieren `STRAPI_URL` y `STRAPI_TOKEN` válidos en `.env
 - Mantener la paleta y el lenguaje visual: morado `--primary`, celeste `--secondary`, ámbar `--accent`, fondo crema `--bg-white`, tipografía Aristotelica y formas redondeadas/orgánicas.
 - Reutilizar `PageLayout.astro` en páginas interiores y `MainLayout.astro` en la portada.
 - No renombrar `#smooth-wrapper`, `#smooth-content`, `#intro-overlay`, `#grain-layer` ni `#tagReveal` sin actualizar todos sus consumidores.
-- El contenido debe ser visible en el HTML inicial. Las animaciones son mejora progresiva: nunca dejar secciones con `opacity: 0`, `visibility: hidden` o `display: none` dependiendo de que GSAP termine correctamente.
+- El contenido debe ser visible en el HTML inicial. Las animaciones son mejora progresiva: nunca dejar secciones con `opacity: 0`, `visibility: hidden` o `display: none` dependiendo de que GSAP termine correctamente. Si una animación necesita partir de un estado oculto, la regla cuelga de `html[data-js]` (o `html[data-intro="pending"]` en la portada), que escribe `src/layouts/lib/head.astro` antes del primer pintado, y lleva una animación CSS de seguridad que restaura la visibilidad pasados unos segundos.
+- Cada página enlaza a la de aportes (`/donate`) y al contacto (`/about#contacto`); `tests/ad-grants.test.ts` lo comprueba sobre la build junto con el resto de requisitos de Google Ad Grants (ver README).
 - Respetar `prefers-reduced-motion` y dejar siempre un estado final usable.
 - Evitar `w-screen` en contenedores internos cuando pueda causar desbordamiento; preferir `w-full`, anchos máximos y padding responsivo.
 - Usar enlaces reales con `href`, estados de foco visibles, texto alternativo descriptivo y botones con etiquetas accesibles.
@@ -60,7 +61,7 @@ El arranque y el build requieren `STRAPI_URL` y `STRAPI_TOKEN` válidos en `.env
 ## Validación antes de entregar
 
 1. Ejecutar `pnpm exec astro check` y corregir errores introducidos.
-2. Ejecutar `pnpm run build` y verificar las cuatro rutas generadas.
+2. Ejecutar `pnpm run build` y verificar las cuatro rutas generadas; después `pnpm test`, que audita `dist/` contra la política de sitios de Ad Grants.
 3. Ejecutar `pnpm run dev` y revisar `/`, `/about`, `/impact` y `/projects`.
 4. En cada ruta comprobar navegación, hero, secciones, enlaces, footer, consola y ausencia de scroll horizontal.
 5. Revisar al menos un viewport de escritorio y uno móvil, además de `prefers-reduced-motion` cuando haya animaciones nuevas.

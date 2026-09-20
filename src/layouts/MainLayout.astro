@@ -27,7 +27,7 @@ interface Props {
 /* El idioma sale de la URL: `/en/` es inglés, `/` español. */
 const locale = getLocale(Astro.url);
 const { navHeader, footer, site, projects } = await loadLayoutContent(locale);
-const menu = buildMenuData({ locale, navHeader, footer, projects, currentPath: Astro.url.pathname, contactEmail: site.contactEmail });
+const menu = await buildMenuData({ locale, navHeader, footer, projects, currentPath: Astro.url.pathname, contactEmail: site.contactEmail });
 
 /* Config de scroll por ancla (presentacional; el texto/orden viene del CMS). */
 const scrollConfig: Record<string, { scrollAnchor?: "start"; scrollOffset?: number }> = {
@@ -40,22 +40,32 @@ const pageNavItems = site.pageNav
     .map((item) => ({ href: item.href as string, text: item.text as string, ...(scrollConfig[item.href as string] ?? {}) }));
 
 const { title, description, image, imageAlt } = Astro.props;
+
+/* La intro de la portada se puede apagar desde el entorno de build sin tocar
+   código (ver .env.example). Con ella apagada la portada arranca directamente
+   con el contenido, como cualquier página interior. */
+const intro = import.meta.env.PUBLIC_HOME_INTRO !== "off";
 ---
 
-<Head title={title} description={description} image={image} imageAlt={imageAlt}>
+<Head title={title} description={description} image={image} imageAlt={imageAlt} intro={intro}>
     <SiteGrain />
     <Navbar buttons={navHeader} locale={locale} menu={menu} />
-    <SiteMenu client:load {...menu} />
+    {/* `client:idle` en lo que no hace falta para pintar ni para el primer
+        toque: el panel del menú se abre con un botón y los contadores entran
+        con el scroll o al final de la cascada de la leyenda, que ya espera a
+        las fuentes. La cortina sigue en `client:load`: tapa la página al
+        llegar desde otra y tiene que retirarse cuanto antes. */}
+    <SiteMenu client:idle {...menu} />
     <SiteScrollbar locale={locale} />
     <PixelCurtain client:load />
-    <CounterMount client:load />
+    <CounterMount client:idle />
     <ScrollFloatTitles client:idle />
     <PageNavigation items={pageNavItems} locale={locale} />
 
     <div id="smooth-wrapper" class="overflow-hidden">
         <div id="smooth-content" class="overflow-hidden">
             <slot />
-            <Footer primaryLinks={navHeader} {footer} secondaryLinks="Proyectos" locale={locale} />
+            <Footer primaryLinks={navHeader} {footer} secondaryLinks="Proyectos" locale={locale} extraLinks={menu.secondary} />
         </div>
     </div>
     <script src="/src/scripts/main.ts"></script>

@@ -1,7 +1,12 @@
 import { gsap } from "gsap";
-import { ScrollSmoother, ScrollTrigger, TextPlugin, SplitText, DrawSVGPlugin, ScrollToPlugin, MotionPathPlugin, Draggable, InertiaPlugin } from "gsap/all";
+import { ScrollSmoother, ScrollTrigger, SplitText, Draggable, InertiaPlugin } from "gsap/all";
 
-gsap.registerPlugin(ScrollSmoother, ScrollTrigger, TextPlugin, SplitText, DrawSVGPlugin, ScrollToPlugin, MotionPathPlugin, Draggable, InertiaPlugin);
+/* Solo los plugins que algún componente usa de verdad: ScrollSmoother y
+   ScrollTrigger (scroll), SplitText (titulares, leyenda y botón mágico) y
+   Draggable + Inertia (carrusel de Momentos). TextPlugin, DrawSVG, ScrollTo y
+   MotionPath se registraban sin que nadie los importara, y cada uno viajaba
+   en el bundle común de todas las páginas. */
+gsap.registerPlugin(ScrollSmoother, ScrollTrigger, SplitText, Draggable, InertiaPlugin);
 
 /* Sella el paso por el sitio en CADA página: la intro de la portada mide
    inactividad, no tiempo desde que se vio. Importado por efecto, sin API. */
@@ -146,5 +151,5 @@ if (!document.getElementById("smooth-wrapper") || !document.getElementById("smoo
 // NUEVO: volver a aplicar si cambia el layout
 ["resize", "orientationchange"].forEach((evt) => window.addEventListener(evt, enforceNoOverflowX, { passive: true }));
 
-export { gsap, ScrollSmoother, ScrollTrigger, SplitText, DrawSVGPlugin, Draggable, InertiaPlugin };
+export { gsap, ScrollSmoother, ScrollTrigger, SplitText, Draggable, InertiaPlugin };
 export { fontsReady, waitForFontsReady };
