@@ -156,6 +156,18 @@ export const ui = {
         "batucada.navHowWeWork": "Cómo trabajamos",
         "batucada.navWhereItSounds": "Dónde suena",
         "batucada.navBeyondRehearsal": "Más allá del ensayo",
+        "batucada.mapReset": "Ver los {count} sectores",
+        "batucada.mapError": "No pudimos cargar el mapa. Los {count} sectores siguen en la lista de al lado.",
+        "batucada.photoOf": "Foto del sector {name}",
+
+        /* Visor de fotos a pantalla completa (mapa de Batucada) */
+        "viewer.label": "Visor de fotos",
+        "viewer.open": "Ampliar la foto {index} de {count}",
+        "viewer.close": "Cerrar el visor",
+        "viewer.previous": "Foto anterior",
+        "viewer.next": "Foto siguiente",
+        "viewer.goTo": "Ver la foto {index}",
+        "viewer.position": "{index} de {count}",
 
         /* Donaciones */
         "donate.copyAll": "Copiar todos los datos",
@@ -380,6 +392,18 @@ export const ui = {
         "batucada.navHowWeWork": "How we work",
         "batucada.navWhereItSounds": "Where it plays",
         "batucada.navBeyondRehearsal": "Beyond rehearsal",
+        "batucada.mapReset": "See all {count} sectors",
+        "batucada.mapError": "We couldn't load the map. The {count} sectors are still in the list beside it.",
+        "batucada.photoOf": "Photo of the {name} sector",
+
+        /* Full-screen photo viewer (Batucada map) */
+        "viewer.label": "Photo viewer",
+        "viewer.open": "Enlarge photo {index} of {count}",
+        "viewer.close": "Close the viewer",
+        "viewer.previous": "Previous photo",
+        "viewer.next": "Next photo",
+        "viewer.goTo": "See photo {index}",
+        "viewer.position": "{index} of {count}",
 
         /* Donations */
         "donate.copyAll": "Copy all details",

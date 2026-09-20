@@ -42,7 +42,7 @@ for (const nombre of urlByName.keys()) {
 
 const sinComentarios = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, "");
 const conRutas = (css: string) =>
-    css.replace(/url\(\s*["']?([^"')]+\.woff2)["']?\s*\)/g, (whole, file: string) => {
+    css.replace(/url\(\s*["']?([^"')]+\.woff2)["']?\s*\)/g, (_match, file: string) => {
         const url = urlByName.get(file.split("/").pop() as string);
         if (!url) throw new Error(`FontFaces: no hay archivo para ${file}`);
         return `url("${url}")`;

@@ -11,6 +11,7 @@ import BatucadaLogo from "@/assets/batucada-popular/logo-batucada-popular.svg";
 import { batucadaFallback } from "@/data/pages/batucada";
 import { loadPageContent } from "@/utils/page-content";
 import { formatTitle, splitParagraphs } from "@/utils/rich-title";
+import { sectorPhotos } from "@/utils/sector-photos";
 import { getLocale, useTranslations } from "../../i18n";
 
 /* Contenido: single type `batucada-page` en Strapi, con fallback local. */
@@ -26,7 +27,31 @@ const awards = d.awards;
 const ecosystem = d.ecosystemTags;
 const figures = d.figures;
 const introParagraphs = splitParagraphs(d.introBody ?? "");
-const sectorsJson = JSON.stringify(sectors.map(({ name, lat, lng }) => ({ name, lat, lng })));
+/* Cada sector viaja al mapa con sus fotos ya resueltas: la miniatura de la
+   polaroid y la grande del visor, ambas por el proxy /media. Un barrio sin
+   fotos propias en el CMS usa las genéricas del proyecto. */
+const STRAPI_BASE = (import.meta.env.STRAPI_URL ?? "").trim();
+const sectorsJson = JSON.stringify(
+    sectors.map(({ name, lat, lng, photos }) => ({
+        name,
+        lat,
+        lng,
+        photos: sectorPhotos(photos, STRAPI_BASE, t("batucada.photoOf", { name })),
+    })),
+);
+
+/* Textos del mapa y del visor. Los scripts no conocen idiomas: las plantillas
+   con `{index}`/`{count}` viajan sin rellenar y las completa quien las usa. */
+const mapStringsJson = JSON.stringify({
+    label: t("viewer.label"),
+    close: t("viewer.close"),
+    previous: t("viewer.previous"),
+    next: t("viewer.next"),
+    goTo: t("viewer.goTo"),
+    position: t("viewer.position"),
+    open: t("viewer.open"),
+    error: t("batucada.mapError"),
+});
 
 /* Clave de las teselas CARTO. Sin ella las teselas raster se sirven con una
    marca de agua "API key required". Lleva prefijo PUBLIC_ porque termina en el
@@ -233,12 +258,12 @@ const cartoKey = import.meta.env.PUBLIC_CARTO_KEY ?? "";
                 </div>
 
                 <div class="relative aspect-[4/3] min-h-[19rem] border-[3px] border-white bg-[#e8e0d3] lg:aspect-auto lg:min-h-[clamp(26rem,62svh,40rem)]">
-                    <div id="bp-map" class="peer absolute inset-0 z-0" role="application" aria-label={t("batucada.mapLabel", { count: sectors.length })} aria-describedby="bp-map-status" aria-busy="true" data-state="idle" data-bp-sectors={sectorsJson} data-carto-key={cartoKey}></div>
+                    <div id="bp-map" class="peer absolute inset-0 z-0" role="application" aria-label={t("batucada.mapLabel", { count: sectors.length })} aria-describedby="bp-map-status" aria-busy="true" data-state="idle" data-bp-sectors={sectorsJson} data-bp-strings={mapStringsJson} data-carto-key={cartoKey}></div>
                     <p id="bp-map-status" class="pointer-events-none absolute inset-x-0 bottom-3 z-[1] text-center text-[0.78rem] font-black uppercase tracking-[0.14em] text-black/70 peer-data-[state=ready]:hidden" data-bp-map-status role="status">{t("loading.map")}</p>
                     <button
                         type="button"
                         class="absolute bottom-3 left-3 z-[2] hidden -rotate-1 cursor-pointer border-2 border-black bg-accent px-3 py-[0.45rem] text-[0.7rem] font-black uppercase tracking-[0.08em] text-black shadow-[3px_3px_0_rgba(10,8,1,0.6)] transition-transform duration-[180ms] ease-bp-rebound hover:-translate-y-[2px] focus-visible:outline-[3px] focus-visible:outline-offset-4 focus-visible:outline-white peer-data-[state=ready]:inline-flex motion-reduce:transition-none"
-                        data-bp-map-reset>Ver los {sectors.length} sectores</button
+                        data-bp-map-reset>{t("batucada.mapReset", { count: sectors.length })}</button
                     >
                 </div>
             </div>
@@ -407,9 +432,10 @@ const cartoKey = import.meta.env.PUBLIC_CARTO_KEY ?? "";
         animation: bp-tip-in 240ms cubic-bezier(0.34, 1.35, 0.4, 1) both;
     }
 
-    /* la galería además flota suavemente, desfasada por tarjeta (los dos
-       delays vienen inline desde map.ts: entrada primero, flotado después) */
-    .bp-map-gallery .bp-tip {
+    /* el collage además flota suavemente, desfasado por tarjeta (los dos
+       delays vienen inline desde map.ts: entrada primero, flotado después).
+       La tira de miniaturas del móvil no flota: en fila, marea. */
+    .bp-map-gallery[data-layout="scatter"] .bp-tip {
         animation:
             bp-tip-in 240ms cubic-bezier(0.34, 1.35, 0.4, 1) both,
             bp-float 3.4s ease-in-out infinite alternate;
@@ -431,10 +457,55 @@ const cartoKey = import.meta.env.PUBLIC_CARTO_KEY ?? "";
         }
     }
 
+    /* La tarjeta de hover cae por debajo del pin cuando arriba no cabe
+       (lo decide gallery-layout.ts y lo marca con data-place). */
+    .bp-hover-card[data-place="below"] {
+        translate: -50% 14px;
+    }
+
+    /* ── Visor a pantalla completa (scripts/batucada/viewer.ts) ───────────
+       El visor entra con un fundido y el marco con el mismo rebote que las
+       polaroids: es la misma foto, ampliada. La foto se funde al cambiar
+       para que el marco no se quede vacío en una red lenta. */
+    .bp-viewer {
+        animation: bp-viewer-in 180ms ease-out both;
+    }
+
+    .bp-viewer__frame {
+        animation: bp-viewer-frame-in 260ms cubic-bezier(0.34, 1.35, 0.4, 1) both;
+    }
+
+    .bp-viewer__image {
+        transition: opacity 160ms ease-out;
+    }
+
+    .bp-viewer__image.is-loading {
+        opacity: 0;
+    }
+
+    @keyframes bp-viewer-in {
+        from {
+            opacity: 0;
+        }
+    }
+
+    @keyframes bp-viewer-frame-in {
+        from {
+            opacity: 0;
+            transform: scale(0.94) translateY(10px);
+        }
+    }
+
     @media (prefers-reduced-motion: reduce) {
         .bp-hover-card .bp-tip,
-        .bp-map-gallery .bp-tip {
+        .bp-map-gallery .bp-tip,
+        .bp-viewer,
+        .bp-viewer__frame {
             animation: none;
+        }
+
+        .bp-viewer__image {
+            transition: none;
         }
     }
 

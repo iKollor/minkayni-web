@@ -1,5 +1,8 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { galleryLayout, hoverCardPlacement, isStripLayout, MAX_SPOTS } from "./gallery-layout";
+import { openViewer, type ViewerStrings } from "./viewer";
+import type { ViewerPhoto } from "../../utils/sector-photos";
 
 /* Sectores de la Batucada Popular en Guayaquil.
    Coordenadas de OpenStreetMap (Nominatim, julio 2026); donde el sector
@@ -31,9 +34,10 @@ export const initBatucadaMap = () => {
     if (!el || el.dataset.state === "loading" || el.dataset.state === "ready") return;
 
     /* Los sectores llegan serializados desde la página (contenido de Strapi
-       vía data-bp-sectors); SECTORS queda como respaldo si faltan o son
-       inválidos. El orden enlaza la lista de la página con los pines. */
-    type Sector = { name: string; lat: number; lng: number };
+       vía data-bp-sectors), con sus fotos ya resueltas a rutas del proxy de
+       medios; SECTORS queda como respaldo si faltan o son inválidos. El orden
+       enlaza la lista de la página con los pines. */
+    type Sector = { name: string; lat: number; lng: number; photos?: ViewerPhoto[] };
     let sectors: readonly Sector[] = SECTORS;
     try {
         const raw = el.dataset.bpSectors;
@@ -50,6 +54,23 @@ export const initBatucadaMap = () => {
         /* JSON inválido → se usa el respaldo local */
     }
 
+    const photosOf = (index: number): ViewerPhoto[] => sectors[index]?.photos ?? [];
+
+    /* Textos de interfaz, traducidos en la página (data-bp-strings): este
+       módulo no conoce idiomas. Sin el atributo —o con un JSON roto— el mapa
+       sigue funcionando y solo se queda sin etiquetas accesibles. */
+    type MapStrings = ViewerStrings & { open: string; error: string };
+    const EMPTY_STRINGS: MapStrings = { label: "", close: "", previous: "", next: "", goTo: "", position: "", open: "", error: "" };
+    let strings = EMPTY_STRINGS;
+    try {
+        const raw = el.dataset.bpStrings;
+        if (raw) strings = { ...EMPTY_STRINGS, ...(JSON.parse(raw) as Partial<MapStrings>) };
+    } catch {
+        /* JSON inválido → etiquetas vacías, nunca una excepción */
+    }
+    const text = (template: string, params: Record<string, string | number>): string =>
+        template.replace(/\{(\w+)\}/g, (match, name: string) => String(params[name] ?? match));
+
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const setState = (state: "loading" | "ready" | "error", message?: string) => {
@@ -59,7 +80,8 @@ export const initBatucadaMap = () => {
     };
 
     const boot = () => {
-        setState("loading", "Cargando mapa de los sectores…");
+        /* Sin mensaje: el que ya está en el HTML viene traducido desde la página. */
+        setState("loading");
 
         try {
             const map = L.map(el, {
@@ -119,13 +141,15 @@ export const initBatucadaMap = () => {
                .leaflet-container, así que puede desbordar el marco sin
                cortarse. Posición con la propiedad `translate` (la animación
                usa `transform` en el figure interno: no compiten). */
-            const HOVER_PHOTOS = ["/batucada/hover-1.webp", "/batucada/hover-2.webp", "/batucada/hover-3.webp"];
             const wrap = el.parentElement as HTMLElement;
+            const frame = () => ({ width: wrap.clientWidth, height: wrap.clientHeight });
+            const attr = (value: string) => value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
             const card = document.createElement("div");
             card.className = "bp-hover-card pointer-events-none absolute z-[5] hidden w-[200px] [translate:-50%_calc(-100%_-_14px)]";
             card.innerHTML =
                 `<figure class="m-0 border-2 border-black bg-white text-black shadow-[4px_4px_0_rgba(10,8,1,0.35)] overflow-hidden">` +
-                `<img src="${HOVER_PHOTOS[0]}" alt="" width="200" height="120" class="block w-full aspect-[5/3] max-w-none object-cover" decoding="async">` +
+                `<img src="" alt="" width="200" height="120" class="block w-full aspect-[5/3] max-w-none object-cover" decoding="async">` +
                 `<figcaption class="px-3 py-2 text-[0.72rem] font-black uppercase tracking-[0.08em]"></figcaption>` +
                 `</figure>`;
             wrap.appendChild(card);
@@ -133,14 +157,24 @@ export const initBatucadaMap = () => {
             const cardImg = card.querySelector("img") as HTMLImageElement;
             const cardCaption = card.querySelector("figcaption") as HTMLElement;
 
+            const labelOf = (index: number) => `${String(index + 1).padStart(2, "0")} · ${sectors[index].name}`;
+
             const showCard = (index: number) => {
-                const sector = sectors[index];
-                cardImg.src = HOVER_PHOTOS[index % HOVER_PHOTOS.length];
-                cardCaption.textContent = `${String(index + 1).padStart(2, "0")} · ${sector.name}`;
-                const point = map.latLngToContainerPoint([sector.lat, sector.lng]);
-                card.style.left = `${point.x}px`;
-                card.style.top = `${point.y}px`;
+                const photo = photosOf(index)[0];
+                if (!photo) return;
+                cardImg.src = photo.thumb;
+                cardCaption.textContent = labelOf(index);
                 card.classList.remove("hidden");
+
+                /* Encajada dentro del marco: pegada siempre encima del pin, se
+                   comía la lista de sectores cuando el pin caía cerca del
+                   borde de arriba; y se salía de la pantalla en los extremos. */
+                const point = map.latLngToContainerPoint([sectors[index].lat, sectors[index].lng]);
+                const place = hoverCardPlacement(frame(), { x: point.x, y: point.y }, { width: card.offsetWidth, height: card.offsetHeight });
+                card.style.left = `${place.x}px`;
+                card.style.top = `${place.y}px`;
+                card.dataset.place = place.below ? "below" : "above";
+
                 /* reiniciar la animación de entrada en cada hover */
                 cardFigure.classList.remove("bp-tip");
                 void cardFigure.offsetWidth;
@@ -150,36 +184,48 @@ export const initBatucadaMap = () => {
             map.on("movestart zoomstart", hideCard);
 
             /* Galería por sector: al hacer CLIC se vuela al barrio y, solo al
-               aterrizar en ese nivel de zoom, aparecen varias polaroids
-               dispersas alrededor del pin. Cualquier pan o cambio de zoom del
-               usuario las desmonta (movestart/zoomstart). Pueden desbordar el
-               marco igual que la tarjeta de hover. */
+               aterrizar en ese nivel de zoom, aparecen sus fotos. Dónde se
+               colocan lo decide gallery-layout.ts a partir del tamaño del
+               marco: collage alrededor del pin si hay sitio, tira apoyada
+               abajo en un teléfono. Tocar una abre el visor a pantalla
+               completa. Cualquier pan o cambio de zoom las desmonta
+               (movestart/zoomstart). */
             const gallery = document.createElement("div");
             gallery.className = "bp-map-gallery pointer-events-none absolute inset-0 z-[4] hidden";
             wrap.appendChild(gallery);
 
-            /* 4 polaroids sin leyenda (la leyenda del sector solo vive en la
-               tarjeta de hover) dispersas alrededor del pin en las 4
-               esquinas — separadas lo suficiente para no pisarse entre sí
-               ni con el pin central. */
-            const GALLERY_SPOTS = [
-                { x: -170, y: -100, rot: "-rotate-3", delay: 0 },
-                { x: 150, y: -130, rot: "rotate-2", delay: 120 },
-                { x: -150, y: 110, rot: "rotate-1", delay: 240 },
-                { x: 165, y: 95, rot: "-rotate-2", delay: 360 },
-            ];
+            /* Sector cuyas fotos están puestas: lo necesita el visor cuando se
+               toca una, y sobrevive a que la galería se vuelva a dibujar. */
+            let galleryIndex = -1;
 
             const showGallery = (index: number) => {
+                const photos = photosOf(index);
+                if (!photos.length) return;
+                galleryIndex = index;
+
                 const point = map.latLngToContainerPoint([sectors[index].lat, sectors[index].lng]);
-                /* dos delays: entrada (rebote) y flotado continuo que arranca
-                   cuando la entrada ya terminó — ambos animan transform, así
-                   que el flotado no puede solaparse con la entrada */
-                gallery.innerHTML = GALLERY_SPOTS.map(
-                    (spot, i) =>
-                        `<figure class="bp-tip absolute m-0 w-[170px] ${spot.rot} overflow-hidden border-2 border-black bg-white shadow-[4px_4px_0_rgba(10,8,1,0.35)] [translate:-50%_-50%]" style="left:${point.x + spot.x}px; top:${point.y + spot.y}px; animation-delay:${spot.delay}ms,${spot.delay + 450}ms">` +
-                        `<img src="${HOVER_PHOTOS[(index + i) % HOVER_PHOTOS.length]}" alt="" width="170" height="102" class="block aspect-[5/3] w-full max-w-none object-cover" decoding="async">` +
-                        `</figure>`,
-                ).join("");
+                const box = frame();
+                const spots = galleryLayout(box, { x: point.x, y: point.y }, Math.min(photos.length, MAX_SPOTS));
+                /* La tira no flota: cuatro miniaturas en fila subiendo y
+                   bajando para siempre marean y no dejan de repintar. El
+                   collage sí, que es donde ese aire tiene sentido. */
+                gallery.dataset.layout = isStripLayout(box.width) ? "strip" : "scatter";
+
+                /* Dos retardos: entrada (rebote) y flotado continuo que
+                   arranca cuando la entrada ya terminó — ambos animan
+                   transform, así que no pueden solaparse. */
+                gallery.innerHTML = spots
+                    .map((spot, i) => {
+                        const label = attr(text(strings.open, { index: i + 1, count: photos.length }));
+                        return (
+                            `<button type="button" data-bp-gallery-photo="${i}" aria-label="${label}"` +
+                            ` class="bp-tip pointer-events-auto absolute m-0 block cursor-pointer overflow-hidden border-2 border-black bg-white p-0 shadow-[4px_4px_0_rgba(10,8,1,0.35)] transition-[scale] duration-[180ms] ease-bp-rebound hover:scale-[1.06] focus-visible:outline-[3px] focus-visible:outline-offset-4 focus-visible:outline-white motion-reduce:transition-none [translate:-50%_-50%]"` +
+                            ` style="left:${spot.x}px; top:${spot.y}px; width:${spot.width}px; height:${spot.height}px; rotate:${spot.rotate}deg; animation-delay:${spot.delay}ms,${spot.delay + 450}ms">` +
+                            `<img src="${attr(photos[i].thumb)}" alt="" width="${spot.width}" height="${spot.height}" class="block h-full w-full max-w-none object-cover" decoding="async">` +
+                            `</button>`
+                        );
+                    })
+                    .join("");
                 gallery.classList.remove("hidden");
             };
             const hideGallery = () => {
@@ -187,6 +233,25 @@ export const initBatucadaMap = () => {
                 gallery.innerHTML = "";
             };
             map.on("movestart zoomstart", hideGallery);
+
+            /* Delegado: la galería se redibuja entera en cada sector. El visor
+               recibe TODAS las fotos del barrio, aunque sobre el mapa quepan
+               menos polaroids.
+
+               El atributo es `data-bp-gallery-photo` y no `data-bp-photo`:
+               ese ya marca los marcos de foto de la página y motion.ts los
+               anima con `[data-bp-photo] img`. */
+            gallery.addEventListener("click", (event) => {
+                const button = (event.target as HTMLElement).closest<HTMLElement>("[data-bp-gallery-photo]");
+                if (!button || galleryIndex < 0) return;
+                openViewer({
+                    photos: photosOf(galleryIndex),
+                    index: Number(button.dataset.bpGalleryPhoto),
+                    caption: labelOf(galleryIndex),
+                    strings,
+                    trigger: button,
+                });
+            });
 
             const showAll = () => {
                 hideCard();
@@ -202,8 +267,12 @@ export const initBatucadaMap = () => {
                     showGallery(index);
                     return;
                 }
-                map.flyTo(target, 15, { duration: 0.9, animate: !reduceMotion });
+                /* El oyente va ANTES de mover: con `prefers-reduced-motion` el
+                   salto es síncrono y `moveend` se dispara dentro de `flyTo`,
+                   así que registrarlo después dejaba la galería sin aparecer
+                   —y sin galería no hay manera de abrir el visor—. */
                 map.once("moveend", () => showGallery(index));
+                map.flyTo(target, 15, { duration: 0.9, animate: !reduceMotion });
             };
 
             const fitMap = () => {
@@ -269,7 +338,7 @@ export const initBatucadaMap = () => {
             });
         } catch (error) {
             console.error("[batucada-map] No se pudo inicializar Leaflet", error);
-            setState("error", "No pudimos cargar el mapa. Los 12 sectores siguen disponibles en la lista.");
+            setState("error", text(strings.error, { count: sectors.length }));
         }
     };
 

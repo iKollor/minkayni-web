@@ -1,0 +1,160 @@
+/* Las polaroids del mapa de Batucada: dónde se colocan y de dónde salen.
+
+   El defecto que motiva estas pruebas: las posiciones eran desplazamientos
+   fijos en píxeles respecto al pin, así que en un teléfono las tarjetas se
+   salían del marco del mapa por los cuatro lados —se comían la lista de
+   sectores y se cortaban contra el borde de la pantalla—. La regla que no
+   puede volver a romperse es que ninguna tarjeta se salga del marco. */
+import assert from "node:assert/strict";
+import test from "node:test";
+import { galleryLayout, hoverCardPlacement, MAX_SPOTS, type GallerySpot } from "../src/scripts/batucada/gallery-layout";
+import { genericSectorPhotos, MAX_SECTOR_PHOTOS, sectorPhotos } from "../src/utils/sector-photos";
+
+const STRAPI = "https://strapi.minkayni.org";
+const WEB = "https://www.minkayni.org";
+
+/** Teléfono: el mapa es `aspect-[4/3]` con `min-h-[19rem]` dentro del margen. */
+const PHONE = { width: 372, height: 304 };
+/** Escritorio: columna derecha de la rejilla del territorio. */
+const DESKTOP = { width: 700, height: 520 };
+
+const edges = (spot: GallerySpot) => ({
+    left: spot.x - spot.width / 2,
+    right: spot.x + spot.width / 2,
+    top: spot.y - spot.height / 2,
+    bottom: spot.y + spot.height / 2,
+});
+
+test("en un teléfono ninguna polaroid se sale del mapa", () => {
+    /* El pin queda centrado tras volar al sector, pero se prueban también las
+       esquinas: un sector cerca del borde no puede empujar nada fuera. */
+    const pins = [
+        { x: PHONE.width / 2, y: PHONE.height / 2 },
+        { x: 4, y: 4 },
+        { x: PHONE.width - 4, y: PHONE.height - 4 },
+    ];
+
+    for (const pin of pins) {
+        for (const spot of galleryLayout(PHONE, pin, 4)) {
+            const box = edges(spot);
+            assert.ok(box.left >= 0, `se sale por la izquierda: ${box.left}`);
+            assert.ok(box.right <= PHONE.width, `se sale por la derecha: ${box.right}`);
+            assert.ok(box.top >= 0, `se sale por arriba: ${box.top}`);
+            assert.ok(box.bottom <= PHONE.height, `se sale por abajo: ${box.bottom}`);
+        }
+    }
+});
+
+test("en un teléfono son una tira al pie, sin pisarse ni tapar el botón del mapa", () => {
+    const spots = galleryLayout(PHONE, { x: 186, y: 152 }, 4);
+    assert.equal(spots.length, 4);
+
+    /* Todas a la misma altura y en fila. */
+    assert.ok(spots.every((spot) => spot.y === spots[0].y), "la tira no está alineada");
+    for (let i = 1; i < spots.length; i += 1) {
+        assert.ok(edges(spots[i]).left >= edges(spots[i - 1]).right, "las miniaturas se pisan");
+    }
+
+    /* Apoyada abajo pero dejando sitio al botón «ver los N sectores», que vive
+       en la esquina inferior izquierda del mapa. */
+    const bottom = edges(spots[0]).bottom;
+    assert.ok(bottom < PHONE.height - 40, `la tira tapa el botón del mapa: ${bottom}`);
+    assert.ok(bottom > PHONE.height / 2, "la tira debería ir abajo, no en medio");
+});
+
+test("con sitio de sobra vuelven al collage alrededor del pin", () => {
+    const pin = { x: DESKTOP.width / 2, y: DESKTOP.height / 2 };
+    const spots = galleryLayout(DESKTOP, pin, 4);
+    assert.equal(spots.length, 4);
+
+    /* Una en cada cuadrante: es lo que hace que parezcan esparcidas. */
+    const quadrants = spots.map((spot) => `${spot.x < pin.x ? "i" : "d"}${spot.y < pin.y ? "a" : "b"}`);
+    assert.deepEqual([...quadrants].sort(), ["da", "db", "ia", "ib"]);
+
+    /* Ninguna encima del pin, que es el que se acaba de señalar. */
+    for (const spot of spots) {
+        assert.ok(Math.abs(spot.x - pin.x) > spot.width / 2 || Math.abs(spot.y - pin.y) > spot.height / 2, "una polaroid tapa el pin");
+    }
+});
+
+test("el collage desborda de lado, nunca por arriba ni por abajo", () => {
+    /* El desborde lateral es deliberado —la foto que se sale del marco es
+       parte del collage—; el vertical es el que se comía el texto. */
+    for (const spot of galleryLayout(DESKTOP, { x: 20, y: 30 }, 4)) {
+        const box = edges(spot);
+        assert.ok(box.top >= 0 && box.bottom <= DESKTOP.height, "se sale por arriba o por abajo");
+        assert.ok(box.left >= -32 && box.right <= DESKTOP.width + 32, "desborda de lado más de lo permitido");
+    }
+});
+
+test("nunca coloca más tarjetas de las que caben, ni ninguna sin fotos", () => {
+    assert.equal(galleryLayout(DESKTOP, { x: 350, y: 260 }, 9).length, MAX_SPOTS);
+    assert.equal(galleryLayout(DESKTOP, { x: 350, y: 260 }, 1).length, 1);
+    assert.deepEqual(galleryLayout(DESKTOP, { x: 350, y: 260 }, 0), []);
+    /* Un mapa todavía sin medir (display:none, o antes del primer layout). */
+    assert.deepEqual(galleryLayout({ width: 0, height: 0 }, { x: 0, y: 0 }, 4), []);
+});
+
+test("la tarjeta de hover cae por debajo del pin cuando arriba no cabe", () => {
+    const card = { width: 200, height: 152 };
+    const alto = hoverCardPlacement(DESKTOP, { x: 350, y: 30 }, card);
+    assert.equal(alto.below, true, "sin sitio arriba tenía que caer debajo");
+
+    const medio = hoverCardPlacement(DESKTOP, { x: 350, y: 300 }, card);
+    assert.equal(medio.below, false, "con sitio arriba se queda arriba");
+});
+
+test("la tarjeta de hover no se sale del marco por los lados", () => {
+    const card = { width: 200, height: 152 };
+    for (const x of [0, 10, PHONE.width - 10, PHONE.width]) {
+        const place = hoverCardPlacement(PHONE, { x, y: 150 }, card);
+        assert.ok(place.x - card.width / 2 >= -32, `se sale por la izquierda: ${place.x}`);
+        assert.ok(place.x + card.width / 2 <= PHONE.width + 32, `se sale por la derecha: ${place.x}`);
+    }
+});
+
+/* ───────────────────────────── fotos del sector ───────────────────────── */
+
+test("las fotos del sector salen por el proxy de medios, en dos tamaños", () => {
+    const [photo] = sectorPhotos([{ url: "/uploads/guasmo.jpg", alternativeText: "Ensayo en el Guasmo", width: 2000, height: 1200 }], STRAPI, "Foto del sector");
+
+    assert.equal(photo.thumb, `${WEB}/media/guasmo.jpg?w=480&f=webp`);
+    assert.equal(photo.full, `${WEB}/media/guasmo.jpg?w=1600&f=webp`);
+    assert.ok(photo.srcset.includes(`${WEB}/media/guasmo.jpg?w=960&f=webp 960w`));
+    assert.equal(photo.alt, "Ensayo en el Guasmo");
+    assert.equal(photo.width, 2000);
+});
+
+test("un sector sin fotos propias usa las genéricas del proyecto", () => {
+    const alt = "Foto del sector Nigeria";
+    assert.deepEqual(sectorPhotos([], STRAPI, alt), genericSectorPhotos(alt));
+    assert.deepEqual(sectorPhotos(null, STRAPI, alt), genericSectorPhotos(alt));
+    /* Y también si lo que llega del CMS no se puede publicar. */
+    assert.deepEqual(sectorPhotos([{ url: "" }, null], STRAPI, alt), genericSectorPhotos(alt));
+    assert.equal(genericSectorPhotos(alt)[0].alt, alt);
+});
+
+test("una foto que el proxy no reconoce no se publica", () => {
+    /* Rutas con `..` o de otro dominio: `strapiMediaUrl` devuelve vacío y esa
+       foto se descarta en vez de emitir un <img> roto. */
+    const photos = sectorPhotos(
+        [{ url: "/uploads/../../etc/passwd" }, { url: "/uploads/buena.jpg" }],
+        STRAPI,
+        "Foto del sector",
+    );
+    assert.equal(photos.length, 1);
+    assert.equal(photos[0].full, `${WEB}/media/buena.jpg?w=1600&f=webp`);
+});
+
+test("el texto alternativo del CMS manda, y si falta lo pone la página", () => {
+    const photos = sectorPhotos([{ url: "/uploads/a.jpg" }, { url: "/uploads/b.jpg", alternativeText: "  " }, { url: "/uploads/c.jpg", alternativeText: "Marcha" }], STRAPI, "Foto del sector Nigeria");
+    assert.deepEqual(
+        photos.map((photo) => photo.alt),
+        ["Foto del sector Nigeria", "Foto del sector Nigeria", "Marcha"],
+    );
+});
+
+test("el visor de un sector no se llena sin fin", () => {
+    const many = Array.from({ length: 20 }, (_, index) => ({ url: `/uploads/foto-${index}.jpg` }));
+    assert.equal(sectorPhotos(many, STRAPI, "Foto del sector").length, MAX_SECTOR_PHOTOS);
+});

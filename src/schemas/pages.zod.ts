@@ -11,6 +11,7 @@ import { z } from "zod";
 import { UploadFileSchema } from "./strapi.graphql.zod";
 
 const media = () => UploadFileSchema().nullish();
+const mediaList = () => z.array(UploadFileSchema().nullable()).nullish();
 
 export const SectionHeadingSchema = () =>
     z.object({
@@ -110,6 +111,8 @@ export const SectorSchema = () =>
         name: z.string().nullish(),
         lat: z.number().nullish(),
         lng: z.number().nullish(),
+        /** Fotos del barrio: salen al tocar su pin y se abren en el visor. */
+        photos: mediaList(),
     });
 
 export const ListItemSchema = () =>

@@ -64,6 +64,9 @@ export const batucadaFallback = {
     },
     /* El orden define la numeración de la lista y de los pines del mapa.
        Coordenadas de OpenStreetMap (Nominatim, julio 2026). */
+    /* Los sectores locales no llevan fotos: las sube el CMS (campo `photos`
+       del componente Sector) y, mientras un barrio no tenga las suyas, el
+       mapa usa el trío genérico de /public/batucada. */
     sectors: [
         { name: "Socio Vivienda", lat: -2.1321, lng: -79.9697 },
         { name: "Mapasingue", lat: -2.1536, lng: -79.9239 },
@@ -77,7 +80,7 @@ export const batucadaFallback = {
         { name: "Guasmo Sur", lat: -2.2673, lng: -79.8927 },
         { name: "Nueva Prosperina", lat: -2.1201, lng: -79.9806 },
         { name: "Paraíso de la Flor", lat: -2.1016, lng: -79.9556 },
-    ],
+    ] as { name: string; lat: number; lng: number; photos?: CmsMedia[] }[],
     territoryHint:
         "Haz clic en un sector para acercarte a su barrio. Los puntos señalan sectores, no direcciones; la presencia varía según los periodos y las condiciones de cada barrio.",
     actionHeading: {
