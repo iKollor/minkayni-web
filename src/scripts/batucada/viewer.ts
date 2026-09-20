@@ -57,6 +57,7 @@ let stage: HTMLElement;
 let frameEl: HTMLElement;
 let image: HTMLImageElement;
 let captionEl: HTMLElement;
+let noteEl: HTMLElement;
 let positionEl: HTMLElement;
 let thumbsEl: HTMLElement;
 let prevButton: HTMLButtonElement;
@@ -95,7 +96,13 @@ const build = (): HTMLElement => {
            proyecto sobre fondo oscuro. */
         `<figure class="bp-viewer__frame m-0 flex max-h-full min-h-0 flex-col border-[3px] border-white bg-white shadow-[10px_10px_0_var(--color-bp-blue)]">` +
         `<img class="bp-viewer__image block h-auto max-h-full w-full object-contain" data-viewer-image alt="" decoding="async">` +
-        `<figcaption class="shrink-0 border-t-[3px] border-black px-4 py-[0.6rem] text-[0.72rem] font-black uppercase tracking-[0.08em] text-black" data-viewer-caption></figcaption>` +
+        /* Dos líneas: de qué barrio es la foto y, debajo, la leyenda que
+           haya escrito quien la subió. La segunda se oculta si no la hay,
+           para que el pie no crezca con una línea vacía. */
+        `<figcaption class="shrink-0 border-t-[3px] border-black px-4 py-[0.6rem] text-black">` +
+        `<span class="block text-[0.72rem] font-black uppercase tracking-[0.08em]" data-viewer-caption></span>` +
+        `<span class="mt-[0.35rem] block max-w-[70ch] text-[0.84rem] font-normal leading-snug" data-viewer-note></span>` +
+        `</figcaption>` +
         `</figure>` +
         `<button type="button" class="${DIAMOND} absolute right-0 top-1/2 z-[2] -translate-y-1/2" data-viewer-next><span class="-rotate-45 text-[1.1rem] leading-none" aria-hidden="true">→</span></button>` +
         `</div>` +
@@ -108,6 +115,7 @@ const build = (): HTMLElement => {
     frameEl = node.querySelector(".bp-viewer__frame") as HTMLElement;
     image = node.querySelector("[data-viewer-image]") as HTMLImageElement;
     captionEl = node.querySelector("[data-viewer-caption]") as HTMLElement;
+    noteEl = node.querySelector("[data-viewer-note]") as HTMLElement;
     positionEl = node.querySelector("[data-viewer-position]") as HTMLElement;
     thumbsEl = node.querySelector("[data-viewer-thumbs]") as HTMLElement;
     prevButton = node.querySelector("[data-viewer-prev]") as HTMLButtonElement;
@@ -162,8 +170,10 @@ const fitFrame = (): void => {
     if (!width || !height) return;
 
     const room = stage.getBoundingClientRect();
+    /* `captionEl.offsetHeight` no basta: el pie incluye la leyenda, que puede
+       ocupar dos líneas y cambia de una foto a otra. */
     /* 6 px: los bordes de 3 px del marco a cada lado. */
-    const free = { width: room.width - 6, height: room.height - captionEl.offsetHeight - 6 };
+    const free = { width: room.width - 6, height: room.height - (captionEl.parentElement?.offsetHeight ?? 0) - 6 };
     if (free.width <= 0 || free.height <= 0) return;
 
     const scale = Math.min(free.width / width, free.height / height, MAX_UPSCALE);
@@ -199,7 +209,8 @@ const show = (next: number): void => {
     const position = format(strings!.position, { index: current + 1, count: photos.length });
     positionEl.textContent = position;
     captionEl.textContent = caption || position;
-    captionEl.hidden = !captionEl.textContent;
+    noteEl.textContent = photo.caption ?? "";
+    noteEl.hidden = !photo.caption;
 
     const single = photos.length < 2;
     prevButton.disabled = single || current === 0;

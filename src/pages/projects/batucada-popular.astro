@@ -497,8 +497,11 @@ const cartoKey = import.meta.env.PUBLIC_CARTO_KEY ?? "";
     }
 
     @media (prefers-reduced-motion: reduce) {
+        /* `[data-layout]` iguala la especificidad de la regla que pone el
+           flotado: sin él, el collage seguía moviéndose con el movimiento
+           reducido activado. */
         .bp-hover-card .bp-tip,
-        .bp-map-gallery .bp-tip,
+        .bp-map-gallery[data-layout] .bp-tip,
         .bp-viewer,
         .bp-viewer__frame {
             animation: none;

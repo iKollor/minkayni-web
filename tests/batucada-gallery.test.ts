@@ -154,6 +154,33 @@ test("el texto alternativo del CMS manda, y si falta lo pone la página", () => 
     );
 });
 
+test("la leyenda de cada foto viaja desde el CMS, y no se inventa", () => {
+    /* La escribe quien sube la foto (campo Caption de Strapi) y solo se pinta
+       si existe: el pie del visor no puede crecer con una línea vacía. */
+    const photos = sectorPhotos(
+        [
+            { url: "/uploads/a.jpg", caption: "Ensayo abierto en la cancha, agosto de 2026" },
+            { url: "/uploads/b.jpg", caption: "   " },
+            { url: "/uploads/c.jpg" },
+        ],
+        STRAPI,
+        "Foto del sector",
+    );
+    assert.deepEqual(
+        photos.map((photo) => photo.caption),
+        ["Ensayo abierto en la cancha, agosto de 2026", undefined, undefined],
+    );
+});
+
+test("la leyenda y el texto alternativo son cosas distintas", () => {
+    /* El alternativo describe la foto a quien no la ve; la leyenda la cuenta
+       a todo el mundo. Copiar uno en otro deja a los lectores de pantalla
+       oyendo la leyenda como si fuese la descripción. */
+    const [photo] = sectorPhotos([{ url: "/uploads/a.jpg", caption: "Marcha del 12 de febrero" }], STRAPI, "Foto del sector Nigeria");
+    assert.equal(photo.alt, "Foto del sector Nigeria");
+    assert.equal(photo.caption, "Marcha del 12 de febrero");
+});
+
 test("el visor de un sector no se llena sin fin", () => {
     const many = Array.from({ length: 20 }, (_, index) => ({ url: `/uploads/foto-${index}.jpg` }));
     assert.equal(sectorPhotos(many, STRAPI, "Foto del sector").length, MAX_SECTOR_PHOTOS);

@@ -18,6 +18,8 @@ export type ViewerPhoto = {
     /** Candidatas del visor; vacío en las genéricas, que tienen un solo tamaño. */
     srcset: string;
     alt: string;
+    /** Leyenda que escribe quien sube la foto (campo Caption de Strapi). */
+    caption?: string;
     width?: number;
     height?: number;
 };
@@ -26,6 +28,7 @@ type CmsPhoto =
     | {
           url?: string | null;
           alternativeText?: string | null;
+          caption?: string | null;
           width?: number | null;
           height?: number | null;
       }
@@ -77,6 +80,10 @@ export function sectorPhotos(photos: readonly CmsPhoto[] | null | undefined, str
             full,
             srcset: strapiMediaSrcSet(url, strapiBase, VIEWER_WIDTHS),
             alt: photo?.alternativeText?.trim() || alt,
+            /* Leyenda y texto alternativo no son lo mismo: el alternativo
+               describe la foto a quien no la ve, la leyenda la cuenta a todo
+               el mundo. Por eso no se copia el uno en el otro. */
+            caption: photo?.caption?.trim() || undefined,
             width: photo?.width ?? undefined,
             height: photo?.height ?? undefined,
         });
