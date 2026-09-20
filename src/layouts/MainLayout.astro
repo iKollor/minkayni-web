@@ -60,7 +60,6 @@ const intro = import.meta.env.PUBLIC_HOME_INTRO === "on";
         la isla, al hidratar, la retira), y en una visita nueva —la que mide
         PageSpeed— hidratarla con el resto solo añadía trabajo antes de que la
         página respondiera. */}
-    <SiteMenu client:load {...menu} />
     <SiteScrollbar locale={locale} />
     <PixelCurtain client:idle />
     <CounterMount client:idle />
@@ -73,5 +72,11 @@ const intro = import.meta.env.PUBLIC_HOME_INTRO === "on";
             <Footer primaryLinks={navHeader} {footer} secondaryLinks="Proyectos" locale={locale} extraLinks={menu.secondary} />
         </div>
     </div>
+    {/* El panel del menú va al final del documento, no al principio: son
+        18 KB de HTML que, delante del contenido, retrasaban la llegada de la
+        leyenda de la portada (el LCP móvil) en cada visita. Es `fixed` y sale
+        cerrado e `inert`, así que su sitio en el DOM no cambia nada visible;
+        la hamburguesa lo referencia por id (`aria-controls`). */}
+    <SiteMenu client:load {...menu} />
     <script src="/src/scripts/main.ts"></script>
 </Head>

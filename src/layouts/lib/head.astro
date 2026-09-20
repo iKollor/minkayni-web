@@ -182,9 +182,6 @@ const ogUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefi
 
         <title>{fullTitle}</title>
 
-        {/* @font-face de las fuentes propias, tras el primer cuadro. Ver el componente. */}
-        <FontFaces />
-
         <!-- Identidad legal de la organización (schema.org/NGO) -->
         <OrganizationJsonLd />
         <!-- Sitio y ruta de navegación (WebSite + BreadcrumbList) -->
@@ -230,5 +227,9 @@ const ogUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefi
     </head>
     <body class="bg-background text-black">
         <slot />
+        {/* @font-face de las fuentes propias, declaradas con el documento ya
+            parseado (ver el componente). Va al final: en el <head> eran 7 KB
+            de script delante de todo el contenido. */}
+        <FontFaces />
     </body>
 </html>

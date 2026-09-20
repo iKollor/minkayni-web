@@ -47,9 +47,8 @@ const { title, description, noindex, image, imageAlt, showHero = true, buttonCla
         y la cortina siguen en `client:load`: el primero tiene que responder a
         la hamburguesa en cuanto se pueda tocar; la segunda tapa la página al
         llegar desde otra y tiene que retirarse cuanto antes. */}
-    <SiteMenu client:load {...menu} />
     <SiteScrollbar locale={locale} />
-    <PixelCurtain client:load />
+    <PixelCurtain client:idle />
     <CounterMount client:idle />
     <ScrollFloatTitles client:idle />
 
@@ -63,6 +62,12 @@ const { title, description, noindex, image, imageAlt, showHero = true, buttonCla
         </div>
     </div>
 
+    {/* El panel del menú va al final del documento, no al principio: son
+        18 KB de HTML que, delante del contenido, retrasaban la llegada de la
+        leyenda de la portada (el LCP móvil) en cada visita. Es `fixed` y sale
+        cerrado e `inert`, así que su sitio en el DOM no cambia nada visible;
+        la hamburguesa lo referencia por id (`aria-controls`). */}
+    <SiteMenu client:load {...menu} />
     <script src="/src/scripts/main.ts"></script>
 
     <script>
