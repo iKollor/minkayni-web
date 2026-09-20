@@ -95,7 +95,7 @@ const faq = d.faq.filter((item) => item?.question && item?.answer);
     <!-- Cuenta institucional: el canal principal, con el giro internacional dentro -->
     <section class="mx-auto w-[94%] max-w-[1200px] rounded-[2.5rem] bg-primary px-6 py-14 text-white sm:px-12 lg:rounded-[4rem] lg:px-16 lg:py-20" aria-labelledby="donate-accounts-title">
         <div class="max-w-[62ch]" data-reveal>
-            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">{d.accountsHeading.eyebrow}</p>
+            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-light">{d.accountsHeading.eyebrow}</p>
             <h2 data-scroll-float id="donate-accounts-title" class="font-display text-4xl font-black leading-[0.95] sm:text-6xl" set:html={formatTitle(d.accountsHeading.title, "text-secondary")} />
             <p class="mt-6 text-lg leading-relaxed text-white/80">{d.accountsHeading.body}</p>
         </div>
@@ -128,18 +128,18 @@ const faq = d.faq.filter((item) => item?.question && item?.answer);
                             ))}
                         </dl>
 
-                        {account.note && <p class="mt-5 text-sm leading-relaxed text-white/70">{account.note}</p>}
+                        {account.note && <p class="mt-5 text-sm leading-relaxed text-white/80">{account.note}</p>}
 
                         {wireRows(account).length > 0 && (
                             <div id="desde-el-exterior" class="mt-10 scroll-mt-28 rounded-[1.5rem] bg-black/20 p-6 sm:p-8">
-                                <p class="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-secondary">{d.internationalHeading.eyebrow}</p>
+                                <p class="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-secondary-light">{d.internationalHeading.eyebrow}</p>
                                 <h4 class="font-display text-2xl font-black leading-tight">{d.internationalHeading.title}</h4>
                                 {d.internationalHeading.body && <p class="mt-3 max-w-[62ch] text-base leading-relaxed text-white/75">{d.internationalHeading.body}</p>}
 
                                 <dl class="mt-6 divide-y divide-white/10">
                                     {wireRows(account).map((row) => (
                                         <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-3">
-                                            <dt class="text-xs font-bold uppercase tracking-[0.14em] text-white/70">{row.label}</dt>
+                                            <dt class="text-xs font-bold uppercase tracking-[0.14em] text-white/80">{row.label}</dt>
                                             <dd class:list={["flex flex-wrap items-center gap-x-4 gap-y-2 font-display font-bold", row.lead ? "text-xl sm:text-2xl" : "text-base sm:text-lg"]}>
                                                 <span class="select-all">{row.value}</span>
                                                 {row.copy && (
@@ -168,7 +168,7 @@ const faq = d.faq.filter((item) => item?.question && item?.answer);
                                     <span class="copy-btn-text">{t("donate.copyAll")}</span>
                                 </button>
 
-                                {account.wireNote && <p class="mt-5 max-w-[70ch] text-sm leading-relaxed text-white/70">{account.wireNote}</p>}
+                                {account.wireNote && <p class="mt-5 max-w-[70ch] text-sm leading-relaxed text-white/80">{account.wireNote}</p>}
                             </div>
                         )}
                     </li>

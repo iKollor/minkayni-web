@@ -48,7 +48,8 @@ const actionCardStyles = [
                 <div class="absolute -top-8 right-0 h-24 w-24 sm:h-32 sm:w-32" data-float aria-hidden="true"><Image src={flor} alt="" class="h-full w-full object-cover" /></div>
                 <MaskFlor src={comunidad} alt={t("alt.celebrating")} className="h-72 w-72 shadow-xl sm:h-96 sm:w-96 lg:h-[28rem] lg:w-[28rem]" />
                 <figure class="absolute -bottom-0 -left-0 w-44 rotate-[-6deg] overflow-hidden rounded-[1.25rem] border-[6px] border-white shadow-2xl sm:w-60" data-float>
-                    <Image src={marcha} alt={t("alt.marching")} class="h-full w-full object-cover" />
+                    {/* La figura mide 176/240 px; sin `width` salía el original de 1072 px (141 KB). */}
+                    <Image src={marcha} alt={t("alt.marching")} class="h-full w-full object-cover" width={480} widths={[240, 480]} sizes="(min-width: 640px) 240px, 176px" />
                 </figure>
             </div>
         </div>
@@ -236,7 +237,7 @@ const actionCardStyles = [
             </div>
             <div class="relative mx-auto hidden lg:block" data-reveal data-reveal-delay="0.2">
                 <div class="absolute -left-10 top-4 h-24 w-24 opacity-70" data-float aria-hidden="true"><Image src={flor} alt="" class="h-full w-full object-cover" /></div>
-                <Image src={daniel} alt={t("alt.daniel")} class="h-96 w-auto drop-shadow-2xl" data-float />
+                <Image src={daniel} alt={t("alt.daniel")} class="h-96 w-auto drop-shadow-2xl" width={640} data-float />
             </div>
         </div>
     </section>

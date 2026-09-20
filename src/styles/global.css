@@ -13,9 +13,13 @@
     --font-OI: "Sao Torpes", system-ui, sans-serif;
     --color-primary: var(--primary);
     --color-secondary: var(--secondary);
-    /* Azul de marca oscurecido para texto sobre fondos claros (≥4:1 sobre crema);
-       el celeste #3fa9f5 queda para fondos y texto sobre tinta. */
-    --color-secondary-deep: #1b7fc4;
+    /* Azul de marca para texto pequeño (eyebrows, notas): el celeste #3fa9f5
+       queda para fondos y titulares grandes. `deep` va sobre crema (5,0:1;
+       el #1b7fc4 anterior daba 4,0 y Lighthouse lo marcaba en cada página) y
+       `light` sobre el morado (6,2:1; el celeste puro daba 3,7). WCAG AA pide
+       4,5:1 en texto de menos de 18,66 px en negrita. */
+    --color-secondary-deep: #166fb0;
+    --color-secondary-light: #a6d8fb;
     --color-accent: var(--accent);
     --color-background: var(--bg-white);
     --color-white: var(--bg-white);

@@ -80,14 +80,6 @@ const shareImage = Astro.site ? new URL(shareImagePath, Astro.site).href : share
 const shareImageAlt = imageAlt ?? `${siteTitle} — Batucada Popular`;
 const ogUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
 
-/* preconnect a Strapi solo si la URL está configurada y es válida */
-const strapiOrigin = (() => {
-    try {
-        return new URL(import.meta.env.STRAPI_URL ?? "").origin;
-    } catch {
-        return "";
-    }
-})();
 ---
 
 <!doctype html>
@@ -142,7 +134,9 @@ const strapiOrigin = (() => {
         <meta name="mobile-web-app-capable" content="yes" />
         <!-- black-translucent permite que el fondo de la página se vea detrás de la barra de estado -->
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        {strapiOrigin && <link rel="preconnect" href={strapiOrigin} />}
+        {/* Sin preconnect a Strapi: los medios del CMS salen por /media en este
+            mismo dominio (nginx.conf), así que el navegador abría una conexión
+            a strapi.minkayni.org que nunca usaba y Lighthouse lo señalaba. */}
 
         <!-- Medición para Ad Grants. No emite nada si no hay id configurado. -->
         <Analytics />
