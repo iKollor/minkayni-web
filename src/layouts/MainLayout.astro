@@ -50,12 +50,12 @@ const intro = import.meta.env.PUBLIC_HOME_INTRO !== "off";
 <Head title={title} description={description} image={image} imageAlt={imageAlt} intro={intro}>
     <SiteGrain />
     <Navbar buttons={navHeader} locale={locale} menu={menu} />
-    {/* `client:idle` en lo que no hace falta para pintar ni para el primer
-        toque: el panel del menú se abre con un botón y los contadores entran
-        con el scroll o al final de la cascada de la leyenda, que ya espera a
-        las fuentes. La cortina sigue en `client:load`: tapa la página al
+    {/* Los contadores hidratan en idle: entran con el scroll o al final de la
+        cascada de la leyenda, que ya espera a las fuentes. El panel del menú
+        y la cortina siguen en `client:load`: el primero tiene que responder a
+        la hamburguesa en cuanto se pueda tocar; la segunda tapa la página al
         llegar desde otra y tiene que retirarse cuanto antes. */}
-    <SiteMenu client:idle {...menu} />
+    <SiteMenu client:load {...menu} />
     <SiteScrollbar locale={locale} />
     <PixelCurtain client:load />
     <CounterMount client:idle />
