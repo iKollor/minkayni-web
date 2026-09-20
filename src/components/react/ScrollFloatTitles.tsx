@@ -76,7 +76,14 @@ const pendingHeadings = () =>
 
 const enhance = (headings: HTMLElement[]) =>
   gsap.context(() => {
-    for (const el of headings) {
+    /* Todas las lecturas de diseño antes de la primera escritura. Leer
+       `getComputedStyle(el).marginBottom` después de haber tocado el título
+       anterior obligaba al navegador a recalcular el diseño de toda la página
+       una vez por título: siete en la portada, 270 ms de reflows forzados
+       según PageSpeed. Leídas de golpe cuesta un recálculo en total. */
+    const margins = headings.map(el => getComputedStyle(el).marginBottom);
+
+    headings.forEach((el, index) => {
       el.dataset.scrollFloatReady = '1';
       el.setAttribute('aria-label', (el.textContent ?? '').replace(/\s+/g, ' ').trim());
 
@@ -95,10 +102,10 @@ const enhance = (headings: HTMLElement[]) =>
          tinta de Aristotelica mide 1,10 em. */
       el.classList.add('clip-reveal');
       el.style.paddingBottom = '0.14em';
-      el.style.marginBottom = `calc(${getComputedStyle(el).marginBottom} - 0.14em)`;
+      el.style.marginBottom = `calc(${margins[index]} - 0.14em)`;
 
       const chars = splitTextNodes(inner);
-      if (!chars.length) continue;
+      if (!chars.length) return;
 
       gsap.fromTo(
         chars,
@@ -114,7 +121,7 @@ const enhance = (headings: HTMLElement[]) =>
           scrollTrigger: { trigger: el, start: ANIMATION.scrollStart, end: ANIMATION.scrollEnd, scrub: true }
         }
       );
-    }
+    });
   });
 
 export default function ScrollFloatTitles() {

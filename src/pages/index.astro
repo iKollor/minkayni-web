@@ -1,6 +1,5 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
-import { Image } from "astro:assets";
 import Logo from "../assets/SVG/LOGO_HEADER_WHITE.svg";
 import Tag from "../components/index/Tag.astro";
 import Moments from "../components/index/Moments.astro";
@@ -209,9 +208,14 @@ const projectsCta = homepage
                         }}
                     >
                         <div class="z-10 relative flex justify-center items-center h-full">
-                            {/* Es el elemento más grande del primer pantallazo (LCP): se pide
-                                con prioridad alta y sin `lazy`, que Astro pone por defecto. */}
-                            <Image class="logo pointer-events-none w-[var(--logo-w)] mb-2 mr-[2px]" src={Logo} alt={t("alt.logo")} loading="eager" fetchpriority="high" />
+                            {/* SVG en línea, no <img>: es lo primero que se ve y como imagen
+                                aparte dependía de una petición más —en el análisis móvil de
+                                PageSpeed tardó 1,25 s en llegar y el hero se pintó sin logotipo—.
+                                En línea se pinta con el primer cuadro. El archivo va sin la
+                                hoja de estilos que exporta Illustrator (`.cls-1`): en línea
+                                chocaría con la de cualquier otro SVG de la página; el blanco va
+                                como `fill` del propio <svg>. */}
+                            <Logo class="logo pointer-events-none w-[var(--logo-w)] h-auto mb-2 mr-[2px]" role="img" aria-label={t("alt.logo")} />
                         </div>
                     </BubbleBackground>
                 </div>
