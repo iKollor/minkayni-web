@@ -6,6 +6,7 @@ import { getImage } from "astro:assets";
 import { globalFallback } from "../../data/pages/global";
 import { loadPageContent } from "../../utils/page-content";
 import Analytics from "../../components/Analytics.astro";
+import FontFaces from "../../components/FontFaces.astro";
 import OrganizationJsonLd from "../../components/legal/OrganizationJsonLd.astro";
 import PageJsonLd from "../../components/legal/PageJsonLd.astro";
 import { alternatePaths, defaultLocale, getLocale, htmlLang, ogLocale } from "../../i18n";
@@ -180,6 +181,9 @@ const ogUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefi
         </script>
 
         <title>{fullTitle}</title>
+
+        {/* @font-face de las fuentes propias, tras el primer cuadro. Ver el componente. */}
+        <FontFaces />
 
         <!-- Identidad legal de la organización (schema.org/NGO) -->
         <OrganizationJsonLd />

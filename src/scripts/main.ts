@@ -24,6 +24,9 @@ ScrollTrigger.config({ ignoreMobileResize: true });
 // por sí solo puede resolverse antes de que el contenido oculto pida su fuente.
 const fontsReady: Promise<void> = (async () => {
     if (typeof document === "undefined" || !document.fonts) return;
+    /* Las @font-face las declara FontFaces.astro tras el primer cuadro; hasta
+       entonces `document.fonts.load` no encontraría ninguna cara que cargar. */
+    await (window as Window & { fontsDeclared?: Promise<void> }).fontsDeclared;
 
     const descriptors = [
         '400 16px "Aristotelica Pro Text"',
@@ -117,11 +120,24 @@ const waitForIntroAndInit = () => {
     }, 8000);
 };
 
+/* El smoother se crea en un hueco libre del hilo principal, no en el mismo
+   tirón que el resto de scripts: crearlo cuesta unos 100 ms (recorre todos
+   los ScrollTrigger y mide la página) y PageSpeed lo sumaba a la tarea larga
+   de arranque (TBT). Como mucho al segundo; hasta entonces el scroll es el
+   nativo, que es exactamente lo que ve el móvil e iOS siempre. */
+const enIdle = (cb: () => void) => {
+    if ("requestIdleCallback" in window) {
+        window.requestIdleCallback(() => cb(), { timeout: 1000 });
+    } else {
+        setTimeout(cb, 200);
+    }
+};
+
 if (!window.__SMOOTH_CREATED__) {
     window.__SMOOTH_CREATED__ = true;
     document.addEventListener("DOMContentLoaded", () => {
         enforceNoOverflowX(); // Refuerzo inicial (CSS global debe contener overflow-x: hidden)
-        waitForIntroAndInit();
+        enIdle(waitForIntroAndInit);
     });
 } else {
     console.debug("[smooth] Ya inicializado, se omite duplicado");

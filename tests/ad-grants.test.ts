@@ -163,6 +163,27 @@ test("ninguna página precarga fuentes: Chrome retiene el pintado esperándolas"
     }
 });
 
+test("las @font-face de las fuentes propias no van en el CSS crítico", () => {
+    /* Las declara FontFaces.astro tras el primer cuadro: en el CSS del <head>
+       solo pueden quedar las caras locales de respaldo (`local(...)`). Si una
+       @font-face con `url(` vuelve al CSS, el navegador la pide antes del
+       primer pintado y PageSpeed la suma al LCP. */
+    for (const archivo of paginasReales()) {
+        const html = leer(archivo);
+        const ruta = rutaDe(archivo);
+        /* El <noscript> sí lleva las @font-face completas: es el camino sin JavaScript. */
+        const sinNoscript = html.replace(/<noscript>[\s\S]*?<\/noscript>/g, "");
+        const hojas = [...sinNoscript.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1]);
+        for (const hoja of hojas) {
+            for (const [cara] of hoja.matchAll(/@font-face\{[^}]*\}/g)) {
+                assert.doesNotMatch(cara, /url\(/, `${ruta}: @font-face con url() en el CSS crítico`);
+            }
+        }
+        assert.match(html, /window\.fontsDeclared/, `${ruta}: sin FontFaces (las fuentes propias no se declaran)`);
+        assert.match(html, /<noscript><style>[^<]*@font-face/, `${ruta}: sin @font-face para navegadores sin JavaScript`);
+    }
+});
+
 test("ninguna página ni hoja de estilos pide fuentes a terceros", () => {
     /* global.css importaba cuatro hojas de fonts.googleapis.com (tres de
        familias que ninguna regla usaba). Cada una era una petición

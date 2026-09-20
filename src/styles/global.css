@@ -2,10 +2,10 @@
    fonts.googleapis.com que había aquí (Nunito, Poppins, Quicksand y Special
    Gothic) eran cuatro peticiones bloqueantes a un tercero en cada página;
    tres de esas familias no las usaba ninguna regla. Ver SpecialGothic.css. */
-@import url(../assets/fonts/Aristotelica_Pro_Display_WEBFONT/AristotelicaProDisplay.css);
-@import url(../assets/fonts/Aristotelica_Pro_Text_WEBFONT/AristotelicaProText.css);
-@import url(../assets/fonts/SaoTorpes_WEBFONT/SaoTorpes.css);
-@import url(../assets/fonts/SpecialGothic_WEBFONT/SpecialGothic.css);
+/* Las @font-face de las fuentes propias NO van aquí: las inyecta
+   src/components/FontFaces.astro tras el primer cuadro (ver por qué allí).
+   Aquí solo las caras locales de respaldo, que no piden nada a la red. */
+@import url(./fonts-fallback.css);
 @import "tailwindcss";
 
 @theme {

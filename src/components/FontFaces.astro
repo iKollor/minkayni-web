@@ -1,0 +1,80 @@
+---
+/* Las @font-face de las fuentes propias, declaradas justo DESPUÉS del primer
+   cuadro, no en el CSS crítico.
+
+   Por qué: en cuanto el navegador tiene el CSS pide todas las variantes que
+   usa la página —diez en la portada, unos 220 KB— con prioridad máxima, y
+   el modelo de PageSpeed (Lantern) suma al LCP todo lo que termina de bajar
+   antes de que se pinte el elemento más grande: en móvil simulado, casi dos
+   segundos de LCP por unas fuentes que el texto no necesita para verse. Aquí
+   un script en línea añade las @font-face en la primera tarea después de
+   entregar el primer cuadro: el primer pintado sale con las caras
+   locales de respaldo, que llevan las métricas de Aristotelica (ver
+   styles/fonts-fallback.css) para que el cambio no mueva el texto, y las
+   propias llegan unos cientos de milisegundos después. Sin JavaScript, el
+   <noscript> las declara como siempre.
+
+   Las hojas de cada familia siguen siendo la fuente de verdad: se leen en
+   crudo y se les cambia cada `url("X.woff2")` por la ruta con hash que Vite
+   da al archivo. `window.fontsDeclared` avisa a main.ts de que ya puede
+   esperar a las fuentes (document.fonts.load) para las animaciones de texto. */
+import displayCss from "../assets/fonts/Aristotelica_Pro_Display_WEBFONT/AristotelicaProDisplay.css?raw";
+import textCss from "../assets/fonts/Aristotelica_Pro_Text_WEBFONT/AristotelicaProText.css?raw";
+import saoCss from "../assets/fonts/SaoTorpes_WEBFONT/SaoTorpes.css?raw";
+import gothicCss from "../assets/fonts/SpecialGothic_WEBFONT/SpecialGothic.css?raw";
+
+/* Solo los archivos que alguna hoja declara: un glob emite en dist todo lo
+   que casa, y tools/fonts/subset.py recorta también dos pesos que ningún
+   @font-face usa (Display ExtraLight, Text Thin). Si aparece otro, la
+   comprobación de abajo lo dice en el build en vez de colarlo en dist. */
+const fontUrls = import.meta.glob(
+    ["../assets/fonts/**/*.subset.woff2", "!**/AristotelicaProDisp-Extlt.subset.woff2", "!**/AristotelicaProTx-Th.subset.woff2"],
+    { query: "?url", import: "default", eager: true }
+) as Record<string, string>;
+const urlByName = new Map(Object.entries(fontUrls).map(([path, url]) => [path.split("/").pop() as string, url]));
+const hojas = [displayCss, textCss, saoCss, gothicCss];
+for (const nombre of urlByName.keys()) {
+    if (!hojas.some((hoja) => hoja.includes(nombre))) {
+        throw new Error(`FontFaces: ${nombre} está en el glob pero ninguna hoja lo declara; exclúyelo del glob`);
+    }
+}
+
+const sinComentarios = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, "");
+const conRutas = (css: string) =>
+    css.replace(/url\(\s*["']?([^"')]+\.woff2)["']?\s*\)/g, (whole, file: string) => {
+        const url = urlByName.get(file.split("/").pop() as string);
+        if (!url) throw new Error(`FontFaces: no hay archivo para ${file}`);
+        return `url("${url}")`;
+    });
+
+const css = hojas
+    .map((sheet) => conRutas(sinComentarios(sheet)))
+    .join("\n")
+    .replace(/\s+/g, " ")
+    .replace(/\s*([{}:;])\s*/g, "$1")
+    .trim();
+---
+
+<script is:inline define:vars={{ css }}>
+    window.fontsDeclared = new Promise(function (listo) {
+        var hecho = false;
+        var declarar = function () {
+            if (hecho) return;
+            hecho = true;
+            var hoja = document.createElement("style");
+            hoja.setAttribute("data-fonts", "");
+            hoja.textContent = css;
+            document.head.appendChild(hoja);
+            listo();
+        };
+        /* requestAnimationFrame corre ANTES de pintar el cuadro; la tarea que
+           se encola desde ahí corre después de que ese cuadro se haya
+           entregado. Y un plazo de seguridad por si la pestaña está oculta
+           (ahí no hay cuadros) o algo retrasa el primero. */
+        requestAnimationFrame(function () {
+            setTimeout(declarar, 0);
+        });
+        setTimeout(declarar, 2500);
+    });
+</script>
+<noscript><style set:html={css}></style></noscript>
