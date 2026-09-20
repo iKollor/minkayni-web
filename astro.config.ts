@@ -114,8 +114,8 @@ export default defineConfig({
                 },
             },
         }),
-        /* `<link rel="modulepreload">` de los trozos JS compartidos, en cada
-           página. Ver src/integrations/modulepreload.ts. */
+        /* `fetchpriority="low"` en los scripts de módulo de cada página.
+           Ver src/integrations/modulepreload.ts. */
         modulepreload(),
     ],
     build: {

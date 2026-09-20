@@ -28,7 +28,7 @@ import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
 
-import { moduleEntries, preloadedModules, transitiveImports } from "../src/integrations/modulepreload";
+import { moduleEntries, transitiveImports } from "../src/integrations/modulepreload";
 
 const RAIZ = path.join(import.meta.dirname, "..");
 const DIST = path.join(RAIZ, "dist");
@@ -398,24 +398,19 @@ test("el CSS va dentro del HTML: ninguna hoja externa bloquea el pintado", () =>
     }
 });
 
-test("los trozos JS que importan los scripts de cada página van precargados", async () => {
-    /* Ver src/integrations/modulepreload.ts: sin la precarga el navegador
-       descubre `main`, `gsap` o `ScrollTrigger` solo al leer el script que
-       los importa, y encadena dos o tres viajes antes de ejecutar nada. */
+test("los scripts de módulo van en prioridad baja y sin modulepreload", async () => {
+    /* Ver src/integrations/modulepreload.ts: un script de prioridad alta
+       cuenta como bloqueante del primer pintado para PageSpeed, y un trozo
+       precargado que baja antes del LCP se suma al LCP. */
     for (const archivo of paginasReales()) {
         const html = leer(archivo);
         const entradas = moduleEntries(html);
         if (!entradas.length) continue;
-        const precargados = new Set(preloadedModules(html));
-        const faltan = (await transitiveImports(DIST, entradas)).filter((dep) => !precargados.has(dep));
-        assert.deepEqual(faltan, [], `${rutaDe(archivo)}: trozos importados sin modulepreload`);
-        /* Y ningún script del <head> con prioridad alta: PageSpeed lo
-           contaría como bloqueante del primer pintado. */
         assert.doesNotMatch(html, /<script type="module" src=/, `${rutaDe(archivo)}: script de módulo sin fetchpriority="low"`);
-        /* Y cada precarga apunta a un archivo que existe: una ruta rota es
-           una petición 404 en cada visita. */
-        for (const dep of precargados) {
-            assert.ok(fs.existsSync(path.join(DIST, dep)), `${rutaDe(archivo)}: modulepreload roto: ${dep}`);
+        assert.doesNotMatch(html, /rel="modulepreload"/, `${rutaDe(archivo)}: modulepreload`);
+        /* Y los trozos que importan existen: una ruta rota es un 404 en cada visita. */
+        for (const dep of await transitiveImports(DIST, entradas)) {
+            assert.ok(fs.existsSync(path.join(DIST, dep)), `${rutaDe(archivo)}: import roto: ${dep}`);
         }
     }
 });

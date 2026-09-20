@@ -1,30 +1,24 @@
-/* Precarga de los módulos compartidos.
+/* Scripts de módulo con `fetchpriority="low"`, en cada página del build.
 
-   Cada `<script>` de un componente Astro sale como un `<script type="module">`
-   propio, y casi todos importan los mismos trozos: `main`, `gsap`,
-   `ScrollTrigger`, el runtime del empaquetador. El navegador solo descubre
-   esos trozos al descargar y leer el script que los importa, así que antes de
-   ejecutar nada encadena dos o tres viajes de ida y vuelta —PageSpeed lo
-   llamaba «cadena de dependencias crítica» de seis segundos en escritorio—.
-
-   Vite añade `<link rel="modulepreload">` por cada trozo importado cuando es
-   él quien escribe el HTML; Astro escribe el HTML por su cuenta y no lo hace.
-   Esta integración lo repone al final del build: lee los scripts de cada
-   página, sigue sus imports estáticos y declara cada trozo alcanzable al
-   final del <head>, detrás del CSS, que va primero. Los imports dinámicos
-   (`import()`) y las islas de React no se tocan: esos siguen cargando
-   cuando hacen falta.
-
-   Además, tanto los scripts como sus precargas llevan `fetchpriority="low"`.
    Chrome pide con prioridad alta cualquier script del <head>, módulos
-   incluidos, y PageSpeed (el modelo Lantern de Lighthouse) cuenta como
-   bloqueante del primer pintado todo script de prioridad alta que termine
-   de bajar antes de ese pintado: en móvil simulado sumaba un segundo al
-   FCP. El contenido no necesita el JavaScript para verse —viene pintado en
-   el HTML—, así que declararlo de prioridad baja es decir la verdad; en la
-   práctica, con el CSS en línea y las fuentes por delante, los scripts
-   siguen llegando en el mismo viaje. Medido en local (mediana de tres):
-   FCP móvil 3,8 s → 2,8 s; escritorio 0,84 → 0,64. */
+   incluidos, y el modelo de PageSpeed (Lantern) cuenta como bloqueante del
+   primer pintado todo script de prioridad alta que termine de bajar antes de
+   ese pintado: en móvil simulado sumaba un segundo al FCP. El contenido no
+   necesita el JavaScript para verse —viene pintado en el HTML—, así que
+   declararlo de prioridad baja es decir la verdad. Astro no deja poner
+   atributos a sus `<script>` hoisted; esta integración los reescribe al
+   terminar el build. Medido en local (mediana de tres): FCP móvil
+   3,8 s → 2,8 s; escritorio 0,84 → 0,64.
+
+   Se probó también precargar con `<link rel="modulepreload">` cada trozo
+   que importan los scripts (`main`, `gsap`, `ScrollTrigger`…): acorta la
+   cadena de descargas para el usuario, pero en las pasadas de PageSpeed con
+   red rápida esos 180 KB terminaban de bajar antes de que se pintara el LCP
+   y el modelo los sumaba al LCP (4,6 s frente a 1,2 s cuando llegaban
+   después). Sin precarga, los trozos se piden cuando el script que los
+   importa ya se ejecuta, después del pintado. Aquí quedan las funciones
+   para seguir los imports estáticos: la prueba las usa para comprobar que
+   ningún trozo se precarga. */
 import type { AstroIntegration } from "astro";
 import { readdir, readFile, writeFile, stat } from "node:fs/promises";
 import path from "node:path";
@@ -75,10 +69,6 @@ export function moduleEntries(html: string): string[] {
     return [...html.matchAll(SCRIPT_MODULE)].map((m) => m[1]);
 }
 
-export function preloadedModules(html: string): string[] {
-    return [...html.matchAll(/<link rel="modulepreload" fetchpriority="low" href="([^"]+)">/g)].map((m) => m[1]);
-}
-
 /** `<script type="module" src>` → con `fetchpriority="low"` (idempotente). */
 export function lowerScriptPriority(html: string): string {
     return html.replace(/<script type="module" src="/g, '<script type="module" fetchpriority="low" src="');
@@ -96,21 +86,18 @@ async function htmlFiles(dir: string): Promise<string[]> {
 
 export default function modulepreload(): AstroIntegration {
     return {
-        name: "minkayni:modulepreload",
+        name: "minkayni:script-priority",
         hooks: {
             "astro:build:done": async ({ dir, logger }) => {
                 const root = fileURLToPath(dir);
                 let pages = 0;
                 for (const file of await htmlFiles(root)) {
                     const html = await readFile(file, "utf8");
-                    const entries = moduleEntries(html);
-                    if (!entries.length || !html.includes("</head>")) continue;
-                    const deps = await transitiveImports(root, entries);
-                    const links = deps.map((dep) => `<link rel="modulepreload" fetchpriority="low" href="${dep}">`).join("");
-                    await writeFile(file, lowerScriptPriority(html).replace("</head>", `${links}</head>`));
+                    if (!moduleEntries(html).length) continue;
+                    await writeFile(file, lowerScriptPriority(html));
                     pages += 1;
                 }
-                logger.info(`modulepreload en ${pages} páginas`);
+                logger.info(`scripts con fetchpriority="low" en ${pages} páginas`);
             },
         },
     };
