@@ -385,6 +385,9 @@ test("los trozos JS que importan los scripts de cada página van precargados", a
         const precargados = new Set(preloadedModules(html));
         const faltan = (await transitiveImports(DIST, entradas)).filter((dep) => !precargados.has(dep));
         assert.deepEqual(faltan, [], `${rutaDe(archivo)}: trozos importados sin modulepreload`);
+        /* Y ningún script del <head> con prioridad alta: PageSpeed lo
+           contaría como bloqueante del primer pintado. */
+        assert.doesNotMatch(html, /<script type="module" src=/, `${rutaDe(archivo)}: script de módulo sin fetchpriority="low"`);
         /* Y cada precarga apunta a un archivo que existe: una ruta rota es
            una petición 404 en cada visita. */
         for (const dep of precargados) {
