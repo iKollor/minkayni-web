@@ -9,7 +9,7 @@
 @import "tailwindcss";
 
 @theme {
-    --font-display: "Aristotelica Pro Display", "Nunito", system-ui, sans-serif;
+    --font-display: "Aristotelica Pro Display", "Aristotelica Pro Display Fallback", "Aristotelica Pro Display Fallback Android", "Nunito", system-ui, sans-serif;
     --font-OI: "Sao Torpes", system-ui, sans-serif;
     --color-primary: var(--primary);
     --color-secondary: var(--secondary);
@@ -257,7 +257,7 @@ html[data-site-menu-open] .page-nav {
     }
 
 html {
-    font-family: "Aristotelica Pro Text", "Nunito", system-ui, sans-serif;
+    font-family: "Aristotelica Pro Text", "Aristotelica Pro Text Fallback", "Aristotelica Pro Text Fallback Android", "Nunito", system-ui, sans-serif;
     font-synthesis: none;
     /* evita bold/italic falsos */
     text-rendering: optimizeLegibility;

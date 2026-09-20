@@ -48,10 +48,13 @@ const prepareNavStrokes = (navTexts: NodeListOf<Element>): void => {
 
 const animateNavAndParagraph = (
     prefersReduced: boolean,
-    navTexts: NodeListOf<Element>
+    navTexts: NodeListOf<Element>,
+    fromIntro = false
 ): void => {
+    /* El nav lateral y sus trazos arrancan al segundo, no a los tres: cada
+       segundo con la pantalla a medio pintar lo cuenta el Speed Index. */
     const tl = gsap.timeline({ defaults: { overwrite: "auto" } });
-    tl.add(() => showPageNav(), 3)
+    tl.add(() => showPageNav(), 1)
         .to(
             navTexts,
             {
@@ -60,9 +63,12 @@ const animateNavAndParagraph = (
                 ease: "power2.out",
                 stagger: 0.05,
             },
-            3
+            1
         )
-        .call(animateParagraph, [prefersReduced], 1);
+        /* La leyenda decide sola si entra en cascada (ver paragraph.ts); al
+           salir de la intro se le avisa para que sí lo haga. Va en 0 para que
+           la esconda antes del primer cuadro de la revelación circular. */
+        .call(animateParagraph, [prefersReduced, { fromIntro }], 0);
 };
 
 /** `html[data-intro="pending"]` lo pone head.astro antes del primer pintado
@@ -205,7 +211,7 @@ export const showContentNoIntro = (opts?: {
             );
         }
 
-        // Mantiene tiempos internos de animateNavAndParagraph (párrafo~1s, strokes~3s)
+        // Mantiene tiempos internos de animateNavAndParagraph (nav lateral y trazos al segundo)
         tl.call(animateNavAndParagraph, [prefersReduced, navTexts], 0);
 
         // Notificar y refrescar
@@ -343,7 +349,7 @@ export const initIntro = (prefersReduced: boolean): void => {
                 },
                 2
             )
-            .call(animateNavAndParagraph, [prefersReduced, navTexts], 0)
+            .call(animateNavAndParagraph, [prefersReduced, navTexts, true], 0)
             .add(() => {
                 content?.style.removeProperty("clip-path");
                 window.dispatchEvent(new CustomEvent("intro:finished"));

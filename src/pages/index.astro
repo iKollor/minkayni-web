@@ -112,39 +112,28 @@ const projectsCta = homepage
         }
 
         /* ── Nada oculto en el HTML ──────────────────────────────────────
-           El contenido de la portada viene visible en el documento. Solo se
-           esconde cuando hay JavaScript y una animación va a revelarlo:
+           El contenido de la portada viene visible en el documento y se
+           pinta con el primer cuadro. Solo se tapa cuando hay JavaScript y
+           la intro va a reproducirse: `html[data-intro="pending"]` lo
+           escribe head.astro antes del primer pintado, solo en visitas
+           nuevas, e `intro.ts` lo retira al terminar. La regla lleva una
+           animación de seguridad que devuelve la visibilidad pasado un
+           tiempo, por si el script no llega a ejecutarse: nunca una
+           pantalla en blanco por un fallo de red.
 
-           - `html[data-intro="pending"]` (lo escribe head.astro antes del
-             primer pintado, solo en visitas nuevas): la intro tapa la página
-             y `intro.ts` la destapa al terminar.
-           - `html[data-js]`: la leyenda entra palabra a palabra
-             (scripts/index/paragraph.ts); sin JS se lee tal cual.
-
-           Cada regla lleva una animación de seguridad que devuelve la
-           visibilidad pasado un tiempo, por si el script no llega a
-           ejecutarse: nunca una pantalla en blanco por un fallo de red. */
+           La leyenda (#foundation-text) ya no se esconde aquí: en móvil es
+           el elemento más grande de la primera pantalla —el LCP que mide
+           PageSpeed— y ocultarla hasta que cargaran el script y las fuentes
+           costaba seis segundos. Su cascada palabra a palabra la decide
+           scripts/index/paragraph.ts, y solo cuando el texto aún no está a
+           la vista. */
         html[data-intro="pending"] #app-content {
             opacity: 0;
             animation: app-content-safety 0.5s ease 12s forwards;
         }
-        html[data-js] #foundation-text {
-            opacity: 0;
-            visibility: hidden;
-            animation: foundation-text-safety 0.4s ease 6s forwards;
-        }
-        html[data-intro="pending"] #foundation-text {
-            animation-delay: 16s;
-        }
         @keyframes app-content-safety {
             to {
                 opacity: 1;
-            }
-        }
-        @keyframes foundation-text-safety {
-            to {
-                opacity: 1;
-                visibility: visible;
             }
         }
         #hero-background {
@@ -196,7 +185,19 @@ const projectsCta = homepage
                      que el h1 del documento va aquí, disponible para lectores de
                      pantalla y rastreadores sin alterar el diseño. -->
                 <h1 class="sr-only">{t("home.title")}</h1>
-                <div id="hero-background" data-nav-theme="dark" class="bg__container absolute top-0 left-0 w-full h-[50svh] md:h-svh z-20 bg-[var(--primary)]">
+                {/* Sin intro, el degradado nace ya con su altura y radio finales
+                    (`--hero-h`, 30 px): antes venía a 50svh/100svh y `intro.ts`
+                    lo llevaba a 70svh al cargar, y ese cambio movía el logotipo
+                    y las burbujas ya pintados —era el salto de diseño (CLS 0,07)
+                    que PageSpeed anotaba en la portada—. Con intro sí arranca a
+                    pantalla completa: la animación lo encoge al terminar. */}
+                <div
+                    id="hero-background"
+                    data-nav-theme="dark"
+                    class:list={[
+                        "bg__container absolute top-0 left-0 w-full z-20 bg-[var(--primary)]",
+                        intro ? "h-[50svh] md:h-svh" : "h-[var(--hero-h)] rounded-b-[30px]",
+                    ]}>
                     <BubbleBackground
                         interactive
                         colors={{

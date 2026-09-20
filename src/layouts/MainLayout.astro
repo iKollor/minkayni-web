@@ -54,12 +54,15 @@ const intro = import.meta.env.PUBLIC_HOME_INTRO === "on";
     <Navbar buttons={navHeader} locale={locale} menu={menu} />
     {/* Los contadores hidratan en idle: entran con el scroll o al final de la
         cascada de la leyenda, que ya espera a las fuentes. El panel del menú
-        y la cortina siguen en `client:load`: el primero tiene que responder a
-        la hamburguesa en cuanto se pueda tocar; la segunda tapa la página al
-        llegar desde otra y tiene que retirarse cuanto antes. */}
+        sigue en `client:load`: tiene que responder a la hamburguesa en cuanto
+        se pueda tocar. La cortina va en idle: solo actúa al llegar desde otra
+        página del sitio (la tapa un script en línea antes del primer pintado y
+        la isla, al hidratar, la retira), y en una visita nueva —la que mide
+        PageSpeed— hidratarla con el resto solo añadía trabajo antes de que la
+        página respondiera. */}
     <SiteMenu client:load {...menu} />
     <SiteScrollbar locale={locale} />
-    <PixelCurtain client:load />
+    <PixelCurtain client:idle />
     <CounterMount client:idle />
     <ScrollFloatTitles client:idle />
     <PageNavigation items={pageNavItems} locale={locale} />

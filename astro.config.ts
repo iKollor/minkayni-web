@@ -10,6 +10,8 @@ import icon from "astro-icon";
 
 import react from "@astrojs/react";
 
+import modulepreload from "./src/integrations/modulepreload";
+
 import { unified } from "@astrojs/markdown-remark";
 import { rehypePlugins } from "./src/utils/markdown-pipeline";
 import { rutasRedirigidas } from "./src/data/redirects";
@@ -112,7 +114,19 @@ export default defineConfig({
                 },
             },
         }),
+        /* `<link rel="modulepreload">` de los trozos JS compartidos, en cada
+           página. Ver src/integrations/modulepreload.ts. */
+        modulepreload(),
     ],
+    build: {
+        /* Todo el CSS va dentro del HTML. Eran dos hojas externas que bloqueaban
+           el pintado hasta que llegaban (PageSpeed: 0,9 s en móvil): una
+           petición más, en serie tras el documento, para unos 28 KB
+           comprimidos. Dentro del documento se leen mientras llega el HTML. El
+           precio es que no se cachean entre páginas; en un sitio de veinte
+           páginas de una visita, pesa menos que el bloqueo. */
+        inlineStylesheets: "always",
+    },
     /* La tabla vive en src/data/redirects.ts porque no la usa solo el build:
        `loadNavigation()` la aplica también al árbol del CMS, para que el menú
        enlace al destino real en vez de pasar por la página de redirección.

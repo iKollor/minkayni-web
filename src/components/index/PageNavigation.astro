@@ -92,10 +92,18 @@ const NAV_CONFIG = {
         overflow: visible;
     }
     .nav-text {
+        /* La tinta del rótulo (trazo y relleno) es el verde; `color` queda
+           aparte y oscuro. El texto se mezcla con `mix-blend-difference`
+           —sobre el crema del fondo sale morado oscuro, sobre negro, verde
+           claro— y los auditores de contraste (axe, PageSpeed) no saben de
+           mezclas: miden `color` contra el fondo y daban 1,2:1. Ni el trazo
+           ni el relleno usan `color`, así que lo que se ve no cambia. */
+        --nav-ink: #a9f76b;
+        color: #1f3a09;
         font-size: var(--nav-font-size);
         paint-order: stroke fill;
-        fill: currentColor;
-        stroke: currentColor;
+        fill: var(--nav-ink);
+        stroke: var(--nav-ink);
         stroke-width: var(--nav-stroke);
         fill-opacity: 0;
     }

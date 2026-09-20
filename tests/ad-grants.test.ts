@@ -28,6 +28,8 @@ import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
 
+import { moduleEntries, preloadedModules, transitiveImports } from "../src/integrations/modulepreload";
+
 const RAIZ = path.join(import.meta.dirname, "..");
 const DIST = path.join(RAIZ, "dist");
 const DOMINIO = "https://www.minkayni.org";
@@ -36,10 +38,12 @@ const DOMINIO = "https://www.minkayni.org";
 
 const KB = 1024;
 /** HTML sin comprimir de una sola página. Se sirve con brotli (~4:1).
-    La que primero se acercará a este techo es /novedades, que crece una
-    entrada por cada publicación nueva del CMS; cuando lo pase, la respuesta
-    es paginarla, no subir el número. */
-const MAX_HTML = 200 * KB;
+    Lleva dentro todo el CSS del sitio (unos 130 KB sin comprimir, ver
+    `build.inlineStylesheets` en astro.config.ts), que es la mitad del techo.
+    La que primero se acercará a él es /novedades, que crece una entrada por
+    cada publicación nueva del CMS; cuando lo pase, la respuesta es
+    paginarla, no subir el número. */
+const MAX_HTML = 320 * KB;
 /** Todas las fuentes de la build juntas. Sin recortar eran 1.222 KB. */
 const MAX_FUENTES_TOTAL = 420 * KB;
 /** Un peso suelto. Sin recortar, cada uno rondaba los 70 KB. */
@@ -147,18 +151,15 @@ test("el JavaScript emitido no se dispara", () => {
     );
 });
 
-test("cada página precarga las fuentes que pinta casi todo el texto", () => {
-    /* Descubiertas solo desde el CSS de @font-face, el navegador no las pide
-       hasta tener el árbol de estilos: el texto se pinta con la del sistema y
-       salta al llegar la propia. */
+test("ninguna página precarga fuentes: Chrome retiene el pintado esperándolas", () => {
+    /* Se precargaban tres variantes para evitar el salto de fuente, pero una
+       fuente precargada bloquea el primer cuadro hasta que llega (o vence su
+       plazo): en PageSpeed la portada estuvo en blanco 2,7 s en escritorio.
+       Con el CSS dentro del HTML las @font-face se descubren igual de pronto
+       sin retener nada. Ver layouts/lib/head.astro. */
     for (const archivo of paginasReales()) {
         const html = leer(archivo);
-        const precargas = [...html.matchAll(/<link[^>]+rel="preload"[^>]+as="font"[^>]*>/gi)];
-        assert.ok(precargas.length >= 3, `${rutaDe(archivo)} precarga ${precargas.length} fuentes, esperaba 3`);
-        for (const [etiqueta] of precargas) {
-            assert.match(etiqueta, /crossorigin/i, `precarga de fuente sin crossorigin en ${rutaDe(archivo)}`);
-            assert.match(etiqueta, /\.subset\./, `precarga una fuente sin recortar en ${rutaDe(archivo)}`);
-        }
+        assert.doesNotMatch(html, /<link[^>]+rel="preload"[^>]+as="font"/i, `${rutaDe(archivo)}: precarga una fuente`);
     }
 });
 
@@ -361,6 +362,43 @@ test("la portada y el menú vienen visibles en el HTML", () => {
         assert.doesNotMatch(html, /id="app-content"[^>]*class="[^"]*\bopacity-0\b/, `${ruta}: #app-content oculto en el HTML`);
         assert.doesNotMatch(html, /class="[^"]*\bhidden\b[^"]*"[^>]*id="nav-container"/, `${ruta}: #nav-container oculto en el HTML`);
         assert.match(html, /<div[^>]+id="nav-container"/, `${ruta}: sin navbar`);
+    }
+});
+
+test("el CSS va dentro del HTML: ninguna hoja externa bloquea el pintado", () => {
+    /* `build.inlineStylesheets: "always"` en astro.config.ts. Una hoja
+       externa en el <head> detiene el primer pintado hasta que llega. */
+    for (const archivo of paginasReales()) {
+        const html = leer(archivo);
+        assert.doesNotMatch(html, /<link[^>]+rel="stylesheet"/i, `${rutaDe(archivo)}: hoja de estilo externa`);
+    }
+});
+
+test("los trozos JS que importan los scripts de cada página van precargados", async () => {
+    /* Ver src/integrations/modulepreload.ts: sin la precarga el navegador
+       descubre `main`, `gsap` o `ScrollTrigger` solo al leer el script que
+       los importa, y encadena dos o tres viajes antes de ejecutar nada. */
+    for (const archivo of paginasReales()) {
+        const html = leer(archivo);
+        const entradas = moduleEntries(html);
+        if (!entradas.length) continue;
+        const precargados = new Set(preloadedModules(html));
+        const faltan = (await transitiveImports(DIST, entradas)).filter((dep) => !precargados.has(dep));
+        assert.deepEqual(faltan, [], `${rutaDe(archivo)}: trozos importados sin modulepreload`);
+        /* Y cada precarga apunta a un archivo que existe: una ruta rota es
+           una petición 404 en cada visita. */
+        for (const dep of precargados) {
+            assert.ok(fs.existsSync(path.join(DIST, dep)), `${rutaDe(archivo)}: modulepreload roto: ${dep}`);
+        }
+    }
+});
+
+test("la leyenda de la portada no espera al JavaScript", () => {
+    /* En móvil es el LCP: si una regla bajo `html[data-js]` la esconde hasta
+       que el script la revela, PageSpeed mide el LCP al final de la cascada. */
+    for (const archivo of paginasReales().filter((a) => /\/(en\/)?index\.html$/.test(a))) {
+        const html = leer(archivo);
+        assert.doesNotMatch(html, /html\[data-js\][^{]*#foundation-text/, `${rutaDe(archivo)}: #foundation-text oculto hasta el JS`);
     }
 });
 

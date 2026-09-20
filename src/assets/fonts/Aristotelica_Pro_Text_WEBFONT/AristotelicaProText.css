@@ -106,3 +106,42 @@
     descent-override: 22%;
     line-gap-override: 0%;
 }
+
+
+/* ── Respaldo con las métricas de Aristotelica ──────────────────────────
+   Las fuentes ya no se precargan (ver layouts/lib/head.astro): el texto se
+   pinta primero con una fuente del sistema y cambia al llegar la propia. Para
+   que ese cambio no mueva el texto —cada línea que cambia de largo es un
+   salto de diseño (CLS) que PageSpeed penaliza— se declara aquí una cara de
+   respaldo por cada fuente local habitual, escalada (`size-adjust`) para que
+   el ancho medio de un texto en español coincida con el de Aristotelica y con
+   la misma caja de línea (88 % / 22 %, dividida por la escala). Anchos medios
+   medidos con fontTools sobre la leyenda de la portada: Aristotelica Text
+   Regular 0,452 em; Arial 0,4568; Roboto 0,4572.
+
+   Arial cubre Windows, macOS e iOS; Roboto, Android. Si no existe ninguna,
+   la pila sigue hasta `system-ui`. Una sola cara para todos los pesos: la
+   negrita sintética de Arial mide casi lo mismo que la Regular, y Aristotelica
+   Text Bold apenas es más ancha (0,454 em). */
+
+@font-face {
+    font-family: "Aristotelica Pro Text Fallback";
+    src: local("Arial"), local("ArialMT");
+    font-weight: 100 900;
+    font-style: normal;
+    size-adjust: 98.95%;
+    ascent-override: 88.93%;
+    descent-override: 22.23%;
+    line-gap-override: 0%;
+}
+
+@font-face {
+    font-family: "Aristotelica Pro Text Fallback Android";
+    src: local("Roboto"), local("Roboto-Regular");
+    font-weight: 100 900;
+    font-style: normal;
+    size-adjust: 98.86%;
+    ascent-override: 89.01%;
+    descent-override: 22.25%;
+    line-gap-override: 0%;
+}
