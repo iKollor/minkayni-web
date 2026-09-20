@@ -257,8 +257,12 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
   const itemClass =
     'sm-panel-item relative inline-block cursor-pointer font-display text-[clamp(2rem,6.5vw,3.6rem)] font-[800] leading-[1.15] tracking-[-0.02em] text-[var(--bg-white)] no-underline transition-colors duration-150 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current';
 
+  /* Cerrado, el panel sigue en el DOM con sus enlaces: `inert` los saca del
+     orden de tabulación y del árbol de accesibilidad (un `aria-hidden` con
+     descendientes enfocables es un fallo de accesibilidad en Lighthouse y una
+     trampa de foco real para quien navega con teclado). */
   return (
-    <div className={`sm-scope pointer-events-none fixed inset-0 z-[45] overflow-hidden ${positioned ? '' : 'invisible'}`} data-open={open || undefined} aria-hidden={!open}>
+    <div className={`sm-scope pointer-events-none fixed inset-0 z-[45] overflow-hidden ${positioned ? '' : 'invisible'}`} data-open={open || undefined} aria-hidden={!open} inert={!open || undefined}>
       <div ref={preLayersRef} className="sm-prelayers pointer-events-none absolute inset-0 z-[5]" aria-hidden="true">
         {['var(--secondary)', 'var(--accent)'].map((c, i) => (
           <div key={i} className="sm-prelayer absolute inset-0" style={{ background: c }} />
