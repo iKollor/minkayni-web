@@ -1,7 +1,22 @@
-/* Counter — reactbits.dev/components/counter (variante TS + Tailwind), con
-   una sola adaptación: además del punto decimal, `places` admite cualquier
-   cadena como separador literal. El sitio muestra «1.200» en español y
-   «1,200» en inglés, y el original solo sabía pintar «1200». */
+/* Counter — reactbits.dev/components/counter (variante TS + Tailwind),
+   adaptado al sitio en tres cosas:
+
+   - `places` admite cualquier cadena como separador literal: «1.200» en
+     español, «1,200» en inglés. El original solo sabía pintar «1200».
+
+   - Cada columna mide lo que mide su dígito final en la tipografía real, no
+     `1ch` fijo. El original mete todos los dígitos en cajas iguales al ancho
+     del «0»; en Aristotelica el «1» mide la mitad que el «0», así que «12»
+     salía un 70 % más ancho que escrito a mano y con huecos entre cifras que
+     la fuente no tiene. Un dígito en flujo (invisible) da a la columna su
+     ancho, su altura y su línea base; los diez dígitos que ruedan van en
+     absoluto encima, centrados en ese ancho.
+
+   - La altura de la columna es el interlineado del texto que la rodea
+     (`lineHeight`), no el cuerpo de la fuente: el original fija `height =
+     fontSize` y centra el glifo con flex, y así la cifra engordaba la línea
+     (66 px en una línea de 60) y se salía de la línea base. Con el mismo
+     interlineado, la caja es idéntica a la de un carácter normal. */
 import { MotionValue, motion, useSpring, useTransform, type SpringOptions } from 'motion/react';
 import type React from 'react';
 import { useEffect } from 'react';
@@ -25,12 +40,16 @@ function Number({ mv, number, height }: NumberProps) {
     return memo;
   });
 
+  /* Sin flex ni centrado vertical: con el mismo interlineado que el dígito
+     en flujo, el glifo cae exactamente donde caería en el texto. */
   const baseStyle: React.CSSProperties = {
     position: 'absolute',
-    inset: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
+    top: 0,
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+    whiteSpace: 'nowrap',
+    lineHeight: `${height}px`
   };
 
   return <motion.span style={{ ...baseStyle, y }}>{number}</motion.span>;
@@ -59,10 +78,7 @@ function Digit({ place, value, height, digitStyle, spring }: DigitProps) {
   // Separador literal: el punto decimal del original o el de miles del sitio.
   if (typeof place === 'string') {
     return (
-      <span
-        className="relative inline-flex items-center justify-center"
-        style={{ height, width: 'fit-content', ...digitStyle }}
-      >
+      <span className="relative inline-block" style={{ lineHeight: `${height}px`, ...digitStyle }}>
         {place}
       </span>
     );
@@ -75,22 +91,23 @@ function Digit({ place, value, height, digitStyle, spring }: DigitProps) {
     animatedValue.set(valueRoundedToPlace);
   }, [animatedValue, valueRoundedToPlace]);
 
+  /* El dígito en el que acabará esta columna: es el que fija su ancho. */
+  const finalDigit = ((valueRoundedToPlace % 10) + 10) % 10;
+
+  /* inline-flex y no inline-block: un inline-block con overflow oculto pierde
+     su línea base (pasa a ser el borde inferior); un contenedor flex la toma
+     de su primer hijo en flujo, el dígito invisible. */
   const defaultStyle: React.CSSProperties = {
-    height,
     position: 'relative',
-    width: '1ch',
-    alignItems: 'center',
-    fontVariantNumeric: 'tabular-nums'
+    display: 'inline-flex',
+    overflow: 'hidden',
+    lineHeight: `${height}px`
   };
 
-  /* Adaptación: los dígitos van en absoluto, así que la caja no tendría línea
-     base propia y, dentro de un párrafo, quedaría desalineada del texto. Un
-     «0» invisible en flujo, en la misma caja y con el mismo centrado, le da
-     la línea base exacta del glifo que se ve. */
   return (
-    <span className="relative inline-flex clip-reveal" style={{ ...defaultStyle, ...digitStyle }}>
+    <span style={{ ...defaultStyle, ...digitStyle }}>
       <span aria-hidden="true" style={{ visibility: 'hidden' }}>
-        0
+        {finalDigit}
       </span>
       {Array.from({ length: 10 }, (_, i) => (
         <Number key={i} mv={animatedValue} number={i} height={height} />
@@ -102,6 +119,9 @@ function Digit({ place, value, height, digitStyle, spring }: DigitProps) {
 export interface CounterProps {
   value: number;
   fontSize?: number;
+  /** Interlineado en px del texto que rodea al contador: la altura de cada
+      columna. Sin él se usa el cuerpo (`fontSize + padding`), como el original. */
+  lineHeight?: number;
   padding?: number;
   /**
    * Posiciones a pintar. Un número es una potencia de diez (100, 10, 1); una
@@ -128,6 +148,7 @@ export interface CounterProps {
 export default function Counter({
   value,
   fontSize = 100,
+  lineHeight,
   padding = 0,
   places = [...value.toString()].map((ch, i, a) => {
     if (ch === '.') {
@@ -156,7 +177,7 @@ export default function Counter({
   topGradientStyle,
   bottomGradientStyle
 }: CounterProps) {
-  const height = fontSize + padding;
+  const height = lineHeight ?? fontSize + padding;
 
   const defaultContainerStyle: React.CSSProperties = {
     position: 'relative',
@@ -166,14 +187,12 @@ export default function Counter({
   const defaultCounterStyle: React.CSSProperties = {
     fontSize,
     display: 'flex',
+    alignItems: 'baseline',
     gap,
-    /* Recorte solo vertical, como .clip-reveal de global.css: con overflow
-       oculto, la tinta que sobresale del avance del último dígito se perdía. */
-    clipPath: 'inset(0 -100vw)',
+    overflow: 'hidden',
     borderRadius,
     paddingLeft: horizontalPadding,
     paddingRight: horizontalPadding,
-    lineHeight: 1,
     color: textColor,
     fontWeight,
     direction: 'ltr'

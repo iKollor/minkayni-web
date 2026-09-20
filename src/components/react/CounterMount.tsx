@@ -27,7 +27,7 @@ const placesFor = (target: number, separator: string): Array<number | string> =>
   return places;
 };
 
-function CountUp({ target, prefix, suffix, fontSize, separator }: { target: number; prefix: string; suffix: string; fontSize: number; separator: string }) {
+function CountUp({ target, prefix, suffix, fontSize, lineHeight, separator }: { target: number; prefix: string; suffix: string; fontSize: number; lineHeight: number; separator: string }) {
   /* Arranca en cero con TODAS las columnas ya presentes (las `places` salen
      del objetivo, no del valor), así la anchura no cambia mientras rueda. */
   const [value, setValue] = useState(0);
@@ -43,6 +43,9 @@ function CountUp({ target, prefix, suffix, fontSize, separator }: { target: numb
         value={value}
         places={placesFor(target, separator)}
         fontSize={fontSize}
+        /* La altura de cada columna es el interlineado del texto que rodea al
+           contador: así la cifra ocupa exactamente la caja de un carácter. */
+        lineHeight={lineHeight}
         gap={0}
         borderRadius={0}
         horizontalPadding={0}
@@ -50,7 +53,6 @@ function CountUp({ target, prefix, suffix, fontSize, separator }: { target: numb
         /* El contenedor alinea por línea base: la del primer dígito (Counter.tsx
            le da una real) coincide así con la del texto que lo rodea. */
         containerStyle={{ display: 'inline-flex', alignItems: 'baseline' }}
-        counterStyle={{ lineHeight: 1, alignItems: 'center' }}
         /* El resorte por defecto llega a la cifra en ~250 ms: un parpadeo, no un
            conteo. Con duración explícita se ve rodar cada columna. */
         spring={{ duration: 1600, bounce: 0 }}
@@ -75,7 +77,10 @@ export default function CounterMount() {
       const target = Number(el.dataset.count ?? '');
       if (!Number.isFinite(target) || target <= 0) return;
 
-      const fontSize = parseFloat(getComputedStyle(el).fontSize) || 48;
+      const style = getComputedStyle(el);
+      const fontSize = parseFloat(style.fontSize) || 48;
+      /* `normal` no da un número: se aproxima a la proporción típica. */
+      const lineHeight = parseFloat(style.lineHeight) || fontSize * 1.2;
       const root = createRoot(el);
       ROOTS.set(el, root);
       root.render(
@@ -84,6 +89,7 @@ export default function CounterMount() {
           prefix={el.dataset.countPrefix ?? ''}
           suffix={el.dataset.countSuffix ?? ''}
           fontSize={fontSize}
+          lineHeight={lineHeight}
           separator={separator}
         />
       );

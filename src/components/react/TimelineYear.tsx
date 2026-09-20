@@ -20,13 +20,19 @@ const PLACES = [1000, 100, 10, 1];
 export default function TimelineYear({ initial, fontSize: serverFontSize }: Props) {
   const [year, setYear] = useState(initial);
   const [fontSize, setFontSize] = useState(serverFontSize);
+  /* Interlineado real del contenedor; en el servidor, el mismo que el cuerpo
+     (el título va con leading-none). */
+  const [lineHeight, setLineHeight] = useState(serverFontSize);
 
   useEffect(() => {
     const host = document.querySelector<HTMLElement>('[data-tl-year]');
     const measure = () => {
       if (!host) return;
-      const size = parseFloat(getComputedStyle(host).fontSize);
+      const style = getComputedStyle(host);
+      const size = parseFloat(style.fontSize);
       if (Number.isFinite(size) && size > 0) setFontSize(size);
+      const lh = parseFloat(style.lineHeight);
+      setLineHeight(Number.isFinite(lh) && lh > 0 ? lh : size);
     };
     const pending = Number(host?.dataset.year);
     if (Number.isFinite(pending) && pending > 0) setYear(pending);
@@ -49,11 +55,11 @@ export default function TimelineYear({ initial, fontSize: serverFontSize }: Prop
       value={year}
       places={PLACES}
       fontSize={fontSize}
+      lineHeight={lineHeight}
       gap={0}
       borderRadius={0}
       horizontalPadding={0}
       gradientHeight={0}
-      counterStyle={{ lineHeight: 1 }}
       spring={{ duration: 900, bounce: 0 }}
     />
   );
