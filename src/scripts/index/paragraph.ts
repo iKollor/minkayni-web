@@ -14,7 +14,11 @@ export const animateParagraph = (prefersReduced: boolean): void => {
            en él, o partiría sus dígitos en palabras. Pero sí entra en la
            cascada, en su posición dentro del texto, y al llegarle el turno se
            avisa a CounterMount para que arranque a contar justo entonces. */
-        const split = new SplitText(p, { type: "words", ignore: "[data-count]" });
+        /* `aria: "none"`: por defecto SplitText pone `aria-hidden` en cada
+           palabra y un `aria-label` en el párrafo, y los enlaces de la leyenda
+           («Fundación Minkayni», «Batucada Popular») se quedaban sin texto
+           accesible (PageSpeed: «Links do not have a discernible name»). */
+        const split = new SplitText(p, { type: "words", ignore: "[data-count]", aria: "none" });
         const words: HTMLElement[] = split.words as HTMLElement[];
         const counters = Array.from(p.querySelectorAll<HTMLElement>("[data-count]"));
         const sequence = [...words, ...counters].sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));

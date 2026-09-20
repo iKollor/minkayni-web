@@ -1,4 +1,9 @@
 const RASTER_IMAGE = /\.(?:jpe?g|png|webp|avif|gif)$/i;
+/* Formatos que conviene pedir convertidos a WebP (`?f=webp`, ver el proxy
+   de medios del CMS). Las fotos se suben como JPEG o PNG —las del equipo son
+   PNG de 400-500 KB— y PageSpeed las marca en cada análisis. WebP y AVIF ya
+   son modernos; un GIF perdería la animación. */
+const CONVERT_TO_WEBP = /\.(?:jpe?g|png)$/i;
 const LEGACY_MEDIA_HOSTS = new Set(["img.minkayni.org"]);
 
 /* Origen público de los medios. Los ficheros del CMS se sirven desde el
@@ -113,7 +118,8 @@ export function strapiMediaUrl(src: string | null | undefined, strapiBase: strin
     // La clave canónica del CMS es `uploads/<archivo>`; en público va sin el prefijo.
     const url = `${mediaOrigin()}/media/${key.replace(/^uploads\//, "")}`;
     const safeWidth = Math.min(Math.max(Math.trunc(width), 16), 3840);
-    return width > 0 && RASTER_IMAGE.test(key) ? `${url}?w=${safeWidth}` : url;
+    if (!(width > 0 && RASTER_IMAGE.test(key))) return url;
+    return CONVERT_TO_WEBP.test(key) ? `${url}?w=${safeWidth}&f=webp` : `${url}?w=${safeWidth}`;
 }
 
 export function strapiMediaSrcSet(src: string | null | undefined, strapiBase: string, widths: readonly number[]): string {

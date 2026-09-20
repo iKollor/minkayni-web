@@ -280,11 +280,13 @@ Convenciones que salen de ahí:
 - **Fuentes propias.** Todas viven en `src/assets/fonts/`, recortadas
   (`.subset.woff2`). Nada de `fonts.googleapis.com`: cada hoja externa era
   una petición bloqueante antes del primer pintado.
-- **Intro de la portada.** Solo se reproduce en visitas nuevas (dos horas de
-  inactividad, ver `src/scripts/visita.ts`), y nunca con
+- **Intro de la portada.** Apagada por defecto: PageSpeed analiza siempre
+  como visita nueva y con la intro delante no llegaba a medir el LCP en
+  escritorio (rendimiento 0) y daba 7,8 s en móvil. `PUBLIC_HOME_INTRO=on` en
+  el entorno de build la enciende; aun así solo se reproduce en visitas
+  nuevas (dos horas de inactividad, ver `src/scripts/visita.ts`) y nunca con
   `prefers-reduced-motion`, ahorro de datos, red 2G/3G, equipo lento o una
-  URL con ancla. `PUBLIC_HOME_INTRO=off` en el entorno de build la apaga del
-  todo: es la palanca si la revisión vuelve a reprochar la carga de la portada.
+  URL con ancla.
 - **Llamadas a la acción.** La página de aportes (`/donate`) y el contacto
   (`/about#contacto`) se enlazan desde el pie, el panel del menú y la sección
   «Cómo puedes ayudar» de la portada, además de los CTA propios de cada

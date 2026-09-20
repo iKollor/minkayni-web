@@ -63,8 +63,8 @@ const featuredProject = homepage ? getData(homepage, "featuredProject", undefine
 /* Contacto (correo y WhatsApp) del single type `global`, para la sección de
    cierre «Cómo puedes ayudar». */
 const site = await loadPageContent("globalSettings", globalFallback, locale);
-/* Misma regla que MainLayout: la intro se apaga con PUBLIC_HOME_INTRO=off. */
-const intro = import.meta.env.PUBLIC_HOME_INTRO !== "off";
+/* Misma regla que MainLayout: la intro solo se reproduce con PUBLIC_HOME_INTRO=on. */
+const intro = import.meta.env.PUBLIC_HOME_INTRO === "on";
 const projectsCta = homepage
     ? {
           heading: getData(homepage, "projectsCtaHeading", undefined, null),
@@ -189,7 +189,7 @@ const projectsCta = homepage
 
     <!-- Contenido principal. Visible en el HTML: solo lo tapa la intro
          mientras se reproduce (ver el <style> de arriba). -->
-    <div id="app-content" class="transition-opacity duration-500">
+    <main id="app-content" class="transition-opacity duration-500">
         <header>
             <div class="header__container w-full relative">
                 <!-- El título visual de la portada es el logotipo (una imagen), así
@@ -208,7 +208,9 @@ const projectsCta = homepage
                         }}
                     >
                         <div class="z-10 relative flex justify-center items-center h-full">
-                            <Image class="logo pointer-events-none w-[var(--logo-w)] mb-2 mr-[2px]" src={Logo} alt="Logo" />
+                            {/* Es el elemento más grande del primer pantallazo (LCP): se pide
+                                con prioridad alta y sin `lazy`, que Astro pone por defecto. */}
+                            <Image class="logo pointer-events-none w-[var(--logo-w)] mb-2 mr-[2px]" src={Logo} alt={t("alt.logo")} loading="eager" fetchpriority="high" />
                         </div>
                     </BubbleBackground>
                 </div>
@@ -260,7 +262,7 @@ const projectsCta = homepage
                 ) : (
                     <div class="mx-auto grid w-[90%] max-w-[1200px] items-center gap-8 py-24 sm:py-32 lg:grid-cols-[1fr_auto]">
                         <div>
-                            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">{t("home.teamEyebrow")}</p>
+                            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{t("home.teamEyebrow")}</p>
                             <h2 data-scroll-float class="max-w-[14ch] font-display text-5xl font-black leading-[0.92] text-primary sm:text-7xl">{t("home.teamSubtitle")}</h2>
                             <p class="mt-6 max-w-[54ch] text-lg leading-[1.55] text-black/65">{t("home.teamBody")}</p>
                         </div>
@@ -274,7 +276,7 @@ const projectsCta = homepage
             <ProjectsCta content={projectsCta} last={false} />
         </section>
         <HelpCta contactEmail={site.contactEmail} whatsappUrl={site.whatsappUrl} />
-    </div>
+    </main>
     <script>
         import { init } from "../scripts/index/init.ts";
 

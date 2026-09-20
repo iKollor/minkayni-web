@@ -41,10 +41,12 @@ const pageNavItems = site.pageNav
 
 const { title, description, image, imageAlt } = Astro.props;
 
-/* La intro de la portada se puede apagar desde el entorno de build sin tocar
-   código (ver .env.example). Con ella apagada la portada arranca directamente
-   con el contenido, como cualquier página interior. */
-const intro = import.meta.env.PUBLIC_HOME_INTRO !== "off";
+/* La intro de la portada está APAGADA salvo que el entorno de build diga
+   PUBLIC_HOME_INTRO=on (ver .env.example). PageSpeed analiza siempre como
+   visita nueva y, con la intro delante, en escritorio no llegaba a medir el
+   LCP (rendimiento 0) y en móvil daba 7,8 s. Apagada, la portada arranca
+   con el contenido a la vista, como cualquier página interior. */
+const intro = import.meta.env.PUBLIC_HOME_INTRO === "on";
 ---
 
 <Head title={title} description={description} image={image} imageAlt={imageAlt} intro={intro}>
