@@ -8,9 +8,10 @@
    atrapado mientras está abierto, que se devuelve a la polaroid al cerrar.
 
    Tamaños: la tira pide miniaturas de 160 px y la foto grande, la candidata
-   que encaje en la pantalla (hasta 1600 px). La de 2560 px solo se pide al
-   ampliar, para no gastarla en el teléfono de quien nunca amplía. Todas salen
-   de Imagor por el proxy /media (ver sector-photos.ts).
+   que encaje en la pantalla (hasta 1600 px). El archivo original, a su
+   resolución completa, solo se pide al ampliar: así no lo paga quien nunca
+   amplía. Todos los tamaños salen de Imagor por el proxy /media (ver
+   sector-photos.ts).
 
    El DOM se construye una sola vez, la primera vez que alguien abre el visor,
    y se reutiliza: quien nunca toca una foto no paga nada.
@@ -21,7 +22,7 @@
    las animaciones viven en el <style is:global> de la página, junto a las del
    resto del mapa. */
 import { ScrollSmoother } from "../main";
-import { ZOOM_SOURCE_WIDTH, type ViewerPhoto } from "../../utils/sector-photos";
+import type { ViewerPhoto } from "../../utils/sector-photos";
 import { clampOffset, distance, maxZoom, midpoint, offsetAfterZoom, type Point } from "./zoom";
 
 export type ViewerStrings = {
@@ -128,9 +129,10 @@ const paintZoom = (): void => {
 const measureZoom = (): void => {
     const photo = photos[current];
     const width = mediaBox().width;
-    /* La fuente que se PUEDE llegar a pedir, no la que se ve ahora: el salto
-       a la de 2560 px ocurre justo al ampliar. */
-    const source = Math.min(Math.max(image.naturalWidth, photo?.width ?? 0), ZOOM_SOURCE_WIDTH);
+    /* La resolución que se PUEDE llegar a enseñar, no la que se ve ahora: al
+       ampliar se pide el archivo original, y `photo.width` es su ancho real
+       según el CMS. Así el tope ya es el bueno antes de que llegue. */
+    const source = Math.max(image.naturalWidth, photo?.width ?? 0);
     limit = maxZoom(source, width);
     if (scale > limit) setZoom(limit);
 };

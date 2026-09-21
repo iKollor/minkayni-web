@@ -28,16 +28,16 @@ export type ViewerPhoto = {
     height?: number;
 };
 
-type CmsPhoto =
-    | {
-          url?: string | null;
-          alternativeText?: string | null;
-          caption?: string | null;
-          width?: number | null;
-          height?: number | null;
-      }
-    | null
-    | undefined;
+type CmsFile = {
+    url?: string | null;
+    alternativeText?: string | null;
+    caption?: string | null;
+    width?: number | null;
+    height?: number | null;
+};
+
+/** Una entrada del campo `photos` del sector: la imagen y su leyenda. */
+type CmsSectorPhoto = { image?: CmsFile | null; caption?: string | null } | null | undefined;
 
 /* Cuatro tamaños, uno por sitio donde se ve la foto. Los sirve Imagor a
    través del proxy /media (`?w=…&f=webp`), así que pedir un tamaño de más no
@@ -47,10 +47,6 @@ const STRIP_WIDTH = 160;
 const THUMB_WIDTH = 480;
 const FULL_WIDTH = 1600;
 const VIEWER_WIDTHS = [640, 960, 1280, 1600];
-/* Al ampliar. No es el archivo original a propósito: una foto recién sacada
-   del teléfono son varios megas de JPEG, y 2560 px en WebP ya es más de lo
-   que cualquier pantalla puede enseñar a 1:1. */
-export const ZOOM_SOURCE_WIDTH = 2560;
 
 /** Tope por sector: el visor es una galería corta, no un archivo fotográfico. */
 export const MAX_SECTOR_PHOTOS = 8;
@@ -76,11 +72,12 @@ export const genericSectorPhotos = (alt: string): ViewerPhoto[] =>
  * @param alt        Texto alternativo de respaldo, ya traducido, para las
  *                   fotos que el CMS no describa.
  */
-export function sectorPhotos(photos: readonly CmsPhoto[] | null | undefined, strapiBase: string, alt: string): ViewerPhoto[] {
+export function sectorPhotos(photos: readonly CmsSectorPhoto[] | null | undefined, strapiBase: string, alt: string): ViewerPhoto[] {
     const resolved: ViewerPhoto[] = [];
 
-    for (const photo of photos ?? []) {
+    for (const entry of photos ?? []) {
         if (resolved.length >= MAX_SECTOR_PHOTOS) break;
+        const photo = entry?.image;
         const url = photo?.url ?? "";
         if (!url) continue;
 
@@ -94,13 +91,19 @@ export function sectorPhotos(photos: readonly CmsPhoto[] | null | undefined, str
             strip: strapiMediaUrl(url, strapiBase, STRIP_WIDTH),
             thumb,
             full,
-            zoom: strapiMediaUrl(url, strapiBase, ZOOM_SOURCE_WIDTH),
+            /* Sin ancho: el proxy sirve el archivo tal y como se subió. Solo
+               se pide al ampliar (ver viewer.ts), así que la foto original
+               —varios megas si viene de un teléfono— no la paga quien pasa
+               de largo. */
+            zoom: strapiMediaUrl(url, strapiBase),
             srcset: strapiMediaSrcSet(url, strapiBase, VIEWER_WIDTHS),
             alt: photo?.alternativeText?.trim() || alt,
-            /* Leyenda y texto alternativo no son lo mismo: el alternativo
+            /* La leyenda se escribe junto a la foto, en el sector; si ahí se
+               deja vacía, vale la del archivo en la biblioteca de medios.
+               Leyenda y texto alternativo no son lo mismo: el alternativo
                describe la foto a quien no la ve, la leyenda la cuenta a todo
                el mundo. Por eso no se copia el uno en el otro. */
-            caption: photo?.caption?.trim() || undefined,
+            caption: entry?.caption?.trim() || photo?.caption?.trim() || undefined,
             width: photo?.width ?? undefined,
             height: photo?.height ?? undefined,
         });

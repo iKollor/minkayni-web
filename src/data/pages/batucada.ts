@@ -80,7 +80,7 @@ export const batucadaFallback = {
         { name: "Guasmo Sur", lat: -2.2673, lng: -79.8927 },
         { name: "Nueva Prosperina", lat: -2.1201, lng: -79.9806 },
         { name: "Paraíso de la Flor", lat: -2.1016, lng: -79.9556 },
-    ] as { name: string; lat: number; lng: number; photos?: CmsMedia[] }[],
+    ] as { name: string; lat: number; lng: number; photos?: { image?: CmsMedia; caption?: string | null }[] }[],
     territoryHint:
         "Haz clic en un sector para acercarte a su barrio. Los puntos señalan sectores, no direcciones; la presencia varía según los periodos y las condiciones de cada barrio.",
     actionHeading: {
