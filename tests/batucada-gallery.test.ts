@@ -117,7 +117,7 @@ test("la tarjeta de hover no se sale del marco por los lados", () => {
 /* ───────────────────────────── fotos del sector ───────────────────────── */
 
 test("las fotos del sector salen por el proxy de medios, en dos tamaños", () => {
-    const [photo] = sectorPhotos([{ image: { url: "/uploads/guasmo.jpg", alternativeText: "Ensayo en el Guasmo", width: 2000, height: 1200 } }], STRAPI, "Foto del sector");
+    const [photo] = sectorPhotos([{ url: "/uploads/guasmo.jpg", alternativeText: "Ensayo en el Guasmo", width: 2000, height: 1200 }], STRAPI, "Foto del sector");
 
     assert.equal(photo.thumb, `${WEB}/media/guasmo.jpg?w=480&f=webp`);
     assert.equal(photo.full, `${WEB}/media/guasmo.jpg?w=1600&f=webp`);
@@ -130,7 +130,7 @@ test("cada sitio donde se ve la foto pide su tamaño, no el mayor", () => {
     /* Una miniatura de la tira se pinta a 80 px: pedirle los 1600 de la foto
        grande son cientos de kilobytes por miniatura en el teléfono de quien
        mira. Los recorta Imagor por el proxy /media. */
-    const [photo] = sectorPhotos([{ image: { url: "/uploads/guasmo.jpg" } }], STRAPI, "Foto del sector");
+    const [photo] = sectorPhotos([{ url: "/uploads/guasmo.jpg" }], STRAPI, "Foto del sector");
     assert.equal(photo.strip, `${WEB}/media/guasmo.jpg?w=160&f=webp`);
     assert.equal(photo.thumb, `${WEB}/media/guasmo.jpg?w=480&f=webp`);
     assert.equal(photo.full, `${WEB}/media/guasmo.jpg?w=1600&f=webp`);
@@ -144,7 +144,7 @@ test("un sector sin fotos propias usa las genéricas del proyecto", () => {
     assert.deepEqual(sectorPhotos([], STRAPI, alt), genericSectorPhotos(alt));
     assert.deepEqual(sectorPhotos(null, STRAPI, alt), genericSectorPhotos(alt));
     /* Y también si lo que llega del CMS no se puede publicar. */
-    assert.deepEqual(sectorPhotos([{ image: { url: "" } }, { caption: "sin imagen" }, null], STRAPI, alt), genericSectorPhotos(alt));
+    assert.deepEqual(sectorPhotos([{ url: "" }, { caption: "sin archivo" }, null], STRAPI, alt), genericSectorPhotos(alt));
     assert.equal(genericSectorPhotos(alt)[0].alt, alt);
 });
 
@@ -152,7 +152,7 @@ test("una foto que el proxy no reconoce no se publica", () => {
     /* Rutas con `..` o de otro dominio: `strapiMediaUrl` devuelve vacío y esa
        foto se descarta en vez de emitir un <img> roto. */
     const photos = sectorPhotos(
-        [{ image: { url: "/uploads/../../etc/passwd" } }, { image: { url: "/uploads/buena.jpg" } }],
+        [{ url: "/uploads/../../etc/passwd" }, { url: "/uploads/buena.jpg" }],
         STRAPI,
         "Foto del sector",
     );
@@ -162,7 +162,7 @@ test("una foto que el proxy no reconoce no se publica", () => {
 
 test("el texto alternativo del CMS manda, y si falta lo pone la página", () => {
     const photos = sectorPhotos(
-        [{ image: { url: "/uploads/a.jpg" } }, { image: { url: "/uploads/b.jpg", alternativeText: "  " } }, { image: { url: "/uploads/c.jpg", alternativeText: "Marcha" } }],
+        [{ url: "/uploads/a.jpg" }, { url: "/uploads/b.jpg", alternativeText: "  " }, { url: "/uploads/c.jpg", alternativeText: "Marcha" }],
         STRAPI,
         "Foto del sector Nigeria",
     );
@@ -172,16 +172,16 @@ test("el texto alternativo del CMS manda, y si falta lo pone la página", () => 
     );
 });
 
-test("la leyenda se escribe junto a la foto, en el sector", () => {
-    /* El componente Foto de sector tiene su propio campo de leyenda: se
-       escribe en la página, al lado de la imagen, sin pasar por la
-       biblioteca de medios. Solo se pinta si existe: el pie del visor no
-       puede crecer con una línea vacía. */
+test("la leyenda de cada foto es la del archivo, y no se inventa", () => {
+    /* La escribe quien sube la foto, en el campo Caption de la biblioteca de
+       medios: se escribe una vez y vale allá donde se use esa foto. Solo se
+       pinta si existe: el pie del visor no puede crecer con una línea
+       vacía. */
     const photos = sectorPhotos(
         [
-            { image: { url: "/uploads/a.jpg" }, caption: "Ensayo abierto en la cancha, agosto de 2026" },
-            { image: { url: "/uploads/b.jpg" }, caption: "   " },
-            { image: { url: "/uploads/c.jpg" } },
+            { url: "/uploads/a.jpg", caption: "Ensayo abierto en la cancha, agosto de 2026" },
+            { url: "/uploads/b.jpg", caption: "   " },
+            { url: "/uploads/c.jpg" },
         ],
         STRAPI,
         "Foto del sector",
@@ -192,34 +192,17 @@ test("la leyenda se escribe junto a la foto, en el sector", () => {
     );
 });
 
-test("si el sector no pone leyenda, vale la del archivo en la biblioteca", () => {
-    /* Una foto que ya se usa en otro sitio trae su leyenda puesta; escribirla
-       otra vez en cada sector sería trabajo repetido. La del sector manda. */
-    const photos = sectorPhotos(
-        [
-            { image: { url: "/uploads/a.jpg", caption: "La del archivo" } },
-            { image: { url: "/uploads/b.jpg", caption: "La del archivo" }, caption: "La del sector" },
-        ],
-        STRAPI,
-        "Foto del sector",
-    );
-    assert.deepEqual(
-        photos.map((photo) => photo.caption),
-        ["La del archivo", "La del sector"],
-    );
-});
-
 test("la leyenda y el texto alternativo son cosas distintas", () => {
     /* El alternativo describe la foto a quien no la ve; la leyenda la cuenta
        a todo el mundo. Copiar uno en otro deja a los lectores de pantalla
        oyendo la leyenda como si fuese la descripción. */
-    const [photo] = sectorPhotos([{ image: { url: "/uploads/a.jpg" }, caption: "Marcha del 12 de febrero" }], STRAPI, "Foto del sector Nigeria");
+    const [photo] = sectorPhotos([{ url: "/uploads/a.jpg", caption: "Marcha del 12 de febrero" }], STRAPI, "Foto del sector Nigeria");
     assert.equal(photo.alt, "Foto del sector Nigeria");
     assert.equal(photo.caption, "Marcha del 12 de febrero");
 });
 
 test("el visor de un sector no se llena sin fin", () => {
-    const many = Array.from({ length: 20 }, (_, index) => ({ image: { url: `/uploads/foto-${index}.jpg` } }));
+    const many = Array.from({ length: 20 }, (_, index) => ({ url: `/uploads/foto-${index}.jpg` }));
     assert.equal(sectorPhotos(many, STRAPI, "Foto del sector").length, MAX_SECTOR_PHOTOS);
 });
 

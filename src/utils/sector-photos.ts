@@ -28,16 +28,16 @@ export type ViewerPhoto = {
     height?: number;
 };
 
-type CmsFile = {
-    url?: string | null;
-    alternativeText?: string | null;
-    caption?: string | null;
-    width?: number | null;
-    height?: number | null;
-};
-
-/** Una entrada del campo `photos` del sector: la imagen y su leyenda. */
-type CmsSectorPhoto = { image?: CmsFile | null; caption?: string | null } | null | undefined;
+type CmsPhoto =
+    | {
+          url?: string | null;
+          alternativeText?: string | null;
+          caption?: string | null;
+          width?: number | null;
+          height?: number | null;
+      }
+    | null
+    | undefined;
 
 /* Cuatro tamaños, uno por sitio donde se ve la foto. Los sirve Imagor a
    través del proxy /media (`?w=…&f=webp`), así que pedir un tamaño de más no
@@ -72,12 +72,11 @@ export const genericSectorPhotos = (alt: string): ViewerPhoto[] =>
  * @param alt        Texto alternativo de respaldo, ya traducido, para las
  *                   fotos que el CMS no describa.
  */
-export function sectorPhotos(photos: readonly CmsSectorPhoto[] | null | undefined, strapiBase: string, alt: string): ViewerPhoto[] {
+export function sectorPhotos(photos: readonly CmsPhoto[] | null | undefined, strapiBase: string, alt: string): ViewerPhoto[] {
     const resolved: ViewerPhoto[] = [];
 
-    for (const entry of photos ?? []) {
+    for (const photo of photos ?? []) {
         if (resolved.length >= MAX_SECTOR_PHOTOS) break;
-        const photo = entry?.image;
         const url = photo?.url ?? "";
         if (!url) continue;
 
@@ -98,12 +97,12 @@ export function sectorPhotos(photos: readonly CmsSectorPhoto[] | null | undefine
             zoom: strapiMediaUrl(url, strapiBase),
             srcset: strapiMediaSrcSet(url, strapiBase, VIEWER_WIDTHS),
             alt: photo?.alternativeText?.trim() || alt,
-            /* La leyenda se escribe junto a la foto, en el sector; si ahí se
-               deja vacía, vale la del archivo en la biblioteca de medios.
+            /* La leyenda es el campo Caption del archivo, en la biblioteca de
+               medios: se escribe una vez y vale allá donde se use esa foto.
                Leyenda y texto alternativo no son lo mismo: el alternativo
                describe la foto a quien no la ve, la leyenda la cuenta a todo
                el mundo. Por eso no se copia el uno en el otro. */
-            caption: entry?.caption?.trim() || photo?.caption?.trim() || undefined,
+            caption: photo?.caption?.trim() || undefined,
             width: photo?.width ?? undefined,
             height: photo?.height ?? undefined,
         });

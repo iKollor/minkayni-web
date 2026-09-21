@@ -11,6 +11,7 @@ import { z } from "zod";
 import { UploadFileSchema } from "./strapi.graphql.zod";
 
 const media = () => UploadFileSchema().nullish();
+const mediaList = () => z.array(UploadFileSchema().nullable()).nullish();
 
 export const SectionHeadingSchema = () =>
     z.object({
@@ -104,22 +105,15 @@ export const OrgCardSchema = () =>
     declarar los campos que sólo llegan desde el CMS (logo, instagramUrl). */
 export type OrgCard = z.infer<ReturnType<typeof OrgCardSchema>>;
 
-/** Una foto de un barrio, con la leyenda que se lee bajo ella en el visor. */
-export const SectorPhotoSchema = () =>
-    z.object({
-        id: z.string().nullish(),
-        image: media(),
-        caption: z.string().nullish(),
-    });
-
 export const SectorSchema = () =>
     z.object({
         id: z.string().nullish(),
         name: z.string().nullish(),
         lat: z.number().nullish(),
         lng: z.number().nullish(),
-        /** Fotos del barrio: salen al tocar su pin y se abren en el visor. */
-        photos: z.array(SectorPhotoSchema().nullable()).nullish(),
+        /** Fotos del barrio: salen al tocar su pin y se abren en el visor.
+            La leyenda de cada una es el campo Caption de su archivo. */
+        photos: mediaList(),
     });
 
 export const ListItemSchema = () =>
