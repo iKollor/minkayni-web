@@ -9,6 +9,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { galleryLayout, hoverCardPlacement, MAX_SPOTS, type GallerySpot } from "../src/scripts/batucada/gallery-layout";
 import { genericSectorPhotos, MAX_SECTOR_PHOTOS, sectorPhotos } from "../src/utils/sector-photos";
+import { clampOffset, distance, maxZoom, midpoint, offsetAfterZoom } from "../src/scripts/batucada/zoom";
 
 const STRAPI = "https://strapi.minkayni.org";
 const WEB = "https://www.minkayni.org";
@@ -125,6 +126,17 @@ test("las fotos del sector salen por el proxy de medios, en dos tamaños", () =>
     assert.equal(photo.width, 2000);
 });
 
+test("cada sitio donde se ve la foto pide su tamaño, no el mayor", () => {
+    /* Una miniatura de la tira se pinta a 80 px: pedirle los 1600 de la foto
+       grande son cientos de kilobytes por miniatura en el teléfono de quien
+       mira. Los recorta Imagor por el proxy /media. */
+    const [photo] = sectorPhotos([{ url: "/uploads/guasmo.jpg" }], STRAPI, "Foto del sector");
+    assert.equal(photo.strip, `${WEB}/media/guasmo.jpg?w=160&f=webp`);
+    assert.equal(photo.thumb, `${WEB}/media/guasmo.jpg?w=480&f=webp`);
+    assert.equal(photo.full, `${WEB}/media/guasmo.jpg?w=1600&f=webp`);
+    assert.equal(photo.zoom, `${WEB}/media/guasmo.jpg?w=2560&f=webp`);
+});
+
 test("un sector sin fotos propias usa las genéricas del proyecto", () => {
     const alt = "Foto del sector Nigeria";
     assert.deepEqual(sectorPhotos([], STRAPI, alt), genericSectorPhotos(alt));
@@ -184,4 +196,51 @@ test("la leyenda y el texto alternativo son cosas distintas", () => {
 test("el visor de un sector no se llena sin fin", () => {
     const many = Array.from({ length: 20 }, (_, index) => ({ url: `/uploads/foto-${index}.jpg` }));
     assert.equal(sectorPhotos(many, STRAPI, "Foto del sector").length, MAX_SECTOR_PHOTOS);
+});
+
+/* ──────────────────────────── zoom del visor ──────────────────────────── */
+
+test("ampliar deja quieto el punto que hay bajo el dedo", () => {
+    /* Es lo que distingue un zoom que se siente natural de uno que salta: el
+       detalle que estabas mirando no se mueve de debajo del dedo. */
+    const pointer = { x: 120, y: -40 };
+    const after = offsetAfterZoom(pointer, { x: 0, y: 0 }, 1, 2);
+    /* Con la foto centrada y sin desplazar, ampliar al doble hacia un punto
+       lo aleja justo esa misma distancia del centro. */
+    assert.deepEqual(after, { x: -120, y: 40 });
+
+    /* Y encadenar dos ampliaciones es lo mismo que hacer una sola: el punto
+       de la foto bajo el dedo sigue siendo el mismo. */
+    const paso = offsetAfterZoom(pointer, offsetAfterZoom(pointer, { x: 0, y: 0 }, 1, 1.5), 1.5, 3);
+    const directo = offsetAfterZoom(pointer, { x: 0, y: 0 }, 1, 3);
+    assert.ok(Math.abs(paso.x - directo.x) < 0.0001 && Math.abs(paso.y - directo.y) < 0.0001);
+});
+
+test("la foto ampliada no deja ver marco vacío por ningún lado", () => {
+    const frame = { width: 800, height: 500 };
+    /* A escala 2 sobra la mitad del alto y del ancho para arrastrar. */
+    assert.deepEqual(clampOffset({ x: 9999, y: 9999 }, 2, frame), { x: 400, y: 250 });
+    assert.deepEqual(clampOffset({ x: -9999, y: -9999 }, 2, frame), { x: -400, y: -250 });
+    /* Sin ampliar no hay nada que arrastrar: vuelve al centro. */
+    assert.deepEqual(clampOffset({ x: 300, y: 120 }, 1, frame), { x: 0, y: 0 });
+    /* Y un desplazamiento que ya cabe se respeta tal cual. */
+    assert.deepEqual(clampOffset({ x: 100, y: -60 }, 2, frame), { x: 100, y: -60 });
+});
+
+test("el zoom llega hasta la resolución real, con suelo y techo", () => {
+    /* Una foto del CMS de 2560 px vista a 1280 da justo 2 aumentos: es su
+       resolución real, ni uno más. */
+    assert.equal(maxZoom(2560, 1280), 2);
+    /* Las genéricas del proyecto miden 400 px: sin suelo el gesto de ampliar
+       parecería roto, así que siempre se permite algo. */
+    assert.equal(maxZoom(400, 372), 1.8);
+    /* Y un techo, porque pasado cierto punto ya no se ve la foto. */
+    assert.equal(maxZoom(8000, 500), 4);
+    /* Sin datos todavía (la foto aún no ha cargado) no se rompe. */
+    assert.equal(maxZoom(0, 500), 1.8);
+});
+
+test("el pellizco mide distancia y punto medio entre los dos dedos", () => {
+    assert.equal(distance({ x: 0, y: 0 }, { x: 3, y: 4 }), 5);
+    assert.deepEqual(midpoint({ x: 0, y: 10 }, { x: 10, y: 0 }), { x: 5, y: 5 });
 });

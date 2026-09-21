@@ -166,6 +166,8 @@ export const ui = {
         "viewer.close": "Cerrar el visor",
         "viewer.previous": "Foto anterior",
         "viewer.next": "Foto siguiente",
+        "viewer.zoomIn": "Ampliar la foto",
+        "viewer.zoomOut": "Ver la foto entera",
         "viewer.goTo": "Ver la foto {index}",
         "viewer.position": "{index} de {count}",
 
@@ -402,6 +404,8 @@ export const ui = {
         "viewer.close": "Close the viewer",
         "viewer.previous": "Previous photo",
         "viewer.next": "Next photo",
+        "viewer.zoomIn": "Zoom in",
+        "viewer.zoomOut": "Fit the whole photo",
         "viewer.goTo": "See photo {index}",
         "viewer.position": "{index} of {count}",
 

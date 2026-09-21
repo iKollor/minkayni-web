@@ -11,10 +11,14 @@
 import { strapiMediaUrl, strapiMediaSrcSet } from "./media-url";
 
 export type ViewerPhoto = {
+    /** Miniatura de la tira del visor: se pinta a 80 px. */
+    strip: string;
     /** Versión pequeña: la polaroid sobre el mapa. */
     thumb: string;
     /** Versión grande: la del visor. */
     full: string;
+    /** Versión de resolución alta, solo al ampliar. */
+    zoom: string;
     /** Candidatas del visor; vacío en las genéricas, que tienen un solo tamaño. */
     srcset: string;
     alt: string;
@@ -35,9 +39,18 @@ type CmsPhoto =
     | null
     | undefined;
 
+/* Cuatro tamaños, uno por sitio donde se ve la foto. Los sirve Imagor a
+   través del proxy /media (`?w=…&f=webp`), así que pedir un tamaño de más no
+   cuesta un archivo nuevo en el repositorio, pero sí bytes en el teléfono de
+   quien mira: de ahí que la tira pida 160 px y no los 1600 de la grande. */
+const STRIP_WIDTH = 160;
 const THUMB_WIDTH = 480;
 const FULL_WIDTH = 1600;
 const VIEWER_WIDTHS = [640, 960, 1280, 1600];
+/* Al ampliar. No es el archivo original a propósito: una foto recién sacada
+   del teléfono son varios megas de JPEG, y 2560 px en WebP ya es más de lo
+   que cualquier pantalla puede enseñar a 1:1. */
+export const ZOOM_SOURCE_WIDTH = 2560;
 
 /** Tope por sector: el visor es una galería corta, no un archivo fotográfico. */
 export const MAX_SECTOR_PHOTOS = 8;
@@ -45,8 +58,10 @@ export const MAX_SECTOR_PHOTOS = 8;
 /** Las tres fotos del proyecto que sirven a cualquier sector sin fotos propias. */
 export const genericSectorPhotos = (alt: string): ViewerPhoto[] =>
     [1, 2, 3].map((n) => ({
+        strip: `/batucada/hover-${n}.webp`,
         thumb: `/batucada/hover-${n}.webp`,
         full: `/batucada/hover-${n}.webp`,
+        zoom: `/batucada/hover-${n}.webp`,
         srcset: "",
         alt,
         width: 400,
@@ -76,8 +91,10 @@ export function sectorPhotos(photos: readonly CmsPhoto[] | null | undefined, str
         if (!full || !thumb) continue;
 
         resolved.push({
+            strip: strapiMediaUrl(url, strapiBase, STRIP_WIDTH),
             thumb,
             full,
+            zoom: strapiMediaUrl(url, strapiBase, ZOOM_SOURCE_WIDTH),
             srcset: strapiMediaSrcSet(url, strapiBase, VIEWER_WIDTHS),
             alt: photo?.alternativeText?.trim() || alt,
             /* Leyenda y texto alternativo no son lo mismo: el alternativo

@@ -60,7 +60,7 @@ export const initBatucadaMap = () => {
        módulo no conoce idiomas. Sin el atributo —o con un JSON roto— el mapa
        sigue funcionando y solo se queda sin etiquetas accesibles. */
     type MapStrings = ViewerStrings & { open: string; error: string };
-    const EMPTY_STRINGS: MapStrings = { label: "", close: "", previous: "", next: "", goTo: "", position: "", open: "", error: "" };
+    const EMPTY_STRINGS: MapStrings = { label: "", close: "", previous: "", next: "", zoomIn: "", zoomOut: "", goTo: "", position: "", open: "", error: "" };
     let strings = EMPTY_STRINGS;
     try {
         const raw = el.dataset.bpStrings;

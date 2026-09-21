@@ -2,9 +2,15 @@
    Visor de fotos a pantalla completa del mapa de Batucada.
 
    Se abre al tocar una polaroid: la foto grande, la tira de miniaturas para
-   saltar entre ellas, y el contador. Teclado (flechas, Inicio/Fin, Escape),
-   gestos (deslizar a los lados para cambiar, hacia abajo para cerrar) y foco
+   saltar entre ellas, y el contador. Teclado (flechas, Inicio/Fin, Escape,
+   +/−/0), gestos (deslizar a los lados para cambiar, hacia abajo para cerrar,
+   tocar o pellizcar para ampliar y arrastrar para moverse por la foto) y foco
    atrapado mientras está abierto, que se devuelve a la polaroid al cerrar.
+
+   Tamaños: la tira pide miniaturas de 160 px y la foto grande, la candidata
+   que encaje en la pantalla (hasta 1600 px). La de 2560 px solo se pide al
+   ampliar, para no gastarla en el teléfono de quien nunca amplía. Todas salen
+   de Imagor por el proxy /media (ver sector-photos.ts).
 
    El DOM se construye una sola vez, la primera vez que alguien abre el visor,
    y se reutiliza: quien nunca toca una foto no paga nada.
@@ -12,10 +18,11 @@
    Los textos llegan traducidos desde la página (ver `data-bp-strings` en
    batucada-popular.astro): este módulo no conoce idiomas. Los estilos son
    utilidades de Tailwind escritas aquí como literales —el escáner las lee— y
-   las tres animaciones viven en el <style is:global> de la página, junto a
-   las del resto del mapa. */
+   las animaciones viven en el <style is:global> de la página, junto a las del
+   resto del mapa. */
 import { ScrollSmoother } from "../main";
-import type { ViewerPhoto } from "../../utils/sector-photos";
+import { ZOOM_SOURCE_WIDTH, type ViewerPhoto } from "../../utils/sector-photos";
+import { clampOffset, distance, maxZoom, midpoint, offsetAfterZoom, type Point } from "./zoom";
 
 export type ViewerStrings = {
     /** Nombre accesible del diálogo. */
@@ -23,6 +30,8 @@ export type ViewerStrings = {
     close: string;
     previous: string;
     next: string;
+    zoomIn: string;
+    zoomOut: string;
     /** Con `{index}`: ir a esa miniatura. */
     goTo: string;
     /** Con `{index}` y `{count}`: «2 de 4». */
@@ -47,14 +56,22 @@ const format = (template: string, params: Record<string, string | number>): stri
    de la lista de sectores. El contenido se gira al revés para leerse recto. */
 const DIAMOND =
     "grid h-11 w-11 shrink-0 cursor-pointer place-items-center rotate-45 border-2 border-black bg-accent text-black shadow-[3px_3px_0_rgba(10,8,1,0.55)] transition-[scale,background-color] duration-[180ms] ease-bp-rebound hover:scale-110 hover:bg-bp-blue focus-visible:outline-[3px] focus-visible:outline-offset-[6px] focus-visible:outline-white disabled:pointer-events-none disabled:opacity-35 motion-reduce:transition-none";
+const DIAMOND_LABEL = "-rotate-45 text-[1.15rem] font-black leading-none";
 
 /** Distancia mínima de un gesto para que cuente como deslizar. */
 const SWIPE_X = 45;
 const SWIPE_DOWN = 90;
+/** A partir de aquí un arrastre deja de ser un toque y no amplía al soltar. */
+const DRAG_SLOP = 8;
+/** Ampliación a la que salta un toque sobre la foto. */
+const TAP_ZOOM = 2.2;
+/** Paso de la rueda y de las teclas + y −. */
+const ZOOM_STEP = 1.35;
 
 let root: HTMLElement | null = null;
 let stage: HTMLElement;
 let frameEl: HTMLElement;
+let mediaEl: HTMLElement;
 let image: HTMLImageElement;
 let captionEl: HTMLElement;
 let noteEl: HTMLElement;
@@ -62,6 +79,8 @@ let positionEl: HTMLElement;
 let thumbsEl: HTMLElement;
 let prevButton: HTMLButtonElement;
 let nextButton: HTMLButtonElement;
+let zoomButton: HTMLButtonElement;
+let zoomLabel: HTMLElement;
 
 let photos: readonly ViewerPhoto[] = [];
 let current = 0;
@@ -71,7 +90,192 @@ let lastFocused: HTMLElement | null = null;
 let previousOverflow = "";
 let pausedSmoother: { paused: (value?: boolean) => boolean } | null = null;
 
+/* Estado del zoom. `limit` es lo que da de sí ESTA foto (ver zoom.ts). */
+let scale = 1;
+let offset: Point = { x: 0, y: 0 };
+let limit = 1;
+let highRes = false;
+
 const isOpen = () => Boolean(root && !root.classList.contains("hidden"));
+
+/* ───────────────────────────────── zoom ──────────────────────────────── */
+
+const mediaBox = () => {
+    const box = mediaEl.getBoundingClientRect();
+    return { width: box.width, height: box.height, centerX: box.left + box.width / 2, centerY: box.top + box.height / 2 };
+};
+
+/** Punto de pantalla → coordenadas relativas al centro de la foto. */
+const toMedia = (x: number, y: number): Point => {
+    const box = mediaBox();
+    return { x: x - box.centerX, y: y - box.centerY };
+};
+
+const paintZoom = (): void => {
+    image.style.transform = scale === 1 ? "" : `translate3d(${offset.x}px, ${offset.y}px, 0) scale(${scale})`;
+    if (scale > 1) mediaEl.dataset.zoomed = "";
+    else delete mediaEl.dataset.zoomed;
+    if (!strings) return;
+    /* El botón dice lo que hará, no dónde está: a la ida amplía, a la vuelta
+       devuelve la foto entera. */
+    zoomButton.setAttribute("aria-label", scale > 1 ? strings.zoomOut : strings.zoomIn);
+    zoomButton.setAttribute("aria-pressed", String(scale > 1));
+    zoomButton.disabled = limit <= 1;
+    zoomLabel.textContent = scale > 1 ? "−" : "+";
+};
+
+/** Cuánto se puede ampliar la foto actual sin que sean solo píxeles. */
+const measureZoom = (): void => {
+    const photo = photos[current];
+    const width = mediaBox().width;
+    /* La fuente que se PUEDE llegar a pedir, no la que se ve ahora: el salto
+       a la de 2560 px ocurre justo al ampliar. */
+    const source = Math.min(Math.max(image.naturalWidth, photo?.width ?? 0), ZOOM_SOURCE_WIDTH);
+    limit = maxZoom(source, width);
+    if (scale > limit) setZoom(limit);
+};
+
+/** Pide la versión de resolución alta, ya ampliando. */
+const loadHighRes = (): void => {
+    const photo = photos[current];
+    if (!photo || highRes || !photo.zoom || photo.zoom === photo.full) return;
+    highRes = true;
+    const token = current;
+    const upgrade = new Image();
+    upgrade.addEventListener("load", () => {
+        /* Puede haber cambiado de foto o haberse cerrado mientras bajaba. */
+        if (token !== current || !isOpen()) return;
+        /* El srcset manda sobre src: hay que quitarlo, o el navegador seguiría
+           enseñando la candidata de 1600 px. */
+        image.removeAttribute("srcset");
+        image.removeAttribute("sizes");
+        image.src = photo.zoom;
+        measureZoom();
+    });
+    upgrade.src = photo.zoom;
+};
+
+function setZoom(next: number, pointer: Point = { x: 0, y: 0 }): void {
+    const target = Math.min(Math.max(next, 1), limit);
+    if (target === scale) return;
+    offset = target === 1 ? { x: 0, y: 0 } : clampOffset(offsetAfterZoom(pointer, offset, scale, target), target, mediaBox());
+    scale = target;
+    paintZoom();
+    if (scale > 1) loadHighRes();
+}
+
+const resetZoom = (): void => {
+    scale = 1;
+    offset = { x: 0, y: 0 };
+    highRes = false;
+    paintZoom();
+};
+
+const toggleZoom = (pointer: Point): void => setZoom(scale > 1 ? 1 : Math.min(TAP_ZOOM, limit), pointer);
+
+/* ──────────────────────────────── gestos ─────────────────────────────── */
+
+const pointers = new Map<number, Point>();
+let mode: "none" | "swipe" | "pan" | "pinch" = "none";
+let dragged = false;
+let startOffset: Point = { x: 0, y: 0 };
+let startScale = 1;
+let startDistance = 0;
+let startMid: Point = { x: 0, y: 0 };
+let startPoint: Point = { x: 0, y: 0 };
+
+const twoPointers = (): [Point, Point] => {
+    const [a, b] = [...pointers.values()];
+    return [a, b];
+};
+
+const stopTracking = (): void => {
+    mode = "none";
+    window.removeEventListener("pointermove", onPointerMove);
+    window.removeEventListener("pointerup", onPointerUp);
+    window.removeEventListener("pointercancel", onPointerUp);
+};
+
+function onPointerDown(event: PointerEvent): void {
+    /* Un botón (pasar de foto, cerrar, ampliar) no arrastra nada. */
+    if ((event.target as HTMLElement).closest("button")) return;
+    pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (pointers.size === 1) {
+        dragged = false;
+        startPoint = { x: event.clientX, y: event.clientY };
+        startOffset = { ...offset };
+        mode = scale > 1 ? "pan" : "swipe";
+    } else if (pointers.size === 2) {
+        const [a, b] = twoPointers();
+        mode = "pinch";
+        dragged = true;
+        startDistance = distance(a, b);
+        startMid = midpoint(a, b);
+        startOffset = { ...offset };
+        startScale = scale;
+    }
+
+    /* En `window` y no en la escena: si el dedo sale del visor, el gesto
+       termina igual en vez de quedarse pegado. */
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
+}
+
+function onPointerMove(event: PointerEvent): void {
+    if (!pointers.has(event.pointerId)) return;
+    pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (mode === "pinch" && pointers.size >= 2 && startDistance > 0) {
+        const [a, b] = twoPointers();
+        const target = Math.min(Math.max((startScale * distance(a, b)) / startDistance, 1), limit);
+        /* El pellizco amplía hacia donde empezó y además acompaña el
+           desplazamiento de los dos dedos. */
+        const mid = midpoint(a, b);
+        const zoomed = offsetAfterZoom(toMedia(startMid.x, startMid.y), startOffset, startScale, target);
+        scale = target;
+        offset = clampOffset({ x: zoomed.x + (mid.x - startMid.x), y: zoomed.y + (mid.y - startMid.y) }, target, mediaBox());
+        paintZoom();
+        if (scale > 1) loadHighRes();
+        return;
+    }
+
+    const dx = event.clientX - startPoint.x;
+    const dy = event.clientY - startPoint.y;
+    if (Math.abs(dx) > DRAG_SLOP || Math.abs(dy) > DRAG_SLOP) dragged = true;
+
+    if (mode === "pan") {
+        offset = clampOffset({ x: startOffset.x + dx, y: startOffset.y + dy }, scale, mediaBox());
+        paintZoom();
+    }
+}
+
+function onPointerUp(event: PointerEvent): void {
+    const was = mode;
+    pointers.delete(event.pointerId);
+
+    /* Deslizar solo cambia de foto con la foto entera: ampliada, el dedo la
+       mueve por dentro. */
+    if (was === "swipe" && pointers.size === 0) {
+        const dx = event.clientX - startPoint.x;
+        const dy = event.clientY - startPoint.y;
+        if (Math.abs(dx) > SWIPE_X && Math.abs(dx) > Math.abs(dy)) step(dx < 0 ? 1 : -1);
+        else if (dy > SWIPE_DOWN && dy > Math.abs(dx)) close();
+    }
+
+    if (pointers.size === 1) {
+        /* De pellizcar a arrastrar, con el dedo que queda. */
+        const [remaining] = [...pointers.values()];
+        mode = scale > 1 ? "pan" : "none";
+        startPoint = { ...remaining };
+        startOffset = { ...offset };
+    } else if (pointers.size === 0) {
+        stopTracking();
+    }
+}
+
+/* ─────────────────────────────── construcción ────────────────────────── */
 
 const build = (): HTMLElement => {
     const node = document.createElement("div");
@@ -86,16 +290,23 @@ const build = (): HTMLElement => {
         `<div class="relative mx-auto flex h-full w-full max-w-[1480px] flex-col gap-3 p-4 sm:gap-4 sm:p-6">` +
         `<div class="flex shrink-0 items-center justify-between gap-4">` +
         `<p class="text-[0.78rem] font-black uppercase tracking-[0.16em] text-white" data-viewer-position></p>` +
-        `<button type="button" class="${DIAMOND}" data-viewer-close><span class="-rotate-45 text-[1.1rem] leading-none" aria-hidden="true">✕</span></button>` +
+        `<div class="flex shrink-0 items-center gap-3">` +
+        `<button type="button" class="${DIAMOND}" data-viewer-zoom aria-pressed="false"><span class="${DIAMOND_LABEL}" data-viewer-zoom-label aria-hidden="true">+</span></button>` +
+        `<button type="button" class="${DIAMOND}" data-viewer-close><span class="${DIAMOND_LABEL}" aria-hidden="true">✕</span></button>` +
+        `</div>` +
         `</div>` +
         `<div class="relative flex min-h-0 flex-1 touch-none items-center justify-center" data-viewer-stage>` +
-        `<button type="button" class="${DIAMOND} absolute left-0 top-1/2 z-[2] -translate-y-1/2" data-viewer-prev><span class="-rotate-45 text-[1.1rem] leading-none" aria-hidden="true">←</span></button>` +
+        `<button type="button" class="${DIAMOND} absolute left-0 top-1/2 z-[2] -translate-y-1/2" data-viewer-prev><span class="${DIAMOND_LABEL}" aria-hidden="true">←</span></button>` +
         /* Marco blanco y eco azul: sobre el campo de tinta, un borde negro
            desaparece y la foto queda flotando sin recortar. Es el mismo par
            —marco claro, sombra dura de color— que el resto de fotos del
            proyecto sobre fondo oscuro. */
         `<figure class="bp-viewer__frame m-0 flex max-h-full min-h-0 flex-col border-[3px] border-white bg-white shadow-[10px_10px_0_var(--color-bp-blue)]">` +
-        `<img class="bp-viewer__image block h-auto max-h-full w-full object-contain" data-viewer-image alt="" decoding="async">` +
+        /* La foto ampliada se sale de su caja: el recorte lo pone este
+           envoltorio, para que el marco y el pie no se muevan. */
+        `<div class="bp-viewer__media relative min-h-0 cursor-zoom-in overflow-hidden data-[zoomed]:cursor-grab" data-viewer-media>` +
+        `<img class="bp-viewer__image block h-auto max-h-full w-full origin-center object-contain" data-viewer-image alt="" decoding="async">` +
+        `</div>` +
         /* Dos líneas: de qué barrio es la foto y, debajo, la leyenda que
            haya escrito quien la subió. La segunda se oculta si no la hay,
            para que el pie no crezca con una línea vacía. */
@@ -104,15 +315,22 @@ const build = (): HTMLElement => {
         `<span class="mt-[0.35rem] block max-w-[70ch] text-[0.84rem] font-normal leading-snug" data-viewer-note></span>` +
         `</figcaption>` +
         `</figure>` +
-        `<button type="button" class="${DIAMOND} absolute right-0 top-1/2 z-[2] -translate-y-1/2" data-viewer-next><span class="-rotate-45 text-[1.1rem] leading-none" aria-hidden="true">→</span></button>` +
+        `<button type="button" class="${DIAMOND} absolute right-0 top-1/2 z-[2] -translate-y-1/2" data-viewer-next><span class="${DIAMOND_LABEL}" aria-hidden="true">→</span></button>` +
         `</div>` +
-        `<div class="flex shrink-0 touch-pan-x justify-start gap-2 overflow-x-auto overscroll-none px-1 pb-1 sm:justify-center" data-viewer-thumbs></div>` +
+        /* La tira va centrada también en el teléfono. El centrado lo pone
+           `mx-auto` en la fila y no `justify-center` en el contenedor que
+           desplaza: con eso último, en cuanto las miniaturas no caben, las
+           primeras quedan fuera de alcance. */
+        `<div class="flex shrink-0 touch-pan-x overflow-x-auto overscroll-none px-1 pb-1" data-viewer-thumbs-scroll>` +
+        `<div class="mx-auto flex gap-2" data-viewer-thumbs></div>` +
+        `</div>` +
         `</div>`;
 
     document.body.appendChild(node);
 
     stage = node.querySelector("[data-viewer-stage]") as HTMLElement;
     frameEl = node.querySelector(".bp-viewer__frame") as HTMLElement;
+    mediaEl = node.querySelector("[data-viewer-media]") as HTMLElement;
     image = node.querySelector("[data-viewer-image]") as HTMLImageElement;
     captionEl = node.querySelector("[data-viewer-caption]") as HTMLElement;
     noteEl = node.querySelector("[data-viewer-note]") as HTMLElement;
@@ -120,45 +338,50 @@ const build = (): HTMLElement => {
     thumbsEl = node.querySelector("[data-viewer-thumbs]") as HTMLElement;
     prevButton = node.querySelector("[data-viewer-prev]") as HTMLButtonElement;
     nextButton = node.querySelector("[data-viewer-next]") as HTMLButtonElement;
+    zoomButton = node.querySelector("[data-viewer-zoom]") as HTMLButtonElement;
+    zoomLabel = node.querySelector("[data-viewer-zoom-label]") as HTMLElement;
 
     node.querySelectorAll("[data-viewer-close]").forEach((button) => button.addEventListener("click", close));
     prevButton.addEventListener("click", () => step(-1));
     nextButton.addEventListener("click", () => step(1));
+    zoomButton.addEventListener("click", () => toggleZoom({ x: 0, y: 0 }));
     thumbsEl.addEventListener("click", (event) => {
         const thumb = (event.target as HTMLElement).closest<HTMLElement>("[data-viewer-index]");
         if (thumb) show(Number(thumb.dataset.viewerIndex));
     });
 
-    /* Gestos. El `pointerdown` se escucha en la escena entera, así que un
-       deslizamiento que empiece sobre un botón también cuenta; un toque sin
-       recorrido sigue siendo un clic normal del botón. */
-    let startX = 0;
-    let startY = 0;
-    let tracking = false;
-    stage.addEventListener("pointerdown", (event) => {
-        tracking = true;
-        startX = event.clientX;
-        startY = event.clientY;
+    /* Tocar la foto amplía hacia ese punto, y otro toque la devuelve entera.
+       Arrastrar o pellizcar no cuenta como toque. */
+    mediaEl.addEventListener("click", (event) => {
+        if (dragged) return;
+        toggleZoom(toMedia(event.clientX, event.clientY));
     });
-    stage.addEventListener("pointerup", (event) => {
-        if (!tracking) return;
-        tracking = false;
-        const dx = event.clientX - startX;
-        const dy = event.clientY - startY;
-        if (Math.abs(dx) > SWIPE_X && Math.abs(dx) > Math.abs(dy)) step(dx < 0 ? 1 : -1);
-        else if (dy > SWIPE_DOWN && dy > Math.abs(dx)) close();
+    /* Tocar fuera de la foto cierra, igual que el fondo. */
+    stage.addEventListener("click", (event) => {
+        if (event.target === stage && !dragged) close();
     });
-    stage.addEventListener("pointercancel", () => {
-        tracking = false;
-    });
+    /* La rueda amplía hacia donde apunta el cursor. */
+    stage.addEventListener(
+        "wheel",
+        (event) => {
+            if (!event.deltaY || limit <= 1) return;
+            event.preventDefault();
+            setZoom(event.deltaY < 0 ? scale * ZOOM_STEP : scale / ZOOM_STEP, toMedia(event.clientX, event.clientY));
+        },
+        { passive: false },
+    );
+
+    stage.addEventListener("pointerdown", onPointerDown);
 
     return node;
 };
 
-/* Tope de ampliación. La foto crece hasta llenar el hueco, pero no más de
-   dos veces y media su tamaño real: pasado eso ya no se ve una foto grande,
-   se ve una foto deshecha. Las tres genéricas del proyecto miden 400 px, así
-   que se quedan cortas hasta que el CMS tenga las del barrio. */
+/* ──────────────────────────────── pintado ────────────────────────────── */
+
+/* Tope de ampliación del marco. La foto crece hasta llenar el hueco, pero no
+   más de dos veces y media su tamaño real: pasado eso ya no se ve una foto
+   grande, se ve una foto deshecha. Las tres genéricas del proyecto miden
+   400 px, así que se quedan cortas hasta que el CMS tenga las del barrio. */
 const MAX_UPSCALE = 2.5;
 
 /** Da al marco el tamaño de la foto dentro del hueco disponible. */
@@ -172,12 +395,12 @@ const fitFrame = (): void => {
     const room = stage.getBoundingClientRect();
     /* `captionEl.offsetHeight` no basta: el pie incluye la leyenda, que puede
        ocupar dos líneas y cambia de una foto a otra. */
-    /* 6 px: los bordes de 3 px del marco a cada lado. */
     const free = { width: room.width - 6, height: room.height - (captionEl.parentElement?.offsetHeight ?? 0) - 6 };
     if (free.width <= 0 || free.height <= 0) return;
 
-    const scale = Math.min(free.width / width, free.height / height, MAX_UPSCALE);
-    frameEl.style.width = `${Math.round(width * scale)}px`;
+    const fit = Math.min(free.width / width, free.height / height, MAX_UPSCALE);
+    frameEl.style.width = `${Math.round(width * fit)}px`;
+    measureZoom();
 };
 
 /** Salta a una foto concreta. */
@@ -185,13 +408,21 @@ const show = (next: number): void => {
     if (!root || !photos.length) return;
     current = Math.min(Math.max(next, 0), photos.length - 1);
     const photo = photos[current];
+    resetZoom();
 
     /* La foto entra con un fundido corto: sin él, cambiar de foto en una red
        lenta deja el marco vacío de golpe. */
     image.classList.add("is-loading");
     image.src = photo.full;
-    if (photo.srcset) image.srcset = photo.srcset;
-    else image.removeAttribute("srcset");
+    if (photo.srcset) {
+        image.srcset = photo.srcset;
+        /* Sin `sizes` el navegador supone el ancho de la ventana y se trae la
+           candidata más grande aunque la foto se vea a la mitad. */
+        image.sizes = "(min-width: 1480px) 1480px, 100vw";
+    } else {
+        image.removeAttribute("srcset");
+        image.removeAttribute("sizes");
+    }
     image.alt = photo.alt;
     if (photo.width) image.width = photo.width;
     if (photo.height) image.height = photo.height;
@@ -234,10 +465,10 @@ const show = (next: number): void => {
     }
 };
 
-const step = (delta: number): void => {
+function step(delta: number): void {
     if (photos.length < 2) return;
     show(current + delta);
-};
+}
 
 const renderThumbs = (): void => {
     if (photos.length < 2) {
@@ -250,7 +481,7 @@ const renderThumbs = (): void => {
         .map(
             (photo, index) =>
                 `<button type="button" class="relative h-14 w-20 shrink-0 cursor-pointer overflow-hidden border-2 border-black bg-white opacity-55 transition-[opacity,scale] duration-[180ms] ease-bp-rebound hover:opacity-100 focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-white data-[active]:border-accent data-[active]:opacity-100 motion-reduce:transition-none" data-viewer-index="${index}">` +
-                `<img src="${photo.thumb}" alt="" class="block h-full w-full object-cover" loading="lazy" decoding="async">` +
+                `<img src="${photo.strip}" alt="" width="160" height="96" class="block h-full w-full object-cover" loading="lazy" decoding="async">` +
                 `</button>`,
         )
         .join("");
@@ -267,7 +498,9 @@ const onKeydown = (event: KeyboardEvent): void => {
     switch (event.key) {
         case "Escape":
             event.preventDefault();
-            close();
+            /* Ampliada, Escape primero devuelve la foto entera. */
+            if (scale > 1) resetZoom();
+            else close();
             break;
         case "ArrowRight":
             event.preventDefault();
@@ -284,6 +517,19 @@ const onKeydown = (event: KeyboardEvent): void => {
         case "End":
             event.preventDefault();
             show(photos.length - 1);
+            break;
+        case "+":
+        case "=":
+            event.preventDefault();
+            setZoom(scale * ZOOM_STEP);
+            break;
+        case "-":
+            event.preventDefault();
+            setZoom(scale / ZOOM_STEP);
+            break;
+        case "0":
+            event.preventDefault();
+            resetZoom();
             break;
         case "Tab": {
             /* Foco atrapado: el tabulador no puede salirse a la página de
@@ -307,7 +553,12 @@ const onKeydown = (event: KeyboardEvent): void => {
     }
 };
 
-const onResize = (): void => fitFrame();
+/* Al girar el teléfono cambia el hueco y, con él, cuánto se puede ampliar:
+   lo más honrado es devolver la foto entera y volver a encajarla. */
+const onResize = (): void => {
+    resetZoom();
+    fitFrame();
+};
 
 const lockPage = (): void => {
     previousOverflow = document.documentElement.style.overflow;
@@ -327,8 +578,11 @@ const unlockPage = (): void => {
     pausedSmoother = null;
 };
 
-export const close = (): void => {
+export function close(): void {
     if (!isOpen()) return;
+    resetZoom();
+    pointers.clear();
+    stopTracking();
     root!.classList.add("hidden");
     unlockPage();
     document.removeEventListener("keydown", onKeydown, true);
@@ -337,7 +591,7 @@ export const close = (): void => {
        teclado vuelve justo donde estaba, no al principio de la página. */
     lastFocused?.focus({ preventScroll: true });
     lastFocused = null;
-};
+}
 
 export const openViewer = ({ photos: list, index = 0, caption: label = "", strings: texts, trigger }: OpenOptions): void => {
     if (!list.length) return;
@@ -357,10 +611,9 @@ export const openViewer = ({ photos: list, index = 0, caption: label = "", strin
 
     renderThumbs();
     /* La animación de entrada del marco se reinicia en cada apertura. */
-    const frame = root.querySelector(".bp-viewer__frame") as HTMLElement;
-    frame.classList.remove("bp-viewer__frame");
-    void frame.offsetWidth;
-    frame.classList.add("bp-viewer__frame");
+    frameEl.classList.remove("bp-viewer__frame");
+    void frameEl.offsetWidth;
+    frameEl.classList.add("bp-viewer__frame");
 
     root.classList.remove("hidden");
     lockPage();
