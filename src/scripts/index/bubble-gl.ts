@@ -4,31 +4,26 @@
    Por qué existe: la versión en CSS (ver BubbleBackground.astro) se apoya en
    `filter: url(#bubble-goo)`, y un filtro SVG referenciado lo rasteriza
    Chrome por CPU, a pantalla completa y en cada cuadro. Aquí lo pinta un
-   shader en un <canvas>, que es trabajo para el hardware hecho para esto.
+   shader en un <canvas>.
 
-   Se comporta como el de CSS —manchas de color que derivan despacio sobre el
-   degradado violeta-azul y una que sigue al cursor con muelle— pero no lo
-   copia: está hecho como se hacen hoy estos fondos (el «mesh gradient»),
-   que se ve mejor y cuesta menos.
+   Se comporta como el de CSS, pieza a pieza: las mismas cuatro manchas con
+   sus mismas órbitas, periodos, tamaños y opacidades, el vaivén de la cuarta,
+   la del cursor con su caja del 150%, sus tres gradientes descentrados y su
+   deformación en tres tramos, y el mismo umbral «goo» que las funde. Lo que
+   cambia es quién hace la cuenta y cómo:
 
-   - Una sola pasada. Cada mancha es una gaussiana analítica: nace suave, así
-     que no hace falta desenfocar nada después. Siete exponenciales por píxel
-     y ningún bucle.
-   - Las manchas del ambiente se mezclan una sobre otra con `mix`, como en un
-     degradado de malla: colores limpios, sin el velo gris del hard-light.
-   - Siguen órbitas de Lissajous DENTRO del cuadro. Las del CSS giraban
-     alrededor de puntos a 400 y 800 px del centro y pasaban la mayor parte
-     del tiempo fuera de pantalla; por eso aquel fondo se veía casi plano.
-   - La del cursor es una metabola: cuatro lóbulos que giran a ritmos distintos
-     y se funden con un umbral suave. Borde definido, silueta que cambia sin
-     repetirse y, sobre todo, UNA sola forma: con lóbulos sueltos se leían
-     como dos manchas persiguiendo el ratón.
-   - Un grano de un bit de amplitud quita las bandas que un degradado de 8
-     bits dibuja en pantallas grandes.
+   - Una sola pasada, sin desenfocar nada: el blur(40px) del CSS se sustituye
+     por un umbral suave cuyo ancho se mide en píxeles con fwidth, así que el
+     borde es igual de blando en una mancha grande que en una pequeña.
+   - Los ejes de giro del CSS están en píxeles de escritorio; en pantallas de
+     menos de 1200 px se acortan en proporción para que las manchas no pasen
+     casi todo el tiempo fuera del cuadro. En escritorio el recorrido es el
+     mismo.
+   - Un grano de un bit quita las bandas del degradado en pantallas grandes.
 
-   Coste: a un píxel de lienzo por píxel CSS (con un tope de 1,2 millones de
-   píxeles para pantallas enormes) y a 30 cuadros por segundo mientras nadie
-   mueve el ratón —la deriva es lenta y no se nota—; a 60 cuando se le sigue.
+   Coste: un píxel de lienzo por píxel CSS (con tope de 1,2 millones de
+   píxeles), a 30 cuadros por segundo mientras la mancha del cursor solo
+   deriva y a 60 cuando se la mueve.
 
    Degradación: si no hay WebGL, si pinta por software, si el contexto se
    pierde o si el equipo pide menos movimiento, esto no se monta y manda el
@@ -63,66 +58,129 @@ uniform vec2  uPuntero;    // mancha del cursor, desde el centro
 uniform float uPunteroOn;
 uniform vec3  uC2, uC3, uC4, uC5, uC6, uBaseA, uBaseB;
 
-float gauss(vec2 p, vec2 c, float r) {
-    vec2 d = (p - c) / r;
-    return exp(-dot(d, d));
+const float TAU = 6.2831853;
+
+vec2 girar(vec2 q, vec2 o, float a) {
+    float s = sin(a), c = cos(a);
+    vec2 d = q - o;
+    return o + vec2(d.x * c - d.y * s, d.x * s + d.y * c);
+}
+
+// hard-light, como el mix-blend-mode de las manchas en CSS
+vec3 hardLight(vec3 b, vec3 s) {
+    return mix(b * 2.0 * s, 1.0 - 2.0 * (1.0 - b) * (1.0 - s), step(vec3(0.5), s));
+}
+
+void componer(inout vec3 pre, inout float acum, vec3 col, float a) {
+    if (a <= 0.0) return;
+    vec3 debajo = acum > 0.0 ? pre / acum : vec3(0.0);
+    vec3 mezcla = mix(col, hardLight(debajo, col), acum);
+    pre = mezcla * a + pre * (1.0 - a);
+    acum = a + acum * (1.0 - a);
+}
+
+// radial-gradient(circle, rgba(c,a) 0%, rgba(c,0) r). La caída del CSS es
+// lineal y acaba en seco en r; allí el blur(40px) tapaba el codo, pero sin él
+// se ve un arco nítido. Con smoothstep llega a cero sin codo.
+float caida(vec2 p, vec2 c, float r, float a) {
+    return a * (1.0 - smoothstep(0.0, 1.0, distance(p, c) / r));
 }
 
 float grano(vec2 q) {
     return fract(sin(dot(q, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
+// ease-in-out de CSS, para los tramos de la deformación
+float suave(float u) { return u * u * (3.0 - 2.0 * u); }
+
 void main() {
     vec2 p = vec2(gl_FragCoord.x, uTam.y * uEscala - gl_FragCoord.y) / uEscala;
     vec2 m = uTam * 0.5;
-    float corto = min(uTam.x, uTam.y);
-    float medio = 0.5 * (uTam.x + uTam.y);
-    float T = uT;
 
-    // Degradado base, 'to bottom right' como el de CSS.
-    vec2 dir = normalize(vec2(uTam.y, uTam.x));
-    float largo = 2.0 * uTam.x * uTam.y / length(uTam);
-    vec3 col = mix(uBaseA, uBaseB, clamp(0.5 + dot(p - m, dir) / largo, 0.0, 1.0));
+    /* Los ejes de giro del CSS están en píxeles fijos (400, 500, 800) pensados
+       para una pantalla de escritorio. En un teléfono mandaban las manchas
+       fuera del cuadro casi todo el tiempo; por debajo de 1200 px de ancho se
+       acortan en proporción. En escritorio es el mismo recorrido. */
+    float k = min(1.0, uTam.x / 1200.0);
 
-    // Manchas del ambiente: órbitas de Lissajous lentas, siempre a la vista.
-    vec2 c2 = m + uTam * vec2(0.32 * sin(T * 0.21),        0.26 * cos(T * 0.17));
-    vec2 c3 = m + uTam * vec2(0.30 * cos(T * 0.13 + 1.3), 0.30 * sin(T * 0.19 + 0.4));
-    vec2 c4 = m + uTam * vec2(0.24 * sin(T * 0.16 + 2.1), 0.22 * sin(T * 0.14 + 2.7));
-    vec2 c5 = m + uTam * vec2(0.34 * cos(T * 0.11 + 4.0), 0.28 * cos(T * 0.23 + 1.1));
+    // Radios: la parada del 50% del radio de esquina más lejana de cada caja.
+    float r80 = 0.5 * length(0.4 * uTam);
+    float r160 = 0.5 * length(0.8 * uTam);
 
-    col = mix(col, uC5, 0.55 * gauss(p, c5, medio * 0.46));
-    col = mix(col, uC3, 0.50 * gauss(p, c3, medio * 0.36));
-    col = mix(col, uC2, 0.60 * gauss(p, c2, medio * 0.34));
-    col = mix(col, uC4, 0.55 * gauss(p, c4, medio * 0.28));
+    float t20 = TAU * fract(uT / 20.0);
+    float t40 = TAU * fract(uT / 40.0);
 
-    // La del cursor: metabola de cuatro lóbulos.
+    vec3 pre = vec3(0.0);
+    float A = 0.0;
+
+    // second: gira 20 s alrededor de (50% - 400px, 50%)
+    componer(pre, A, uC2, caida(p, girar(m, m + vec2(-400.0, 0.0) * k, t20), r80, 0.8));
+
+    // third: nace en (90% - 500px, 90% + 200px) y gira 40 s alrededor de (50% + 400px, 50%)
+    vec2 c3 = vec2(uTam.x * 0.9 - 500.0 * k, uTam.y * 0.9 + 200.0 * k);
+    componer(pre, A, uC3, caida(p, girar(c3, m + vec2(400.0, 0.0) * k, t40), r80, 0.8));
+
+    // fourth: vaivén de ±50 px en 40 s, opacidad 0.7
+    componer(pre, A, uC4, caida(p, m + vec2(-50.0 * cos(t40), 0.0), r80, 0.8 * 0.7));
+
+    // fifth: caja del 160%, gira 20 s alrededor de (50% - 800px, 50% + 200px)
+    componer(pre, A, uC5, caida(p, girar(m, m + vec2(-800.0, 200.0) * k, t20), r160, 0.8));
+
+    // La del cursor: caja del 150%, tres gradientes descentrados, rotación y
+    // escala en tres tramos de 8 s como los keyframes de bubble-morph.
     if (uPunteroOn > 0.5) {
+        vec2 caja = uTam * 1.5;
         vec2 c = m + uPuntero;
-        float r = corto * 0.12;
-        float a = T * 0.5;
-        /* Cada lóbulo recorre una elipse propia, con frecuencias distintas en
-           x y en y: la silueta nunca vuelve a ser la misma, y los lóbulos van
-           lo bastante lejos del centro como para que el contorno se abolle. */
-        vec2 o1 = vec2(cos(a),               sin(a * 1.10))        * r * 0.75;
-        vec2 o2 = vec2(cos(a * 1.37 + 2.1),  sin(a * 1.21 + 2.1))  * r * 0.85;
-        vec2 o3 = vec2(cos(-a * 0.83 + 4.2), sin(-a * 0.91 + 4.2)) * r * 0.70;
-        vec2 o4 = vec2(cos(a * 0.61 + 1.0),  sin(-a * 0.73 + 5.0)) * r * 0.95;
-        float f = gauss(p, c + o1, r) + gauss(p, c + o2, r * 0.82)
-                + gauss(p, c + o3, r * 0.70) + gauss(p, c + o4, r * 0.55);
+        float f = fract(uT / 24.0) * 3.0;
+        float tramo = floor(f);
+        float e = suave(fract(f));
+        float ang = TAU / 3.0 * (tramo + e);
+        vec2 e0 = tramo < 0.5 ? vec2(1.0, 1.0) : (tramo < 1.5 ? vec2(1.12, 0.90) : vec2(0.92, 1.14));
+        vec2 e1 = tramo < 0.5 ? vec2(1.12, 0.90) : (tramo < 1.5 ? vec2(0.92, 1.14) : vec2(1.0, 1.0));
+        vec2 esc = mix(e0, e1, e);
 
-        /* Volumen: más clara hacia arriba a la izquierda, como una gota con
-           luz. Sin esto se leía como un disco plano. */
-        vec2 d = (p - c) / (r * 2.2);
-        float luz = clamp(0.5 - 0.5 * (d.x + d.y), 0.0, 1.0);
-        vec3 cuerpo = mix(uC6, vec3(1.0), 0.06 + 0.24 * luz);
+        vec2 q = girar(p - c, vec2(0.0), -ang) / esc;
 
-        col = mix(col, uC6, 0.34 * smoothstep(0.0, 0.7, f));      // halo
-        col = mix(col, cuerpo, 0.86 * smoothstep(0.46, 0.8, f)); // cuerpo, borde definido
+        vec3 lpre = vec3(0.0);
+        float la = 0.0;
+        for (int i = 0; i < 3; i++) {
+            vec2 rel = i == 0 ? vec2(0.44, 0.40) : (i == 1 ? vec2(0.63, 0.54) : vec2(0.48, 0.64));
+            float parada = i == 0 ? 0.46 : (i == 1 ? 0.38 : 0.35);
+            float alfa = i == 0 ? 0.8 : (i == 1 ? 0.62 : 0.55);
+            vec2 cg = (rel - 0.5) * caja;
+            vec2 lejos = max(abs(cg + caja * 0.5), abs(cg - caja * 0.5));
+            float a = caida(q, cg, length(lejos) * parada, alfa);
+            lpre += uC6 * a * (1.0 - la);   // fondos apilados, sin mezcla
+            la = a + la * (1.0 - la);
+        }
+        if (la > 0.0) componer(pre, A, lpre / la, la * 0.75);
     }
 
-    col += (grano(gl_FragCoord.xy + fract(T)) - 0.5) / 255.0;
+    /* El filtro goo: umbral de opacidad (18a - 8 recorta entre 0.44 y 0.5).
+       Lo suaviza lo mismo que suavizaba el blur(40px) de después, y el propio
+       gradiente se sigue viendo por encima como halo (feBlend source-over). */
+    #ifdef CON_DERIVADAS
+        /* Ancho del borde en píxeles de verdad: el blur(40px) del CSS difumina
+           lo mismo una mancha grande que una pequeña. fwidth dice cuánto cambia
+           la opacidad por píxel de lienzo; se abre la transición ~45 px CSS. */
+        float w = clamp(fwidth(A) * 45.0 * uEscala, 0.02, 0.3);
+        float goo = smoothstep(0.46 - w, 0.46 + w, A);
+    #else
+        float goo = smoothstep(0.38, 0.54, A);
+    #endif
+    float alfa = A + goo * (1.0 - A);
+    vec3 color = A > 0.0 ? pre / A : vec3(0.0);
+
+    // Degradado base, 'to bottom right'.
+    vec2 dir = normalize(vec2(uTam.y, uTam.x));
+    float largo = 2.0 * uTam.x * uTam.y / length(uTam);
+    vec3 base = mix(uBaseA, uBaseB, clamp(0.5 + dot(p - m, dir) / largo, 0.0, 1.0));
+
+    vec3 col = mix(base, color, clamp(alfa, 0.0, 1.0));
+    col += (grano(gl_FragCoord.xy + fract(uT)) - 0.5) / 255.0;
     gl_FragColor = vec4(col, 1.0);
 }
+
 `;
 
 const compilar = (gl: WebGLRenderingContext, tipo: number, fuente: string): WebGLShader | null => {
@@ -169,8 +227,12 @@ export function iniciarFondoGL(raiz: HTMLElement, colores: ColoresFondo, interac
     const pintor = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL) || "") : "";
     if (/swiftshader|llvmpipe|software|basic render/i.test(pintor)) return null;
 
+    /* Las derivadas (fwidth) dan el borde en píxeles reales; están en casi
+       todos los navegadores, pero si faltan se usa un borde fijo. */
+    const derivadas = gl.getExtension("OES_standard_derivatives");
+    const cabecera = derivadas ? "#extension GL_OES_standard_derivatives : enable\n#define CON_DERIVADAS\n" : "";
     const vs = compilar(gl, gl.VERTEX_SHADER, VERT);
-    const fs = compilar(gl, gl.FRAGMENT_SHADER, FRAG);
+    const fs = compilar(gl, gl.FRAGMENT_SHADER, cabecera + FRAG);
     const prog = gl.createProgram();
     if (!vs || !fs || !prog) return null;
     gl.attachShader(prog, vs);
