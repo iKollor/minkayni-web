@@ -55,7 +55,12 @@ const teams = localizeCollection(
     locale === "en" ? await readCollection("teamMembersEn") : [],
     locale
 ).sort(bySort);
-const legend = getData(homepage, "legend", undefined, locale === "en" ? fallbackLegendEn : fallbackLegend);
+/* El respaldo de `getData` solo entra si el CMS devuelve nulo, no si devuelve
+   una cadena vacía, y este párrafo es lo único que cuenta en la portada a qué
+   se dedica la fundación: vaciarlo en Strapi dejaba la primera pantalla con un
+   logotipo y nada más. Se fuerza el respaldo también con la cadena vacía. */
+const legendCms = getData(homepage, "legend", undefined, "");
+const legend = (typeof legendCms === "string" && legendCms.trim()) || (locale === "en" ? fallbackLegendEn : fallbackLegend);
 const testimonialsTitle = getData(homepage, "testimonialsTitle", undefined, homepageTextsFallback.testimonialsTitle) || homepageTextsFallback.testimonialsTitle;
 const teamTitle = getData(homepage, "teamTitle", undefined, homepageTextsFallback.teamTitle) || homepageTextsFallback.teamTitle;
 const featuredProject = homepage ? getData(homepage, "featuredProject", undefined, null) : null;
@@ -145,7 +150,14 @@ const projectsCta = homepage
            `pt-[70svh]` y tres literales en el script), y cualquier cambio en uno
            dejaba el texto pegado al degradado o flotando lejos de él. */
         :root {
-            --hero-h: 70svh;
+            /* 56svh en móvil, 64 en escritorio. Estuvo a 70 en los dos, y el
+               párrafo donde la portada cuenta qué hace la fundación caía justo
+               al filo de la primera pantalla; en un teléfono no se leía una
+               línea. Google rechazó la solicitud de Ad Grants pidiendo, entre
+               otras cosas, que se vea contenido y una llamada a la acción sin
+               tener que buscarlos. Bajar el degradado sube el texto sin tocar
+               ni el logotipo ni la identidad de la portada. */
+            --hero-h: 56svh;
             /* Separación entre el degradado y la leyenda. En móvil el texto va
                debajo y necesita aire; en escritorio va al costado y no. */
             --hero-gap: 2.5rem;
@@ -165,6 +177,9 @@ const projectsCta = homepage
             :root {
                 --hero-gap: 0px;
                 --logo-w: 40svw;
+                /* En escritorio cabe más, y el degradado es la carta de
+                   presentación: se le deja algo más de alto que en móvil. */
+                --hero-h: 64svh;
             }
         }
 

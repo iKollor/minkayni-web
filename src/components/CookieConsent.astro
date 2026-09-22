@@ -31,6 +31,12 @@
    no tiene JavaScript no ve un aviso que no podría responder (sin JavaScript
    tampoco se carga Analytics, así que no hay nada que consentir).
 
+   Compacto a propósito. La primera versión ocupaba el 47% de la pantalla de
+   un móvil y tapaba justo el párrafo donde la portada cuenta qué hace la
+   fundación: para quien llega —un revisor de Ad Grants incluido— la página
+   era un logotipo y un aviso de cookies. Por eso el texto es corto, los dos
+   botones van en fila y el antetítulo desaparece en pantalla estrecha.
+
    Es fijo y no empuja el contenido, así que no mueve la página al aparecer.
    En escritorio va a la derecha para no taparle la navegación lateral de la
    portada, que vive abajo a la izquierda. */
@@ -40,7 +46,7 @@ const locale = getLocale(Astro.url);
 const t = useTranslations(locale);
 
 const boton =
-    "inline-flex min-h-11 items-center justify-center rounded-full px-6 py-2.5 font-display text-base font-bold uppercase tracking-wide transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 motion-reduce:transition-none motion-reduce:hover:translate-y-0";
+    "inline-flex min-h-11 flex-1 items-center justify-center rounded-full px-5 py-2.5 font-display text-sm font-bold uppercase tracking-wide transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:flex-none sm:px-6 sm:text-base";
 ---
 
 <section
@@ -49,12 +55,14 @@ const boton =
     aria-label={t("cookies.label")}
     hidden
 >
-    <div class="pointer-events-auto rounded-[2rem] bg-background p-6 text-black shadow-[0_18px_50px_rgba(10,8,1,0.28)] ring-1 ring-black/10 sm:p-7">
-        <p class="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-primary">{t("cookies.eyebrow")}</p>
-        <h2 class="font-display text-2xl font-black leading-tight text-black">{t("cookies.title")}</h2>
-        <p class="mt-3 text-[0.95rem] leading-[1.55] text-black/75">{t("cookies.body")}</p>
+    <div class="pointer-events-auto rounded-[1.5rem] bg-background p-4 text-black shadow-[0_18px_50px_rgba(10,8,1,0.28)] ring-1 ring-black/10 sm:rounded-[2rem] sm:p-7">
+        {/* El antetítulo solo en pantalla ancha: en un móvil era una línea más
+            de un aviso que ya tapaba media pantalla. */}
+        <p class="mb-2 hidden text-xs font-bold uppercase tracking-[0.22em] text-primary sm:block">{t("cookies.eyebrow")}</p>
+        <h2 class="font-display text-lg font-black leading-tight text-black sm:text-2xl">{t("cookies.title")}</h2>
+        <p class="mt-1.5 text-sm leading-[1.5] text-black/75 sm:mt-3 sm:text-[0.95rem] sm:leading-[1.55]">{t("cookies.body")}</p>
 
-        <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div class="mt-4 flex flex-row gap-2 sm:mt-6 sm:gap-3 sm:items-center">
             <button type="button" class:list={[boton, "bg-primary text-white hover:bg-secondary-deep focus-visible:outline-primary"]} data-cookie-accept>
                 {t("cookies.accept")}
             </button>
@@ -64,7 +72,7 @@ const boton =
         </div>
 
         <a
-            class="mt-5 inline-block text-sm font-bold text-primary underline underline-offset-4 hover:text-secondary-deep focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+            class="mt-3 inline-block text-xs font-bold text-primary underline underline-offset-4 hover:text-secondary-deep focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary sm:mt-5 sm:text-sm"
             href={`${localizePath("/transparencia", locale)}#datos`}>{t("cookies.more")}</a
         >
     </div>

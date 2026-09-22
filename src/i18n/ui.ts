@@ -175,8 +175,7 @@ export const ui = {
         "cookies.label": "Aviso de cookies",
         "cookies.eyebrow": "Antes de seguir",
         "cookies.title": "¿Nos dejas medir la visita?",
-        "cookies.body":
-            "Usamos Google Analytics para saber qué páginas sirven de verdad y para sostener la cuenta de Google Ad Grants que paga nuestra difusión. Si prefieres que no, la web funciona igual y no se guarda nada en tu navegador.",
+        "cookies.body": "Medimos qué páginas sirven, con Google Analytics. Si prefieres que no, la web funciona igual.",
         "cookies.accept": "Aceptar",
         "cookies.reject": "Solo lo necesario",
         "cookies.more": "Cómo tratamos los datos",
@@ -424,8 +423,7 @@ export const ui = {
         "cookies.label": "Cookie notice",
         "cookies.eyebrow": "Before you carry on",
         "cookies.title": "May we measure this visit?",
-        "cookies.body":
-            "We use Google Analytics to learn which pages are actually useful, and to keep the Google Ad Grants account that pays for our outreach. If you would rather not, the site works just the same and nothing is stored in your browser.",
+        "cookies.body": "We measure which pages are useful, with Google Analytics. If you would rather not, the site works just the same.",
         "cookies.accept": "Accept",
         "cookies.reject": "Only what's needed",
         "cookies.more": "How we handle data",
