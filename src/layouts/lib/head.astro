@@ -6,6 +6,7 @@ import { getImage } from "astro:assets";
 import { globalFallback } from "../../data/pages/global";
 import { loadPageContent } from "../../utils/page-content";
 import Analytics from "../../components/Analytics.astro";
+import CookieConsent from "../../components/CookieConsent.astro";
 import FontFaces from "../../components/FontFaces.astro";
 import OrganizationJsonLd from "../../components/legal/OrganizationJsonLd.astro";
 import PageJsonLd from "../../components/legal/PageJsonLd.astro";
@@ -137,9 +138,6 @@ const ogUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefi
             mismo dominio (nginx.conf), así que el navegador abría una conexión
             a strapi.minkayni.org que nunca usaba y Lighthouse lo señalaba. */}
 
-        <!-- Medición para Ad Grants. No emite nada si no hay id configurado. -->
-        <Analytics />
-
         {/* Decisiones que hay que tomar ANTES del primer pintado, para que el
              HTML no esconda nada «por si acaso»:
 
@@ -231,5 +229,10 @@ const ogUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefi
             parseado (ver el componente). Va al final: en el <head> eran 7 KB
             de script delante de todo el contenido. */}
         <FontFaces />
+        {/* Medición para Ad Grants, también al final: gtag.js pesa unos 90 KB
+            y nada de la página depende de él. Ver el componente. */}
+        <Analytics />
+        {/* El aviso que decide si esa medición puede guardar algo. */}
+        <CookieConsent />
     </body>
 </html>

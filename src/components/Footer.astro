@@ -296,6 +296,12 @@ const partnerLogos = (partnerImages ?? []).map((img) => ({
                         </a>
                     )
                 }
+                {/* Volver a abrir el aviso de cookies. Lo escucha
+                    CookieConsent.astro por `data-cookie-prefs`; sin JavaScript
+                    tampoco hay medición que revisar, así que se oculta. */}
+                <button type="button" class="hidden text-black opacity-80 hover:text-primary hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary [html[data-js]_&]:inline" data-cookie-prefs>
+                    {t("cookies.settings")}
+                </button>
             </div>
         </div>
         <div class="w-full text-center">

@@ -5,10 +5,15 @@
  * no puede demostrar qué hace la gente al llegar acaba suspendida. Hasta ahora
  * el sitio no tenía ninguna etiqueta.
  *
- * Nada de esto se emite si no hay identificador configurado, así que el
- * repositorio no lleva ningún rastreador encendido por defecto y en local el
- * sitio sigue sin pedir nada a Google. Se activa poniendo las variables en el
- * entorno del despliegue (ver .env.example).
+ * El identificador de Analytics vive en el repositorio: es público por diseño
+ * —acaba en el HTML de todas las páginas— y así la medición no depende de que
+ * alguien se acuerde de ponerlo en el panel del despliegue. Las variables de
+ * entorno lo sustituyen, que es lo que hace falta para medir aparte una copia
+ * del sitio (ver .env.example).
+ *
+ * Nada se emite fuera del sitio construido: con `astro dev` no se manda nada,
+ * y la build servida en local (`pnpm run preview`) se reconoce por el nombre
+ * de dominio y tampoco cuenta. Trastear no ensucia los informes.
  *
  * Qué se mide, además de la página vista: los tres gestos que para la
  * fundación son una conversión de verdad —abrir la página de aporte, escribir
@@ -16,31 +21,62 @@
  * poder marcarlos como conversión en el panel de Google Ads sin volver a tocar
  * el código.
  *
- * Privacidad: `anonymize_ip` y sin señales de publicidad personalizada. Si
- * algún día el sitio necesita un aviso de cookies (tráfico europeo, por
- * ejemplo), el sitio a tocar es este y solo este.
+ * Privacidad: nada se guarda en el navegador de quien visita hasta que
+ * responda al aviso (components/CookieConsent.astro). Aquí se declaran las
+ * señales del modo de consentimiento de Google en «denegado» ANTES de cargar
+ * la etiqueta, y ahí se quedan si la respuesta no llega: en ese estado Google
+ * mide sin cookies y sin identificar a nadie. Además, `anonymize_ip` y sin
+ * señales de publicidad personalizada.
  */
-const medicion = import.meta.env.PUBLIC_GA_MEASUREMENT_ID?.trim();
+import { CLAVE_CONSENTIMIENTO, SENALES_FIJAS, SENALES_VARIABLES } from "../scripts/consentimiento";
+
+/** Propiedad de Google Analytics 4 de la fundación. */
+const GA_POR_DEFECTO = "G-4704EJW8QJ";
+
+const medicion = import.meta.env.PUBLIC_GA_MEASUREMENT_ID?.trim() || GA_POR_DEFECTO;
 const conversiones = import.meta.env.PUBLIC_ADS_CONVERSION_ID?.trim();
 
 /* El primero de los dos manda sobre la carga del script; el segundo se
    configura encima si existe, que es como Google recomienda enlazar Analytics
    con Ads sin cargar gtag.js dos veces. */
 const etiquetas = [medicion, conversiones].filter(Boolean) as string[];
-const activo = etiquetas.length > 0;
+const activo = import.meta.env.PROD && etiquetas.length > 0;
 ---
 
 {
     activo && (
         <>
-            <link rel="preconnect" href="https://www.googletagmanager.com" />
-            <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${etiquetas[0]}`} />
-            <script is:inline define:vars={{ etiquetas }}>
+            {/* El bloque en línea va ANTES que gtag.js: las señales de
+                consentimiento tienen que estar declaradas cuando la etiqueta
+                arranque, o el primer envío saldría sin ellas. */}
+            <script is:inline define:vars={{ etiquetas, clave: CLAVE_CONSENTIMIENTO, variables: SENALES_VARIABLES, fijas: SENALES_FIJAS }}>
+                if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
+                    /* La build servida en local para revisarla antes de
+                       desplegar no es una visita. */
+                } else {
                 window.dataLayer = window.dataLayer || [];
                 function gtag() {
                     window.dataLayer.push(arguments);
                 }
                 window.gtag = gtag;
+
+                /* Modo de consentimiento. Sin respuesta guardada, todo
+                   denegado: Google puede contar la visita, pero no guarda
+                   nada en el navegador ni sabe quién es. Si ya se respondió,
+                   se aplica de entrada para que el primer envío salga bien
+                   sin esperar al aviso. `wait_for_update` es el margen que
+                   Google espera por si la respuesta llega enseguida. */
+                let respuesta = null;
+                try {
+                    respuesta = localStorage.getItem(clave);
+                } catch (e) {
+                    /* Sin almacenamiento se pregunta otra vez. */
+                }
+                const valor = respuesta === "concedido" ? "granted" : "denied";
+                const porDefecto = Object.assign({ wait_for_update: 500 }, fijas);
+                for (const senal of variables) porDefecto[senal] = valor;
+                gtag("consent", "default", porDefecto);
+
                 gtag("js", new Date());
                 for (const etiqueta of etiquetas) {
                     gtag("config", etiqueta, { anonymize_ip: true, allow_google_signals: false });
@@ -71,7 +107,12 @@ const activo = etiquetas.length > 0;
                     },
                     { passive: true },
                 );
+                }
             </script>
+            {/* Sin `preconnect`: el componente va al final del cuerpo, así que
+                la conexión se abre cuando toca. Adelantarla desde la cabecera
+                sería pagar un saludo a un tercero antes de pintar la página. */}
+            <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${etiquetas[0]}`} />
         </>
     )
 }

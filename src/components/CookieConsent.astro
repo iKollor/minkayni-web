@@ -1,0 +1,124 @@
+---
+/* ──────────────────────────────────────────────────────────────────────────
+   Aviso de cookies propio, con el modo de consentimiento de Google.
+
+   Por qué propio y no una plataforma de las que lista Google (Usercentrics,
+   CookieYes, iubenda…): todas tienen plan gratuito HOY, con límites de
+   visitas y la marca de la plataforma en el aviso, y el precio cambia cuando
+   quieren. Esto son unas pocas decenas de líneas, no cuesta nada, no añade un
+   script de un tercero delante de la página y se viste con la línea gráfica
+   del sitio en vez de con la de otro. Lo único que Google necesita de
+   verdad es que se le manden las señales del modo de consentimiento
+   (`gtag("consent", …)`), y eso lo hace cualquiera.
+
+   Cómo funciona:
+   - Analytics.astro declara las señales en «denegado» antes de cargar nada,
+     y las deja así hasta que haya respuesta. Mientras tanto Google no guarda
+     nada en el navegador.
+   - Este aviso solo pregunta. Al responder, guarda la respuesta y manda la
+     señal de actualización.
+   - La respuesta se guarda en el propio navegador (`localStorage`), no en una
+     cookie: no viaja a ningún servidor y no hay nada que consentir para
+     guardarla.
+   - Se puede cambiar de opinión: cualquier elemento con `data-cookie-prefs`
+     —el enlace del pie— vuelve a abrirlo.
+
+   Viene en el HTML con `hidden`, y lo quita el script solo si no hay
+   respuesta guardada: así quien ya respondió no ve ni un parpadeo, y quien
+   no tiene JavaScript no ve un aviso que no podría responder (sin JavaScript
+   tampoco se carga Analytics, así que no hay nada que consentir).
+
+   Es fijo y no empuja el contenido, así que no mueve la página al aparecer.
+   En escritorio va a la derecha para no taparle la navegación lateral de la
+   portada, que vive abajo a la izquierda. */
+import { getLocale, localizePath, useTranslations } from "../i18n";
+
+const locale = getLocale(Astro.url);
+const t = useTranslations(locale);
+
+const boton =
+    "inline-flex min-h-11 items-center justify-center rounded-full px-6 py-2.5 font-display text-base font-bold uppercase tracking-wide transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 motion-reduce:transition-none motion-reduce:hover:translate-y-0";
+---
+
+<section
+    id="aviso-cookies"
+    class="pointer-events-none fixed inset-x-3 bottom-3 z-[100] sm:inset-x-auto sm:bottom-6 sm:right-6 sm:max-w-[27rem]"
+    aria-label={t("cookies.label")}
+    hidden
+>
+    <div class="pointer-events-auto rounded-[2rem] bg-background p-6 text-black shadow-[0_18px_50px_rgba(10,8,1,0.28)] ring-1 ring-black/10 sm:p-7">
+        <p class="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-primary">{t("cookies.eyebrow")}</p>
+        <h2 class="font-display text-2xl font-black leading-tight text-black">{t("cookies.title")}</h2>
+        <p class="mt-3 text-[0.95rem] leading-[1.55] text-black/75">{t("cookies.body")}</p>
+
+        <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <button type="button" class:list={[boton, "bg-primary text-white hover:bg-secondary-deep focus-visible:outline-primary"]} data-cookie-accept>
+                {t("cookies.accept")}
+            </button>
+            <button type="button" class:list={[boton, "border-2 border-black/25 text-black hover:border-primary hover:text-primary focus-visible:outline-primary"]} data-cookie-reject>
+                {t("cookies.reject")}
+            </button>
+        </div>
+
+        <a
+            class="mt-5 inline-block text-sm font-bold text-primary underline underline-offset-4 hover:text-secondary-deep focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+            href={localizePath("/transparencia", locale)}>{t("cookies.more")}</a
+        >
+    </div>
+</section>
+
+<style>
+    /* Entra desde abajo, una sola vez. `hidden` manda sobre todo esto: el
+       aviso no existe para nadie hasta que el script lo muestra. */
+    #aviso-cookies:not([hidden]) {
+        animation: aviso-cookies-entra 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes aviso-cookies-entra {
+        from {
+            opacity: 0;
+            transform: translateY(18px);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        #aviso-cookies:not([hidden]) {
+            animation: none;
+        }
+    }
+</style>
+
+<script>
+    import { CLAVE_CONSENTIMIENTO, leerConsentimiento, senales, type Consentimiento } from "../scripts/consentimiento";
+
+    const aviso = document.getElementById("aviso-cookies");
+    if (aviso) {
+        const responder = (respuesta: Consentimiento) => {
+            try {
+                localStorage.setItem(CLAVE_CONSENTIMIENTO, respuesta);
+            } catch {
+                /* Sin almacenamiento la respuesta vale solo para esta página:
+                   mejor eso que no poder responder. */
+            }
+            /* `gtag` lo define Analytics.astro; si la medición está apagada
+               (build de desarrollo) no hay nada que actualizar. */
+            window.gtag?.("consent", "update", senales(respuesta));
+            aviso.hidden = true;
+        };
+
+        aviso.querySelector("[data-cookie-accept]")?.addEventListener("click", () => responder("concedido"));
+        aviso.querySelector("[data-cookie-reject]")?.addEventListener("click", () => responder("denegado"));
+
+        /* Volver a preguntar desde el pie. Delegado en el documento: el pie se
+           pinta en todas las páginas y así no hace falta un segundo script. */
+        document.addEventListener("click", (evento) => {
+            const disparador = evento.target instanceof Element ? evento.target.closest("[data-cookie-prefs]") : null;
+            if (!disparador) return;
+            evento.preventDefault();
+            aviso.hidden = false;
+            aviso.querySelector<HTMLButtonElement>("[data-cookie-accept]")?.focus();
+        });
+
+        if (!leerConsentimiento()) aviso.hidden = false;
+    }
+</script>

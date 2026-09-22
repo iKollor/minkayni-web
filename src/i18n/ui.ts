@@ -171,6 +171,17 @@ export const ui = {
         "viewer.goTo": "Ver la foto {index}",
         "viewer.position": "{index} de {count}",
 
+        /* Aviso de cookies */
+        "cookies.label": "Aviso de cookies",
+        "cookies.eyebrow": "Antes de seguir",
+        "cookies.title": "¿Nos dejas medir la visita?",
+        "cookies.body":
+            "Usamos Google Analytics para saber qué páginas sirven de verdad y para sostener la cuenta de Google Ad Grants que paga nuestra difusión. Si prefieres que no, la web funciona igual y no se guarda nada en tu navegador.",
+        "cookies.accept": "Aceptar",
+        "cookies.reject": "Solo lo necesario",
+        "cookies.more": "Cómo tratamos los datos",
+        "cookies.settings": "Preferencias de cookies",
+
         /* Donaciones */
         "donate.copyAll": "Copiar todos los datos",
         "donate.copied": "Datos copiados",
@@ -408,6 +419,17 @@ export const ui = {
         "viewer.zoomOut": "Fit the whole photo",
         "viewer.goTo": "See photo {index}",
         "viewer.position": "{index} of {count}",
+
+        /* Cookie notice */
+        "cookies.label": "Cookie notice",
+        "cookies.eyebrow": "Before you carry on",
+        "cookies.title": "May we measure this visit?",
+        "cookies.body":
+            "We use Google Analytics to learn which pages are actually useful, and to keep the Google Ad Grants account that pays for our outreach. If you would rather not, the site works just the same and nothing is stored in your browser.",
+        "cookies.accept": "Accept",
+        "cookies.reject": "Only what's needed",
+        "cookies.more": "How we handle data",
+        "cookies.settings": "Cookie preferences",
 
         /* Donations */
         "donate.copyAll": "Copy all details",

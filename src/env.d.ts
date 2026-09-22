@@ -6,6 +6,8 @@ declare global {
         /** Guarda anti-doble-inicialización de la animación de #moments. */
         __MOMENTS_ANIM__?: boolean;
         toggleGrain?: () => void;
+        /** La define Analytics.astro; no existe si la medición está apagada. */
+        gtag?: (...args: unknown[]) => void;
     }
     /** Eventos propios del sitio, para que addEventListener los tipe. */
     interface WindowEventMap {
@@ -20,6 +22,10 @@ declare global {
         /** Clave de las teselas CARTO. Lleva prefijo PUBLIC_ porque acaba en el navegador. */
         readonly PUBLIC_CARTO_KEY?: string;
         readonly STRAPI_CODEGEN_DEBUG?: "0" | "1";
+        /** Propiedad de Google Analytics 4. Por defecto, la de la fundación. */
+        readonly PUBLIC_GA_MEASUREMENT_ID?: string;
+        /** Conversiones de Google Ads (AW-…), si algún día se enlaza aparte. */
+        readonly PUBLIC_ADS_CONVERSION_ID?: string;
     }
 
     interface ImportMeta {

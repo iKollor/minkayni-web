@@ -291,9 +291,20 @@ Convenciones que salen de ahí:
   (`/about#contacto`) se enlazan desde el pie, el panel del menú y la sección
   «Cómo puedes ayudar» de la portada, además de los CTA propios de cada
   página. El árbol del CMS puede cambiar; esos enlaces no dependen de él.
-- **Medición.** `PUBLIC_GA_MEASUREMENT_ID` / `PUBLIC_ADS_CONVERSION_ID` activan
-  la etiqueta (ver `src/components/Analytics.astro`); sin ellas no se carga
-  nada. Ad Grants exige seguimiento de conversiones para mantener la cuenta.
+- **Medición.** La etiqueta de Google Analytics va en el repositorio con el
+  identificador de la fundación (`src/components/Analytics.astro`), porque es
+  público y acaba en el HTML de todas las páginas de todos modos.
+  `PUBLIC_GA_MEASUREMENT_ID` y `PUBLIC_ADS_CONVERSION_ID` lo sustituyen si hay
+  que medir aparte otra copia del sitio. Solo se emite en la build: con
+  `astro dev` no se manda nada, y la build servida en local se reconoce por el
+  nombre de dominio y tampoco cuenta. Ad Grants exige seguimiento de
+  conversiones para mantener la cuenta.
+- **Consentimiento.** El aviso es propio (`src/components/CookieConsent.astro`),
+  sin plataforma de terceros: las que recomienda Google tienen plan gratuito
+  hoy, con límites y su marca en el aviso. Declara las señales del modo de
+  consentimiento de Google en «denegado» antes de cargar la etiqueta y solo
+  las concede si la visita acepta; la respuesta se guarda en `localStorage`, no
+  en una cookie. Se puede cambiar desde el enlace del pie.
 
 Para medir en local como lo hace Google (móvil con red y CPU limitadas):
 `pnpm build`, servir `dist/` y pasar Lighthouse sobre `/`, `/about/`,

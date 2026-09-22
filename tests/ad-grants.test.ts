@@ -424,6 +424,49 @@ test("la leyenda de la portada no espera al JavaScript", () => {
     }
 });
 
+test("cada página lleva la etiqueta de medición que Ad Grants exige", () => {
+    /* La política de Ad Grants pide seguimiento de conversiones: una cuenta
+       que no puede demostrar qué hace la gente al llegar acaba suspendida. */
+    for (const archivo of paginasReales()) {
+        const html = leer(archivo);
+        assert.match(html, /googletagmanager\.com\/gtag\/js\?id=G-/, `${rutaDe(archivo)}: sin etiqueta de Analytics`);
+    }
+});
+
+test("el consentimiento se declara antes de cargar la etiqueta", () => {
+    /* Las señales del modo de consentimiento tienen que estar puestas cuando
+       gtag arranca: si se declaran después, el primer envío de cada visita
+       sale sin ellas y Google ya guardó lo que no debía. */
+    for (const archivo of paginasReales()) {
+        const html = leer(archivo);
+        const ruta = rutaDe(archivo);
+        const consentimiento = html.indexOf('"consent", "default"');
+        const configuracion = html.indexOf('"config"');
+        const etiqueta = html.indexOf("googletagmanager.com/gtag/js");
+        assert.ok(consentimiento > -1, `${ruta}: no se declara el consentimiento`);
+        assert.ok(consentimiento < configuracion, `${ruta}: se configura Analytics antes de declarar el consentimiento`);
+        assert.ok(configuracion < etiqueta, `${ruta}: gtag.js se carga antes de declarar el consentimiento`);
+        /* Y de partida, denegado: solo se concede si hay una respuesta
+           guardada que lo diga. Lo contrario sería medir sin preguntar. */
+        assert.match(html, /granted"\s*:\s*"denied/, `${ruta}: el consentimiento no parte de denegado`);
+    }
+});
+
+test("cada página lleva el aviso de cookies, oculto hasta que haga falta", () => {
+    /* Es propio, no de una plataforma de terceros: ver CookieConsent.astro.
+       Viene oculto para que quien ya respondió no vea un parpadeo. */
+    for (const archivo of paginasReales()) {
+        const html = leer(archivo);
+        const ruta = rutaDe(archivo);
+        const inicio = html.indexOf('id="aviso-cookies"');
+        assert.ok(inicio > -1, `${ruta}: sin aviso de cookies`);
+        assert.match(html.slice(inicio, inicio + 400), /\shidden(\s|>)/, `${ruta}: el aviso no viene oculto`);
+        assert.match(html, /data-cookie-accept/, `${ruta}: el aviso no deja aceptar`);
+        assert.match(html, /data-cookie-reject/, `${ruta}: el aviso no deja rechazar`);
+        assert.match(html, /data-cookie-prefs/, `${ruta}: no se puede cambiar de opinión`);
+    }
+});
+
 /* ----------------------- Coherencia de dominio y SEO ----------------------- */
 
 test("cada canónica apunta a su propia ruta, con www", () => {
