@@ -222,6 +222,20 @@ const ogUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefi
                 if (sessionStorage.getItem("pixel-curtain") === "1") document.documentElement.dataset.curtain = "covered";
             } catch (e) {}
         </script>
+        {/* Medición para Ad Grants. Va en el <head>, y lo último de él.
+
+            Estuvo al final del <body>, que es mejor para el rendimiento, y
+            hubo que traerla: el comprobador de Google —el botón «Probar» de
+            las instrucciones de instalación— no encontraba la etiqueta y daba
+            la propiedad por no instalada. Sus instrucciones piden ponerla
+            «justo después del elemento <head>», y al final de un documento de
+            300 KB no la veía. Medir sin que Google pueda verificarlo no sirve
+            para activar Ad Grants, que es para lo que está.
+
+            El coste se paga con `fetchpriority="low"` en el propio script (ver
+            el componente): sigue estando donde Google mira, pero el navegador
+            lo descarga detrás de lo que pinta la página. */}
+        <Analytics />
     </head>
     <body class="bg-background text-black">
         <slot />
@@ -229,10 +243,8 @@ const ogUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefi
             parseado (ver el componente). Va al final: en el <head> eran 7 KB
             de script delante de todo el contenido. */}
         <FontFaces />
-        {/* Medición para Ad Grants, también al final: gtag.js pesa unos 90 KB
-            y nada de la página depende de él. Ver el componente. */}
-        <Analytics />
-        {/* El aviso que decide si esa medición puede guardar algo. */}
+        {/* El aviso que decide si esa medición puede guardar algo. Al final
+            del cuerpo: es marcado, y nadie lo necesita antes de tiempo. */}
         <CookieConsent />
     </body>
 </html>

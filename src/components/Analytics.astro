@@ -21,6 +21,12 @@
  * poder marcarlos como conversión en el panel de Google Ads sin volver a tocar
  * el código.
  *
+ * Dónde va: en el <head>, y lo último de él. El sitio lo tuvo al final del
+ * <body>, que rinde mejor, pero el comprobador de Google no encontraba la
+ * etiqueta ahí y daba la propiedad por no instalada; sus instrucciones piden
+ * el <head>. Ad Grants necesita una medición que Google pueda verificar, así
+ * que manda el <head> y el coste se compensa con `fetchpriority="low"`.
+ *
  * Privacidad: nada se guarda en el navegador de quien visita hasta que
  * responda al aviso (components/CookieConsent.astro). Aquí se declaran las
  * señales del modo de consentimiento de Google en «denegado» ANTES de cargar
@@ -111,10 +117,17 @@ const activo = import.meta.env.PROD && etiquetas.length > 0;
                 );
                 }
             </script>
-            {/* Sin `preconnect`: el componente va al final del cuerpo, así que
-                la conexión se abre cuando toca. Adelantarla desde la cabecera
-                sería pagar un saludo a un tercero antes de pintar la página. */}
-            <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${etiquetas[0]}`} />
+            {/* `fetchpriority="low"`: el componente vive en el <head>, donde el
+                comprobador de Google busca la etiqueta, y ahí un script async
+                se descarga con prioridad alta por estar tan arriba. Bajándola,
+                el navegador atiende primero lo que pinta la página y deja los
+                ~90 KB de gtag.js para después. `async` ya impedía que
+                bloqueara el parseo; esto evita además que compita por el ancho
+                de banda con el LCP.
+
+                Sin `preconnect`: adelantar el saludo a un tercero antes de
+                pintar es justo lo que se está evitando. */}
+            <script is:inline async fetchpriority="low" src={`https://www.googletagmanager.com/gtag/js?id=${etiquetas[0]}`} />
         </>
     )
 }

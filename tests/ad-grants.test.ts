@@ -433,6 +433,26 @@ test("cada página lleva la etiqueta de medición que Ad Grants exige", () => {
     }
 });
 
+test("la etiqueta va en el <head> y se descarga en prioridad baja", () => {
+    /* En el <head> porque el comprobador de Google la busca ahí: estuvo al
+       final del <body> —mejor para el rendimiento— y Google daba la propiedad
+       por no instalada. Una medición que Google no puede verificar no activa
+       Ad Grants, que es para lo que está.
+
+       Y en prioridad baja porque en el <head> un script async se descargaría
+       por delante de lo que pinta la página: son ~90 KB de un tercero y nada
+       de la página depende de ellos. */
+    for (const archivo of paginasReales()) {
+        const html = leer(archivo);
+        const ruta = rutaDe(archivo);
+        const finHead = html.indexOf("</head>");
+        const etiqueta = html.indexOf("googletagmanager.com/gtag/js");
+        assert.ok(finHead > -1 && etiqueta > -1 && etiqueta < finHead, `${ruta}: la etiqueta no está en el <head>`);
+        assert.ok(html.indexOf('"consent", "default"') < etiqueta, `${ruta}: gtag.js se carga antes de declarar el consentimiento`);
+        assert.match(html.slice(etiqueta - 200, etiqueta), /fetchpriority="low"/, `${ruta}: la etiqueta se descarga en prioridad alta`);
+    }
+});
+
 test("el consentimiento se declara antes de cargar la etiqueta", () => {
     /* Las señales del modo de consentimiento tienen que estar puestas cuando
        gtag arranca: si se declaran después, el primer envío de cada visita
