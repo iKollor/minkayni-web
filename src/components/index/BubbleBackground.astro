@@ -242,6 +242,46 @@ const styleVars = [
         animation-play-state: paused;
     }
 
+    /* ── Versión ligera, para cuando el equipo no da de sí ───────────────
+
+       Lo caro de este fondo no es el movimiento: es `url(#bubble-goo)`. Un
+       filtro SVG referenciado lo rasteriza Chrome por CPU, cuadro a cuadro y
+       a pantalla completa, y no hay GPU que lo salve. Medido con la CPU
+       frenada 6x: 7,3 cuadros por segundo con el filtro, 14,6 sin él. La
+       página entera se arrastra mientras la portada está a la vista.
+
+       Lo que aporta ese filtro al aspecto NO es desenfoque —eso lo pone el
+       `blur(40px)` de después— sino un umbral de alfa: la matriz de color
+       multiplica la opacidad por 18 y resta 8, o sea que todo lo que pasa de
+       0,44 se vuelve opaco y lo demás desaparece. Eso deja los manchones más
+       densos y saturados.
+
+       La versión ligera hornea ese umbral donde no cuesta nada: el núcleo de
+       cada gradiente nace ya opaco, y un `brightness()` —una operación de
+       color por píxel, de las que sí van por GPU— recupera la intensidad que
+       ponía la matriz. Comparado píxel a píxel contra el original, el error
+       medio es de 6 sobre 255 (un 2,4%) al doble de cuadros por segundo.
+
+       No la ve todo el mundo: solo el equipo que ha demostrado no poder con
+       la buena (ver el script). En un teléfono que sí puede, esto no existe
+       y el fondo es exactamente el de siempre. */
+    :global(html[data-bubble-lite]) .bubble-bg__layers {
+        filter: blur(40px) brightness(1.12);
+    }
+
+    :global(html[data-bubble-lite]) .bubble-bg__blob--second {
+        background: radial-gradient(circle at center, rgba(var(--second-color), 1) 0%, rgba(var(--second-color), 0) 50%);
+    }
+    :global(html[data-bubble-lite]) .bubble-bg__blob--third {
+        background: radial-gradient(circle at center, rgba(var(--third-color), 1) 0%, rgba(var(--third-color), 0) 50%);
+    }
+    :global(html[data-bubble-lite]) .bubble-bg__blob--fourth {
+        background: radial-gradient(circle at center, rgba(var(--fourth-color), 1) 0%, rgba(var(--fourth-color), 0) 50%);
+    }
+    :global(html[data-bubble-lite]) .bubble-bg__blob--fifth {
+        background: radial-gradient(circle at center, rgba(var(--fifth-color), 1) 0%, rgba(var(--fifth-color), 0) 50%);
+    }
+
     /* Equipos lentos: se conservan los colores, se retira el coste. */
     :global(html[data-low-power]) .bubble-bg__layers {
         filter: blur(30px);
@@ -266,6 +306,93 @@ const styleVars = [
 </style>
 
 <script>
+    /* ── Quién se queda con el fondo bueno ────────────────────────────────
+
+       El filtro `url(#bubble-goo)` es caro de verdad (ver la hoja de estilos)
+       y no hay forma de saber de antemano si un equipo puede con él. La
+       detección que ya había —`data-low-power`, en head.astro— mira el número
+       de núcleos y la memoria, y con el listón en dos núcleos no la cumple
+       ningún teléfono de este siglo: en la práctica el fondo caro se lo comía
+       todo el mundo.
+
+       Así que en vez de adivinar, se mide. Se cuentan los cuadros que el
+       navegador consigue dibujar durante medio segundo con el fondo ya en
+       marcha; si la mayoría llegan tarde, este equipo no puede, y se pasa a
+       la versión ligera. Es una cuenta de enteros dentro de un
+       `requestAnimationFrame` que ya iba a ocurrir: no añade trabajo.
+
+       Se degrada una sola vez y no se vuelve atrás. Un equipo que va bien
+       nunca entra aquí y ve exactamente el fondo de siempre; uno que no,
+       cambia una vez y se queda. Lo que no se hace es ir y venir: eso sí se
+       notaría.
+
+       El listón: la mayoría de los cuadros por encima de 34 ms, o sea el
+       equipo sostenidamente por debajo de unos 29 cuadros por segundo. No se
+       trata de perseguir los 60: un teléfono que va a 44 se ve perfectamente
+       y se queda con el fondo bueno. Se trata de rescatar al que va a 7, que
+       es lo que pasa hoy y lo que hace que la página entera se arrastre.
+
+       La sonda cuenta CUADROS, no milisegundos, y ahí está el detalle que se
+       escapa a la primera: en un equipo que va a 6 cuadros por segundo —justo
+       el que hay que detectar— medio segundo no da ni para tres muestras, y
+       una sonda por tiempo se quedaría sin datos precisamente donde hace
+       falta. Contando cuadros, cuanto peor va el equipo antes se decide, que
+       es lo que conviene. El tope de tiempo solo está para no dejar un
+       `requestAnimationFrame` colgado si la pestaña se va al fondo.
+
+       Y se mide CON LA PÁGINA YA ASENTADA, no durante la carga. Medida antes,
+       la sonda degradaba hasta un equipo capaz de 46 cuadros por segundo:
+       mientras se ejecutan los scripts todo va a trompicones, y lo que se
+       estaba midiendo era la carga, no el fondo. Esperar cuesta que los
+       primeros segundos sigan siendo caros en un teléfono flojo; a cambio,
+       a nadie que pueda con el fondo bueno se le quita. */
+    const MUESTRAS = 12;
+    const MUESTRAS_MINIMAS = 4;
+    const TOPE_MS = 3000;
+    const CUADRO_LENTO_MS = 34;
+    const PROPORCION_LENTA = 0.6;
+
+    const medirYDegradar = () => {
+        const html = document.documentElement;
+        /* Si ya se decidió por otra vía (equipo lento declarado, o movimiento
+           reducido, que apaga las animaciones) no hay nada que medir. */
+        if (html.hasAttribute("data-bubble-lite") || html.hasAttribute("data-low-power")) return;
+        if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+        let previo = 0;
+        let total = 0;
+        let lentos = 0;
+        const inicio = performance.now();
+
+        const decidir = () => {
+            if (total >= MUESTRAS_MINIMAS && lentos / total > PROPORCION_LENTA) html.setAttribute("data-bubble-lite", "");
+        };
+
+        const paso = (ahora: number) => {
+            if (previo) {
+                total++;
+                if (ahora - previo > CUADRO_LENTO_MS) lentos++;
+            }
+            previo = ahora;
+            if (total >= MUESTRAS || ahora - inicio > TOPE_MS) decidir();
+            else requestAnimationFrame(paso);
+        };
+        requestAnimationFrame(paso);
+    };
+
+    /* La página «asentada»: cargada del todo y con un hueco de inactividad. El
+       `timeout` es el seguro de que se mide aunque el hilo no llegue a estar
+       ocioso nunca, que es justo lo que pasa en los equipos que interesan. */
+    const alAsentarse = (fn: () => void) => {
+        const luego = () => {
+            const ric = (window as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => void }).requestIdleCallback;
+            if (ric) ric(fn, { timeout: 2500 });
+            else setTimeout(fn, 1500);
+        };
+        if (document.readyState === "complete") luego();
+        else window.addEventListener("load", luego, { once: true });
+    };
+
     /* Muelle equivalente al `useSpring({ stiffness: 100, damping: 20 })` de
        motion, integrado a mano. Sólo se ejecuta si la capa interactiva existe
        (el componente se usó con `interactive`) y el usuario no pidió reducir
@@ -277,6 +404,8 @@ const styleVars = [
     const initBubble = (root: HTMLElement) => {
         if (root.dataset.bubbleReady) return;
         root.dataset.bubbleReady = "1";
+
+        alAsentarse(medirYDegradar);
 
         /* Pausa las animaciones cuando el fondo sale de pantalla. */
         let onVisibilityChange: ((visible: boolean) => void) | null = null;

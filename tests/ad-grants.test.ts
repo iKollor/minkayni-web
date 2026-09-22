@@ -487,6 +487,18 @@ test("cada página lleva el aviso de cookies, oculto hasta que haga falta", () =
     }
 });
 
+test("el fondo de la portada trae la versión buena y la de rescate", () => {
+    /* El filtro `url(#bubble-goo)` es lo que hace que la portada se vea como
+       se ve, y también lo que arrastra a 7 cuadros por segundo a un equipo
+       flojo (Chrome lo rasteriza por CPU). Por eso conviven los dos caminos:
+       el bueno para quien puede y uno ligero para quien no, que elige una
+       sonda en tiempo de ejecución. Borrar cualquiera de los dos rompe una
+       cosa distinta —el aspecto o el rendimiento—, así que se fijan aquí. */
+    const html = leer(path.join(DIST, "index.html"));
+    assert.match(html, /url\(#bubble-goo\)/, "la portada perdió el filtro bueno");
+    assert.match(html, /data-bubble-lite/, "la portada perdió el fondo de rescate");
+});
+
 test("«Cómo tratamos los datos» lleva a una sección que existe", () => {
     /* El aviso promete una explicación; si el ancla no existe, el enlace deja
        a quien pregunta en mitad de una página que no habla de eso. Se
