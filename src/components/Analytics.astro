@@ -30,8 +30,10 @@
  */
 import { CLAVE_CONSENTIMIENTO, SENALES_FIJAS, SENALES_VARIABLES } from "../scripts/consentimiento";
 
-/** Propiedad de Google Analytics 4 de la fundación. */
-const GA_POR_DEFECTO = "G-4704EJW8QJ";
+/** Flujo de datos de Google Analytics 4 de la fundación: el que está puesto
+    en el despliegue (`PUBLIC_GA_MEASUREMENT_ID` en Coolify). Vive también
+    aquí para que una build sin esa variable no se quede sin medir. */
+const GA_POR_DEFECTO = "G-WK5HSQPCJW";
 
 const medicion = import.meta.env.PUBLIC_GA_MEASUREMENT_ID?.trim() || GA_POR_DEFECTO;
 const conversiones = import.meta.env.PUBLIC_ADS_CONVERSION_ID?.trim();

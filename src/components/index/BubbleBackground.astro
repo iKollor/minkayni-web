@@ -296,6 +296,21 @@ const styleVars = [
         if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
         if (document.documentElement.hasAttribute("data-low-power")) return;
 
+        /* Tamaño del degradado. La deriva lo necesita en cada cuadro, y leerlo
+           del DOM ahí obligaba al navegador a recalcular el diseño de TODA la
+           página sesenta veces por segundo —el bucle no pinta nada más, así
+           que era casi todo su coste—. Solo cambia al redimensionar, así que
+           se mide una vez y lo mantiene al día un ResizeObserver. */
+        let ancho = 0;
+        let alto = 0;
+        const medir = () => {
+            const rect = root.getBoundingClientRect();
+            ancho = rect.width;
+            alto = rect.height;
+        };
+        medir();
+        new ResizeObserver(medir).observe(root);
+
         let targetX = 0;
         let targetY = 0;
         let x = 0;
@@ -325,8 +340,7 @@ const styleVars = [
             last = now;
 
             if (!pointerInside) {
-                const rect = root.getBoundingClientRect();
-                const auto = autoTarget(now, rect.width, rect.height);
+                const auto = autoTarget(now, ancho, alto);
                 targetX = auto.x;
                 targetY = auto.y;
             }
@@ -347,11 +361,17 @@ const styleVars = [
         const start = () => {
             if (raf != null) return;
             last = performance.now();
+            /* El puntero solo interesa mientras el degradado se ve. Fuera de
+               pantalla, cada movimiento del ratón por cualquier parte de la
+               página costaba una lectura del DOM para nada. */
+            window.addEventListener("pointermove", onPointerMove, { passive: true });
             raf = requestAnimationFrame(step);
         };
 
         const stop = () => {
             if (raf == null) return;
+            window.removeEventListener("pointermove", onPointerMove);
+            pointerInside = false;
             cancelAnimationFrame(raf);
             raf = null;
         };
@@ -371,7 +391,6 @@ const styleVars = [
             pointerInside = false;
         };
 
-        window.addEventListener("pointermove", onPointerMove, { passive: true });
         window.addEventListener("pointerout", releasePointer, { passive: true });
         window.addEventListener("blur", releasePointer);
         onVisibilityChange = (visible: boolean) => (visible ? start() : stop());
