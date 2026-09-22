@@ -53,7 +53,7 @@ const styleVars = [
 ].join(";");
 ---
 
-<div class:list={["bubble-bg", className]} data-slot="bubble-background" style={styleVars}>
+<div class:list={["bubble-bg", className]} data-slot="bubble-background" style={styleVars} data-colors={JSON.stringify(colors)} data-interactive={interactive ? "1" : undefined}>
     <svg xmlns="http://www.w3.org/2000/svg" class="absolute top-0 left-0 h-0 w-0" aria-hidden="true">
         <defs>
             <filter id="bubble-goo">
@@ -242,6 +242,14 @@ const styleVars = [
         animation-play-state: paused;
     }
 
+    /* Con el lienzo en marcha, las capas con filtro sobran: se retiran del
+       árbol de pintado entero, que es de donde viene el ahorro. No se borran
+       del DOM para que volver atrás —si se pierde el contexto de WebGL— sea
+       quitar un atributo. */
+    .bubble-bg[data-gl] .bubble-bg__layers {
+        display: none;
+    }
+
     /* ── Versión ligera, para cuando el equipo no da de sí ───────────────
 
        Lo caro de este fondo no es el movimiento: es `url(#bubble-goo)`. Un
@@ -306,6 +314,8 @@ const styleVars = [
 </style>
 
 <script>
+    import { iniciarFondoGL, type ColoresFondo, type FondoGL } from "../../scripts/index/bubble-gl";
+
     /* ── Quién se queda con el fondo bueno ────────────────────────────────
 
        El filtro `url(#bubble-goo)` es caro de verdad (ver la hoja de estilos)
@@ -352,21 +362,12 @@ const styleVars = [
     const CUADRO_LENTO_MS = 34;
     const PROPORCION_LENTA = 0.6;
 
-    const medirYDegradar = () => {
-        const html = document.documentElement;
-        /* Si ya se decidió por otra vía (equipo lento declarado, o movimiento
-           reducido, que apaga las animaciones) no hay nada que medir. */
-        if (html.hasAttribute("data-bubble-lite") || html.hasAttribute("data-low-power")) return;
-        if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
+    /* Mide y responde con un sí o un no: ¿da este equipo cuadros suficientes? */
+    const medirCuadros = (veredicto: (suficiente: boolean) => void) => {
         let previo = 0;
         let total = 0;
         let lentos = 0;
         const inicio = performance.now();
-
-        const decidir = () => {
-            if (total >= MUESTRAS_MINIMAS && lentos / total > PROPORCION_LENTA) html.setAttribute("data-bubble-lite", "");
-        };
 
         const paso = (ahora: number) => {
             if (previo) {
@@ -374,10 +375,27 @@ const styleVars = [
                 if (ahora - previo > CUADRO_LENTO_MS) lentos++;
             }
             previo = ahora;
-            if (total >= MUESTRAS || ahora - inicio > TOPE_MS) decidir();
-            else requestAnimationFrame(paso);
+            if (total >= MUESTRAS || ahora - inicio > TOPE_MS) {
+                /* Sin muestras suficientes no se concluye nada, y no concluir
+                   nada significa dejar las cosas como están. */
+                veredicto(total < MUESTRAS_MINIMAS || lentos / total <= PROPORCION_LENTA);
+            } else {
+                requestAnimationFrame(paso);
+            }
         };
         requestAnimationFrame(paso);
+    };
+
+    const medirYDegradar = () => {
+        const html = document.documentElement;
+        /* Si ya se decidió por otra vía (equipo lento declarado, o movimiento
+           reducido, que apaga las animaciones) no hay nada que medir. */
+        if (html.hasAttribute("data-bubble-lite") || html.hasAttribute("data-low-power")) return;
+        if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+        medirCuadros((suficiente) => {
+            if (!suficiente) html.setAttribute("data-bubble-lite", "");
+        });
     };
 
     /* La página «asentada»: cargada del todo y con un hueco de inactividad. El
@@ -405,7 +423,41 @@ const styleVars = [
         if (root.dataset.bubbleReady) return;
         root.dataset.bubbleReady = "1";
 
-        alAsentarse(medirYDegradar);
+        /* Primero la GPU. Si el navegador no tiene WebGL, si el shader no
+           compila o si el contexto se cae, `iniciarFondoGL` devuelve null y
+           aquí no ha pasado nada: sigue el fondo en CSS, sonda incluida. */
+        const reducido = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const lento = document.documentElement.hasAttribute("data-low-power");
+        let fondoGL: FondoGL | null = null;
+
+        if (!reducido && !lento) {
+            let colores: ColoresFondo | null = null;
+            try {
+                colores = JSON.parse(root.dataset.colors || "null") as ColoresFondo | null;
+            } catch {
+                colores = null;
+            }
+            if (colores) fondoGL = iniciarFondoGL(root, colores, root.dataset.interactive === "1");
+        }
+
+        /* Y una red por debajo de todo. No hay forma de saber desde el
+           código si la GPU de quien visita va a poder con el shader —el
+           nombre del pintor descarta el software, pero no dice nada de una
+           GPU vieja y lenta—. Así que se comprueba igual: si con el shader
+           puesto la página sigue arrastrándose, se retira y manda el camino
+           de CSS, sonda incluida. Peor que antes no se puede acabar. */
+        if (fondoGL) {
+            alAsentarse(() => {
+                medirCuadros((suficiente) => {
+                    if (suficiente) return;
+                    fondoGL?.destruir();
+                    fondoGL = null;
+                    medirYDegradar();
+                });
+            });
+        } else {
+            alAsentarse(medirYDegradar);
+        }
 
         /* Pausa las animaciones cuando el fondo sale de pantalla. */
         let onVisibilityChange: ((visible: boolean) => void) | null = null;
@@ -414,6 +466,7 @@ const styleVars = [
                 const visible = entries[0]?.isIntersecting ?? true;
                 if (visible) delete root.dataset.paused;
                 else root.dataset.paused = "";
+                fondoGL?.correr(visible);
                 onVisibilityChange?.(visible);
             },
             { rootMargin: "120px" }
@@ -421,7 +474,7 @@ const styleVars = [
         io.observe(root);
 
         const blob = root.querySelector<HTMLElement>("[data-pointer-blob]");
-        if (!blob) return;
+        if (!blob && !fondoGL) return;
         if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
         if (document.documentElement.hasAttribute("data-low-power")) return;
 
@@ -480,7 +533,10 @@ const styleVars = [
             x += vx * dt;
             y += vy * dt;
 
-            blob.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0)`;
+            /* Mismo muelle, dos destinos: al shader como uniforme, o al blob
+               del DOM como transform. Nunca los dos, porque solo uno se ve. */
+            if (fondoGL) fondoGL.puntero(x, y);
+            else if (blob) blob.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0)`;
 
             raf = requestAnimationFrame(step);
         };
