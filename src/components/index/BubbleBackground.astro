@@ -250,6 +250,46 @@ const styleVars = [
         display: none;
     }
 
+    /* ── El traspaso, sin que se vea ─────────────────────────────────────
+
+       Las capas de CSS se pintan con el primer cuadro; el shader no puede
+       montarse hasta que corre el script, un par de centésimas después. En
+       ese hueco se veía primero una versión del fondo y enseguida la otra:
+       un parpadeo feo justo al entrar.
+
+       Así que con JavaScript las capas nacen invisibles. En cuanto se sabe
+       quién pinta —y se sabe en el mismo instante en que arranca el
+       componente— o se quedan retiradas (manda la GPU) o aparecen con un
+       fundido corto. El degradado de debajo se ve desde el primer cuadro en
+       los dos casos, así que no hay hueco vacío, solo un fondo que termina
+       de asentarse.
+
+       El seguro: si el script no llega a correr nunca —un error, un bloqueo—
+       la animación las revela igualmente a los 2,5 s. Nadie se queda sin
+       fondo por culpa de esta optimización. */
+    :global(html[data-js]) .bubble-bg__layers {
+        opacity: 0;
+        animation: bubble-revelar 200ms linear 2500ms forwards;
+    }
+
+    .bubble-bg[data-css-fondo] .bubble-bg__layers {
+        animation: none;
+        opacity: 1;
+        transition: opacity 180ms linear;
+    }
+
+    @keyframes bubble-revelar {
+        to {
+            opacity: 1;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .bubble-bg[data-css-fondo] .bubble-bg__layers {
+            transition: none;
+        }
+    }
+
     /* ── Versión ligera, para cuando el equipo no da de sí ───────────────
 
        Lo caro de este fondo no es el movimiento: es `url(#bubble-goo)`. Un
@@ -440,6 +480,11 @@ const styleVars = [
             if (colores) fondoGL = iniciarFondoGL(root, colores, root.dataset.interactive === "1");
         }
 
+        /* Se decide aquí, en el mismo trabajo en que arranca el componente:
+           o pinta la GPU, o se revelan las capas de CSS. Nunca lo uno y
+           luego lo otro dentro del mismo cuadro. */
+        if (!fondoGL) root.dataset.cssFondo = "1";
+
         /* Y una red por debajo de todo. No hay forma de saber desde el
            código si la GPU de quien visita va a poder con el shader —el
            nombre del pintor descarta el software, pero no dice nada de una
@@ -452,6 +497,7 @@ const styleVars = [
                     if (suficiente) return;
                     fondoGL?.destruir();
                     fondoGL = null;
+                    root.dataset.cssFondo = "1";
                     medirYDegradar();
                 });
             });
