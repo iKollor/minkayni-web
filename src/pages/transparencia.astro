@@ -25,6 +25,7 @@
 import PageLayout from "../layouts/PageLayout.astro";
 import { Icon } from "astro-icon/components";
 import { getLegalContent, fullRows, formatAddress, documentUrl, domainOwnershipLine } from "../components/legal/legalContent";
+import DataAndCookies from "../components/legal/DataAndCookies.astro";
 import { getLocale, useTranslations } from "../i18n";
 const locale = getLocale(Astro.url);
 const t = useTranslations(locale);
@@ -156,7 +157,7 @@ const contactRows = [
     }
 
     <!-- Documentos oficiales -->
-    <section class="mx-auto mb-44 w-[90%] max-w-[1100px] pb-40 pt-16 sm:pt-24" aria-labelledby="legal-documents-title">
+    <section class="mx-auto w-[90%] max-w-[1100px] pt-16 sm:pt-24" aria-labelledby="legal-documents-title">
         <h2 data-scroll-float id="legal-documents-title" class="font-display text-3xl font-black leading-tight text-primary sm:text-5xl">{t("transparency.documents")}</h2>
 
         {
@@ -187,4 +188,9 @@ const contactRows = [
 
         {d.note && <p class="mt-10 max-w-[75ch] rounded-3xl bg-black/[0.04] px-6 py-5 text-sm leading-relaxed text-black/75">{d.note}</p>}
     </section>
+
+    <!-- Datos y cookies (#datos). El aviso de cookies enlaza directamente a
+         este ancla: es la explicación de lo que la etiqueta de medición hace,
+         escrita al lado del código que lo hace (ver el componente). -->
+    <DataAndCookies email={d.email} legalName={d.legalName} />
 </PageLayout>

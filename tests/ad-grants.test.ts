@@ -467,6 +467,29 @@ test("cada página lleva el aviso de cookies, oculto hasta que haga falta", () =
     }
 });
 
+test("«Cómo tratamos los datos» lleva a una sección que existe", () => {
+    /* El aviso promete una explicación; si el ancla no existe, el enlace deja
+       a quien pregunta en mitad de una página que no habla de eso. Se
+       comprueban las dos cosas: que el aviso apunte a #datos y que la página
+       de transparencia —en los dos idiomas— traiga esa sección. */
+    const enlace = /href="([^"]*transparen[^"#]*)#datos"/;
+
+    for (const archivo of paginasReales()) {
+        const html = leer(archivo);
+        const destino = html.match(enlace)?.[1];
+        assert.ok(destino, `${rutaDe(archivo)}: el aviso no enlaza a #datos`);
+    }
+
+    for (const ruta of ["/transparencia/", "/en/transparency/"]) {
+        const archivo = path.join(DIST, ruta.slice(1), "index.html");
+        const html = leer(archivo);
+        assert.match(html, /id="datos"/, `${ruta}: sin la sección de datos y cookies`);
+        /* Y que diga algo comprobable: las claves que el sitio guarda. */
+        assert.match(html, /minkayni-consentimiento/, `${ruta}: no nombra la clave del consentimiento`);
+        assert.match(html, /minkayni:ultima-visita/, `${ruta}: no nombra la marca de visita`);
+    }
+});
+
 /* ----------------------- Coherencia de dominio y SEO ----------------------- */
 
 test("cada canónica apunta a su propia ruta, con www", () => {

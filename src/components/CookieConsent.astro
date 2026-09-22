@@ -22,6 +22,9 @@
      guardarla.
    - Se puede cambiar de opinión: cualquier elemento con `data-cookie-prefs`
      —el enlace del pie— vuelve a abrirlo.
+   - El enlace «Cómo tratamos los datos» apunta al ancla #datos de
+     /transparencia, que es donde se explica, con nombres y claves, lo que
+     este aviso decide (components/legal/DataAndCookies.astro).
 
    Viene en el HTML con `hidden`, y lo quita el script solo si no hay
    respuesta guardada: así quien ya respondió no ve ni un parpadeo, y quien
@@ -62,7 +65,7 @@ const boton =
 
         <a
             class="mt-5 inline-block text-sm font-bold text-primary underline underline-offset-4 hover:text-secondary-deep focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
-            href={localizePath("/transparencia", locale)}>{t("cookies.more")}</a
+            href={`${localizePath("/transparencia", locale)}#datos`}>{t("cookies.more")}</a
         >
     </div>
 </section>
