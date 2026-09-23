@@ -6,6 +6,7 @@ import { navigationLoader } from "./utils/loaders/strapi-navigation-loader";
 import { validateStrapiConnection } from "./utils/strapi-connection";
 import {
   PostSchema,
+  UploadFileSchema,
   HomepageSchema,
   FooterSchema,
 } from "./schemas/strapi.graphql.zod";
@@ -104,6 +105,7 @@ const postSelection = `
     view_count
     posted_at
     source { ${uploadFileSelection} }
+    poster { ${uploadFileSelection} }
     thumbnail_url
     is_featured
     raw
@@ -458,11 +460,17 @@ const posts = defineCollection({
         mode: "collection",
         rootField: "posts",
         selection: postSelection,
+        /* `poster` es un campo nuevo del CMS: si la web se construye antes de
+           que el CMS lo tenga, se piden las publicaciones sin él. */
+        fallbackSelection: postSelection.replace(/\n\s*poster \{[^}]*\}/, ""),
         client: clientHeaders,
         cacheDurationInMs: contentCacheMs,
       })
     : preserveCachedContent("posts"),
-  schema: PostSchema(),
+  /* `poster` (la portada de los reels) es nuevo en el CMS y el esquema de
+     Post se genera desde su GraphQL: hasta que se regenere, se añade aquí
+     para que la validación no lo descarte. Regenerado, esto no estorba. */
+  schema: PostSchema().extend({ poster: UploadFileSchema().nullish() }),
 });
 
 const homepage = defineCollection({

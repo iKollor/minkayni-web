@@ -17,6 +17,8 @@ export const init = () => {
     // Loop horizontal (pausado y arrastrable)
     // Builder para poder reconstruir el loop en resize; usamos paddingRight fijo (MARGIN_RIGHT_PX)
     let activeEl: HTMLElement | null = null;
+    /* Se asigna más abajo, cuando existe el planificador de vídeos. */
+    let reordenarVideos: () => void = () => {};
     const buildLoop = (): HorizontalLoopTimeline => {
         return horizontalLoop(boxes, {
             paused: true,
@@ -28,6 +30,7 @@ export const init = () => {
                 if (activeEl) activeEl.classList.remove("active");
                 el.classList.add("active");
                 activeEl = el;
+                reordenarVideos();
             },
         });
     };
@@ -39,32 +42,107 @@ export const init = () => {
     const onEnterView = () => {
         isInView = true;
         loop.play();
+        reordenarVideos();
     };
     const onExitView = () => {
         isInView = false;
         loop.pause();
+        reordenarVideos();
     };
     const io = new IntersectionObserver((entries) => entries.forEach((e) => (e.isIntersecting ? onEnterView() : onExitView())), { threshold: 0.2 });
     io.observe(wrapperEl);
 
-    const videos = Array.from(wrapperEl.querySelectorAll<HTMLVideoElement>("video[data-src]"));
-    const visibleVideos = new Set<HTMLVideoElement>();
+    /* ── Vídeos: cuántos y cuáles se reproducen ─────────────────────────
 
-    const playVideo = (video: HTMLVideoElement) => {
+       Antes se reproducía todo reel que asomara en pantalla. Con la cinta en
+       movimiento eso eran tres, cuatro o cinco vídeos decodificándose a la vez
+       mientras las tarjetas se desplazaban, y de ahí los tirones.
+
+       Ahora hay un tope, y se lo llevan los más cercanos al centro, que es
+       donde se mira:
+       - 2 a la vez en pantallas anchas, 1 en un teléfono (donde apenas caben
+         dos tarjetas);
+       - 0 si se pidió menos movimiento, si el navegador pide ahorrar datos o
+         si el equipo es de los lentos (`data-low-power`): se ven las portadas.
+       El resto muestra su portada, o el último fotograma si ya sonó.
+
+       Y un vídeo que sale de pantalla, pasados unos segundos, suelta el
+       archivo: deja de ocupar decodificador y memoria. Si vuelve, se recarga
+       (normalmente de la caché del navegador). */
+    const videos = Array.from(wrapperEl.querySelectorAll<HTMLVideoElement>("video[data-src]"));
+    const visibles = new Set<HTMLVideoElement>();
+    const reproduciendo = new Set<HTMLVideoElement>();
+    const liberar = new Map<HTMLVideoElement, number>();
+    const LIBERAR_TRAS_MS = 4000;
+
+    const ahorro = (): boolean => {
+        const conexion = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+        return (
+            matchMedia("(prefers-reduced-motion: reduce)").matches ||
+            conexion?.saveData === true ||
+            document.documentElement.hasAttribute("data-low-power")
+        );
+    };
+    const tope = (): number => (ahorro() ? 0 : matchMedia("(min-width: 768px)").matches ? 2 : 1);
+
+    const reproducir = (video: HTMLVideoElement) => {
         const src = video.dataset.src;
         if (!src) return;
+        const pendiente = liberar.get(video);
+        if (pendiente) {
+            window.clearTimeout(pendiente);
+            liberar.delete(video);
+        }
         if (!video.getAttribute("src")) {
             video.src = src;
             video.load();
         }
         video.muted = true;
+        reproduciendo.add(video);
         void video.play().catch(() => {});
     };
 
-    const pauseVideo = (video: HTMLVideoElement) => {
+    const pausar = (video: HTMLVideoElement) => {
+        reproduciendo.delete(video);
         try {
             video.pause();
         } catch {}
+    };
+
+    /* Soltar el archivo devuelve el elemento a su portada y libera el
+       decodificador; `load()` sin `src` es la forma estándar de hacerlo. */
+    const soltar = (video: HTMLVideoElement) => {
+        liberar.delete(video);
+        if (visibles.has(video) || !video.getAttribute("src")) return;
+        pausar(video);
+        video.removeAttribute("src");
+        video.load();
+    };
+
+    reordenarVideos = () => {
+        if (document.hidden || !isInView) {
+            reproduciendo.forEach(pausar);
+            return;
+        }
+        const max = tope();
+        const caja = wrapperEl.getBoundingClientRect();
+        const centro = caja.left + caja.width / 2;
+        const elegidos = new Set(
+            [...visibles]
+                .map((video) => {
+                    const r = video.getBoundingClientRect();
+                    return { video, distancia: Math.abs(r.left + r.width / 2 - centro) };
+                })
+                .sort((a, b) => a.distancia - b.distancia)
+                .slice(0, max)
+                .map(({ video }) => video)
+        );
+        [...reproduciendo].forEach((video) => {
+            if (!elegidos.has(video)) pausar(video);
+        });
+        elegidos.forEach((video) => {
+            if (!reproduciendo.has(video) || video.paused) reproducir(video);
+        });
     };
 
     const videoObserver = new IntersectionObserver(
@@ -72,13 +150,21 @@ export const init = () => {
             entries.forEach((entry) => {
                 const video = entry.target as HTMLVideoElement;
                 if (entry.isIntersecting && entry.intersectionRatio >= 0.35) {
-                    visibleVideos.add(video);
-                    if (!document.hidden) playVideo(video);
+                    visibles.add(video);
+                    const pendiente = liberar.get(video);
+                    if (pendiente) {
+                        window.clearTimeout(pendiente);
+                        liberar.delete(video);
+                    }
                     return;
                 }
-                visibleVideos.delete(video);
-                pauseVideo(video);
+                visibles.delete(video);
+                pausar(video);
+                if (!entry.isIntersecting && video.getAttribute("src") && !liberar.has(video)) {
+                    liberar.set(video, window.setTimeout(() => soltar(video), LIBERAR_TRAS_MS));
+                }
             });
+            reordenarVideos();
         },
         { threshold: [0, 0.35, 1] }
     );
@@ -121,13 +207,9 @@ export const init = () => {
 
     // Pausar cuando la pestaña no está visible
     const onVisibility = () => {
-        if (document.hidden) {
-            loop.pause();
-            videos.forEach(pauseVideo);
-        } else if (isInView) {
-            loop.play();
-            visibleVideos.forEach(playVideo);
-        }
+        if (document.hidden) loop.pause();
+        else if (isInView) loop.play();
+        reordenarVideos();
     };
     document.addEventListener("visibilitychange", onVisibility);
 
@@ -139,7 +221,8 @@ export const init = () => {
         try {
             videoObserver.disconnect();
         } catch {}
-        videos.forEach(pauseVideo);
+        videos.forEach(pausar);
+        liberar.forEach((t) => window.clearTimeout(t));
         document.removeEventListener("visibilitychange", onVisibility);
         wrapperEl.removeEventListener("pointerenter", onHoverEnter);
         wrapperEl.removeEventListener("pointerleave", onHoverLeave);

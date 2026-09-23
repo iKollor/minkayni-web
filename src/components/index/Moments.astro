@@ -30,6 +30,12 @@ const items = posts.filter((p) => p?.data?.source?.url);
                 items.map(({ data: post }) => {
                     const mediaUrl = strapiMediaUrl(post.source?.url, STRAPI_URL, 960);
                     const mediaSrcSet = strapiMediaSrcSet(post.source?.url, STRAPI_URL, [320, 640, 960]);
+                    /* Portada del reel: un fotograma que el CMS saca al
+                       transcodificar, servido por Imagor en WebP a 640 px.
+                       Es lo que se ve mientras el vídeo no se reproduce, así
+                       que ningún reel queda como un hueco oscuro. Los reels
+                       importados antes de que existiera no la tienen. */
+                    const posterUrl = post.poster?.url ? strapiMediaUrl(post.poster.url, STRAPI_URL, 640) : undefined;
                     return (
                     <div class="post-card group aspect-[1/1] h-full flex-shrink-0 rounded-lg overflow-hidden relative shadow-lg" data-id={post.external_id}>
                         <div class="relative w-full h-full">
@@ -39,10 +45,13 @@ const items = posts.filter((p) => p?.data?.source?.url);
                                     <video
                                         class="media object-cover w-full h-full absolute inset-0 -z-10 pointer-events-none transition-transform duration-300 transform-gpu origin-center group-hover:scale-105"
                                         data-src={strapiMediaUrl(post.source?.url, STRAPI_URL)}
+                                        poster={posterUrl || undefined}
                                         preload="none"
                                         muted
                                         loop
                                         playsinline
+                                        disablepictureinpicture
+                                        disableremoteplayback
                                         aria-label={post.caption || `Reel ${post.external_id}`}
                                         lang={post.caption ? captionLang : undefined}
                                     />
@@ -51,7 +60,7 @@ const items = posts.filter((p) => p?.data?.source?.url);
                                         class="media object-cover w-full h-full absolute inset-0 -z-10 transition-transform duration-300 transform-gpu origin-center group-hover:scale-105"
                                         src={mediaUrl}
                                         srcset={mediaSrcSet || undefined}
-                                        sizes="(min-width: 768px) 500px, 250px"
+                                        sizes="(min-width: 768px) 400px, 200px"
                                         alt={post.caption || t("news.postFallback", { id: post.external_id ?? "" })}
                                         lang={post.caption ? captionLang : undefined}
                                         width="960"

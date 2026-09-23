@@ -12,6 +12,14 @@ type Opts = {
   idResolver?: (node: StrapiNode) => string;
   status?: "PUBLISHED" | "DRAFT";
   locale?: string;
+  /**
+   * Selección de reserva, sin los campos más nuevos. Si el CMS todavía no los
+   * conoce («Cannot query field»), la consulta se repite con esta en vez de
+   * quedarse sin contenido. Hace falta porque la web y el CMS se despliegan
+   * por separado y en cualquier orden: sin esto, añadir un campo al CMS y
+   * pedirlo desde aquí vaciaba la colección si la web se construía primero.
+   */
+  fallbackSelection?: string;
 };
 
 const NETWORK_TIMEOUT_MS = 30_000;
@@ -41,6 +49,7 @@ export function strapiLoader({
   idResolver,
   status = "PUBLISHED",
   locale,
+  fallbackSelection,
 }: Opts): Loader {
   const request = async (
     query: string,
@@ -107,26 +116,28 @@ export function strapiLoader({
     }
   };
 
-  const singleQuery = squash(`
+  const singleQuery = (sel: string) =>
+    squash(`
         query ${cap(rootField)}($status: PublicationStatus${
-    locale ? ", $locale: I18NLocaleCode" : ""
-  }) {
+      locale ? ", $locale: I18NLocaleCode" : ""
+    }) {
             ${rootField}(status: $status${locale ? ", locale: $locale" : ""}) {
-                ${selection}
+                ${sel}
             }
         }
     `);
 
-  const collectionQuery = squash(`
+  const collectionQuery = (sel: string) =>
+    squash(`
         query ${cap(
           rootField
         )}($page: Int!, $pageSize: Int!, $status: PublicationStatus${
-    locale ? ", $locale: I18NLocaleCode" : ""
-  }) {
+      locale ? ", $locale: I18NLocaleCode" : ""
+    }) {
             ${rootField}(pagination: { page: $page, pageSize: $pageSize }, status: $status${
-    locale ? ", locale: $locale" : ""
-  }) {
-                ${selection}
+      locale ? ", locale: $locale" : ""
+    }) {
+                ${sel}
             }
         }
     `);
@@ -142,6 +153,24 @@ export function strapiLoader({
         return;
       }
 
+      /* La selección en uso: la completa, o la de reserva en cuanto el CMS
+         diga que no conoce algún campo. Se decide una vez por carga. */
+      let activeSelection = selection;
+      const consultar = async (
+        build: (sel: string) => string,
+        variables: Record<string, unknown>
+      ) => {
+        try {
+          return await request(build(activeSelection), variables, cap(rootField));
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          if (!fallbackSelection || activeSelection === fallbackSelection || !/Cannot query field/i.test(message)) throw error;
+          logger.warn(`[${rootField}] El CMS aún no conoce algún campo pedido; se usa la selección de reserva.`);
+          activeSelection = fallbackSelection;
+          return request(build(activeSelection), variables, cap(rootField));
+        }
+      };
+
       try {
         const previousIds = getPreviousIds(meta);
         const seenIds = new Set<string>();
@@ -150,11 +179,7 @@ export function strapiLoader({
           const variables: Record<string, unknown> = { status };
           if (locale) variables.locale = locale;
 
-          const response = await request(
-            singleQuery,
-            variables,
-            cap(rootField)
-          );
+          const response = await consultar(singleQuery, variables);
           const node = asNode(response[rootField]);
 
           if (!node || (status === "PUBLISHED" && !isPublished(node))) {
@@ -187,10 +212,9 @@ export function strapiLoader({
         let stored = 0;
 
         while (page <= MAX_PAGES) {
-          const response = await request(
+          const response = await consultar(
             collectionQuery,
-            locale ? { page, pageSize, status, locale } : { page, pageSize, status },
-            cap(rootField)
+            locale ? { page, pageSize, status, locale } : { page, pageSize, status }
           );
           const nodes = asNodes(response[rootField]).filter(
             (node) => status !== "PUBLISHED" || isPublished(node)
