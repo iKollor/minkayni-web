@@ -17,7 +17,7 @@ import { startOdometer } from "./odometer";
 import { prefersReducedMotion } from "./platform";
 
 /** Cada cuánto suma uno una cifra `data-count-live` ya contada. */
-const LIVE_EVERY_SECONDS = 2;
+const LIVE_EVERY_SECONDS = 1;
 
 const mounted = new WeakSet<HTMLElement>();
 

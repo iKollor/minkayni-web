@@ -5,7 +5,7 @@
    El movimiento es el del plugin: el valor sigue la curva de countUp
    (odometer-curve.ts) y, en cada cuadro en que una rueda recibe un carácter
    distinto, lo apila y persigue la posición nueva con una transición
-   `ease-out` que se reinicia desde donde esté (gsap.quickTo). La rueda va
+   `ease-out` que se reinicia desde donde esté (un tween con overwrite). La rueda va
    siempre un poco por detrás del valor y se posa deslizándose: de ahí la
    suavidad.
 
@@ -20,7 +20,8 @@
      apilaba un <span> por cambio).
    - Persecución de 1,5 s y sin la espera del último dígito: con las dos del
      plugin (2,3 s + 2,3 s) el final se alargaba hasta casi 8 s.
-   - Si se pide, al terminar sigue sumando de uno en uno (`liveEverySeconds`).
+   - Si se pide, al terminar sigue sumando de uno en uno (`liveEverySeconds`),
+     cada paso con un giro corto (LIVE_ROLL_SECONDS).
 ─────────────────────────────────────────────────────────────────────────── */
 import { gsap } from "./main";
 import { cubicBezier } from "./easing";
@@ -54,12 +55,10 @@ class Wheel {
     private readonly slots = [document.createElement("span"), document.createElement("span")];
     private readonly stack: Glyph[];
     private readonly state = { p: 0 };
-    private readonly roll: (position: number) => void;
 
     constructor(
         initial: Glyph,
-        private readonly widths: Map<string, number>,
-        rollSeconds: number
+        private readonly widths: Map<string, number>
     ) {
         /* Recorte solo vertical (como .clip-reveal de global.css): Aristotelica
            se sale de su caja por los lados. El «0» invisible y sin ancho da a
@@ -72,14 +71,15 @@ class Wheel {
         for (const slot of this.slots) slot.style.cssText = "position:absolute;left:0;right:0;top:0;text-align:center";
 
         this.stack = [initial];
-        this.roll = gsap.quickTo(this.state, "p", { duration: rollSeconds, ease: ROLL_EASE, onUpdate: () => this.draw() });
         this.draw();
     }
 
-    set(glyph: Glyph): void {
+    /* Persigue la posición nueva desde donde esté: un tween que se reinicia
+       en cada cambio, como la transición CSS del plugin. */
+    set(glyph: Glyph, seconds: number): void {
         if (glyph === this.stack[this.stack.length - 1]) return;
         this.stack.push(glyph);
-        this.roll(this.stack.length - 1);
+        gsap.to(this.state, { p: this.stack.length - 1, duration: seconds, ease: ROLL_EASE, overwrite: true, onUpdate: () => this.draw() });
     }
 
     private width(glyph: Glyph | undefined): number {
@@ -104,11 +104,14 @@ export type OdometerOptions = {
     separator: string;
     /** Duración del conteo. */
     countSeconds?: number;
-    /** Lo que tarda cada rueda en alcanzar un carácter nuevo. */
+    /** Lo que tarda cada rueda en alcanzar un carácter nuevo durante el conteo. */
     rollSeconds?: number;
     /** Después del conteo, seguir sumando uno cada tantos segundos. */
     liveEverySeconds?: number;
 };
+
+/** Giro de cada +1 del modo en vivo: un solo paso, no la persecución del conteo. */
+const LIVE_ROLL_SECONDS = 0.6;
 
 class Odometer {
     private readonly row = document.createElement("span");
@@ -125,7 +128,7 @@ class Odometer {
         this.row.style.cssText = "display:inline-flex;align-items:baseline;line-height:1";
         host.replaceChildren(this.row);
         /* El «0» de partida ya está en su sitio, como en el plugin. */
-        const first = new Wheel("0", this.widths, rollSeconds);
+        const first = new Wheel("0", this.widths);
         this.wheels.push(first);
         this.row.append(first.el);
     }
@@ -139,29 +142,29 @@ class Odometer {
                 ms: total,
                 duration: seconds,
                 ease: "none",
-                onUpdate: () => this.show(countUpValue(clock.ms, end, total)),
+                onUpdate: () => this.show(countUpValue(clock.ms, end, total), this.rollSeconds),
                 onComplete: () => resolve(),
             });
         });
     }
 
     increment(): void {
-        this.show(this.value + 1);
+        this.show(this.value + 1, LIVE_ROLL_SECONDS);
     }
 
-    private show(value: number): void {
+    private show(value: number, rollSeconds: number): void {
         if (value === this.value) return;
         this.value = value;
         const text = group(value, this.separator);
         /* Una cifra más larga que las ruedas (99 → 100, 999 → 1.000) añade
            las que falten por la izquierda, vacías: entran desde el hueco. */
         while (this.wheels.length < text.length) {
-            const wheel = new Wheel(null, this.widths, this.rollSeconds);
+            const wheel = new Wheel(null, this.widths);
             this.wheels.unshift(wheel);
             this.row.prepend(wheel.el);
         }
         const offset = this.wheels.length - text.length;
-        this.wheels.forEach((wheel, i) => wheel.set(text[i - offset] ?? null));
+        this.wheels.forEach((wheel, i) => wheel.set(text[i - offset] ?? null, rollSeconds));
     }
 }
 
