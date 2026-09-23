@@ -435,6 +435,22 @@ const styleVars = [
             });
         }
 
+        /* Fuera de pantalla no se pinta nada: ni el shader ni, sin
+           JavaScript no aplica, las animaciones de CSS (`data-paused`). El
+           muelle del cursor se engancha a este mismo observador más abajo. */
+        let onVisibilityChange: ((visible: boolean) => void) | null = null;
+        const io = new IntersectionObserver(
+            (entries) => {
+                const visible = entries[0]?.isIntersecting ?? true;
+                if (visible) delete root.dataset.paused;
+                else root.dataset.paused = "";
+                fondoGL?.correr(visible);
+                onVisibilityChange?.(visible);
+            },
+            { rootMargin: "120px" }
+        );
+        io.observe(root);
+
         /* El muelle del cursor solo pinta en el shader: sin él el fondo es
            estático y no hay nada que mover. */
         if (!fondoGL) return;
