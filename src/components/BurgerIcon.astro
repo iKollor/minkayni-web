@@ -30,7 +30,15 @@
 <script>
     import { gsap } from "../scripts/main.ts";
 
-    document.addEventListener("DOMContentLoaded", () => {
+    /* El arranque mide las longitudes de los trazos (DrawSVG fuerza un
+       layout) y en las máquinas de PageSpeed pasaba de los 50 ms: contaba
+       como tarea larga. El icono ya nace pintado en su estado «menu» (ver
+       arriba), así que la línea de tiempo se monta cuando la página está
+       asentada o al primer contacto con el botón, lo que llegue antes. */
+    let listo = false;
+    const arrancar = () => {
+        if (listo) return;
+        listo = true;
         const tl = gsap.timeline({ defaults: { ease: "power2.inOut" } });
 
         gsap.set("#menu-btn", { autoAlpha: 1 });
@@ -69,5 +77,19 @@
             } catch {}
         }
         window.addEventListener("menu:state", onMenuState);
-    });
+    };
+
+    const alAsentarse = () => {
+        if ("requestIdleCallback" in window) window.requestIdleCallback(arrancar, { timeout: 2500 });
+        else setTimeout(arrancar, 300);
+    };
+    const preparar = () => {
+        const btn = document.querySelector("#menu-btn");
+        for (const evento of ["pointerenter", "pointerdown", "focus", "touchstart"]) btn?.addEventListener(evento, arrancar, { once: true, passive: true });
+        window.addEventListener("menu:state", arrancar, { once: true });
+        if (document.readyState === "complete") alAsentarse();
+        else window.addEventListener("load", alAsentarse, { once: true });
+    };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", preparar, { once: true });
+    else preparar();
 </script>

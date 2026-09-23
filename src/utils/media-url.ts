@@ -133,3 +133,8 @@ export function strapiMediaSrcSet(src: string | null | undefined, strapiBase: st
         .map((width) => `${strapiMediaUrl(src, strapiBase, width)} ${width}w`)
         .join(", ");
 }
+
+/* GIF transparente de 1×1 para el `src` de las imágenes que se piden después
+   del LCP (`data-lcp-src`, ver layouts/lib/head.astro): sin `src` el <img>
+   pinta su `alt` como texto hasta que llega la URL. */
+export const PIXEL = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";

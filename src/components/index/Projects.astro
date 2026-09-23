@@ -198,6 +198,28 @@ const stats = (d.stats ?? []).filter((stat) => stat?.value && stat?.label);
         });
     };
 
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initFeaturedProject, { once: true });
-    else initFeaturedProject();
+    /* La sección está bastante más abajo que la primera pantalla: partir el
+       titular y los párrafos con SplitText y medir la línea de tiempo se
+       hace cuando se acerca (dos pantallas antes), no en el arranque. Hasta
+       entonces la sección se ve tal cual; los `from` la esconden y la
+       revelan cuando entra, igual que antes. */
+    const preparar = () => {
+        const section = document.getElementById("featured-project");
+        if (!section) return;
+        if (!("IntersectionObserver" in window)) {
+            initFeaturedProject();
+            return;
+        }
+        const obs = new IntersectionObserver(
+            (entries) => {
+                if (!entries.some((e) => e.isIntersecting)) return;
+                obs.disconnect();
+                initFeaturedProject();
+            },
+            { rootMargin: "200% 0px 200% 0px" }
+        );
+        obs.observe(section);
+    };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", preparar, { once: true });
+    else preparar();
 </script>

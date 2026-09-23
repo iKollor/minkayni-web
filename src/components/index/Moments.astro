@@ -4,7 +4,7 @@ import { getCollection } from "astro:content";
 import { Image } from "astro:assets";
 
 import reelIcon from "../../assets/icons/reel.png";
-import { strapiMediaSrcSet, strapiMediaUrl } from "../../utils/media-url";
+import { PIXEL, strapiMediaSrcSet, strapiMediaUrl } from "../../utils/media-url";
 import { getLocale, useTranslations } from "../../i18n";
 
 const t = useTranslations(getLocale(Astro.url));
@@ -45,7 +45,7 @@ const items = posts.filter((p) => p?.data?.source?.url);
                                     <video
                                         class="media object-cover w-full h-full absolute inset-0 -z-10 pointer-events-none transition-transform duration-300 transform-gpu origin-center group-hover:scale-105"
                                         data-src={strapiMediaUrl(post.source?.url, STRAPI_URL)}
-                                        poster={posterUrl || undefined}
+                                        data-lcp-poster={posterUrl || undefined}
                                         preload="none"
                                         muted
                                         loop
@@ -58,8 +58,9 @@ const items = posts.filter((p) => p?.data?.source?.url);
                                 ) : (
                                     <img
                                         class="media object-cover w-full h-full absolute inset-0 -z-10 transition-transform duration-300 transform-gpu origin-center group-hover:scale-105"
-                                        src={mediaUrl}
-                                        srcset={mediaSrcSet || undefined}
+                                        src={PIXEL}
+                                        data-lcp-src={mediaUrl}
+                                        data-lcp-srcset={mediaSrcSet || undefined}
                                         sizes="(min-width: 768px) 400px, 200px"
                                         alt={post.caption || t("news.postFallback", { id: post.external_id ?? "" })}
                                         lang={post.caption ? captionLang : undefined}

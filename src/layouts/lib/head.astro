@@ -298,6 +298,36 @@ const ogUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefi
                     else cola.push(fn);
                 };
             })();
+            /* Imágenes que no hacen falta para la primera pantalla —carrusel
+               de momentos, fotos del equipo, portadas de los reels— llevan la
+               URL en `data-lcp-src` / `data-lcp-srcset` / `data-lcp-poster`
+               y se piden aquí, ya anotado el LCP. `loading="lazy"` no lo
+               conseguía: en 4G lenta Chrome adelanta 2500 px y pedía ~340 KB
+               antes del texto de portada. */
+            window.trasLcp(function () {
+                var pasar = function (nodo, dato, atributo) {
+                    var valor = nodo.getAttribute(dato);
+                    if (valor === null) return;
+                    nodo.removeAttribute(dato);
+                    nodo.setAttribute(atributo, valor);
+                };
+                var soltar = function () {
+                    var nodos = document.querySelectorAll("[data-lcp-src],[data-lcp-srcset],[data-lcp-poster]");
+                    for (var i = 0; i < nodos.length; i++) {
+                        pasar(nodos[i], "data-lcp-srcset", "srcset");
+                        pasar(nodos[i], "data-lcp-src", "src");
+                        pasar(nodos[i], "data-lcp-poster", "poster");
+                    }
+                };
+                /* El plazo de seguridad de `trasLcp` puede vencer con el
+                   documento a medio parsear: entonces se espera a tenerlo
+                   entero, o las imágenes de más abajo se quedarían sin URL. */
+                if (document.readyState !== "loading") soltar();
+                else
+                    document.addEventListener("readystatechange", function () {
+                        if (document.readyState !== "loading") soltar();
+                    });
+            });
         </script>
         <Analytics />
     </head>
