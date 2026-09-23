@@ -7,14 +7,24 @@
    - ScrollTrigger.refresh() al terminar de cargar la página y las imágenes
      (las posiciones se calculaban con el layout a medio cargar → saltos). */
 import { gsap, ScrollTrigger } from "./main";
+import { appleOut } from "./easing";
+import { prefersReducedMotion } from "./platform";
 
 const isInView = (el: HTMLElement): boolean => {
     const rect = el.getBoundingClientRect();
     return rect.top < window.innerHeight * 0.92 && rect.bottom > 0;
 };
 
+/* Estado oculto de partida. Las tarjetas llevan `transition` de Tailwind para
+   su hover, y esa transición también cubre opacity y transform: CSS volvía a
+   interpolar cada cuadro que escribía GSAP con 300 ms de retraso, así que la
+   entrada iba por detrás —lenta— y se ponía al día de golpe al final. Durante
+   la entrada no hay transición CSS; al terminar se devuelve para el hover. */
+const hide = (targets: HTMLElement[]) => gsap.set(targets, { opacity: 0, y: 44, transition: "none" });
+const restoreCss = { clearProps: "transition,transform" } as const;
+
 export const initReveals = (): void => {
-    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = prefersReducedMotion();
     if (reduced) return;
 
     /* Los títulos con ScrollFloat (`h2[data-scroll-float]`) ya tienen su
@@ -36,12 +46,20 @@ export const initReveals = (): void => {
         if (isInView(el)) return; // ya visible: no ocultar ni animar (evita el flash)
         const targets = revealTargets(el);
         if (!targets.length) return;
-        gsap.set(targets, { opacity: 0, y: 44 });
+        hide(targets);
         ScrollTrigger.create({
             trigger: el,
             start: "top 88%",
             once: true,
-            onEnter: () => gsap.to(targets, { opacity: 1, y: 0, duration: 0.9, ease: "power2.out", delay: parseFloat(el.dataset.revealDelay || "0") }),
+            onEnter: () =>
+                gsap.to(targets, {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.9,
+                    ease: appleOut,
+                    delay: parseFloat(el.dataset.revealDelay || "0"),
+                    onComplete: () => gsap.set(targets, restoreCss),
+                }),
         });
     });
 
@@ -51,12 +69,20 @@ export const initReveals = (): void => {
         if (isInView(group)) return;
         const kids = (Array.from(group.children) as HTMLElement[]).filter((kid) => !kid.matches(FLOAT) && !kid.querySelector(FLOAT));
         if (!kids.length) return;
-        gsap.set(kids, { opacity: 0, y: 44 });
+        hide(kids);
         ScrollTrigger.create({
             trigger: group,
             start: "top 85%",
             once: true,
-            onEnter: () => gsap.to(kids, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out", stagger: 0.12 }),
+            onEnter: () =>
+                gsap.to(kids, {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.8,
+                    ease: appleOut,
+                    stagger: 0.12,
+                    onComplete: () => gsap.set(kids, restoreCss),
+                }),
         });
     });
 
@@ -71,38 +97,5 @@ export const initReveals = (): void => {
     window.addEventListener("load", () => ScrollTrigger.refresh(), { once: true });
     document.querySelectorAll<HTMLImageElement>("main img, #smooth-content img").forEach((img) => {
         if (!img.complete) img.addEventListener("load", () => ScrollTrigger.refresh(), { once: true });
-    });
-};
-
-/* Odómetro compartido (impact, subpáginas): el HTML ya trae el valor final
-   renderizado, el tween solo se crea al entrar en viewport. */
-export const initCounters = (): void => {
-    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) return;
-
-    const fmt = new Intl.NumberFormat("es-EC");
-    document.querySelectorAll<HTMLElement>("[data-count]").forEach((el) => {
-        if (el.dataset.countReady) return;
-        el.dataset.countReady = "1";
-        const target = Number(el.dataset.count ?? "");
-        if (!Number.isFinite(target) || target <= 0) return;
-        const prefix = el.dataset.countPrefix ?? "";
-        const suffix = el.dataset.countSuffix ?? "";
-        const state = { val: 0 };
-        ScrollTrigger.create({
-            trigger: el,
-            start: "top 88%",
-            once: true,
-            onEnter: () => {
-                gsap.to(state, {
-                    val: target,
-                    duration: 1.7,
-                    ease: "power3.out",
-                    onUpdate: () => {
-                        el.textContent = prefix + fmt.format(Math.round(state.val)) + suffix;
-                    },
-                });
-            },
-        });
     });
 };

@@ -46,7 +46,6 @@ export const ui = {
         "lang.en": "English",
         "lang.esShort": "ES",
         "lang.enShort": "EN",
-        "lang.switchTo": "Ver esta página en {language}",
 
         /* Reloj del navbar */
         "clock.place": "Guayaquil, Ecuador",
@@ -143,10 +142,15 @@ export const ui = {
         "about.missionVision": "Misión y visión",
         "about.historyTimeline": "Historia de la fundación",
         "about.readIn": "Leer en {outlet}",
+        "about.logoOf": "Logo de {name}",
+        "about.approvedIn": "Aprobado en {meta}",
+        "about.timeline": "Línea de tiempo",
 
         /* Proyectos */
         "projects.filter": "Filtrar proyectos y líneas de acción",
         "projects.alliesAndFunders": "Aliados y financiadores",
+        "projects.visibleOne": "{count} resultado visible",
+        "projects.visibleMany": "{count} resultados visibles",
 
         /* Batucada Popular */
         "batucada.timeline": "Línea de tiempo de la Batucada Popular",
@@ -256,6 +260,8 @@ export const ui = {
         "alt.daniel": "Daniel, integrante de la Batucada Popular",
         "alt.performing": "Integrantes de Batucada Popular en presentación",
         "alt.logo": "Logotipo de la Fundación Minkayni",
+        "alt.teamMember": "Integrante del equipo de la fundación",
+        "alt.reel": "Vídeo",
         /* Las fotos de Batucada son medios del CMS, pero su texto alternativo
            no tiene campo propio allí (el de la Media Library no se traduce),
            así que vive aquí. */
@@ -295,7 +301,6 @@ export const ui = {
         "lang.en": "English",
         "lang.esShort": "ES",
         "lang.enShort": "EN",
-        "lang.switchTo": "View this page in {language}",
 
         /* Navbar clock */
         "clock.place": "Guayaquil, Ecuador",
@@ -391,10 +396,15 @@ export const ui = {
         "about.missionVision": "Mission and vision",
         "about.historyTimeline": "History of the foundation",
         "about.readIn": "Read in {outlet}",
+        "about.logoOf": "{name} logo",
+        "about.approvedIn": "Approved in {meta}",
+        "about.timeline": "Timeline",
 
         /* Projects */
         "projects.filter": "Filter projects and lines of action",
         "projects.alliesAndFunders": "Allies and funders",
+        "projects.visibleOne": "{count} result shown",
+        "projects.visibleMany": "{count} results shown",
 
         /* Batucada Popular */
         "batucada.timeline": "Batucada Popular timeline",
@@ -504,6 +514,8 @@ export const ui = {
         "alt.daniel": "Daniel, a member of Batucada Popular",
         "alt.performing": "Batucada Popular members performing",
         "alt.logo": "Minkayni Foundation logo",
+        "alt.teamMember": "Member of the foundation team",
+        "alt.reel": "Video",
         "alt.batucadaHero": "Young Batucada Popular members playing drums during a performance",
         "alt.batucadaPulse": "Batucada Popular members spending time together after a performance",
         "alt.batucadaSense": "Young Batucada Popular members marching with their drums along a street in Guayaquil",

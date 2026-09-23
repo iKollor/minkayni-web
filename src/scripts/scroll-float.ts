@@ -37,10 +37,12 @@
    evento `scrollfloat:scan` y reciben la misma animación.
 ─────────────────────────────────────────────────────────────────────────── */
 import { gsap } from "./main";
+import { appleOut } from "./easing";
+import { prefersReducedMotion } from "./platform";
 
 const ANIMATION = {
     duration: 1,
-    ease: "back.inOut(2)",
+    ease: appleOut,
     scrollStart: "center bottom+=50%",
     scrollEnd: "bottom bottom-=40%",
     stagger: 0.03,
@@ -142,7 +144,7 @@ const pendientes = () =>
 export const initScrollFloat = (): void => {
     if (document.documentElement.dataset.scrollFloat === "ready") return;
     document.documentElement.dataset.scrollFloat = "ready";
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (prefersReducedMotion()) return;
 
     const observador = new IntersectionObserver(
         (entries) => {

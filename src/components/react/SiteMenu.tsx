@@ -21,6 +21,7 @@
      de este árbol: se hablan por eventos `site-menu:toggle` / `site-menu:state`. */
 import { type ReactElement, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
+import { apple, appleOut } from "../../scripts/easing";
 import type { MenuData } from './menu-types';
 
 /* Círculo de recorte centrado en la hamburguesa (o en la esquina superior
@@ -123,24 +124,24 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
     const opened = circleAt(coverRadius());
     const tl = gsap.timeline({ paused: true });
     layerEls.forEach((el, i) => {
-      tl.fromTo(el, { clipPath: closed }, { clipPath: opened, duration: 0.6, ease: 'power3.out' }, i * 0.07);
+      tl.fromTo(el, { clipPath: closed }, { clipPath: opened, duration: 0.6, ease: appleOut }, i * 0.07);
     });
     const lastTime = layerEls.length ? (layerEls.length - 1) * 0.07 : 0;
     const panelInsertTime = lastTime + (layerEls.length ? 0.08 : 0);
     const panelDuration = 0.75;
-    tl.fromTo(panel, { clipPath: closed }, { clipPath: opened, duration: panelDuration, ease: 'power3.out' }, panelInsertTime);
+    tl.fromTo(panel, { clipPath: closed }, { clipPath: opened, duration: panelDuration, ease: appleOut }, panelInsertTime);
 
     if (itemEls.length) {
       const itemsStart = panelInsertTime + panelDuration * 0.15;
-      tl.to(itemEls, { yPercent: 0, rotate: 0, duration: 1, ease: 'power4.out', stagger: { each: 0.1, from: 'start' } }, itemsStart);
+      tl.to(itemEls, { yPercent: 0, rotate: 0, duration: 1, ease: appleOut, stagger: { each: 0.1, from: 'start' } }, itemsStart);
     }
     if (socialTitle || socialLinks.length) {
       const socialsStart = panelInsertTime + panelDuration * 0.4;
-      if (socialTitle) tl.to(socialTitle, { opacity: 1, duration: 0.5, ease: 'power2.out' }, socialsStart);
+      if (socialTitle) tl.to(socialTitle, { opacity: 1, duration: 0.5, ease: appleOut }, socialsStart);
       if (socialLinks.length) {
         tl.to(
           socialLinks,
-          { y: 0, opacity: 1, duration: 0.55, ease: 'power3.out', stagger: { each: 0.08, from: 'start' }, onComplete: () => gsap.set(socialLinks, { clearProps: 'opacity' }) },
+          { y: 0, opacity: 1, duration: 0.55, ease: appleOut, stagger: { each: 0.08, from: 'start' }, onComplete: () => gsap.set(socialLinks, { clearProps: 'opacity' }) },
           socialsStart + 0.04
         );
       }
@@ -172,7 +173,7 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
     closeTweenRef.current = gsap.to([...layers(), panel], {
       clipPath: circleAt(0),
       duration: 0.4,
-      ease: 'power3.in',
+      ease: apple,
       stagger: { each: 0.05, from: 'end' },
       overwrite: 'auto',
       onComplete: () => {
@@ -242,10 +243,10 @@ export default function SiteMenu({ items, projectsHref, projects, languages, soc
     if (!list) return;
     const labelEls = list.querySelectorAll<HTMLElement>('.sm-sub-itemLabel');
     if (next) {
-      gsap.fromTo(list, { height: 0 }, { height: 'auto', duration: 0.5, ease: 'power4.out', clearProps: 'height' });
-      gsap.fromTo(labelEls, { yPercent: 120, rotate: 6, opacity: 0 }, { yPercent: 0, rotate: 0, opacity: 1, duration: 0.7, ease: 'power4.out', stagger: { each: 0.05, from: 'start' } });
+      gsap.fromTo(list, { height: 0 }, { height: 'auto', duration: 0.5, ease: appleOut, clearProps: 'height' });
+      gsap.fromTo(labelEls, { yPercent: 120, rotate: 6, opacity: 0 }, { yPercent: 0, rotate: 0, opacity: 1, duration: 0.7, ease: appleOut, stagger: { each: 0.05, from: 'start' } });
     } else {
-      gsap.to(list, { height: 0, duration: 0.3, ease: 'power3.in' });
+      gsap.to(list, { height: 0, duration: 0.3, ease: apple });
     }
   }, [projectsOpen]);
 

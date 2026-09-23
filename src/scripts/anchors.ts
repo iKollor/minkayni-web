@@ -11,8 +11,8 @@
    entre los dos canales de donación).
 ─────────────────────────────────────────────────────────────────────────── */
 import { ScrollSmoother } from "./main";
+import { prefersReducedMotion } from "./platform";
 
-const prefersReduce = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export const initInPageAnchors = () => {
     if (document.documentElement.dataset.bpAnchors === "ready") return;
@@ -35,7 +35,7 @@ export const initInPageAnchors = () => {
 
         const offset = anchorOffset();
         const smoother = ScrollSmoother.get();
-        const shouldAnimate = animated && !prefersReduce();
+        const shouldAnimate = animated && !prefersReducedMotion();
 
         if (smoother) {
             const destination = Math.max(0, smoother.offset(target, "top top") - offset);

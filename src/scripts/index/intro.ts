@@ -1,7 +1,9 @@
-import { gsap, ScrollTrigger } from "../main.ts";
+import { gsap, ScrollTrigger, waitForFontsReady } from "../main.ts";
+import { appleOut } from "../easing";
 import { $, on, setHeights, setRadius } from "./helpers";
 import { animateParagraph } from "./paragraph";
 import type { AnimationItem } from "lottie-web";
+import { prefersReducedMotion } from "../platform";
 
 const NAV_STROKE_MULTIPLIER = 1.2;
 
@@ -25,15 +27,6 @@ const showPageNav = (): void => {
     }
     const links = pageNav.querySelectorAll<HTMLAnchorElement>(".nav-link");
     links.forEach((a) => (a.style.pointerEvents = "auto"));
-};
-
-const waitFontsReady = (cb: () => void): void => {
-    const fonts: FontFaceSet | undefined = document.fonts;
-    if (fonts?.ready && typeof fonts.ready.then === "function") {
-        fonts.ready.then(() => requestAnimationFrame(cb));
-    } else {
-        requestAnimationFrame(cb);
-    }
 };
 
 const prepareNavStrokes = (navTexts: NodeListOf<Element>): void => {
@@ -60,7 +53,7 @@ const animateNavAndParagraph = (
             {
                 strokeDashoffset: 0,
                 duration: 5,
-                ease: "power2.out",
+                ease: appleOut,
                 stagger: 0.05,
             },
             1
@@ -110,9 +103,7 @@ export const showContentNoIntro = (opts?: {
 
     const prefersReduced =
         opts?.prefersReduced ??
-        (typeof window !== "undefined" &&
-            "matchMedia" in window &&
-            window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+        (prefersReducedMotion());
 
     const targetHeight = opts?.height ?? heroHeight();
     const targetRadius = opts?.radius ?? "30px";
@@ -137,7 +128,7 @@ export const showContentNoIntro = (opts?: {
         document.body.style.removeProperty("overflow-y");
 
         const navItems = document.querySelectorAll("#navBase .animate, #navBase .animate > *");
-        waitFontsReady(() => {
+        waitForFontsReady(() => {
             if (document.querySelector("#navBase > *")) {
                 gsap.set("#navBase > *", { opacity: 1, y: 0 });
             }
@@ -147,7 +138,7 @@ export const showContentNoIntro = (opts?: {
                     y: 0,
                     opacity: 1,
                     duration: 0.8,
-                    ease: "power4.out",
+                    ease: appleOut,
                     stagger: 0.08,
                     /* NavMenu (React) entra con esta misma cascada, no al acabar la intro. */
                     onStart: () => window.dispatchEvent(new CustomEvent("nav:reveal")),
@@ -180,7 +171,7 @@ export const showContentNoIntro = (opts?: {
     (document.documentElement as HTMLElement).style.removeProperty("overflow-y");
     document.body.style.removeProperty("overflow-y");
 
-    waitFontsReady(() => {
+    waitForFontsReady(() => {
         // Preparar strokes
         prepareNavStrokes(navTexts);
         content?.style.removeProperty("clip-path");
@@ -204,7 +195,7 @@ export const showContentNoIntro = (opts?: {
                     y: 0,
                     opacity: 1,
                     duration: 0.8,
-                    ease: "power4.out",
+                    ease: appleOut,
                     stagger: 0.08,
                     /* NavMenu (React) entra con esta misma cascada, no al acabar la intro. */
                     onStart: () => window.dispatchEvent(new CustomEvent("nav:reveal")),
@@ -272,7 +263,7 @@ export const initIntro = (prefersReduced: boolean): void => {
         (document.documentElement as HTMLElement).style.removeProperty("overflow-y");
         document.body.style.removeProperty("overflow-y");
 
-        waitFontsReady(() => {
+        waitForFontsReady(() => {
             prepareNavStrokes(navTexts);
             content?.style.removeProperty("clip-path");
             gsap.set("#navBase > *", { opacity: 1, y: 0 });
@@ -302,7 +293,7 @@ export const initIntro = (prefersReduced: boolean): void => {
                 {
                     clipPath: "circle(150% at 50% 50%)",
                     duration: 5,
-                    ease: "power1.out",
+                    ease: appleOut,
                     onStart: () => {
                         if (overlay) {
                             overlay.style.zIndex = "auto";
@@ -317,7 +308,7 @@ export const initIntro = (prefersReduced: boolean): void => {
                 {
                     height: heroHeight(),
                     duration: 1,
-                    ease: "bounce.out",
+                    ease: appleOut,
                     onStart: () => {
                         teardown();
                         document.documentElement.classList.remove("no-scroll");
@@ -334,7 +325,7 @@ export const initIntro = (prefersReduced: boolean): void => {
                     borderBottomLeftRadius: "30px",
                     borderBottomRightRadius: "30px",
                     duration: 0.8,
-                    ease: "power2.out",
+                    ease: appleOut,
                 },
                 2
             )
@@ -344,7 +335,7 @@ export const initIntro = (prefersReduced: boolean): void => {
                     y: 0,
                     opacity: 1,
                     duration: 0.8,
-                    ease: "power4.out",
+                    ease: appleOut,
                     stagger: 0.08,
                     /* NavMenu (React) entra con esta misma cascada, no al acabar la intro. */
                     onStart: () => window.dispatchEvent(new CustomEvent("nav:reveal")),

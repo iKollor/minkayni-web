@@ -68,7 +68,7 @@ const items = posts.filter(({ data }) => {
                                         loop
                                         playsinline
                                         disablepictureinpicture
-                                        disableremoteplayback
+                                        disableRemotePlayback
                                         aria-label={post.caption || `Reel ${post.external_id}`}
                                         lang={post.caption ? captionLang : undefined}
                                     />
@@ -89,10 +89,10 @@ const items = posts.filter(({ data }) => {
                                 )
                             ) : null}
 
-                            <div class="group-hover:opacity-100 opacity-0 transition-opacity duration-300">
+                            <div class="group-hover:opacity-100 group-focus-within:opacity-100 opacity-0 transition-opacity duration-300">
                                 {/* Top bar: icono (izq) y permalink (der) en el mismo div */}
                                 <div class="absolute left-3 right-3 top-3 z-20 flex items-center justify-between pointer-events-auto p-2">
-                                    <div class="flex items-center">{post.media_kind === "reel" ? <Image src={reelIcon} alt="reel" class="w-8 h-8 object-contain drop-shadow-md invert" /> : <Icon name="mdi:images" class="w-6 h-6 text-white drop-shadow-md" />}</div>
+                                    <div class="flex items-center">{post.media_kind === "reel" ? <Image src={reelIcon} alt={t("alt.reel")} class="w-8 h-8 object-contain drop-shadow-md invert" /> : <Icon name="mdi:images" class="w-6 h-6 text-white drop-shadow-md" />}</div>
                                     <div>
                                         <a href={post.permalink} target="_blank" rel="noopener noreferrer" aria-label={t("news.openPost")} class="inline-flex items-center justify-center p-1.5 rounded bg-black/40 hover:bg-black/60">
                                             <Icon name="mdi:external-link" class="w-5 h-5 text-white" />

@@ -99,7 +99,7 @@ const boton =
     /* Entra desde abajo, una sola vez. `hidden` manda sobre todo esto: el
        aviso no existe para nadie hasta que el script lo muestra. */
     #aviso-cookies:not([hidden]) {
-        animation: aviso-cookies-entra 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+        animation: aviso-cookies-entra 320ms var(--ease-apple-out) both;
     }
 
     @keyframes aviso-cookies-entra {

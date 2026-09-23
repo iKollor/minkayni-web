@@ -85,8 +85,7 @@ const intro = import.meta.env.PUBLIC_HOME_INTRO === "on";
        isla de React en `client:idle`; se arranca igual, cuando el navegador
        está desocupado, pero sin hidratar nada. */
     import { initScrollFloat } from "../scripts/scroll-float";
+    import { whenIdle } from "../scripts/platform";
 
-    const arrancar = () => initScrollFloat();
-    if ("requestIdleCallback" in window) window.requestIdleCallback(arrancar, { timeout: 2000 });
-    else window.setTimeout(arrancar, 200);
+    whenIdle(initScrollFloat, 2000);
 </script>

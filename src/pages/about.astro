@@ -1,4 +1,6 @@
 ---
+import SectionIsland from "../components/SectionIsland.astro";
+import SectionHeading from "../components/SectionHeading.astro";
 import PageLayout from "../layouts/PageLayout.astro";
 import { Image } from "astro:assets";
 import MaskFlor from "../components/MaskFlor.astro";
@@ -39,8 +41,7 @@ const actionCardStyles = [
     <section class="mx-auto w-[90%] max-w-[1280px] py-20 sm:py-28" aria-labelledby="about-intro-title">
         <div class="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr]">
             <div data-reveal>
-                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.intro.eyebrow}</p>
-                <h2 data-scroll-float id="about-intro-title" class="font-display text-5xl font-black leading-[0.92] tracking-tight text-black sm:text-7xl" set:html={formatTitle(d.intro.title, "text-secondary-deep")} />
+                <SectionHeading id="about-intro-title" eyebrow={d.intro.eyebrow} title={d.intro.title} accent="text-secondary-deep" class="text-5xl leading-[0.92] tracking-tight text-black sm:text-7xl" />
                 <p class="mt-8 max-w-[62ch] text-lg leading-relaxed text-black/70" set:html={formatTitle(d.intro.body ?? "", "italic")} />
             </div>
 
@@ -70,14 +71,13 @@ const actionCardStyles = [
     </section>
 
     <!-- Historia / línea de tiempo inmersiva -->
-    <section class="mx-auto w-[94%] max-w-[1440px] rounded-[2.75rem] bg-[#dedbd4] px-4 py-14 sm:px-8 lg:rounded-[5rem] lg:px-14 lg:py-20" aria-labelledby="history-title">
+    <SectionIsland tone="surface" aria-labelledby="history-title">
         <div class="mb-10 max-w-[760px]" data-reveal>
-            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.historyHeading.eyebrow}</p>
-            <h2 data-scroll-float id="history-title" class="font-display text-4xl font-black leading-none text-black sm:text-6xl" set:html={formatTitle(d.historyHeading.title)} />
+            <SectionHeading id="history-title" eyebrow={d.historyHeading.eyebrow} title={d.historyHeading.title} class="text-4xl leading-none text-black sm:text-6xl" />
         </div>
 
         <ImmersiveTimeline items={timeline} ariaLabel={t("about.historyTimeline")} />
-    </section>
+    </SectionIsland>
 
     <!-- Misión y visión -->
     <section class="mx-auto w-[90%] max-w-[1280px] py-24" aria-label={t("about.missionVision")}>
@@ -98,8 +98,7 @@ const actionCardStyles = [
     <!-- Ecosistema -->
     <section class="mx-auto w-[90%] max-w-[1280px] pb-24" aria-labelledby="ecosystem-title">
         <div class="mb-12 max-w-[760px]" data-reveal>
-            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{d.ecosystemHeading.eyebrow}</p>
-            <h2 data-scroll-float id="ecosystem-title" class="font-display text-4xl font-black leading-none text-primary sm:text-6xl" set:html={formatTitle(d.ecosystemHeading.title)} />
+            <SectionHeading id="ecosystem-title" eyebrow={d.ecosystemHeading.eyebrow} title={d.ecosystemHeading.title} eyebrowTone="secondary-deep" class="text-4xl leading-none text-primary sm:text-6xl" />
             <p class="mt-6 max-w-[62ch] text-lg leading-relaxed text-black/70">{d.ecosystemHeading.body}</p>
         </div>
 
@@ -111,7 +110,7 @@ const actionCardStyles = [
                             <span class={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] ${item.dark ? "bg-white/15 text-white" : "bg-black/10 text-black"}`}>{item.kind}</span>
                             {item.logo?.url && (
                                 <span class="shrink-0 rounded-2xl bg-white/90 p-2 shadow-sm">
-                                    <CmsImage media={item.logo} alt={`Logo de ${item.name}`} widths={[96, 192]} class="h-9 w-auto max-w-[7rem] object-contain" />
+                                    <CmsImage media={item.logo} alt={t("about.logoOf", { name: item.name ?? "" })} widths={[96, 192]} class="h-9 w-auto max-w-[7rem] object-contain" />
                                 </span>
                             )}
                         </div>
@@ -148,8 +147,7 @@ const actionCardStyles = [
                 <MaskFlor src={foto} alt={t("alt.withTeam")} className="h-64 w-64 shadow-lg sm:h-80 sm:w-80 lg:h-96 lg:w-96" />
             </div>
             <div data-reveal data-reveal-delay="0.1">
-                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.teamHeading.eyebrow}</p>
-                <h2 data-scroll-float id="team-title" class="font-display text-4xl font-black leading-none text-black sm:text-6xl" set:html={formatTitle(d.teamHeading.title)} />
+                <SectionHeading id="team-title" eyebrow={d.teamHeading.eyebrow} title={d.teamHeading.title} class="text-4xl leading-none text-black sm:text-6xl" />
                 <div class="mt-8 grid gap-6 sm:grid-cols-2">
                     {
                         d.teamMembers.map((member) => (
@@ -166,10 +164,9 @@ const actionCardStyles = [
     </section>
 
     <!-- Transparencia y gobernanza -->
-    <section class="mx-auto w-[94%] max-w-[1440px] rounded-[2.75rem] bg-[linear-gradient(130deg,var(--primary),#410063)] px-6 py-16 text-white sm:px-12 lg:rounded-[5rem] lg:px-20 lg:py-24" aria-labelledby="transparency-title">
+    <SectionIsland tone="brand" aria-labelledby="transparency-title">
         <div class="mb-12 max-w-[760px]" data-reveal>
-            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">{d.transparencyHeading.eyebrow}</p>
-            <h2 data-scroll-float id="transparency-title" class="font-display text-4xl font-black leading-[0.95] sm:text-6xl" set:html={formatTitle(d.transparencyHeading.title)} />
+            <SectionHeading id="transparency-title" eyebrow={d.transparencyHeading.eyebrow} title={d.transparencyHeading.title} eyebrowTone="secondary" class="text-4xl leading-[0.95] sm:text-6xl" />
             <p class="mt-6 max-w-[62ch] text-lg leading-relaxed text-white/75">{d.transparencyHeading.body}</p>
         </div>
 
@@ -178,21 +175,20 @@ const actionCardStyles = [
                 politicas.map((p) => (
                     <li class="rounded-[1.5rem] bg-white/10 px-5 py-4 backdrop-blur">
                         <p class="font-display font-bold leading-snug">{p.text}</p>
-                        {p.meta && <p class="mt-1 text-sm text-white/60">Aprobado en {p.meta}</p>}
+                        {p.meta && <p class="mt-1 text-sm text-white/60">{t("about.approvedIn", { meta: p.meta })}</p>}
                     </li>
                 ))
             }
         </ul>
 
         <p class="mt-10 max-w-[70ch] text-sm leading-relaxed text-white/65">{d.transparencyNote}</p>
-    </section>
+    </SectionIsland>
 
     <!-- Prensa -->
     <section class="mx-auto w-[90%] max-w-[1280px] py-24" aria-labelledby="press-title">
         <div class="grid items-center gap-10 lg:grid-cols-[1fr_auto]">
             <div data-reveal>
-                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{d.pressHeading.eyebrow}</p>
-                <h2 data-scroll-float id="press-title" class="font-display text-4xl font-black leading-none text-primary sm:text-6xl" set:html={formatTitle(d.pressHeading.title)} />
+                <SectionHeading id="press-title" eyebrow={d.pressHeading.eyebrow} title={d.pressHeading.title} eyebrowTone="secondary-deep" class="text-4xl leading-none text-primary sm:text-6xl" />
                 <p class="mt-6 max-w-[62ch] text-lg leading-relaxed text-black/70">{d.pressHeading.body}</p>
                 <a href={d.pressCta.href} class="mt-8 inline-flex items-center gap-2 font-display font-bold text-primary underline-offset-4 transition hover:text-secondary-deep hover:underline">
                     {d.pressCta.text} <span aria-hidden="true">→</span>
@@ -217,11 +213,10 @@ const actionCardStyles = [
     </section>
 
     <!-- Contacto -->
-    <section id="contacto" class="mx-auto mb-44 w-[94%] max-w-[1440px] overflow-hidden rounded-[2.75rem] bg-accent px-6 py-16 text-black sm:px-12 md:mb-80 lg:rounded-[5rem] lg:px-20 lg:py-24" aria-labelledby="contact-title">
+    <SectionIsland tone="accent" class="mb-44 overflow-hidden md:mb-80" id="contacto" aria-labelledby="contact-title">
         <div class="grid items-center gap-12 lg:grid-cols-[1fr_auto]">
             <div class="max-w-[760px]" data-reveal>
-                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.contactHeading.eyebrow}</p>
-                <h2 data-scroll-float id="contact-title" class="font-display text-5xl font-black leading-[0.95] sm:text-7xl" set:html={formatTitle(d.contactHeading.title)} />
+                <SectionHeading id="contact-title" eyebrow={d.contactHeading.eyebrow} title={d.contactHeading.title} class="text-5xl leading-[0.95] sm:text-7xl" />
                 <p class="mt-6 max-w-[58ch] text-lg leading-relaxed text-black/70">{d.contactHeading.body}</p>
                 <div class="mt-10 flex flex-wrap items-center gap-5">
                     <Button href={d.contactButton.href} defaultText={d.contactButton.defaultText} hoverText={d.contactButton.hoverText} />
@@ -240,7 +235,7 @@ const actionCardStyles = [
                 <Image src={daniel} alt={t("alt.daniel")} class="h-96 w-auto drop-shadow-2xl" width={640} data-float />
             </div>
         </div>
-    </section>
+    </SectionIsland>
 </PageLayout>
 
 <script>

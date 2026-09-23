@@ -123,9 +123,10 @@ export async function cargarNovedades(locale: Locale): Promise<Novedad[]> {
     let entradas: Awaited<ReturnType<typeof getCollection>>;
     try {
         entradas = await getCollection("posts");
-    } catch {
+    } catch (error) {
         /* Igual que el resto del sitio: si el CMS no respondió en build, la
            página se queda vacía pero no tumba la compilación. */
+        console.warn("[novedades] No se pudo leer la colección de posts.", error);
         return [];
     }
 

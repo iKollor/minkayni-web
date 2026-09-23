@@ -12,6 +12,8 @@ gsap.registerPlugin(ScrollSmoother, ScrollTrigger, SplitText, DrawSVGPlugin, Scr
 /* Sella el paso por el sitio en CADA página: la intro de la portada mide
    inactividad, no tiempo desde que se vio. Importado por efecto, sin API. */
 import "./visita";
+import { isIOS, isMobileViewport, prefersReducedMotion, whenIdle } from "./platform";
+import { onWidthResize } from "./viewport";
 
 /* En móvil, ocultar la barra de direcciones dispara `resize` sin que cambie el
    ancho. Sin esto, ScrollTrigger recalcula TODAS sus posiciones en pleno
@@ -49,7 +51,7 @@ const fontsReady: Promise<void> = (async () => {
     if (typeof document === "undefined" || !document.fonts) return;
     /* Las @font-face las declara FontFaces.astro tras el primer cuadro; hasta
        entonces `document.fonts.load` no encontraría ninguna cara que cargar. */
-    await (window as Window & { fontsDeclared?: Promise<void> }).fontsDeclared;
+    await window.fontsDeclared;
 
     const descriptors = [
         '400 16px "Aristotelica Pro Text"',
@@ -70,34 +72,17 @@ const waitForFontsReady = (cb: () => void) => {
     });
 };
 
-// --- Eliminado injectNoOverflowXCSS: usar CSS global en su lugar ---
 const enforceNoOverflowX = () => {
-    // Refuerzo por si algún inline style futuro cambia algo
     gsap.set(["html", "body", "#smooth-wrapper", "#smooth-content"], { overflowX: "hidden" });
 };
 
-const isIOS = () => {
-    const ua = navigator.userAgent || "";
-    const platform = navigator.platform || "";
-    const iOSDevice = /iPad|iPhone|iPod/.test(ua) || /iPad|iPhone|iPod/.test(platform);
-    const touchMac = /Mac/.test(platform) && "ontouchend" in document;
-    return iOSDevice || touchMac;
-};
+const introFinished = () => !document.getElementById("intro-overlay") && !document.documentElement.classList.contains("no-scroll");
 
 const createSmoother = () => {
     if (ScrollSmoother.get()) return;
-
-    // iOS Safari tiende a tener conflictos con smooth scrolling personalizado
-    if (isIOS()) {
-        console.info("[smooth] iOS detectado: ScrollSmoother deshabilitado");
-        return;
-    }
-
-    // Evitar en mobile para prevenir doble scroll (wrapper + body)
-    if (window.innerWidth <= 767) {
-        console.info("[smooth] Mobile viewport detectado (<768px): ScrollSmoother omitido");
-        return;
-    }
+    /* iOS Safari choca con el scroll suavizado propio, y en móvil el wrapper
+       y el body acabarían desplazándose los dos. Ahí se queda el nativo. */
+    if (isIOS() || isMobileViewport()) return;
 
     try {
         ScrollSmoother.create({
@@ -106,8 +91,6 @@ const createSmoother = () => {
             smooth: 1.1,
             effects: true,
         });
-        console.info("[smooth] ScrollSmoother creado");
-        // --- NUEVO: aplicar refuerzo overflow-x tras creación ---
         enforceNoOverflowX();
     } catch (e) {
         console.error("[smooth] Error creando ScrollSmoother:", e);
@@ -115,18 +98,15 @@ const createSmoother = () => {
 };
 
 const waitForIntroAndInit = () => {
-    const ready = !document.getElementById("intro-overlay") && !document.documentElement.classList.contains("no-scroll");
-    if (ready) {
+    if (introFinished()) {
         createSmoother();
         return;
     }
 
     const obs = new MutationObserver(() => {
-        const done = !document.getElementById("intro-overlay") && !document.documentElement.classList.contains("no-scroll");
-        if (done) {
-            obs.disconnect();
-            createSmoother();
-        }
+        if (!introFinished()) return;
+        obs.disconnect();
+        createSmoother();
     });
     obs.observe(document.documentElement, {
         childList: true,
@@ -135,11 +115,11 @@ const waitForIntroAndInit = () => {
         attributeFilter: ["class"],
     });
 
+    /* Seguro por si la intro no llega a retirarse: sin él, el observador
+       seguiría mirando cada span que crean SplitText y ScrollFloat. */
     setTimeout(() => {
-        if (!ScrollSmoother.get() && !isIOS()) {
-            console.warn("[smooth] Fallback activado (timeout)");
-            createSmoother();
-        }
+        obs.disconnect();
+        createSmoother();
     }, 8000);
 };
 
@@ -148,30 +128,16 @@ const waitForIntroAndInit = () => {
    los ScrollTrigger y mide la página) y PageSpeed lo sumaba a la tarea larga
    de arranque (TBT). Como mucho al segundo; hasta entonces el scroll es el
    nativo, que es exactamente lo que ve el móvil e iOS siempre. */
-const enIdle = (cb: () => void) => {
-    if ("requestIdleCallback" in window) {
-        window.requestIdleCallback(() => cb(), { timeout: 1000 });
-    } else {
-        setTimeout(cb, 200);
-    }
-};
-
 if (!window.__SMOOTH_CREATED__) {
     window.__SMOOTH_CREATED__ = true;
     document.addEventListener("DOMContentLoaded", () => {
-        enforceNoOverflowX(); // Refuerzo inicial (CSS global debe contener overflow-x: hidden)
-        enIdle(waitForIntroAndInit);
+        enforceNoOverflowX();
+        whenIdle(waitForIntroAndInit);
     });
-} else {
-    console.debug("[smooth] Ya inicializado, se omite duplicado");
+    onWidthResize(enforceNoOverflowX);
 }
 
-// Control grano (igual que antes)
-const disableForReducedMotion = () => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        document.body.dataset.grain = "off";
-    }
-};
+if (prefersReducedMotion()) document.body.dataset.grain = "off";
 
 window.toggleGrain = () => {
     if (document.body.dataset.grain === "off") {
@@ -180,16 +146,6 @@ window.toggleGrain = () => {
         document.body.dataset.grain = "off";
     }
 };
-
-disableForReducedMotion();
-
-// Diagnóstico rápido
-if (!document.getElementById("smooth-wrapper") || !document.getElementById("smooth-content")) {
-    console.warn("[smooth] Falta wrapper o content en el DOM");
-}
-
-// NUEVO: volver a aplicar si cambia el layout
-["resize", "orientationchange"].forEach((evt) => window.addEventListener(evt, enforceNoOverflowX, { passive: true }));
 
 export { gsap, ScrollSmoother, ScrollTrigger, SplitText, DrawSVGPlugin, Draggable, InertiaPlugin };
 export { fontsReady, waitForFontsReady };

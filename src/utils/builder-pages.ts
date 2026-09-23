@@ -38,7 +38,8 @@ const readCollection = async (name: "builderPages" | "builderPagesEn"): Promise<
     try {
         const entries = await getCollection(name as "builderPages");
         return entries.map((entry) => getData(entry) as BuilderPage);
-    } catch {
+    } catch (error) {
+        console.warn(`[builder] No se pudo leer ${name}; no se generan sus páginas.`, error);
         return [];
     }
 };

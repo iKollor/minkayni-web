@@ -1,4 +1,8 @@
 import { gsap, Draggable, InertiaPlugin } from "../../scripts/main";
+import { apple } from "../../scripts/easing";
+import { isMobileViewport, prefersReducedMotion } from "../../scripts/platform";
+import { onWidthResize } from "../../scripts/viewport";
+
 export const init = () => {
     const wrapperEl = document.querySelector<HTMLDivElement>(".wrapper");
     if (!wrapperEl) {
@@ -12,7 +16,7 @@ export const init = () => {
         return;
     }
 
-    if (boxes.length) gsap.set(boxes[boxes.length - 1], { marginRight: `${MARGIN_RIGHT_PX}px` });
+    gsap.set(boxes[boxes.length - 1], { marginRight: `${MARGIN_RIGHT_PX}px` });
 
     // Loop horizontal (pausado y arrastrable)
     // Builder para poder reconstruir el loop en resize; usamos paddingRight fijo (MARGIN_RIGHT_PX)
@@ -36,12 +40,16 @@ export const init = () => {
     };
 
     let loop: HorizontalLoopTimeline = buildLoop();
+    /* Con menos movimiento la cinta no avanza sola; arrastre y clic siguen. */
+    const playLoop = () => {
+        if (!prefersReducedMotion()) loop.play();
+    };
 
     // Control por viewport: pausa/reanuda al entrar/salir
     let isInView = false;
     const onEnterView = () => {
         isInView = true;
-        loop.play();
+        playLoop();
         reordenarVideos();
     };
     const onExitView = () => {
@@ -83,12 +91,12 @@ export const init = () => {
     const ahorro = (): boolean => {
         const conexion = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
         return (
-            matchMedia("(prefers-reduced-motion: reduce)").matches ||
+            prefersReducedMotion() ||
             conexion?.saveData === true ||
             document.documentElement.hasAttribute("data-low-power")
         );
     };
-    const tope = (): number => (ahorro() ? 0 : matchMedia("(min-width: 768px)").matches ? 2 : 1);
+    const tope = (): number => (ahorro() ? 0 : isMobileViewport() ? 1 : 2);
 
     const reproducir = (video: HTMLVideoElement) => {
         const src = video.dataset.src;
@@ -199,56 +207,30 @@ export const init = () => {
     };
     const onHoverLeave = () => {
         if (!loop) return;
-        if (wasPlayingOnHover && isInView && !document.hidden) {
-            loop.play();
-        }
+        if (wasPlayingOnHover && isInView && !document.hidden) playLoop();
     };
     wrapperEl.addEventListener("pointerenter", onHoverEnter);
     wrapperEl.addEventListener("pointerleave", onHoverLeave);
 
     // Click en cada caja: centrar ese box (toIndex directo)
-    boxes.forEach((box, i) => box.addEventListener("click", () => loop.toIndex(i, { duration: 0.8, ease: "power1.inOut" })));
+    boxes.forEach((box, i) => box.addEventListener("click", () => loop.toIndex(i, { duration: 0.8, ease: apple })));
 
-    // Rebuild en resize (compacto)
-    let rTO: number | undefined;
-    const rebuild = () => {
+    /* Solo un cambio de ancho reconstruye la cinta: la barra de direcciones
+       del móvil también dispara `resize` y devolvía el carrusel al inicio. */
+    onWidthResize(() => {
         loop.draggable?.kill();
         loop.kill?.();
         loop = buildLoop();
-        if (!document.hidden && isInView) {
-            loop.play();
-        }
-    };
-    window.addEventListener("resize", () => {
-        window.clearTimeout(rTO);
-        rTO = window.setTimeout(rebuild, 150);
+        if (!document.hidden && isInView) playLoop();
     });
 
     // Pausar cuando la pestaña no está visible
     const onVisibility = () => {
         if (document.hidden) loop.pause();
-        else if (isInView) loop.play();
+        else if (isInView) playLoop();
         reordenarVideos();
     };
     document.addEventListener("visibilitychange", onVisibility);
-
-    // Limpieza en navegación/cierre
-    const cleanup = () => {
-        try {
-            io.disconnect();
-        } catch {}
-        try {
-            videoObserver.disconnect();
-        } catch {}
-        videos.forEach(pausar);
-        liberar.forEach((t) => window.clearTimeout(t));
-        document.removeEventListener("visibilitychange", onVisibility);
-        wrapperEl.removeEventListener("pointerenter", onHoverEnter);
-        wrapperEl.removeEventListener("pointerleave", onHoverLeave);
-        loop.draggable?.kill();
-        loop.kill?.();
-    };
-    window.addEventListener("beforeunload", cleanup);
 
     /** ================== Tipos auxiliares ================== */
 

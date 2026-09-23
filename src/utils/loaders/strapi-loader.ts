@@ -1,4 +1,5 @@
 import type { Loader, LoaderContext } from "astro/loaders";
+import { excerpt, graphqlHeaders, redact, strapiFetch } from "../strapi-client";
 
 type StrapiNode = Record<string, unknown>;
 
@@ -12,6 +13,9 @@ type Opts = {
   idResolver?: (node: StrapiNode) => string;
   status?: "PUBLISHED" | "DRAFT";
   locale?: string;
+  /** Con `STRAPI_STRICT=true` un fallo de sincronización rompe el build en vez
+   *  de publicar en silencio la caché o el contenido local. */
+  strict?: boolean;
   /**
    * Selección de reserva, sin los campos más nuevos. Si el CMS todavía no los
    * conoce («Cannot query field»), la consulta se repite con esta en vez de
@@ -23,6 +27,8 @@ type Opts = {
 };
 
 const NETWORK_TIMEOUT_MS = 30_000;
+/* Un segundo intento solo ante fallos transitorios (red, 5xx de pasarela). */
+const NETWORK_ATTEMPTS = 2;
 const MAX_PAGES = 200;
 
 const cap = (value: string) =>
@@ -50,45 +56,33 @@ export function strapiLoader({
   status = "PUBLISHED",
   locale,
   fallbackSelection,
+  strict = false,
 }: Opts): Loader {
   const request = async (
     query: string,
     variables: Record<string, unknown>,
     operationName: string
   ): Promise<Record<string, unknown>> => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), NETWORK_TIMEOUT_MS);
+    const secret = client.headers?.Authorization?.replace(/^Bearer\s+/i, "");
+    const response = await strapiFetch(client.endpoint, {
+      headers: graphqlHeaders(operationName, client.headers),
+      body: JSON.stringify({ operationName, query, variables }),
+      timeoutMs: NETWORK_TIMEOUT_MS,
+      maxAttempts: NETWORK_ATTEMPTS,
+      secret,
+    });
 
-    try {
-      const response = await fetch(client.endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apollo-require-preflight": "true",
-          "x-apollo-operation-name": operationName,
-          ...(client.headers ?? {}),
-        },
-        body: JSON.stringify({ query, variables }),
-        signal: controller.signal,
-      });
+    if (!response.ok)
+      throw new Error(
+        `GraphQL ${response.status} ${response.statusText}: ${excerpt(response.text, secret, 500)}`
+      );
 
-      if (!response.ok) {
-        const body = await response.text().catch(() => "");
-        throw new Error(
-          `GraphQL ${response.status} ${response.statusText}: ${body}`
-        );
-      }
+    const result = asNode(JSON.parse(response.text));
+    const errors = result?.errors;
+    if (Array.isArray(errors) && errors.length)
+      throw new Error(redact(`GraphQL errors: ${JSON.stringify(errors)}`, secret));
 
-      const payload: unknown = await response.json();
-      const result = asNode(payload);
-      const errors = result?.errors;
-      if (Array.isArray(errors) && errors.length)
-        throw new Error(`GraphQL errors: ${JSON.stringify(errors)}`);
-
-      return asNode(result?.data) ?? {};
-    } finally {
-      clearTimeout(timeout);
-    }
+    return asNode(result?.data) ?? {};
   };
 
   const getStableId = (node: StrapiNode, fallback: string) => {
@@ -216,7 +210,8 @@ export function strapiLoader({
             collectionQuery,
             locale ? { page, pageSize, status, locale } : { page, pageSize, status }
           );
-          const nodes = asNodes(response[rootField]).filter(
+          const pageNodes = asNodes(response[rootField]);
+          const nodes = pageNodes.filter(
             (node) => status !== "PUBLISHED" || isPublished(node)
           );
 
@@ -228,7 +223,9 @@ export function strapiLoader({
             stored++;
           }
 
-          if (nodes.length < pageSize) break;
+          /* Se compara con la página sin filtrar: un borrador descartado no
+             significa que no queden más páginas. */
+          if (pageNodes.length < pageSize) break;
           page++;
         }
 
@@ -257,6 +254,7 @@ export function strapiLoader({
           }.`
         );
       } catch (error) {
+        if (strict) throw error;
         const message = error instanceof Error ? error.message : String(error);
         logger.warn(
           `[${rootField}] No se pudo sincronizar con Strapi; se conserva la caché local. ${message}`

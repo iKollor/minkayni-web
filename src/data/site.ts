@@ -1,5 +1,5 @@
 import type { NavTree } from "../schemas/navigation";
-import type { Footer } from "../schemas/strapi.graphql.zod";
+import type { FooterContent } from "../schemas/pages.zod";
 import { localizePath, type Locale } from "../i18n";
 import { destinoReal } from "./redirects";
 
@@ -97,7 +97,7 @@ export const withBatucadaProject = (navigation: NavTree): NavTree =>
         };
     });
 
-export const fallbackFooter: Footer = {
+export const fallbackFooter: FooterContent = {
     documentId: "fallback-footer",
     Socials: {
         id: "fallback-socials",

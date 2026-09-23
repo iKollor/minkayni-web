@@ -90,6 +90,8 @@ let caption = "";
 let lastFocused: HTMLElement | null = null;
 let previousOverflow = "";
 let pausedSmoother: { paused: (value?: boolean) => boolean } | null = null;
+/* Oyentes de carga de la foto en curso: se cancelan al pasar a otra. */
+let imageListeners: AbortController | null = null;
 
 /* Estado del zoom. `limit` es lo que da de sí ESTA foto (ver zoom.ts). */
 let scale = 1;
@@ -433,9 +435,12 @@ const show = (next: number): void => {
         fitFrame();
     };
     fitFrame();
+    imageListeners?.abort();
+    imageListeners = new AbortController();
+    const { signal } = imageListeners;
     if (image.complete) done();
-    else image.addEventListener("load", done, { once: true });
-    image.addEventListener("error", done, { once: true });
+    else image.addEventListener("load", done, { once: true, signal });
+    image.addEventListener("error", done, { once: true, signal });
 
     /* El contador vive arriba; el pie, debajo de la foto, dice de qué barrio
        es. Repetir «1 de 3» en los dos sitios solo hacía más ruido. */

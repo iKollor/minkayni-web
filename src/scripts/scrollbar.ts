@@ -17,6 +17,8 @@
      y no estorban.
 ─────────────────────────────────────────────────────────────────────────── */
 import { gsap, ScrollSmoother, ScrollTrigger } from "./main";
+import { appleOut } from "./easing";
+import { prefersReducedMotion } from "./platform";
 
 const IDLE_ALPHA = 0.45;
 const IDLE_DELAY_MS = 1400;
@@ -29,7 +31,7 @@ export const initSiteScrollbar = (root: HTMLElement): void => {
     const thumb = root.querySelector<HTMLElement>(".site-scrollbar__thumb");
     if (!track || !thumb) return;
 
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = prefersReducedMotion();
     document.documentElement.setAttribute("data-site-scrollbar-active", "");
 
     let trackH = 0;
@@ -39,7 +41,7 @@ export const initSiteScrollbar = (root: HTMLElement): void => {
     let dragging = false;
     let idleTimer = 0;
 
-    const moveThumb = gsap.quickTo(thumb, "y", { duration: reduced ? 0 : 0.22, ease: "power3.out" });
+    const moveThumb = gsap.quickTo(thumb, "y", { duration: reduced ? 0 : 0.22, ease: appleOut });
     const pageStep = () => window.innerHeight * 0.9;
     const currentScroll = () => ScrollSmoother.get()?.scrollTop() ?? window.scrollY;
 
@@ -77,9 +79,13 @@ export const initSiteScrollbar = (root: HTMLElement): void => {
         root.classList.remove("is-active");
         gsap.to(root, { opacity: IDLE_ALPHA, duration: 0.35, overwrite: true });
     };
+    /* Se llama en cada cuadro de scroll: el tween solo al despertar; después
+       basta con aplazar el reposo. */
     const wake = () => {
-        root.classList.add("is-active");
-        gsap.to(root, { opacity: 1, duration: 0.18, overwrite: true });
+        if (!root.classList.contains("is-active")) {
+            root.classList.add("is-active");
+            gsap.to(root, { opacity: 1, duration: 0.18, overwrite: true });
+        }
         window.clearTimeout(idleTimer);
         idleTimer = window.setTimeout(rest, IDLE_DELAY_MS);
     };

@@ -42,7 +42,7 @@ const stats = (d.stats ?? []).filter((stat) => stat?.value && stat?.label);
 ---
 
 <section id="featured-project" class="relative mt-16 w-full md:mt-24">
-    <div class="grid overflow-hidden rounded-t-[50px] bg-[linear-gradient(135deg,#4a0073_0%,#6e00a3_65%,#4a0073_100%)] md:rounded-t-[100px] lg:grid-cols-[1.05fr_0.95fr]">
+    <div class="grid overflow-hidden rounded-t-[50px] bg-[linear-gradient(135deg,#4a0073_0%,var(--primary)_65%,#4a0073_100%)] md:rounded-t-[100px] lg:grid-cols-[1.05fr_0.95fr]">
         <!-- Foto con el logo protagonista encima -->
         <figure class="featured-img-col relative min-h-[420px] overflow-hidden sm:min-h-[520px] lg:min-h-svh">
             <CmsImage
@@ -105,6 +105,7 @@ const stats = (d.stats ?? []).filter((stat) => stat?.value && stat?.label);
 
 <script>
     import { gsap, SplitText, waitForFontsReady } from "../../scripts/main.ts";
+    import { appleOut } from "../../scripts/easing";
 
     const initFeaturedProject = () => {
         const section = document.getElementById("featured-project");
@@ -156,7 +157,7 @@ const stats = (d.stats ?? []).filter((stat) => stat?.value && stat?.label);
                                 opacity: 0,
                                 stagger: 0.07,
                                 duration: 0.6,
-                                ease: "power3.out",
+                                ease: appleOut,
                                 scrollTrigger: {
                                     trigger: section,
                                     start: "top 75%",
@@ -167,7 +168,7 @@ const stats = (d.stats ?? []).filter((stat) => stat?.value && stat?.label);
                 }
 
                 const timeline = gsap.timeline({
-                    defaults: { ease: "power3.out" },
+                    defaults: { ease: appleOut },
                     scrollTrigger: {
                         trigger: section,
                         start: "top 75%",

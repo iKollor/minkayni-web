@@ -1,15 +1,20 @@
-// src/utils/loaders/navigation-loader.ts
 import type { Loader, LoaderContext } from "astro/loaders";
+import { excerpt, strapiFetch } from "../strapi-client";
 
 type Opts = {
     slug?: string;
     locale?: string;
-    url: string; // STRAPI_URL sin / final, ej: https://cms.tuapp.com
+    /** Origen de Strapi; se tolera la barra final. */
+    url: string;
     token?: string;
     cacheMs?: number;
+    /** Ver `strict` en strapi-loader.ts. */
+    strict?: boolean;
 };
 
-export function navigationLoader({ slug = "header", locale = "es", url, token, cacheMs = 0 }: Opts): Loader {
+const NAVIGATION_TIMEOUT_MS = 8000;
+
+export function navigationLoader({ slug = "header", locale = "es", url, token, cacheMs = 0, strict = false }: Opts): Loader {
     return {
         name: `navigation:${slug}:${locale}`,
         async load(ctx: LoaderContext) {
@@ -23,30 +28,26 @@ export function navigationLoader({ slug = "header", locale = "es", url, token, c
                 }
             }
 
-            const endpoint = `${url}/api/navigation/render/${encodeURIComponent(slug)}` + `?type=TREE&menu=true&locale=${encodeURIComponent(locale)}`;
-            const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 8000);
-
+            const endpoint = `${url.replace(/\/+$/, "")}/api/navigation/render/${encodeURIComponent(slug)}` + `?type=TREE&menu=true&locale=${encodeURIComponent(locale)}`;
             try {
-                const res = await fetch(endpoint, {
+                const res = await strapiFetch(endpoint, {
+                    method: "GET",
                     headers: token ? { Authorization: `Bearer ${token}` } : {},
-                    signal: controller.signal,
+                    timeoutMs: NAVIGATION_TIMEOUT_MS,
+                    maxAttempts: 2,
+                    secret: token,
                 });
-                if (!res.ok) {
-                    const body = await res.text().catch(() => "");
-                    throw new Error(`Navigation fetch failed: ${res.status} ${body}`);
-                }
+                if (!res.ok) throw new Error(`Navigation fetch failed: ${res.status} ${excerpt(res.text, token, 500)}`);
 
-                const data = await res.json();
+                const data = JSON.parse(res.text) as Record<string, unknown>;
                 const id = `navigation:${slug}:${locale}`;
                 const parsed = await parseData({ id, data });
                 store.set({ id, digest: generateDigest(parsed), data: parsed });
                 meta.set("lastSynced", String(Date.now()));
             } catch (error) {
+                if (strict) throw error;
                 const message = error instanceof Error ? error.message : String(error);
                 logger.warn(`[nav:${slug}] No se pudo sincronizar; se conserva la caché local. ${message}`);
-            } finally {
-                clearTimeout(timeout);
             }
         },
     };

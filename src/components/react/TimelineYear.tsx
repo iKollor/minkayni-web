@@ -7,7 +7,12 @@
    `data-year` del contenedor y aquí se lee al montar. La tipografía es la
    del contenedor (`[data-tl-year]`): se mide su font-size real. */
 import { useEffect, useState } from 'react';
-import Counter from './Counter';
+import Counter, { type CounterTween } from './Counter';
+import { APPLE_BEZIER } from '../../scripts/easing';
+
+/* Cambio de un año a otro mientras se recorre: transición de interfaz, con la
+   curva estándar de Apple. */
+const YEAR_TWEEN: CounterTween = { duration: 0.9, ease: APPLE_BEZIER };
 
 interface Props {
   initial: number;
@@ -60,7 +65,7 @@ export default function TimelineYear({ initial, fontSize: serverFontSize }: Prop
       borderRadius={0}
       horizontalPadding={0}
       gradientHeight={0}
-      spring={{ duration: 900, bounce: 0 }}
+      tween={YEAR_TWEEN}
     />
   );
 }

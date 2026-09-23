@@ -64,11 +64,15 @@ const getSingleEntry = getEntry as (collection: string, id: string) => Promise<S
 const collectionFor = (collection: SingleCollection, locale: Locale): string =>
     locale === defaultLocale ? collection : `${collection}En`;
 
-const readEntry = async (collection: string, id: string): Promise<unknown> => {
+/** Una entrada ausente devuelve `undefined` sin lanzar; lo que llega al
+    `catch` es un error real (colección mal escrita, datos corruptos) y se
+    registra antes de caer al contenido local. */
+export const readEntry = async (collection: string, id: string): Promise<unknown> => {
     try {
         const entry = await getSingleEntry(collection, id);
         return entry ? getData(entry) : undefined;
-    } catch {
+    } catch (error) {
+        console.warn(`[content] No se pudo leer ${collection}/${id}; se usa el contenido local.`, error);
         return undefined;
     }
 };

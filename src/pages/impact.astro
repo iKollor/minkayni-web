@@ -1,4 +1,6 @@
 ---
+import SectionIsland from "../components/SectionIsland.astro";
+import SectionHeading from "../components/SectionHeading.astro";
 import PageLayout from "../layouts/PageLayout.astro";
 import Button from "../components/Button.astro";
 import { Image } from "astro:assets";
@@ -8,7 +10,6 @@ import MaskFlor from "../components/MaskFlor.astro";
 import foto from "../assets/FOTO_BATUCADA.webp";
 import { impactFallback } from "../data/pages/impact";
 import { loadPageContent } from "../utils/page-content";
-import { formatTitle } from "../utils/rich-title";
 import { getLocale, useTranslations } from "../i18n";
 
 /* Contenido: single type `impact-page` en Strapi, con fallback local. */
@@ -30,8 +31,7 @@ const statStyles = [
     <section class="mx-auto w-[90%] max-w-[1280px] py-20 sm:py-28" aria-labelledby="impact-intro-title">
         <div class="grid items-end gap-10 lg:grid-cols-[1.1fr_0.9fr]">
             <div data-reveal>
-                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.intro.eyebrow}</p>
-                <h2 data-scroll-float id="impact-intro-title" class="font-display text-5xl font-black leading-[0.92] tracking-tight text-black sm:text-7xl" set:html={formatTitle(d.intro.title, "text-secondary-deep")} />
+                <SectionHeading id="impact-intro-title" eyebrow={d.intro.eyebrow} title={d.intro.title} accent="text-secondary-deep" class="text-5xl leading-[0.92] tracking-tight text-black sm:text-7xl" />
             </div>
             <div class="max-w-[62ch] text-lg leading-relaxed text-black/75 lg:pb-2" data-reveal data-reveal-delay="0.1">
                 <p>{d.intro.body}</p>
@@ -74,15 +74,10 @@ const statStyles = [
     </section>
 
     <!-- Resultados medidos -->
-    <section
-        id="resultados"
-        class="mx-auto w-[94%] max-w-[1440px] scroll-mt-28 rounded-[2.75rem] bg-[linear-gradient(130deg,var(--primary),#410063)] px-6 py-16 text-white sm:px-12 lg:rounded-[5rem] lg:px-20 lg:py-24"
-        aria-labelledby="results-title"
-    >
+    <SectionIsland tone="brand" class="scroll-mt-28" id="resultados" aria-labelledby="results-title">
         <div class="grid gap-12 lg:grid-cols-[0.9fr_1.1fr]">
             <div data-reveal>
-                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">{d.resultsHeading.eyebrow}</p>
-                <h2 data-scroll-float id="results-title" class="font-display text-4xl font-black leading-[0.95] sm:text-6xl" set:html={formatTitle(d.resultsHeading.title)} />
+                <SectionHeading id="results-title" eyebrow={d.resultsHeading.eyebrow} title={d.resultsHeading.title} eyebrowTone="secondary" class="text-4xl leading-[0.95] sm:text-6xl" />
                 <p class="mt-6 max-w-[58ch] text-lg leading-relaxed text-white/80">{d.resultsHeading.body}</p>
                 <blockquote class="mt-8 max-w-[52ch] border-l-2 border-secondary pl-5 text-lg italic leading-relaxed text-white/85">
                     {d.resultsQuote}
@@ -123,19 +118,18 @@ const statStyles = [
                 }
             </div>
         </div>
-    </section>
+    </SectionIsland>
 
     <!-- Reconocimientos -->
     <section id="reconocimientos" class="mx-auto w-[90%] max-w-[1280px] scroll-mt-28 py-24" aria-labelledby="awards-title">
         <div class="mb-12 max-w-[760px]" data-reveal>
-            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{d.awardsHeading.eyebrow}</p>
-            <h2 data-scroll-float id="awards-title" class="font-display text-4xl font-black leading-none text-primary sm:text-6xl" set:html={formatTitle(d.awardsHeading.title)} />
+            <SectionHeading id="awards-title" eyebrow={d.awardsHeading.eyebrow} title={d.awardsHeading.title} eyebrowTone="secondary-deep" class="text-4xl leading-none text-primary sm:text-6xl" />
         </div>
 
         <div class="grid gap-5 md:grid-cols-2" data-reveal-group>
             {
                 d.awards.map((r) => (
-                    <article class="flex flex-col rounded-[2.25rem] bg-[#dedbd4] p-8 transition duration-300 hover:-translate-y-2 sm:p-10">
+                    <article class="flex flex-col rounded-[2.25rem] bg-surface p-8 transition duration-300 hover:-translate-y-2 sm:p-10">
                         <div class="flex flex-wrap items-center gap-2">
                             {r.year && <span class="rounded-full bg-primary px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-white">{r.year}</span>}
                             {r.recipient && <span class="rounded-full bg-accent px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-black">{r.recipient}</span>}
@@ -169,8 +163,7 @@ const statStyles = [
                 <MaskFlor src={foto} alt={t("alt.performing")} className="h-72 w-72 shadow-lg xl:h-96 xl:w-96" />
             </div>
             <div data-reveal data-reveal-delay="0.1">
-                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.pressHeading.eyebrow}</p>
-                <h2 data-scroll-float id="press-impact-title" class="font-display text-4xl font-black leading-none text-black sm:text-6xl" set:html={formatTitle(d.pressHeading.title)} />
+                <SectionHeading id="press-impact-title" eyebrow={d.pressHeading.eyebrow} title={d.pressHeading.title} class="text-4xl leading-none text-black sm:text-6xl" />
                 <ul class="mt-8 divide-y divide-black/10">
                     {
                         d.pressItems.map((p) => (
@@ -197,8 +190,7 @@ const statStyles = [
     <!-- Sigue el recorrido -->
     <section class="mx-auto w-[90%] max-w-[1280px] pb-24" aria-labelledby="journey-title">
         <div class="mb-10 max-w-[760px]" data-reveal>
-            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{d.journeyHeading.eyebrow}</p>
-            <h2 data-scroll-float id="journey-title" class="font-display text-4xl font-black leading-none text-black sm:text-5xl" set:html={formatTitle(d.journeyHeading.title)} />
+            <SectionHeading id="journey-title" eyebrow={d.journeyHeading.eyebrow} title={d.journeyHeading.title} eyebrowTone="secondary-deep" class="text-4xl leading-none text-black sm:text-5xl" />
         </div>
         <div class="grid gap-5 md:grid-cols-3" data-reveal-group>
             {
@@ -220,19 +212,15 @@ const statStyles = [
     </section>
 
     <!-- CTA -->
-    <section
-        class="mx-auto mb-44 md:mb-80 w-[94%] max-w-[1440px] overflow-hidden rounded-[2.75rem] bg-accent px-6 py-16 text-black sm:px-12 lg:rounded-[5rem] lg:px-20 lg:py-20"
-        aria-labelledby="impact-cta-title"
-    >
+    <SectionIsland tone="accent" padding="cta" class="mb-44 md:mb-80 overflow-hidden" aria-labelledby="impact-cta-title">
         <div class="grid items-center gap-10 lg:grid-cols-[1fr_auto]">
             <div class="max-w-[760px]" data-reveal>
-                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.ctaHeading.eyebrow}</p>
-                <h2 data-scroll-float id="impact-cta-title" class="font-display text-5xl font-black leading-[0.95] sm:text-7xl" set:html={formatTitle(d.ctaHeading.title)} />
+                <SectionHeading id="impact-cta-title" eyebrow={d.ctaHeading.eyebrow} title={d.ctaHeading.title} class="text-5xl leading-[0.95] sm:text-7xl" />
                 <p class="mt-6 max-w-[58ch] text-lg leading-relaxed text-black/75">{d.ctaHeading.body}</p>
             </div>
             <Button href={d.ctaButton.href} defaultText={d.ctaButton.defaultText} hoverText={d.ctaButton.hoverText} />
         </div>
-    </section>
+    </SectionIsland>
 </PageLayout>
 
 <script>

@@ -1,4 +1,6 @@
+import { prefersReducedMotion } from "../platform";
 import { gsap, ScrollTrigger } from "../main";
+import { apple, appleOut } from "../easing";
 
 type Cfg = {
     baseFontSize: string;
@@ -37,37 +39,16 @@ const parseCfg = (el: HTMLElement): Cfg => {
     } as Cfg;
 };
 
-const waitForIntroEnd = async (timeoutMs = 8500) =>
-    new Promise<void>((resolve) => {
-        const tryResolve = () => {
-            if (!isIntroActive()) {
-                resolve();
-                return true;
-            }
-            return false;
-        };
-        if (tryResolve()) return;
-        const mo = new MutationObserver(() => {
-            if (tryResolve()) mo.disconnect();
-        });
-        mo.observe(document.documentElement, { attributes: true, subtree: true });
-        setTimeout(() => {
-            tryResolve();
-            mo.disconnect();
-        }, timeoutMs);
-    });
-
 export const initPageNav = () => {
     const navs = document.querySelectorAll<HTMLElement>("nav.page-nav[data-page-nav]");
     navs.forEach((nav) => {
         if (nav.dataset.initialized === "1") return;
         nav.dataset.initialized = "1";
 
-        const prefersReduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const prefersReduced = prefersReducedMotion();
         const cfg = parseCfg(nav);
 
         const items = Array.from(nav.querySelectorAll<HTMLElement>(".nav-item"));
-        const texts = items.map((li) => li.querySelector(".nav-text") as SVGTextElement | null).filter(Boolean) as SVGTextElement[];
         const links = Array.from(nav.querySelectorAll<HTMLAnchorElement>(".nav-link"));
         const toggleBtn = nav.querySelector<HTMLButtonElement>(".page-nav-toggle");
         const footerEl = document.querySelector<HTMLElement>("#footer");
@@ -112,7 +93,7 @@ export const initPageNav = () => {
                 const rawItemOffset = li?.dataset?.scrollOffset;
                 let itemOffset = rawItemOffset !== undefined ? parseFloat(rawItemOffset) : cfg.scrollOffset;
                 if (!Number.isFinite(itemOffset)) itemOffset = cfg.scrollOffset;
-                gsap.to(window, { duration: cfg.scrollDuration, ease: "power2.inOut", scrollTo: { y: yBase + itemOffset, autoKill: true } });
+                gsap.to(window, { duration: cfg.scrollDuration, ease: apple, scrollTo: { y: yBase + itemOffset, autoKill: true } });
             });
         });
 
@@ -183,9 +164,9 @@ export const initPageNav = () => {
                 const activate = () => {
                     li.classList.add("is-active");
                     if (textEl) {
-                        gsap.to(textEl, { fillOpacity: 1, strokeWidth: cfg.activeStrokeWidth, duration: cfg.highlightIn, ease: "power2.out", overwrite: "auto" });
+                        gsap.to(textEl, { fillOpacity: 1, strokeWidth: cfg.activeStrokeWidth, duration: cfg.highlightIn, ease: appleOut, overwrite: "auto" });
                     }
-                    gsap.to(li, { scale: cfg.activeScale, y: "-2px", duration: Math.min(cfg.highlightIn, 0.25), ease: "power2.out", transformOrigin: "left center", overwrite: "auto" });
+                    gsap.to(li, { scale: cfg.activeScale, y: "-2px", duration: Math.min(cfg.highlightIn, 0.25), ease: appleOut, transformOrigin: "left center", overwrite: "auto" });
                     animMap.get(li)?.start();
                     nav.dataset.currentCollapse = String(Number.isFinite(itemCollapseThreshold) ? itemCollapseThreshold : cfg.collapseThreshold);
                 };
@@ -194,11 +175,11 @@ export const initPageNav = () => {
                     li.classList.remove("is-active");
                     animMap.get(li)?.stop(false);
                     if (textEl) {
-                        gsap.to(textEl, { fillOpacity: 0, strokeWidth: cfg.inactiveStrokeWidth, duration: cfg.highlightOut, ease: "power1.out", overwrite: "auto" });
+                        gsap.to(textEl, { fillOpacity: 0, strokeWidth: cfg.inactiveStrokeWidth, duration: cfg.highlightOut, ease: appleOut, overwrite: "auto" });
                         const n = len(textEl);
                         if (n) gsap.to(textEl, { duration: Math.min(cfg.highlightOut, 0.18), ease: "steps(1)", attr: { rotate: list(zeros(n)), dx: list(zeros(n)) }, overwrite: "auto" });
                     }
-                    gsap.to(li, { scale: 1, y: "0px", duration: Math.min(cfg.highlightOut, 0.2), ease: "power1.out", transformOrigin: "left center", overwrite: "auto" });
+                    gsap.to(li, { scale: 1, y: "0px", duration: Math.min(cfg.highlightOut, 0.2), ease: appleOut, transformOrigin: "left center", overwrite: "auto" });
                     nav.dataset.currentCollapse = String(cfg.collapseThreshold);
                 };
 
@@ -231,17 +212,17 @@ export const initPageNav = () => {
 
             if (hidden) {
                 if (scope === "nav") {
-                    animate(nav, { autoAlpha: 0, y: 16, ease: "power2.out" });
+                    animate(nav, { autoAlpha: 0, y: 16, ease: appleOut });
                     nav.style.pointerEvents = "none";
                 } else {
                     const target = menuEl || nav; // fallback defensivo
-                    animate(target, { autoAlpha: 0, y: 16, ease: "power2.out" });
+                    animate(target, { autoAlpha: 0, y: 16, ease: appleOut });
                     if (menuEl) menuEl.style.pointerEvents = "none";
                 }
             } else {
                 // Mostrar SIEMPRE el nav y el menú para recuperar tras ocultado automático
-                animate(nav, { autoAlpha: 1, y: 0, ease: "power2.out" });
-                if (menuEl) animate(menuEl, { autoAlpha: 1, y: 0, ease: "power2.out" });
+                animate(nav, { autoAlpha: 1, y: 0, ease: appleOut });
+                if (menuEl) animate(menuEl, { autoAlpha: 1, y: 0, ease: appleOut });
                 nav.style.pointerEvents = "auto";
                 if (menuEl) menuEl.style.pointerEvents = "auto";
             }
@@ -288,35 +269,8 @@ export const initPageNav = () => {
             if (typeof footerST.isActive === "boolean") overlapActive = footerST.isActive;
         }
 
-        // Preparar textos al cargar si no hay intro; si hay intro, lo hará la intro
-        addEventListener(
-            "load",
-            () => {
-                if (!isIntroActive()) {
-                    texts.forEach((t) => {
-                        if (!t.getAttribute("stroke-dasharray")) {
-                            const l = t.getComputedTextLength();
-                            t.setAttribute("stroke-dasharray", String(l));
-                            if (t.getAttribute("stroke-dashoffset") !== "0") t.setAttribute("stroke-dashoffset", String(l));
-                        }
-                        t.style.fontSize = cfg.baseFontSize;
-                        t.style.setProperty("stroke-width", String(cfg.inactiveStrokeWidth));
-                        const parent = t.closest<HTMLElement>(".nav-item");
-                        if (parent) parent.style.willChange = "transform, opacity";
-                    });
-                    items.forEach((li) => (li.style.marginBottom = "var(--nav-margin)"));
-                    ScrollTrigger.refresh();
-                }
-            },
-            { once: true }
-        );
-
-        // Mostrar nav al terminar intro
-        // Dejar el reveal post-intro en manos de intro.ts para evitar FOUC/adelantos
-        waitForIntroEnd().then(() => {
-            // no-op aquí; intro.ts invocará el reveal sincronizado con los strokes
-        });
-
+        /* Los trazos (dasharray) y la revelación tras la intro los prepara
+           intro.ts (prepareNavStrokes); aquí solo el estado sin intro. */
         // Estado inicial si no hay intro
         if (!isIntroActive()) applyVisibility(true);
 

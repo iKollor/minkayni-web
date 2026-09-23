@@ -1,13 +1,14 @@
 import { gsap, ScrollTrigger, waitForFontsReady } from "../main";
+import { appleOut } from "../easing";
 import { initInPageAnchors } from "../anchors";
 import { onWidthResize } from "../viewport";
+import { prefersReducedMotion } from "../platform";
 
 /* Clave son 3-2 en semicorcheas de 70ms: golpes en 0, 3, 6, 10, 12.
    Es el patrón de stagger de todas las entradas — el ritmo del tema,
    no un stagger uniforme. */
 const CLAVE = [0, 3, 6, 10, 12].map((n) => n * 0.07);
 
-const prefersReduce = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* ------------------------------------------------------------------
    Coreografía de scroll: una timeline por escena ([data-bp-scene]).
@@ -21,7 +22,7 @@ const prefersReduce = () => window.matchMedia("(prefers-reduced-motion: reduce)"
 export const initBatucadaMotion = () => {
     if (document.documentElement.dataset.bpMotion === "ready") return;
     document.documentElement.dataset.bpMotion = "ready";
-    if (prefersReduce()) return;
+    if (prefersReducedMotion()) return;
 
     /* Hero: un solo redoble de entrada tras cargar fuentes (evita el
        salto de métricas). Solo si la página abre arriba. */
@@ -33,7 +34,7 @@ export const initBatucadaMotion = () => {
                 y: 0,
                 autoAlpha: 1,
                 duration: 0.55,
-                ease: "expo.out",
+                ease: appleOut,
                 stagger: (i) => CLAVE[i % CLAVE.length] * 0.85,
                 clearProps: "all",
             });
@@ -56,7 +57,7 @@ export const initBatucadaMotion = () => {
                 gsap.to(state, {
                     val: target,
                     duration: 1.7,
-                    ease: "power3.out",
+                    ease: appleOut,
                     onUpdate: () => {
                         el.textContent = prefix + String(Math.round(state.val));
                     },
@@ -84,7 +85,7 @@ export const initBatucadaMotion = () => {
             start: "top 78%",
             once: true,
             onEnter: () => {
-                const tl = gsap.timeline({ defaults: { duration: 0.5, ease: "expo.out" } });
+                const tl = gsap.timeline({ defaults: { duration: 0.5, ease: appleOut } });
                 if (beats.length) {
                     tl.fromTo(
                         beats,
@@ -124,7 +125,7 @@ export const initPulseline = () => {
         if (strips.length !== 2) return;
         const [s1, s2] = Array.from(strips);
 
-        if (prefersReduce()) return; // tira estática, contenido visible
+        if (prefersReducedMotion()) return; // tira estática, contenido visible
 
         /* Garantizar cobertura en pantallas anchas: cada tira debe medir
            al menos un viewport para que el par cubra sin huecos. */

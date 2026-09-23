@@ -1,0 +1,33 @@
+---
+/* Antetítulo + título flotante de sección, el par que abre casi todas las
+   secciones de las páginas interiores. El título admite la convención del CMS
+   (`*texto*` = acento, salto de línea = <br>, ver utils/rich-title.ts).
+
+   Tamaño, interlineado y color del título cambian de sección en sección y se
+   pasan en `class`; lo fijo (tipografía y peso) vive aquí. */
+import { formatTitle } from "../utils/rich-title";
+
+const EYEBROW_TONES = {
+    primary: "text-primary",
+    secondary: "text-secondary",
+    "secondary-deep": "text-secondary-deep",
+    "secondary-light": "text-secondary-light",
+} as const;
+
+interface Props {
+    /** Id del título, para el `aria-labelledby` de la sección. */
+    id: string;
+    eyebrow?: string | null;
+    title: string;
+    /** Clase del acento de `*texto*` dentro del título. */
+    accent?: string;
+    eyebrowTone?: keyof typeof EYEBROW_TONES;
+    /** Tamaño, interlineado y color del título. */
+    class?: string;
+}
+
+const { id, eyebrow, title, accent, eyebrowTone = "primary", class: titleClass } = Astro.props;
+---
+
+<p class:list={["mb-4 text-sm font-bold uppercase tracking-[0.22em]", EYEBROW_TONES[eyebrowTone]]}>{eyebrow}</p>
+<h2 data-scroll-float id={id} class:list={["font-display font-black", titleClass]} set:html={formatTitle(title, accent)} />

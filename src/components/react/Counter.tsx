@@ -12,16 +12,29 @@
      ancho, su altura y su línea base; los diez dígitos que ruedan van en
      absoluto encima, centrados en ese ancho.
 
+   - Las columnas se interpolan con duración fija y curva de Apple, no con el
+     resorte del original: un resorte arranca parado, acelera y frena, y en
+     un conteo largo se leía como «sube despacio y después salta».
+
    - La altura de la columna es el interlineado del texto que la rodea
      (`lineHeight`), no el cuerpo de la fuente: el original fija `height =
      fontSize` y centra el glifo con flex, y así la cifra engordaba la línea
      (66 px en una línea de 60) y se salía de la línea base. Con el mismo
      interlineado, la caja es idéntica a la de un carácter normal. */
-import { MotionValue, motion, useSpring, useTransform, type SpringOptions } from 'motion/react';
+import { MotionValue, animate, motion, useMotionValue, useTransform } from 'motion/react';
+import { APPLE_OUT_BEZIER } from '../../scripts/easing';
 import type React from 'react';
 import { useEffect } from 'react';
 
 type PlaceValue = number | string;
+
+/** Interpolación de cada columna: duración en segundos y cúbica de Bézier. */
+export interface CounterTween {
+  duration: number;
+  ease?: readonly [number, number, number, number];
+}
+
+const DEFAULT_TWEEN: CounterTween = { duration: 0.6, ease: APPLE_OUT_BEZIER };
 
 interface NumberProps {
   mv: MotionValue<number>;
@@ -71,10 +84,10 @@ interface DigitProps {
   value: number;
   height: number;
   digitStyle?: React.CSSProperties;
-  spring?: SpringOptions;
+  tween: CounterTween;
 }
 
-function Digit({ place, value, height, digitStyle, spring }: DigitProps) {
+function Digit({ place, value, height, digitStyle, tween }: DigitProps) {
   // Separador literal: el punto decimal del original o el de miles del sitio.
   if (typeof place === 'string') {
     return (
@@ -85,11 +98,13 @@ function Digit({ place, value, height, digitStyle, spring }: DigitProps) {
   }
 
   const valueRoundedToPlace = getValueRoundedToPlace(value, place);
-  const animatedValue = useSpring(valueRoundedToPlace, spring);
+  const animatedValue = useMotionValue(valueRoundedToPlace);
 
+  const { duration, ease = APPLE_OUT_BEZIER } = tween;
   useEffect(() => {
-    animatedValue.set(valueRoundedToPlace);
-  }, [animatedValue, valueRoundedToPlace]);
+    const controls = animate(animatedValue, valueRoundedToPlace, { duration, ease: [...ease] });
+    return () => controls.stop();
+  }, [animatedValue, valueRoundedToPlace, duration, ease]);
 
   /* El dígito en el que acabará esta columna: es el que fija su ancho. */
   const finalDigit = ((valueRoundedToPlace % 10) + 10) % 10;
@@ -136,8 +151,8 @@ export interface CounterProps {
   containerStyle?: React.CSSProperties;
   counterStyle?: React.CSSProperties;
   digitStyle?: React.CSSProperties;
-  /** Resorte del conteo (motion `useSpring`); vacío → el de motion por defecto. */
-  spring?: SpringOptions;
+  /** Duración y curva del conteo; vacío → 0,6 s con la curva de entrada de Apple. */
+  tween?: CounterTween;
   gradientHeight?: number;
   gradientFrom?: string;
   gradientTo?: string;
@@ -170,7 +185,7 @@ export default function Counter({
   containerStyle,
   counterStyle,
   digitStyle,
-  spring,
+  tween = DEFAULT_TWEEN,
   gradientHeight = 16,
   gradientFrom = 'black',
   gradientTo = 'transparent',
@@ -221,7 +236,7 @@ export default function Counter({
     <span style={{ ...defaultContainerStyle, ...containerStyle }}>
       <span style={{ ...defaultCounterStyle, ...counterStyle }}>
         {places.map((place, index) => (
-          <Digit key={`${place}-${index}`} place={place} value={value} height={height} digitStyle={digitStyle} spring={spring} />
+          <Digit key={`${place}-${index}`} place={place} value={value} height={height} digitStyle={digitStyle} tween={tween} />
         ))}
       </span>
       {gradientHeight > 0 && (

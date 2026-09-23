@@ -18,6 +18,7 @@ const t = useTranslations(locale);
 
 <script>
     import { gsap } from "../scripts/main.ts";
+    import { apple, appleOut } from "../scripts/easing";
 
     // Formatea números a 2 dígitos
     const dos = (n: number) => (n < 10 ? "0" + n : "" + n);
@@ -48,7 +49,7 @@ const t = useTranslations(locale);
             y: -30,
             opacity: 0,
             duration: 0.35,
-            ease: "power2.in",
+            ease: apple,
             onComplete: () => {
                 oldSpan.textContent = nuevoChar;
                 gsap.set(oldSpan, { y: 30 });
@@ -56,7 +57,7 @@ const t = useTranslations(locale);
                     y: 0,
                     opacity: 1,
                     duration: 0.5,
-                    ease: "power2.out",
+                    ease: appleOut,
                 });
             },
         });
@@ -67,7 +68,7 @@ const t = useTranslations(locale);
             y: 30,
             opacity: 0,
             duration: 0.6,
-            ease: "power2.out",
+            ease: appleOut,
         });
     }
 

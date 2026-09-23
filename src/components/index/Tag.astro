@@ -4,14 +4,14 @@
             <style>
                 .prefix__cls-1 {
                     fill: none;
-                    stroke: #6e00a3;
+                    stroke: var(--primary);
                     stroke-linecap: round;
                     stroke-linejoin: round;
                     stroke-width: 3;
                     vector-effect: non-scaling-stroke;
                 }
                 .prefix__cls-2 {
-                    fill: #6e00a3;
+                    fill: var(--primary);
                 }
             </style>
 
@@ -61,6 +61,7 @@
     </svg>
     <script>
         import { gsap } from "../../scripts/main";
+        import { appleOut } from "../../scripts/easing";
 
         function start() {
             const svg = document.getElementById("tagReveal");
@@ -116,7 +117,7 @@
                 {
                     t: L,
                     duration: 1,
-                    ease: "power1.out",
+                    ease: appleOut,
                     onUpdate() {
                         if (finished) return;
                         const progress = Math.max(0, Math.min(1, s.t / L));

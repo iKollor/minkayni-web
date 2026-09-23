@@ -29,6 +29,7 @@
 
 <script>
     import { gsap } from "../scripts/main.ts";
+    import { apple } from "../scripts/easing";
 
     /* El arranque mide las longitudes de los trazos (DrawSVG fuerza un
        layout) y en las máquinas de PageSpeed pasaba de los 50 ms: contaba
@@ -39,7 +40,7 @@
     const arrancar = () => {
         if (listo) return;
         listo = true;
-        const tl = gsap.timeline({ defaults: { ease: "power2.inOut" } });
+        const tl = gsap.timeline({ defaults: { ease: apple } });
 
         gsap.set("#menu-btn", { autoAlpha: 1 });
         gsap.set(".buns", { drawSVG: "0% 30%" });
@@ -68,7 +69,7 @@
             setOpen(btn.getAttribute("aria-expanded") === "true");
         }
 
-        // Escuchar cambios de estado emitidos desde Menu.astro
+        // Escuchar cambios de estado emitidos por el menú (SiteMenu.tsx)
         // (el evento se declara en WindowEventMap, ver src/env.d.ts)
         function onMenuState(ev: WindowEventMap["menu:state"]) {
             try {

@@ -24,7 +24,7 @@ const STRAPI_URL = import.meta.env.STRAPI_URL;
     <h2 data-scroll-float class="title font-bold font-display text-secondary mt-20 md:mt-32 lg:mt-40 text-4xl md:text-6xl lg:text-8xl">{title}</h2>
 </div>
 
-<div id="testimonials" class="t-pin-section relative w-full h-[100svh] overflow-hidden" data-pin>
+<div class="t-pin-section relative w-full h-[100svh] overflow-hidden" data-pin>
     <div class="t-slides relative h-full w-[80%] mx-auto" data-slides>
         {
             testimonials.map((t, i) => {
@@ -37,7 +37,7 @@ const STRAPI_URL = import.meta.env.STRAPI_URL;
                             {picture && <Blob imageUrl={picture} height={t?.picture?.height ?? 700} />}
                         </div>
                         {/* META MÓVIL: Autor/Org debajo del blob */}
-                        <div class="t-meta-mobile md:hidden text-center" aria-hidden="true">
+                        <div class="t-meta-mobile md:hidden text-center">
                             <p class="t-author-mobile font-bold text-2xl text-secondary" data-author-mobile>
                                 {t?.author_quote?.author}, {t?.age}
                             </p>
@@ -141,6 +141,7 @@ const STRAPI_URL = import.meta.env.STRAPI_URL;
 <script>
     // Cliente: GSAP + ScrollTrigger con limpieza via gsap.context
     import { gsap, ScrollTrigger } from "../../scripts/main";
+    import { appleOut } from "../../scripts/easing";
     if (typeof window !== "undefined") {
         const section = document.querySelector("[data-pin]") as HTMLElement;
         const slides = gsap.utils.toArray("[data-slide]") as HTMLElement[];
@@ -167,7 +168,7 @@ const STRAPI_URL = import.meta.env.STRAPI_URL;
         const enterTl = (els: ReturnType<typeof getEls>, dur = 0.7) => {
             const { icon, body, author, org, blob } = els;
             return gsap
-                .timeline({ defaults: { ease: "power2.out", duration: dur }, paused: true })
+                .timeline({ defaults: { ease: appleOut, duration: dur }, paused: true })
                 .to(blob, { opacity: 1, scale: 1 })
                 .to(icon, { opacity: 0.12, x: 0, y: 0, rotate: 0 }, "<+=0.05")
                 .to(body, { opacity: 1, x: 0, y: 0 }, "<+=0.10")
@@ -186,7 +187,7 @@ const STRAPI_URL = import.meta.env.STRAPI_URL;
                 });
 
                 const tl = gsap.timeline({
-                    defaults: { ease: "power2.out", duration: 0.7 },
+                    defaults: { ease: appleOut, duration: 0.7 },
                 });
 
                 const e0 = getEls(slides[0]);
@@ -233,7 +234,7 @@ const STRAPI_URL = import.meta.env.STRAPI_URL;
                             }
                         },
                         duration: 0.25,
-                        ease: "power1.out",
+                        ease: appleOut,
                     },
                 });
 

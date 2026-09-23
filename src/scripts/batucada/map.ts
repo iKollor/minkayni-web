@@ -3,6 +3,7 @@ import "leaflet/dist/leaflet.css";
 import { galleryLayout, hoverCardPlacement, isStripLayout, MAX_SPOTS } from "./gallery-layout";
 import { openViewer, type ViewerStrings } from "./viewer";
 import type { ViewerPhoto } from "../../utils/sector-photos";
+import { prefersReducedMotion } from "../platform";
 
 /* Sectores de la Batucada Popular en Guayaquil.
    Coordenadas de OpenStreetMap (Nominatim, julio 2026); donde el sector
@@ -71,7 +72,7 @@ export const initBatucadaMap = () => {
     const text = (template: string, params: Record<string, string | number>): string =>
         template.replace(/\{(\w+)\}/g, (match, name: string) => String(params[name] ?? match));
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduceMotion = prefersReducedMotion();
 
     const setState = (state: "loading" | "ready" | "error", message?: string) => {
         el.dataset.state = state;

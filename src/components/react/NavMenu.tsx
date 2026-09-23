@@ -23,16 +23,12 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'motion/react';
+import { APPLE_BEZIER, APPLE_OUT_BEZIER } from '../../scripts/easing';
 import type { MenuLabels, MenuLanguage, MenuLink, MenuProject } from './menu-types';
 
-const transition = {
-  type: 'spring' as const,
-  mass: 0.5,
-  damping: 11.5,
-  stiffness: 100,
-  restDelta: 0.001,
-  restSpeed: 0.001
-};
+/* Curvas de Apple (scripts/easing.ts) en lugar de resortes: el panel cambia
+   de tamaño con la de interfaz y los ítems entran con la de entrada. */
+const transition = { duration: 0.35, ease: APPLE_BEZIER };
 
 const listVariants = {
   hidden: {},
@@ -41,7 +37,7 @@ const listVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 10, filter: 'blur(6px)' },
-  visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { type: 'spring' as const, stiffness: 260, damping: 26, mass: 0.6 } }
+  visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.4, ease: APPLE_OUT_BEZIER } }
 };
 
 interface MenuItemProps {
@@ -118,12 +114,12 @@ export const MenuItem = ({ setActive, active, item, href, current, chevron, onPa
               className="pointer-events-none absolute -bottom-0.5 left-0 h-[1.5px] w-full origin-left rounded-full bg-current"
               initial={{ scaleX: 0 }}
               animate={{ scaleX: open ? 1 : 0 }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.3, ease: APPLE_OUT_BEZIER }}
             />
           )}
         </span>
         {chevron && (
-          <motion.svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" className="mt-px opacity-70" animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.25 }}>
+          <motion.svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" className="mt-px opacity-70" animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.25, ease: APPLE_BEZIER }}>
             <path d="M1 3l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
           </motion.svg>
         )}

@@ -20,11 +20,24 @@
        4,5:1 en texto de menos de 18,66 px en negrita. */
     --color-secondary-deep: #166fb0;
     --color-secondary-light: #a6d8fb;
+    /* Piedra cálida de las secciones «isla» y sus tarjetas (bg-surface), y el
+       morado oscuro en que acaba el degradado de marca (bg-brand-gradient). */
+    --color-surface: #dedbd4;
+    --color-primary-deep: #410063;
     --color-accent: var(--accent);
     --color-background: var(--bg-white);
     --color-white: var(--bg-white);
     --color-black: var(--bg-black);
     --ease-in-out-cubic: var(--ease-in-out-cubic);
+
+    /* Curvas de Apple (ver scripts/easing.ts). La estándar pasa a ser la de
+       todas las utilidades `transition` y de `ease-in-out`; `ease-out` ya
+       coincide con la de entrada de Apple. Genera ease-apple / ease-apple-out. */
+    --ease-apple: cubic-bezier(0.4, 0, 0.6, 1);
+    --ease-apple-out: cubic-bezier(0, 0, 0.2, 1);
+    --ease-in-out: var(--ease-apple);
+    --ease-out: var(--ease-apple-out);
+    --default-transition-timing-function: var(--ease-apple);
 
     /* Batucada Popular: azul del logo del proyecto y crema atenuada para
        texto secundario sobre tinta (≈12:1). Genera bg-bp-blue, text-bp-dim… */
@@ -34,6 +47,10 @@
     /* Envolventes de golpe/rebote del sistema batucada → ease-bp-hit / ease-bp-rebound */
     --ease-bp-hit: cubic-bezier(0.19, 1, 0.22, 1);
     --ease-bp-rebound: cubic-bezier(0.34, 1.35, 0.4, 1);
+}
+
+@utility bg-brand-gradient {
+    background-image: linear-gradient(130deg, var(--primary), var(--color-primary-deep));
 }
 
 :root {

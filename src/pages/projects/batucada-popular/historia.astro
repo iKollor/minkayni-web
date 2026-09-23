@@ -1,4 +1,5 @@
 ---
+import SectionIsland from "../../../components/SectionIsland.astro";
 import PageLayout from "@/layouts/PageLayout.astro";
 import Pulseline from "@/components/batucada/Pulseline.astro";
 import Torn from "@/components/batucada/Torn.astro";
@@ -29,13 +30,13 @@ const timeline = d.timeline;
 
         <Pulseline items={d.pulseline.map((item) => item.text ?? "")} />
 
-        <section class="mx-auto my-[clamp(2.25rem,5vw,4.5rem)] w-[94%] max-w-[1440px] rounded-[2.75rem] bg-[#dedbd4] px-4 py-14 sm:px-8 lg:rounded-[5rem] lg:px-14 lg:py-20" aria-label={t("batucada.timeline")} data-bp-scene>
+        <SectionIsland tone="surface" class="my-[clamp(2.25rem,5vw,4.5rem)]" aria-label={t("batucada.timeline")} data-bp-scene>
             <div class="mb-10 max-w-[760px]">
                 <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary" data-bp-hit>{d.timelineHeading.eyebrow}</p>
                 <h2 data-scroll-float class="font-display text-4xl font-black leading-none text-black sm:text-6xl" data-bp-hit set:html={formatTitle(d.timelineHeading.title)} />
             </div>
             <ImmersiveTimeline items={timeline} ariaLabel={t("batucada.timeline")} />
-        </section>
+        </SectionIsland>
 
         <Torn color="var(--bg-white)" border={2} field="none" />
 

@@ -1,11 +1,12 @@
 ---
+import SectionHeading from "../SectionHeading.astro";
+import SectionIsland from "../SectionIsland.astro";
 /* CTA de la portada hacia /projects: cierra la narrativa del proyecto
    destacado invitando a explorar el ecosistema completo.
    Contenido editable desde Strapi (homepage → projectsCta*). */
 import Button from "../Button.astro";
 import { projectsCtaFallback } from "../../data/pages/global";
 import { withFallback } from "../../utils/content";
-import { formatTitle } from "../../utils/rich-title";
 import { getLocale, useTranslations } from "../../i18n";
 
 const t = useTranslations(getLocale(Astro.url));
@@ -26,9 +27,11 @@ const tags = d.tags.filter((tag) => tag?.text);
 const exploreHref = d.button.href || "/projects";
 ---
 
-<section
+<SectionIsland
+    tone="accent"
+    padding="none"
     class:list={[
-        "mx-auto mt-16 w-[94%] max-w-[1440px] overflow-hidden rounded-[2.75rem] bg-accent px-6 py-14 text-black sm:px-12 md:mt-24 lg:rounded-[5rem] lg:px-20 lg:py-20",
+        "mt-16 overflow-hidden px-6 py-14 sm:px-12 md:mt-24 lg:px-20 lg:py-20",
         /* El margen inferior grande deja sitio al arco del pie. Cuando otra
            sección cierra la página (HelpCta), ese aire lo pone ella. */
         last ? "mb-44 md:mb-80" : "mb-0",
@@ -36,8 +39,7 @@ const exploreHref = d.button.href || "/projects";
     aria-labelledby="projects-cta-title"
 >
     <div class="mx-auto flex max-w-[900px] flex-col items-center text-center">
-        <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.heading.eyebrow}</p>
-        <h2 data-scroll-float id="projects-cta-title" class="title font-display text-5xl font-black leading-[0.95] sm:text-7xl" set:html={formatTitle(d.heading.title, "text-primary")} />
+        <SectionHeading id="projects-cta-title" eyebrow={d.heading.eyebrow} title={d.heading.title} accent="text-primary" class="title text-5xl leading-[0.95] sm:text-7xl" />
         <p class="mt-6 max-w-[58ch] text-lg leading-[1.55] text-black/75">{d.heading.body}</p>
         {
             tags.length > 0 && (
@@ -59,4 +61,4 @@ const exploreHref = d.button.href || "/projects";
             <Button href={d.button.href} defaultText={d.button.defaultText} hoverText={d.button.hoverText} />
         </div>
     </div>
-</section>
+</SectionIsland>

@@ -1,4 +1,3 @@
-// scripts/strapi-codegen.ts
 import "dotenv/config";
 import { codegen } from "@graphql-codegen/core";
 import { loadSchema } from "@graphql-tools/load";
@@ -8,8 +7,13 @@ import { GraphQLSchema, getNamedType, printSchema, parse, isListType, isNonNullT
 import * as fs from "node:fs/promises";
 import * as validationPlugin from "graphql-codegen-typescript-validation-schema";
 
-const url = process.env.STRAPI_GRAPHQL_URL ?? process.env.STRAPI_URL?.replace(/\/$/, "") + "/graphql";
-if (!url) throw new Error("Falta STRAPI_GRAPHQL_URL o STRAPI_URL");
+const resolveGraphqlUrl = (): string => {
+    const strapiUrl = process.env.STRAPI_URL?.trim().replace(/\/+$/, "");
+    const url = process.env.STRAPI_GRAPHQL_URL ?? (strapiUrl ? `${strapiUrl}/graphql` : undefined);
+    if (!url) throw new Error("Falta STRAPI_GRAPHQL_URL o STRAPI_URL");
+    return url;
+};
+const url = resolveGraphqlUrl();
 
 const headers = process.env.STRAPI_TOKEN ? { Authorization: `Bearer ${process.env.STRAPI_TOKEN}` } : {};
 
@@ -205,7 +209,11 @@ async function main() {
         },
     });
 
-    await fs.writeFile("src/schemas/strapi.graphql.zod.ts", output);
+    /* El generado no pasa el modo estricto del proyecto (usa `any` y tipos
+       recursivos); se excluye de la comprobación desde el propio archivo. */
+    await fs.writeFile("src/schemas/strapi.graphql.zod.ts", `// @ts-nocheck
+
+${output}`);
     console.log("✓ Zod generado en src/schemas/strapi.graphql.zod.ts");
 }
 

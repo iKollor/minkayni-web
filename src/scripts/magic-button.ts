@@ -8,6 +8,8 @@
    incluye el script del componente Astro. Button.astro lo importa de aquí.
 ─────────────────────────────────────────────────────────────────────────── */
 import { gsap, SplitText, waitForFontsReady } from "./main";
+import { appleOut } from "./easing";
+import { prefersReducedMotion } from "./platform";
 
 export const initMagicButton = (btn: HTMLAnchorElement): void => {
     if (btn.dataset.magicBtnReady) return;
@@ -19,7 +21,7 @@ export const initMagicButton = (btn: HTMLAnchorElement): void => {
     if (!bgFill || !defaultEl || !hoverEl) return;
     btn.dataset.magicBtnReady = "true";
 
-    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = prefersReducedMotion();
 
     const setup = () => {
         const splitA = new SplitText(defaultEl, { type: "words", wordClass: "word" });
@@ -40,8 +42,8 @@ export const initMagicButton = (btn: HTMLAnchorElement): void => {
                 if (glowOuter) glowOuter.style.opacity = h ? "1" : "0";
                 if (glowInner) glowInner.style.opacity = h ? "0.5" : "0";
             };
-            add(["mouseenter", "pointerenter", "focusin"], () => setHover(true));
-            add(["mouseleave", "pointerleave", "focusout"], () => setHover(false));
+            add(["pointerenter", "focusin"], () => setHover(true));
+            add(["pointerleave", "focusout"], () => setHover(false));
             return;
         }
 
@@ -51,9 +53,9 @@ export const initMagicButton = (btn: HTMLAnchorElement): void => {
         const innerLoop = createLoop(glowInner);
 
         const hoverTl = gsap
-            .timeline({ paused: true, defaults: { duration: 0.6, ease: "power3.out" } })
+            .timeline({ paused: true, defaults: { duration: 0.6, ease: appleOut } })
             .to(bgFill, { backgroundColor: "var(--btn-bg-hover)", duration: 0.08, ease: "none" }, 0)
-            .to(glowOuter, { opacity: 1, duration: 0.35, ease: "power2.out" }, 0)
+            .to(glowOuter, { opacity: 1, duration: 0.35, ease: appleOut }, 0)
             .to(glowInner, { opacity: 0.5, duration: 0.2, ease: "none" }, 0.05)
             .to(defaultWords, { yPercent: -100, opacity: 0, stagger: { each: 0.05, from: "center" }, duration: 0.28 }, 0)
             .to(hoverWords, { yPercent: 0, opacity: 1, stagger: { each: 0.05, from: "center" }, duration: 0.28 }, 0);
@@ -69,8 +71,8 @@ export const initMagicButton = (btn: HTMLAnchorElement): void => {
             innerLoop?.pause(0);
             gsap.set([glowOuter, glowInner], { backgroundPosition: "0% 100%" });
         };
-        add(["mouseenter", "pointerenter", "focusin"], playAll);
-        add(["mouseleave", "pointerleave", "focusout"], reverseAll);
+        add(["pointerenter", "focusin"], playAll);
+        add(["pointerleave", "focusout"], reverseAll);
     };
 
     waitForFontsReady(setup);

@@ -1,4 +1,6 @@
 import { gsap, ScrollTrigger } from "../../scripts/main";
+import { apple, appleOut } from "../easing";
+import { isIOS, isMobileViewport as isMobile } from "../platform";
 
 /* El estado vive en el propio elemento (no en el módulo) para que sobreviva a
    una segunda ejecución del script: `init` es la guarda anti-doble-init. Un
@@ -43,8 +45,6 @@ const readState = (el: HTMLElement): SliderState =>
     const state = readState(section);
     if (state.init) return;
     state.init = true;
-    const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (/Mac/.test(navigator.userAgent) && "ontouchend" in document),
-        isMobile = () => matchMedia("(max-width: 767px)").matches;
     const startIdx = +(section.dataset.start || 0),
         cardsBox = $(".cards", section)!,
         track = $(".track", section)!,
@@ -100,7 +100,7 @@ const readState = (el: HTMLElement): SliderState =>
         const show = (el: HTMLElement, txt?: string, inst?: boolean) => {
             cur = txt || "";
             el.textContent = cur;
-            inst ? gsap.set(el, { opacity: 1, y: 0 }) : gsap.to(el, { opacity: 1, y: 0, duration: 0.18, ease: "power2.out" });
+            inst ? gsap.set(el, { opacity: 1, y: 0 }) : gsap.to(el, { opacity: 1, y: 0, duration: 0.18, ease: appleOut });
         };
         return {
             mount(init?: string, samples: (string | undefined)[] = []) {
@@ -114,12 +114,12 @@ const readState = (el: HTMLElement): SliderState =>
                 gsap.killTweensOf([a, b]);
                 gsap.set(b, { opacity: 0, y: 8 });
                 b.textContent = n;
-                gsap.to(a, { opacity: 0, y: -6, duration: 0.1, ease: "power2.out" });
+                gsap.to(a, { opacity: 0, y: -6, duration: 0.1, ease: appleOut });
                 gsap.to(b, {
                     opacity: 1,
                     y: 0,
                     duration: 0.16,
-                    ease: "power2.out",
+                    ease: appleOut,
                     onComplete: () => {
                         [a, b] = [b, a];
                         gsap.set(b, { opacity: 0, y: 8 });
@@ -165,13 +165,13 @@ const readState = (el: HTMLElement): SliderState =>
                 opacity: 0,
                 y: 6,
                 duration: 0.1,
-                ease: "power2.out",
+                ease: appleOut,
                 onComplete: () => {
                     prev.style.pointerEvents = "none";
                 },
             });
         gsap.set(next, { pointerEvents: "auto" });
-        gsap.to(next, { opacity: 1, y: 0, duration: 0.16, ease: "power2.out" });
+        gsap.to(next, { opacity: 1, y: 0, duration: 0.16, ease: appleOut });
         aboutCurrent = i;
     };
 
@@ -223,7 +223,7 @@ const readState = (el: HTMLElement): SliderState =>
                     p = st.progress;
                 setActive(Math.min(n, Math.max(0, Math.ceil(p * n - SWITCH_BIAS))));
             },
-            snap: { snapTo: 1 / (cards.length - 1), duration: 0.2, ease: "power1.out" },
+            snap: { snapTo: 1 / (cards.length - 1), duration: 0.2, ease: appleOut },
         };
         if (isIOS()) Object.assign(stBase, { pinType: "transform", pinReparent: true, anticipatePin: 2, snap: 1, pinSpacing: true });
         gsap.fromTo(
@@ -275,7 +275,7 @@ const readState = (el: HTMLElement): SliderState =>
                     }
                 },
             });
-            introTl.to(cards, { opacity: 1, duration: 0.6, stagger: 0.1, ease: "power2.out" }).addLabel("cardsDone").to(textEls, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out", stagger: 0.08 }, "cardsDone+=0.1").to(dots, { opacity: 1, duration: 0.4, ease: "power2.out", stagger: 0.04 }, "cardsDone+=0.05");
+            introTl.to(cards, { opacity: 1, duration: 0.6, stagger: 0.1, ease: appleOut }).addLabel("cardsDone").to(textEls, { opacity: 1, y: 0, duration: 0.45, ease: appleOut, stagger: 0.08 }, "cardsDone+=0.1").to(dots, { opacity: 1, duration: 0.4, ease: appleOut, stagger: 0.04 }, "cardsDone+=0.05");
             state.isDesktop = true;
             ScrollTrigger.create({
                 trigger: section,
@@ -315,7 +315,7 @@ const readState = (el: HTMLElement): SliderState =>
             const st = ScrollTrigger.getById("cards-st");
             if (!st) return;
             const n = cards.length - 1;
-            dots.forEach((d, i) => d.addEventListener("click", () => gsap.to(st, { progress: n === 0 ? 0 : i / n, duration: 0.35, ease: "power3.inOut", onUpdate: () => st.update && st.update() })));
+            dots.forEach((d, i) => d.addEventListener("click", () => gsap.to(st, { progress: n === 0 ? 0 : i / n, duration: 0.35, ease: apple, onUpdate: () => st.update && st.update() })));
         };
         setTimeout(wireDots, 80);
     };
@@ -340,7 +340,7 @@ const readState = (el: HTMLElement): SliderState =>
                 const rot = +c.dataset.rot!;
                 const jx = +c.dataset.jx!;
                 const props = { x: jx, y: i * SPACING_Y, scale: 1 - i * DECAY, zIndex: 300 - i, rotation: rot };
-                animate ? gsap.to(c, { ...props, duration: 0.3, ease: "power3.out" }) : gsap.set(c, props);
+                animate ? gsap.to(c, { ...props, duration: 0.3, ease: appleOut }) : gsap.set(c, props);
             });
         const bringFront = (card: HTMLElement) => {
             const list = ordered(),
@@ -382,7 +382,7 @@ const readState = (el: HTMLElement): SliderState =>
             initialIdx = +top.dataset.idx!;
             activePreview = null;
             dragging.setPointerCapture(e.pointerId);
-            gsap.to(dragging, { scale: 0.985, duration: 0.18, ease: "power3.out" });
+            gsap.to(dragging, { scale: 0.985, duration: 0.18, ease: appleOut });
         };
         const pointerMove = (e: PointerEvent) => {
             if (isAnimating || !dragging) return;
@@ -401,13 +401,13 @@ const readState = (el: HTMLElement): SliderState =>
             if (eff > PREVIEW_MIN && next) {
                 const rN = ratio(eff);
                 gsap.to(next, { y: -10 * rN, scale: 1 - 0.02 * (1 - rN), duration: 0.18, overwrite: "auto" });
-                if (activePreview === "next") {
-                    next && gsap.to(next, { y: SPACING_Y, scale: 1 - DECAY, duration: 0.18, ease: "power2.out" });
+                if (activePreview !== "next") {
+                    setActive(+next.dataset.idx!);
                     activePreview = "next";
                     vib(8);
                 }
             } else if (eff < PREVIEW_MIN && activePreview === "next") {
-                next && gsap.to(next, { y: SPACING_Y, scale: 1 - DECAY, duration: 0.25, ease: "power2.out" });
+                next && gsap.to(next, { y: SPACING_Y, scale: 1 - DECAY, duration: 0.25, ease: appleOut });
                 setActive(initialIdx);
                 activePreview = null;
             }
@@ -420,7 +420,7 @@ const readState = (el: HTMLElement): SliderState =>
                     vib(8);
                 }
             } else if (eff > -PREVIEW_MIN && activePreview === "prev") {
-                prev && gsap.to(prev, { y: (list.length - 1) * SPACING_Y, scale: 1 - (list.length - 1) * DECAY, duration: 0.18, ease: "power2.out" });
+                prev && gsap.to(prev, { y: (list.length - 1) * SPACING_Y, scale: 1 - (list.length - 1) * DECAY, duration: 0.18, ease: appleOut });
                 setActive(initialIdx);
                 activePreview = null;
             }
@@ -443,15 +443,15 @@ const readState = (el: HTMLElement): SliderState =>
                 rotate(-1);
                 vib(10);
             } else {
-                gsap.to(dragging, { scale: 1, duration: 0.22, ease: "power3.out" });
+                gsap.to(dragging, { scale: 1, duration: 0.22, ease: appleOut });
                 if (activePreview) {
                     setActive(initialIdx);
                     activePreview = null;
                 }
                 const next = list[1],
                     prev = list.at(-1)!;
-                next && gsap.to(next, { y: SPACING_Y, scale: 1 - DECAY, duration: 0.18, ease: "power2.out" });
-                if (list.length > 1) prev && gsap.to(prev, { y: (list.length - 1) * SPACING_Y, scale: 1 - (list.length - 1) * DECAY, duration: 0.18, ease: "power2.out" });
+                next && gsap.to(next, { y: SPACING_Y, scale: 1 - DECAY, duration: 0.18, ease: appleOut });
+                if (list.length > 1) prev && gsap.to(prev, { y: (list.length - 1) * SPACING_Y, scale: 1 - (list.length - 1) * DECAY, duration: 0.18, ease: appleOut });
             }
             dragging.releasePointerCapture(e.pointerId);
             dragging = null;
@@ -486,14 +486,14 @@ const readState = (el: HTMLElement): SliderState =>
                 if (state.mobileIntroPlaying) return;
                 state.mobileIntroPlaying = true;
                 isEntering = true;
-                gsap.to(seq, { opacity: 1, duration: 0.4, ease: "power2.out" });
-                gsap.to(uiEls, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out", delay: 0.05, stagger: 0.06 });
+                gsap.to(seq, { opacity: 1, duration: 0.4, ease: appleOut });
+                gsap.to(uiEls, { opacity: 1, y: 0, duration: 0.45, ease: appleOut, delay: 0.05, stagger: 0.06 });
                 gsap.delayedCall(1, () => {
                     const list = ordered();
                     list.forEach((c, i) => {
                         const rot = +c.dataset.rot!,
                             jx = +c.dataset.jx!;
-                        gsap.fromTo(c, { x: jx * 0.2, y: 0, rotation: rot * 0.3, scale: 1 }, { x: jx, y: i * 14, rotation: rot, scale: 1 - i * 0.012, duration: 0.7, ease: "back.out(1.6)", stagger: 1 });
+                        gsap.fromTo(c, { x: jx * 0.2, y: 0, rotation: rot * 0.3, scale: 1 }, { x: jx, y: i * 14, rotation: rot, scale: 1 - i * 0.012, duration: 0.7, ease: appleOut, stagger: 1 });
                     });
                     gsap.delayedCall(0.2, () => {
                         isEntering = false;
@@ -512,7 +512,7 @@ const readState = (el: HTMLElement): SliderState =>
                     const seq = ordered(),
                         fadeTargets = [...seq, ...uiEls];
                     gsap.killTweensOf(fadeTargets);
-                    gsap.to(fadeTargets, { opacity: 0, y: (_i, el) => (el.classList?.contains("dot") ? 18 : el.classList?.contains("card") ? 0 : 14), duration: 0.38, ease: "power2.inOut", stagger: { each: 0.04, from: "end" }, onComplete: () => setInit() });
+                    gsap.to(fadeTargets, { opacity: 0, y: (_i, el) => (el.classList?.contains("dot") ? 18 : el.classList?.contains("card") ? 0 : 14), duration: 0.38, ease: apple, stagger: { each: 0.04, from: "end" }, onComplete: () => setInit() });
                 },
             });
         } else {
@@ -534,11 +534,16 @@ const readState = (el: HTMLElement): SliderState =>
     };
 
     baseInit();
-    (isMobile() || isIOS() ? initMobile : initDesktop)();
-    let lastMobile = isMobile();
-    addEventListener("resize", () => {
-        const now = isMobile();
-        if (now !== lastMobile) location.reload();
-        lastMobile = now;
-    });
+    /* Móvil y escritorio son montajes distintos; cambiar de uno a otro
+       recarga. iOS usa siempre el móvil, así que girarlo no cambia nada. */
+    const usesMobile = () => isMobile() || isIOS();
+    const mountedMobile = usesMobile();
+    (mountedMobile ? initMobile : initDesktop)();
+    addEventListener(
+        "resize",
+        () => {
+            if (usesMobile() !== mountedMobile) location.reload();
+        },
+        { passive: true }
+    );
 })();

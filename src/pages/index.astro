@@ -94,27 +94,6 @@ const projectsCta = homepage
             }
         }
 
-        #odometer {
-            overflow: visible;
-            font-variant-numeric: normal;
-            letter-spacing: 0;
-        }
-        #odometer .digit {
-            display: inline-block;
-            position: relative;
-            overflow: visible;
-            height: 1em;
-            width: auto;
-            min-width: 0;
-            padding: 0;
-            margin: 0;
-            font-variant-numeric: inherit;
-        }
-        #odometer .digit span {
-            display: block;
-            width: auto;
-        }
-
         /* ── Nada oculto en el HTML ──────────────────────────────────────
            El contenido de la portada viene visible en el documento y se
            pinta con el primer cuadro. Solo se tapa cuando hay JavaScript y
@@ -257,7 +236,6 @@ const projectsCta = homepage
                     >
                 </p>
             </section>
-            <!-- Reemplazado: ahora cargamos el módulo de animaciones de Moments -->
             <script src="../scripts/moments.ts"></script>
         </div>
         <section id="testimonials">
@@ -304,57 +282,3 @@ const projectsCta = homepage
         init();
     </script>
 </MainLayout>
-
-<script>
-    import { gsap } from "../scripts/main";
-
-    if (typeof window !== "undefined") {
-        const initTitles = () => {
-            /* Los títulos con ScrollFloat (`data-scroll-float`) ya se animan letra
-               a letra; este fade-in-up encima tapaba ese efecto. */
-            const nodeList = document.querySelectorAll(".title:not([data-scroll-float]), #title:not([data-scroll-float])") as NodeListOf<HTMLElement>;
-            const titles = Array.from(nodeList) as HTMLElement[];
-            if (!titles.length) return;
-
-            titles.forEach((el) => {
-                if (el.dataset.gsapTitleInit) return;
-                el.dataset.gsapTitleInit = "1";
-
-                gsap.fromTo(
-                    el,
-                    { y: 80, opacity: 0, willChange: "transform, opacity" },
-                    {
-                        y: 0,
-                        opacity: 1,
-                        ease: "power1.out",
-                        duration: 0.8,
-                        scrollTrigger: {
-                            trigger: el,
-                            start: "top 85%",
-                            end: "bottom 60%",
-                            toggleActions: "play none none reverse",
-                        },
-                    }
-                );
-            });
-        };
-
-        if (document.readyState === "complete" || document.readyState === "interactive") {
-            initTitles();
-        } else {
-            window.addEventListener("DOMContentLoaded", initTitles, { once: true });
-        }
-
-        const observer = new MutationObserver((mutations) => {
-            for (const m of mutations) {
-                if (m.addedNodes && m.addedNodes.length) {
-                    initTitles();
-                    break;
-                }
-            }
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
-
-        window.addEventListener("beforeunload", () => observer.disconnect());
-    }
-</script>

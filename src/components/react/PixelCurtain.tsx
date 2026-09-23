@@ -19,6 +19,7 @@
    Las funciones puras (rejilla, easing, keyframes) están copiadas tal cual
    del original para que el movimiento sea idéntico. */
 import { useEffect, useRef, useState } from 'react';
+import { APPLE_OUT_CSS } from '../../scripts/easing';
 
 type Pattern = 'random' | 'center' | 'edges' | 'left-to-right' | 'right-to-left' | 'top-to-bottom' | 'bottom-to-top' | 'diagonal' | 'spiral';
 
@@ -179,7 +180,7 @@ export default function PixelCurtain({
   pixelDuration = 380,
   pattern = 'random',
   randomness = 0,
-  easing = 'cubic-bezier(0.22, 1, 0.36, 1)'
+  easing = APPLE_OUT_CSS
 }: PixelCurtainProps) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   /* `covered` es el estado inicial de una página a la que se llegó con la

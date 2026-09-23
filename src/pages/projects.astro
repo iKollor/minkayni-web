@@ -1,11 +1,12 @@
 ---
+import SectionIsland from "../components/SectionIsland.astro";
+import SectionHeading from "../components/SectionHeading.astro";
 import PageLayout from "@/layouts/PageLayout.astro";
 import Button from "@/components/Button.astro";
 import Markdown from "@/components/Markdown.astro";
 import ProjectExplorer, { type ProjectItem } from "@/components/projects/ProjectExplorer.astro";
 import { projectsFallback } from "@/data/pages/projects";
 import { loadPageContent } from "@/utils/page-content";
-import { formatTitle } from "@/utils/rich-title";
 import { getLocale, useTranslations } from "../i18n";
 
 /* Contenido: single type `projects-page` en Strapi, con fallback local. */
@@ -38,8 +39,7 @@ const stepStyles = [
     <section class="mx-auto w-[90%] max-w-[1280px] py-20 sm:py-28" aria-labelledby="projects-intro-title">
         <div class="grid items-end gap-10 lg:grid-cols-[0.8fr_1.2fr]">
             <div>
-                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.intro.eyebrow}</p>
-                <h2 data-scroll-float id="projects-intro-title" class="font-display text-5xl font-black leading-[0.92] tracking-tight text-black sm:text-7xl" set:html={formatTitle(d.intro.title, "text-secondary-deep")} />
+                <SectionHeading id="projects-intro-title" eyebrow={d.intro.eyebrow} title={d.intro.title} accent="text-secondary-deep" class="text-5xl leading-[0.92] tracking-tight text-black sm:text-7xl" />
             </div>
             <div class="max-w-[62ch] text-lg leading-relaxed text-black/70 lg:pb-2 lg:text-xl">
                 <p>{d.intro.body}</p>
@@ -51,8 +51,7 @@ const stepStyles = [
 
     <section id="metodologia" class="mx-auto w-[90%] max-w-[1280px] py-24 sm:py-32" aria-labelledby="method-title">
         <div class="mb-12 max-w-[760px]">
-            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary-deep">{d.methodHeading.eyebrow}</p>
-            <h2 data-scroll-float id="method-title" class="font-display text-5xl font-black leading-none text-primary sm:text-7xl" set:html={formatTitle(d.methodHeading.title)} />
+            <SectionHeading id="method-title" eyebrow={d.methodHeading.eyebrow} title={d.methodHeading.title} eyebrowTone="secondary-deep" class="text-5xl leading-none text-primary sm:text-7xl" />
             <p class="mt-6 max-w-[62ch] text-lg leading-relaxed text-black/70">{d.methodHeading.body}</p>
         </div>
 
@@ -77,13 +76,12 @@ const stepStyles = [
 
     <section class="mx-auto w-[90%] max-w-[1280px] pb-24" aria-labelledby="horizon-title">
         <div class="mb-12 max-w-[760px]">
-            <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{d.horizonHeading.eyebrow}</p>
-            <h2 data-scroll-float id="horizon-title" class="font-display text-4xl font-black leading-none text-black sm:text-6xl" set:html={formatTitle(d.horizonHeading.title)} />
+            <SectionHeading id="horizon-title" eyebrow={d.horizonHeading.eyebrow} title={d.horizonHeading.title} class="text-4xl leading-none text-black sm:text-6xl" />
         </div>
         <div class="grid gap-5 md:grid-cols-3">
             {
                 d.horizonCards.map((card) => (
-                    <div class="rounded-[2.25rem] bg-[#dedbd4] p-8 sm:p-10">
+                    <div class="rounded-[2.25rem] bg-surface p-8 sm:p-10">
                         <h3 class="font-display text-2xl font-bold text-primary">{card.title}</h3>
                         <p class="mt-3 leading-relaxed text-black/70">{card.description}</p>
                     </div>
@@ -92,11 +90,10 @@ const stepStyles = [
         </div>
     </section>
 
-    <section id="alianzas" class="mx-auto mb-44 md:mb-80 mt-4 w-[94%] max-w-[1440px] overflow-hidden rounded-[2.75rem] bg-[linear-gradient(130deg,var(--primary),#410063)] px-6 py-16 text-white sm:px-12 lg:rounded-[5rem] lg:px-20 lg:py-24" aria-labelledby="alliances-title">
+    <SectionIsland tone="brand" class="mb-44 md:mb-80 mt-4 overflow-hidden" id="alianzas" aria-labelledby="alliances-title">
         <div class="grid items-center gap-10 lg:grid-cols-[1fr_auto]">
             <div class="max-w-[760px]">
-                <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-secondary">{d.alliancesHeading.eyebrow}</p>
-                <h2 data-scroll-float id="alliances-title" class="font-display text-5xl font-black leading-[0.95] sm:text-7xl" set:html={formatTitle(d.alliancesHeading.title)} />
+                <SectionHeading id="alliances-title" eyebrow={d.alliancesHeading.eyebrow} title={d.alliancesHeading.title} eyebrowTone="secondary" class="text-5xl leading-[0.95] sm:text-7xl" />
                 <p class="mt-6 max-w-[58ch] text-lg leading-relaxed text-white/75">{d.alliancesHeading.body}</p>
                 <ul class="mt-8 flex flex-wrap gap-2" aria-label={t("projects.alliesAndFunders")}>
                     {d.allies.map((ally) => <li class="rounded-full bg-white/10 px-4 py-2 text-sm font-bold backdrop-blur">{ally.text}</li>)}
@@ -118,5 +115,5 @@ const stepStyles = [
         <div class="mt-12 text-sm text-white/65 [&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-secondary">
             <Markdown of={d.alliancesNote} />
         </div>
-    </section>
+    </SectionIsland>
 </PageLayout>

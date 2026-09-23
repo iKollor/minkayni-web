@@ -1,0 +1,15 @@
+---
+/* Sección «isla» de las páginas interiores; ver section-island.ts. Los
+   atributos que no son props (id, aria-labelledby, data-*) pasan tal cual. */
+import type { HTMLAttributes } from "astro/types";
+import { islandClass, type IslandPadding, type IslandTone } from "./section-island";
+
+interface Props extends HTMLAttributes<"section"> {
+    tone: IslandTone;
+    padding?: IslandPadding;
+}
+
+const { tone, padding, class: extra, ...attrs } = Astro.props;
+---
+
+<section class={islandClass(tone, padding, extra ?? "")} {...attrs}><slot /></section>

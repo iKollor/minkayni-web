@@ -70,10 +70,12 @@ startIdx = startIdx >= 0 ? startIdx : 0;
                         const role = m?.role ?? "";
                         return (
                             <article class="card relative rounded-[24px] overflow-hidden ring-1 ring-black/5 bg-white" data-idx={i} data-name={name} data-role={role} data-org={m?.organization || ""} style={`background:${color}`}>
-                                {picture && <img src={PIXEL} data-lcp-src={picture} data-lcp-srcset={pictureSet || undefined} sizes="(min-width: 1077px) 560px, (min-width: 768px) 60vw, 70vw" alt={name || "Team member"} class="absolute inset-0 h-full w-full object-cover [filter:saturate(1.02)]" loading="lazy" decoding="async" />}
-                                <a href={`mailto:${m.email}`} class="badge absolute left-4 bottom-4 z-10 rounded-full backdrop-blur px-3 py-1 text-xs font-medium text-white/95 gradient-custom animate-gradient bg-opacity-20">
-                                    {m.email}
-                                </a>
+                                {picture && <img src={PIXEL} data-lcp-src={picture} data-lcp-srcset={pictureSet || undefined} sizes="(min-width: 1077px) 560px, (min-width: 768px) 60vw, 70vw" alt={name || t("alt.teamMember")} class="absolute inset-0 h-full w-full object-cover [filter:saturate(1.02)]" loading="lazy" decoding="async" />}
+                                {m.email && (
+                                    <a href={`mailto:${m.email}`} class="badge absolute left-4 bottom-4 z-10 rounded-full backdrop-blur px-3 py-1 text-xs font-medium text-white/95 gradient-custom animate-gradient bg-opacity-20">
+                                        {m.email}
+                                    </a>
+                                )}
                             </article>
                         );
                     })

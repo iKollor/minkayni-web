@@ -7,20 +7,14 @@ import PartnersLoop from "./react/PartnersLoop";
 import { strapiMediaSrcSet, strapiMediaUrl } from "../utils/media-url";
 import DomeSeparator from "./index/DomeSeparator.astro";
 import type { NavItem, NavTree } from "../schemas/navigation";
-import type { Footer } from "../schemas/strapi.graphql.zod";
+import type { FooterContent } from "../schemas/pages.zod";
 import { formatCopyright } from "../scripts/components/Copyright";
 import { buildSocialItems } from "../scripts/components/socials";
 import Button from "./Button.astro";
 import LegalFooterBand from "./legal/LegalFooterBand.astro";
+import { footerTextsFallback } from "../data/pages/global";
+import { withFallback } from "../utils/content";
 import { defaultLocale, localizePath, stripLocale, useTranslations, type Locale } from "../i18n";
-
-/** Campos añadidos al single type `footer` (textos de aliados y CTA). */
-type FooterTexts = {
-    partnersTitle?: string | null;
-    joinTitle?: string | null;
-    joinSubtitle?: string | null;
-    joinButton?: { href?: string | null; defaultText?: string | null; hoverText?: string | null } | null;
-};
 
 interface Props {
     /** Árbol de navegación completo (generalmente desde Strapi) */
@@ -33,14 +27,12 @@ interface Props {
     secondaryLinks?: string;
     /** Idioma de la página que contiene el pie. */
     locale?: Locale;
-    footer: Footer & FooterTexts;
+    footer: FooterContent;
     /** URL a donde apunta el logo */
     logoLinkHref?: string;
     /** Fuente del logo (astro:assets) */
     logoSrc?: ImageMetadata;
 }
-
-// Iconos se manejan en scripts/components/socials.ts
 
 /* El árbol llega validado como NavItem[], pero el recorrido tolera también la
    forma `name`/`href`/`children` por si el plugin de navegación de Strapi
@@ -84,60 +76,46 @@ function getNavGroup(tree: NavTree | undefined, title: string | undefined, path:
     return empty;
 }
 
-// Desestructuración de props con alias internos más claros
-const { primaryLinks: navigationTree, secondaryLinks, locale = defaultLocale, extraLinks = [] } = Astro.props as Props;
-const t = useTranslations(locale);
-const donateHref = localizePath("/donate", locale);
-/* Los extras que el árbol del CMS ya trae no se repiten. */
-const treePaths = new Set(((navigationTree as LooseNavNode[] | undefined) ?? []).map((n) => stripLocale(String(n.path ?? n.href ?? "")).replace(/\/$/, "")));
-const extras = extraLinks.filter((l) => !treePaths.has(stripLocale(l.href).replace(/\/$/, "")));
-
-/* Textos editables del footer (single type `footer` en Strapi) con fallback local. */
-import { footerTextsFallback } from "../data/pages/global";
-import { withFallback } from "../utils/content";
-const texts = withFallback(footerTextsFallback, {
-    partnersTitle: (Astro.props as Props).footer?.partnersTitle,
-    joinTitle: (Astro.props as Props).footer?.joinTitle,
-    joinSubtitle: (Astro.props as Props).footer?.joinSubtitle,
-    joinButton: (Astro.props as Props).footer?.joinButton,
-});
-
-const secondaryGroup = getNavGroup(navigationTree as NavTree, secondaryLinks, "/projects");
-const secondaryNavItems: NavItem[] = secondaryGroup.items;
-
 const {
-    primaryLinks: mainNavItems = [
-        { title: "Servicios", path: "/services" },
-        { title: "Blog", path: "/blog" },
-        { title: "Acerca de", path: "/about" },
-        { title: "Contacto", path: "/contact" },
-    ],
+    primaryLinks: navigationTree,
+    secondaryLinks,
+    locale = defaultLocale,
+    extraLinks = [],
     footer,
     logoLinkHref = localizePath("/", locale),
     logoSrc = LOGO as unknown as ImageMetadata,
-} = Astro.props as Props;
+} = Astro.props;
+const t = useTranslations(locale);
+const donateHref = localizePath("/donate", locale);
+const mainNavItems: NavItem[] = Array.isArray(navigationTree) ? navigationTree : [];
+/* Los extras que el árbol del CMS ya trae no se repiten. */
+const treePaths = new Set((mainNavItems as LooseNavNode[]).map((n) => stripLocale(String(n.path ?? n.href ?? "")).replace(/\/$/, "")));
+const extras = extraLinks.filter((l) => !treePaths.has(stripLocale(l.href).replace(/\/$/, "")));
 
-type PartnerImg = { src: string };
-async function partners(): Promise<PartnerImg[] | undefined> {
-    const files = footer.partnersGallery?.files;
-    if (!Array.isArray(files) || files.length === 0) return undefined;
-    return files
-        .map((f) => (f && typeof f.url === "string" ? f.url : undefined))
-        .filter((u): u is string => typeof u === "string" && u.length > 0)
-        .map((u) => ({ src: u }));
-}
+/* Textos editables del footer (single type `footer` en Strapi) con fallback local. */
+const texts = withFallback(footerTextsFallback, {
+    partnersTitle: footer?.partnersTitle,
+    joinTitle: footer?.joinTitle,
+    joinSubtitle: footer?.joinSubtitle,
+    joinButton: footer?.joinButton,
+});
 
-const partnerImages = await partners();
-/* Logos para el LogoLoop, con las mismas variantes que servía el carrusel. */
+const secondaryGroup = getNavGroup(navigationTree, secondaryLinks, "/projects");
+const secondaryNavItems: NavItem[] = secondaryGroup.items;
+
+/* Logos para el LogoLoop, con las mismas variantes que servía el carrusel.
+   El texto alternativo sale del CMS; sin él, el logo queda como decorativo. */
 const STRAPI_URL = import.meta.env.STRAPI_URL ?? "";
-const partnerLogos = (partnerImages ?? []).map((img) => ({
-    src: strapiMediaUrl(img.src, STRAPI_URL, 440),
-    srcSet: strapiMediaSrcSet(img.src, STRAPI_URL, [220, 440, 660]) || undefined,
-    sizes: "220px",
-    alt: "",
-    width: 220,
-    height: 100,
-}));
+const partnerLogos = (footer.partnersGallery?.files ?? [])
+    .filter((f): f is NonNullable<typeof f> & { url: string } => typeof f?.url === "string" && f.url.length > 0)
+    .map((f) => ({
+        src: strapiMediaUrl(f.url, STRAPI_URL, 440),
+        srcSet: strapiMediaSrcSet(f.url, STRAPI_URL, [220, 440, 660]) || undefined,
+        sizes: "220px",
+        alt: f.alternativeText?.trim() ?? "",
+        width: 220,
+        height: 100,
+    }));
 ---
 
 <footer id="footer" role="contentinfo">
@@ -179,7 +157,7 @@ const partnerLogos = (partnerImages ?? []).map((img) => ({
             <nav class="md:col-span-4" aria-label={t("nav.mainNavigation")}>
                 <ul class="text-2xl sm:text-3xl md:text-4xl space-y-3">
                     {
-                        (navigationTree && Array.isArray(navigationTree) ? navigationTree : mainNavItems).map((item) => {
+                        mainNavItems.map((item) => {
                             const node = item as LooseNavNode;
                             const href = node.path ?? node.href;
                             const label = node.title ?? node.name ?? "";

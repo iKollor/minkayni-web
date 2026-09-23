@@ -1,16 +1,16 @@
-// src/codegen.ts
 import "dotenv/config";
 import type { CodegenConfig } from "@graphql-codegen/cli";
 
-// Puedes definir STRAPI_GRAPHQL_URL directamente,
-// o derivarla desde STRAPI_URL si no está presente.
-const url = process.env.STRAPI_GRAPHQL_URL ?? process.env.STRAPI_URL?.replace(/\/$/, "") + "/graphql";
-if (!url) throw new Error("Falta STRAPI_GRAPHQL_URL o STRAPI_URL");
+// STRAPI_GRAPHQL_URL directa, o derivada de STRAPI_URL.
+const resolveGraphqlUrl = (): string => {
+    const strapiUrl = process.env.STRAPI_URL?.trim().replace(/\/+$/, "");
+    const url = process.env.STRAPI_GRAPHQL_URL ?? (strapiUrl ? `${strapiUrl}/graphql` : undefined);
+    if (!url) throw new Error("Falta STRAPI_GRAPHQL_URL o STRAPI_URL");
+    return url;
+};
+const url = resolveGraphqlUrl();
 
-const token =
-    process.env.STRAPI_TOKEN ??
-    process.env.STRAPI_TOKEN ?? // por si usas este nombre en tu proyecto
-    "";
+const token = process.env.STRAPI_TOKEN ?? "";
 
 const headers: Record<string, string> = {};
 if (token) headers.Authorization = `Bearer ${token}`;

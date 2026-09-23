@@ -7,10 +7,8 @@
    en un layout y no en el otro se convertía en una diferencia silenciosa
    entre la portada y las páginas interiores.
 ─────────────────────────────────────────────────────────────────────────── */
-import { getEntry } from "astro:content";
-import { getData } from "./i18n";
 import { withFallback } from "./content";
-import { loadPageContent } from "./page-content";
+import { loadPageContent, readEntry } from "./page-content";
 import {
     fallbackFooter,
     fallbackNavigation,
@@ -24,23 +22,7 @@ import { projectsFallback } from "../data/pages/projects";
 import { defaultLocale, type Locale } from "../i18n";
 import { localizeLinks } from "./localize-links";
 import type { NavTree } from "../schemas/navigation";
-import type { Footer } from "../schemas/strapi.graphql.zod";
-
-/* Igual que en page-content.ts: `getEntry` está sobrecargado por colección y
-   no resuelve la sobrecarga con un nombre calculado. */
-const getAnyEntry = getEntry as (
-    collection: string,
-    id: string
-) => Promise<{ collection: string; data: Record<string, unknown> } | undefined>;
-
-const readEntry = async (collection: string, id: string): Promise<unknown> => {
-    try {
-        const entry = await getAnyEntry(collection, id);
-        return entry ? getData(entry) : undefined;
-    } catch {
-        return undefined;
-    }
-};
+import type { FooterContent } from "../schemas/pages.zod";
 
 const loadNavigation = async (locale: Locale): Promise<NavTree> => {
     const collection = locale === defaultLocale ? "navigationHeader" : "navigationHeaderEn";
@@ -55,7 +37,7 @@ const loadNavigation = async (locale: Locale): Promise<NavTree> => {
     return localizeNavigation(repararRutas(withBatucadaProject(source)), locale);
 };
 
-const loadFooter = async (locale: Locale): Promise<Footer> => {
+const loadFooter = async (locale: Locale): Promise<FooterContent> => {
     const spanish = await readEntry("footer", "footer");
     const base = spanish === undefined ? fallbackFooter : withFallback(fallbackFooter, spanish);
 

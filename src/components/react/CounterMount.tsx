@@ -13,7 +13,10 @@
    admitía el punto decimal; Counter.tsx acepta cualquier cadena en `places`. */
 import { useEffect, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import Counter from './Counter';
+import Counter, { type CounterTween } from './Counter';
+import { APPLE_OUT_BEZIER } from '../../scripts/easing';
+
+const COUNT_TWEEN: CounterTween = { duration: 1.8, ease: APPLE_OUT_BEZIER };
 
 const ROOTS = new WeakMap<Element, Root>();
 
@@ -53,9 +56,9 @@ function CountUp({ target, prefix, suffix, fontSize, lineHeight, separator }: { 
         /* El contenedor alinea por línea base: la del primer dígito (Counter.tsx
            le da una real) coincide así con la del texto que lo rodea. */
         containerStyle={{ display: 'inline-flex', alignItems: 'baseline' }}
-        /* El resorte por defecto llega a la cifra en ~250 ms: un parpadeo, no un
-           conteo. Con duración explícita se ve rodar cada columna. */
-        spring={{ duration: 1600, bounce: 0 }}
+        /* Con duración explícita se ve rodar cada columna; la curva de entrada
+           de Apple arranca con velocidad y posa la cifra sin frenazo. */
+        tween={COUNT_TWEEN}
       />
       {suffix}
     </>

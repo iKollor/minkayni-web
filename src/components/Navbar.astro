@@ -150,18 +150,6 @@ const homeHref = localizePath("/", locale);
         transition: color 350ms ease;
     }
 
-    /* La regla de arriba pinta TODOS los enlaces con la tinta; la píldora
-       activa del selector necesita justo lo contrario (tinta de fondo, texto
-       en el color de contraste). */
-    /* La regla genérica vale (2,2,1): dos ids, dos clases por los :not() y un
-       elemento. Esta tiene que superarla sin depender del orden: se añade el
-       ancestro .lang-switch y el propio elemento `a` → (2,3,1). */
-    #nav-container :is(#navBase, #navScrolled) .lang-switch a.lang-switch__option.is-active {
-        color: var(--nav-ink-contrast);
-        background-color: var(--nav-ink);
-        transition: color 350ms ease, background-color 350ms ease;
-    }
-
     #nav-container :is(#navBase, #navScrolled) .underline:not(.nav-cta *) {
         background-color: var(--nav-ink);
         transition: background-color 350ms ease, transform 300ms ease;
@@ -276,11 +264,10 @@ const homeHref = localizePath("/", locale);
             const stack = document.elementsFromPoint(x, y) as HTMLElement[];
             for (const el of stack) {
                 /* No cuentan ni el propio navbar ni lo que tapa la página
-                   entera de forma pasajera: la rejilla de transición y la
-                   cortina de píxeles, que al navegar cubre todo con el
+                   entera de forma pasajera: la cortina de píxeles, que al navegar cubre todo con el
                    morado de marca y haría leer un fondo que no es el de
                    esta página. */
-                if (container.contains(el) || el.closest("#nav-container, #square-container, [data-pixel-curtain]")) continue;
+                if (container.contains(el) || el.closest("#nav-container, [data-pixel-curtain]")) continue;
 
                 const marked = el.closest<HTMLElement>("[data-nav-theme]");
                 if (marked) return marked.dataset.navTheme === "dark" ? "dark" : "light";

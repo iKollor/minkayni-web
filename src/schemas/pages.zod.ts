@@ -3,12 +3,12 @@
    (about-page, impact-page, projects-page, batucada-*, global).
 
    Son deliberadamente laxos (todo nullish): si un campo aún no se llenó en
-   el CMS, la página usa su fallback local (src/data/fallbacks/*). Cuando se
-   regenere `strapi.graphql.zod.ts` con `npm run zod:gen`, estos esquemas
-   siguen siendo la fuente para las colecciones de contenido.
+   el CMS, la página usa su fallback local (src/data/pages/*). Cuando se
+   regenere `strapi.graphql.zod.ts` con `pnpm run zod:gen:lazy`, estos
+   esquemas siguen siendo la fuente para las colecciones de contenido.
 ─────────────────────────────────────────────────────────────────────────── */
 import { z } from "zod";
-import { UploadFileSchema } from "./strapi.graphql.zod";
+import { FooterSchema, HomepageSchema, PostSchema, UploadFileSchema, type Footer } from "./strapi.graphql.zod";
 
 const media = () => UploadFileSchema().nullish();
 const mediaList = () => z.array(UploadFileSchema().nullable()).nullish();
@@ -543,3 +543,29 @@ export const DonatePageSchema = () =>
         seo: SeoSchema().nullish(),
     });
 export type DonatePage = z.infer<ReturnType<typeof DonatePageSchema>>;
+
+/* ── Campos nuevos sobre tipos generados ──────────────────────────────────
+   El CMS ya sirve estos campos, pero `strapi.graphql.zod.ts` no los conoce:
+   la introspección de GraphQL está desactivada en producción y el esquema no
+   se puede regenerar desde allí. Se declaran aquí una sola vez para las dos
+   versiones de idioma; cuando se regenere, `.extend` sencillamente coincide. */
+export const PostContentSchema = () => PostSchema().extend({ poster: media() });
+
+export const HomepageContentSchema = () =>
+    HomepageSchema().extend({
+        testimonialsTitle: z.string().nullish(),
+        teamTitle: z.string().nullish(),
+        featuredProject: FeaturedProjectSchema().nullish(),
+        projectsCtaHeading: SectionHeadingSchema().nullish(),
+        projectsCtaTags: z.array(ListItemSchema().nullable()).nullish(),
+        projectsCtaButton: ActionButtonSchema().nullish(),
+    });
+
+const footerExtras = () => ({
+    partnersTitle: z.string().nullish(),
+    joinTitle: z.string().nullish(),
+    joinSubtitle: z.string().nullish(),
+    joinButton: ActionButtonSchema().nullish(),
+});
+export const FooterContentSchema = () => FooterSchema().extend(footerExtras());
+export type FooterContent = Footer & z.infer<z.ZodObject<ReturnType<typeof footerExtras>>>;

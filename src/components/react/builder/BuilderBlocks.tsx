@@ -15,6 +15,7 @@
 ─────────────────────────────────────────────────────────────────────────── */
 import { formatTitle } from "@/utils/rich-title";
 import { strapiMediaSrcSet, strapiMediaUrl } from "@/utils/media-url";
+import { islandClass } from "../../section-island";
 import type { Block, Heading, Media } from "./normalize";
 
 interface Props {
@@ -190,13 +191,13 @@ function BlockView({ block, strapiUrl }: { block: Block; strapiUrl: string }) {
 
         case "timeline":
             return (
-                <section className="mx-auto w-[94%] max-w-[1440px] my-12 rounded-[2.75rem] bg-[#dedbd4] px-4 py-14 sm:px-8 lg:rounded-[5rem] lg:px-14 lg:py-20">
+                <section className={islandClass("surface", "compact", "my-12")}>
                     <SectionHeading heading={block.heading} className="mb-10 max-w-[760px]" eyebrowClass={`${EYEBROW} text-primary`} titleClass="font-display text-4xl font-black leading-none text-black sm:text-6xl" bodyClass={BODY} />
                     <ol className="relative">
                         <div className="absolute bottom-2 left-[11px] top-2 w-[3px] rounded-full bg-primary/25" aria-hidden="true" />
                         {block.items.map((item, index) => (
                             <li key={index} className="relative mb-14 pl-12 last:mb-0 sm:pl-14" data-reveal>
-                                <span className="absolute left-0 top-1 flex h-[25px] w-[25px] items-center justify-center rounded-full border-[3px] border-primary bg-[#dedbd4]" aria-hidden="true">
+                                <span className="absolute left-0 top-1 flex h-[25px] w-[25px] items-center justify-center rounded-full border-[3px] border-primary bg-surface" aria-hidden="true">
                                     <span className="h-2 w-2 rounded-full bg-primary" />
                                 </span>
                                 {(item.period || item.chip) && <p className="font-display text-sm font-bold uppercase tracking-[0.18em] text-primary">{item.period ?? item.chip}</p>}
@@ -219,7 +220,7 @@ function BlockView({ block, strapiUrl }: { block: Block; strapiUrl: string }) {
                     <SectionHeading heading={block.heading} className="mb-12 max-w-[760px]" eyebrowClass={`${EYEBROW} text-secondary-deep`} titleClass="font-display text-4xl font-black leading-none text-primary sm:text-6xl" bodyClass={BODY} />
                     <div className="grid gap-5 md:grid-cols-2" data-reveal-group>
                         {block.awards.map((r, index) => (
-                            <article key={index} className="flex flex-col rounded-[2.25rem] bg-[#dedbd4] p-8 transition duration-300 hover:-translate-y-2 sm:p-10">
+                            <article key={index} className="flex flex-col rounded-[2.25rem] bg-surface p-8 transition duration-300 hover:-translate-y-2 sm:p-10">
                                 <div className="flex flex-wrap items-center gap-2">
                                     {r.year && <span className="rounded-full bg-primary px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-white">{r.year}</span>}
                                     {r.org && <span className="rounded-full bg-black/10 px-3 py-1 text-xs font-bold text-black">{r.org}</span>}
@@ -302,7 +303,7 @@ function BlockView({ block, strapiUrl }: { block: Block; strapiUrl: string }) {
             const h = block.heading ?? {};
             const items = block.items.filter((i) => Boolean(i.text));
             return (
-                <section className="mx-auto my-12 w-[94%] max-w-[1440px] overflow-hidden rounded-[2.75rem] bg-[linear-gradient(130deg,var(--primary),#410063)] px-6 py-16 text-white sm:px-12 lg:rounded-[5rem] lg:px-20 lg:py-24" data-reveal>
+                <section className={islandClass("brand", "wide", "my-12 overflow-hidden")} data-reveal>
                     <div className="max-w-[760px]">
                         {h.eyebrow && <p className={`${EYEBROW} text-secondary`}>{h.eyebrow}</p>}
                         {h.title && <Title title={h.title} className="font-display text-4xl font-black leading-[0.95] sm:text-6xl" />}
@@ -322,7 +323,7 @@ function BlockView({ block, strapiUrl }: { block: Block; strapiUrl: string }) {
         case "cta": {
             const h = block.heading ?? {};
             return (
-                <section className="mx-auto my-12 w-[94%] max-w-[1440px] overflow-hidden rounded-[2.75rem] bg-accent px-6 py-16 text-black sm:px-12 lg:rounded-[5rem] lg:px-20 lg:py-20" data-reveal>
+                <section className={islandClass("accent", "cta", "my-12 overflow-hidden")} data-reveal>
                     <div className="grid items-center gap-10 lg:grid-cols-[1fr_auto]">
                         <div className="max-w-[760px]">
                             {h.eyebrow && <p className={`${EYEBROW} text-primary`}>{h.eyebrow}</p>}
