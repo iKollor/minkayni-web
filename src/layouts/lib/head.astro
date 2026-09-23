@@ -299,9 +299,10 @@ const ogUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefi
                 };
             })();
             /* Imágenes que no hacen falta para la primera pantalla —carrusel
-               de momentos, fotos del equipo, portadas de los reels— llevan la
-               URL en `data-lcp-src` / `data-lcp-srcset` / `data-lcp-poster`
-               y se piden aquí, ya anotado el LCP. `loading="lazy"` no lo
+               de momentos, fotos del equipo y de los testimonios, portadas de
+               los reels, el vídeo del grano— llevan la URL en `data-lcp-src`
+               / `data-lcp-srcset` / `data-lcp-poster` / `data-lcp-href` (la
+               <image> de SVG) y se piden aquí, ya anotado el LCP. `loading="lazy"` no lo
                conseguía: en 4G lenta Chrome adelanta 2500 px y pedía ~340 KB
                antes del texto de portada. */
             window.trasLcp(function () {
@@ -312,11 +313,12 @@ const ogUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefi
                     nodo.setAttribute(atributo, valor);
                 };
                 var soltar = function () {
-                    var nodos = document.querySelectorAll("[data-lcp-src],[data-lcp-srcset],[data-lcp-poster]");
+                    var nodos = document.querySelectorAll("[data-lcp-src],[data-lcp-srcset],[data-lcp-poster],[data-lcp-href]");
                     for (var i = 0; i < nodos.length; i++) {
                         pasar(nodos[i], "data-lcp-srcset", "srcset");
                         pasar(nodos[i], "data-lcp-src", "src");
                         pasar(nodos[i], "data-lcp-poster", "poster");
+                        pasar(nodos[i], "data-lcp-href", "href");
                     }
                 };
                 /* El plazo de seguridad de `trasLcp` puede vencer con el

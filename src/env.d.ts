@@ -6,6 +6,8 @@ declare global {
         /** Guarda anti-doble-inicialización de la animación de #moments. */
         __MOMENTS_ANIM__?: boolean;
         toggleGrain?: () => void;
+        /** La define layouts/lib/head.astro: ejecuta fn cuando el LCP ya está anotado. */
+        trasLcp?: (fn: () => void) => void;
         /** La define Analytics.astro; no existe si la medición está apagada. */
         gtag?: (...args: unknown[]) => void;
     }

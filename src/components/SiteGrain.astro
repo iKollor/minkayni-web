@@ -20,10 +20,9 @@ import noisePoster from "../assets/overlay/noise-poster.webp";
         playsinline
         preload="metadata"
         poster={noisePoster.src}
+        data-lcp-src={paperTexture}
         style="visibility:hidden;"
-    >
-        <source src={paperTexture} type="video/webm" />
-    </video>
+    ></video>
     <Image src={noisePoster} alt="" class="still-noise absolute inset-0 h-full w-full object-cover mix-blend-overlay pointer-events-none object-center opacity-5" />
 </div>
 
@@ -48,16 +47,22 @@ import noisePoster from "../assets/overlay/noise-poster.webp";
         const play = () => video.play().then(markPlaying).catch(() => undefined);
 
         video.addEventListener("playing", markPlaying, { once: true });
-        play();
 
         const retry = () => {
             if (!played) play();
         };
         ["pointerdown", "keydown"].forEach((eventName) => window.addEventListener(eventName, retry, { passive: true, once: true }));
 
-        const fallbackTimer = window.setTimeout(() => {
-            if (!played) document.documentElement.classList.add("grain-still-fallback");
-        }, 3000);
+        /* El vídeo recibe su `src` (`data-lcp-src`, ver layouts/lib/head.astro)
+           cuando el LCP ya está anotado: 15 KB que PageSpeed sumaba al LCP.
+           Se arranca en ese mismo momento; hasta entonces hay grano fijo. */
+        let fallbackTimer = 0;
+        (window.trasLcp || ((fn: () => void) => fn()))(() => {
+            play();
+            fallbackTimer = window.setTimeout(() => {
+                if (!played) document.documentElement.classList.add("grain-still-fallback");
+            }, 3000);
+        });
 
         document.addEventListener("visibilitychange", () => {
             if (document.visibilityState === "visible") retry();
