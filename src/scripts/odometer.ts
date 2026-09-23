@@ -24,7 +24,7 @@
      cada paso con un giro corto (LIVE_ROLL_SECONDS).
 ─────────────────────────────────────────────────────────────────────────── */
 import { gsap } from "./main";
-import { cubicBezier } from "./easing";
+import { apple, cubicBezier } from "./easing";
 import { countUpValue } from "./odometer-curve";
 
 /** `ease-out` de CSS, la de las transiciones del plugin. */
@@ -55,6 +55,8 @@ class Wheel {
     private readonly slots = [document.createElement("span"), document.createElement("span")];
     private readonly stack: Glyph[];
     private readonly state = { p: 0 };
+    /** Fundido cruzado entre la cifra que sale y la que entra (pasos en vivo). */
+    private fade = false;
 
     constructor(
         initial: Glyph,
@@ -76,10 +78,11 @@ class Wheel {
 
     /* Persigue la posición nueva desde donde esté: un tween que se reinicia
        en cada cambio, como la transición CSS del plugin. */
-    set(glyph: Glyph, seconds: number): void {
+    set(glyph: Glyph, seconds: number, ease: gsap.EaseFunction = ROLL_EASE, fade = false): void {
         if (glyph === this.stack[this.stack.length - 1]) return;
         this.stack.push(glyph);
-        gsap.to(this.state, { p: this.stack.length - 1, duration: seconds, ease: ROLL_EASE, overwrite: true, onUpdate: () => this.draw() });
+        this.fade = fade;
+        gsap.to(this.state, { p: this.stack.length - 1, duration: seconds, ease, overwrite: true, onUpdate: () => this.draw() });
     }
 
     private width(glyph: Glyph | undefined): number {
@@ -95,6 +98,8 @@ class Wheel {
         this.slots[1].textContent = to ?? "";
         this.slots[0].style.transform = `translateY(${-f}em)`;
         this.slots[1].style.transform = `translateY(${1 - f}em)`;
+        this.slots[0].style.opacity = this.fade ? String(1 - f) : "";
+        this.slots[1].style.opacity = this.fade ? String(f) : "";
         const w0 = this.width(from);
         this.el.style.width = `${w0 + (this.width(to) - w0) * f}px`;
     }
@@ -110,8 +115,10 @@ export type OdometerOptions = {
     liveEverySeconds?: number;
 };
 
-/** Giro de cada +1 del modo en vivo: un solo paso, no la persecución del conteo. */
-const LIVE_ROLL_SECONDS = 0.6;
+/** Giro de cada +1 del modo en vivo: un solo paso, no la persecución del
+    conteo. Curva simétrica de Apple y fundido cruzado: entra y se posa suave,
+    sin el golpe seco de un ease-out corto. */
+const LIVE_ROLL_SECONDS = 0.7;
 
 class Odometer {
     private readonly row = document.createElement("span");
@@ -149,10 +156,10 @@ class Odometer {
     }
 
     increment(): void {
-        this.show(this.value + 1, LIVE_ROLL_SECONDS);
+        this.show(this.value + 1, LIVE_ROLL_SECONDS, apple, true);
     }
 
-    private show(value: number, rollSeconds: number): void {
+    private show(value: number, rollSeconds: number, ease?: gsap.EaseFunction, fade = false): void {
         if (value === this.value) return;
         this.value = value;
         const text = group(value, this.separator);
@@ -164,7 +171,7 @@ class Odometer {
             this.row.prepend(wheel.el);
         }
         const offset = this.wheels.length - text.length;
-        this.wheels.forEach((wheel, i) => wheel.set(text[i - offset] ?? null, rollSeconds));
+        this.wheels.forEach((wheel, i) => wheel.set(text[i - offset] ?? null, rollSeconds, ease, fade));
     }
 }
 
