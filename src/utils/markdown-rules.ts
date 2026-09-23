@@ -16,7 +16,7 @@ import type { ModularConfig } from "./rehype-modular";
 
 export const markdownRules: ModularConfig = {
     /* SHORTCODES en texto: {{odometer:150}} → <span data-count="150">150</span>.
-       El contador animado (Counter de reactbits) lo monta CounterMount sobre
+       El contador animado (countUp.js + Odometer, scripts/count-up.ts) se monta sobre
        cualquier [data-count] del sitio; aquí solo se deja el número en el HTML. */
     textPatterns: [
         {

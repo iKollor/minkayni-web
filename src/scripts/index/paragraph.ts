@@ -15,7 +15,7 @@ type Opciones = {
     fromIntro?: boolean;
 };
 
-/* El contador (`[data-count]`) lo monta React: SplitText no debe entrar en
+/* El contador (`[data-count]`) lo monta scripts/count-up.ts: SplitText no debe entrar en
    él, o partiría sus dígitos en palabras. Pero sí entra en la cascada, en su
    posición dentro del texto, y al llegarle el turno se avisa a CounterMount
    para que arranque a contar justo entonces. La marca queda en el DOM por si
