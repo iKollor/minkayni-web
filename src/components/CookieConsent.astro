@@ -26,10 +26,11 @@
      /transparencia, que es donde se explica, con nombres y claves, lo que
      este aviso decide (components/legal/DataAndCookies.astro).
 
-   Viene en el HTML con `hidden`, y lo quita el script solo si no hay
-   respuesta guardada: así quien ya respondió no ve ni un parpadeo, y quien
-   no tiene JavaScript no ve un aviso que no podría responder (sin JavaScript
-   tampoco se carga Analytics, así que no hay nada que consentir).
+   Viene en el HTML con `hidden`, y un script en línea justo detrás lo quita
+   si no hay respuesta guardada: así quien ya respondió no ve ni un parpadeo,
+   quien no la tiene lo ve desde el primer pintado, y quien no tiene
+   JavaScript no ve un aviso que no podría responder (sin JavaScript tampoco
+   se carga Analytics, así que no hay nada que consentir).
 
    Compacto a propósito. La primera versión ocupaba el 47% de la pantalla de
    un móvil y tapaba justo el párrafo donde la portada cuenta qué hace la
@@ -41,6 +42,7 @@
    En escritorio va a la derecha para no taparle la navegación lateral de la
    portada, que vive abajo a la izquierda. */
 import { getLocale, localizePath, useTranslations } from "../i18n";
+import { CLAVE_CONSENTIMIENTO } from "../scripts/consentimiento";
 
 const locale = getLocale(Astro.url);
 const t = useTranslations(locale);
@@ -77,6 +79,21 @@ const boton =
         >
     </div>
 </section>
+
+{/* Se destapa en el mismo momento en que se pinta la página, no cuando corre
+    el script del final. Antes aparecía segundos después de todo lo demás: la
+    persona veía la página «terminada» y de repente le subía un aviso, y
+    PageSpeed lo contaba igual, como una pantalla que tardaba en asentarse
+    (Speed Index). Solo lee la respuesta guardada; los botones los conecta el
+    script de abajo. Sin JavaScript no corre, y el aviso sigue oculto: sin
+    JavaScript tampoco se carga Analytics. */}
+<script is:inline define:vars={{ clave: CLAVE_CONSENTIMIENTO }}>
+    var respuesta = null;
+    try {
+        respuesta = localStorage.getItem(clave);
+    } catch (e) {}
+    if (respuesta !== "concedido" && respuesta !== "denegado") document.getElementById("aviso-cookies").hidden = false;
+</script>
 
 <style>
     /* Entra desde abajo, una sola vez. `hidden` manda sobre todo esto: el
