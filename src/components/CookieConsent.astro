@@ -12,9 +12,9 @@
    (`gtag("consent", …)`), y eso lo hace cualquiera.
 
    Cómo funciona:
-   - Analytics.astro declara las señales en «denegado» antes de cargar nada,
-     y las deja así hasta que haya respuesta. Mientras tanto Google no guarda
-     nada en el navegador.
+   - Analytics.astro declara las señales antes de cargar nada: denegadas
+     donde la ley exige permiso previo (EEE, Reino Unido, Suiza) y concedidas
+     en el resto del mundo, hasta que haya respuesta.
    - Este aviso solo pregunta. Al responder, guarda la respuesta y manda la
      señal de actualización.
    - La respuesta se guarda en el propio navegador (`localStorage`), no en una

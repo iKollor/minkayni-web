@@ -19,6 +19,20 @@ export const CLAVE_CONSENTIMIENTO = "minkayni-consentimiento";
 /** Señales que cambian con la respuesta. */
 export const SENALES_VARIABLES = ["ad_storage", "ad_user_data", "ad_personalization", "analytics_storage"] as const;
 
+/** Regiones donde las señales parten DENEGADAS hasta que la persona responda:
+    el Espacio Económico Europeo, Reino Unido y Suiza, donde la ley exige
+    consentimiento previo para medir con cookies. En el resto del mundo —el
+    Ecuador y quien nos visita desde América, sobre todo— parten concedidas y
+    el aviso deja apagarlas. Tenerlas denegadas para todo el planeta hacía que
+    Google viera un 0% de consentimiento fuera de Europa y lo marcara como un
+    problema crítico de la propiedad: sin señales, ni informes de audiencia
+    ni exportación de conversiones a Google Ads, que es para lo que está. */
+export const REGIONES_CONSENTIMIENTO_PREVIO = [
+    "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE",
+    "IS", "LI", "NO",
+    "GB", "CH",
+] as const;
+
 /** Señales que valen lo mismo se responda lo que se responda. */
 export const SENALES_FIJAS = { functionality_storage: "granted", security_storage: "granted" } as const;
 

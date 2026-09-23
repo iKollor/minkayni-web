@@ -29,14 +29,15 @@
  * costaba puntos en PageSpeed móvil por pedirse antes del primer pintado.
  * La dirección con el identificador sigue escrita en el HTML.
  *
- * Privacidad: nada se guarda en el navegador de quien visita hasta que
- * responda al aviso (components/CookieConsent.astro). Aquí se declaran las
- * señales del modo de consentimiento de Google en «denegado» ANTES de cargar
- * la etiqueta, y ahí se quedan si la respuesta no llega: en ese estado Google
- * mide sin cookies y sin identificar a nadie. Además, `anonymize_ip` y sin
- * señales de publicidad personalizada.
+ * Privacidad: las señales del modo de consentimiento de Google se declaran
+ * ANTES de cargar la etiqueta, en dos capas: concedidas en general y
+ * denegadas donde la ley exige consentimiento previo (EEE, Reino Unido,
+ * Suiza), hasta que la persona responda al aviso
+ * (components/CookieConsent.astro), que en todas partes deja apagarlas. En
+ * «denegado» Google mide sin cookies y sin identificar a nadie. Además,
+ * `anonymize_ip` y sin señales de publicidad personalizada.
  */
-import { CLAVE_CONSENTIMIENTO, SENALES_FIJAS, SENALES_VARIABLES } from "../scripts/consentimiento";
+import { CLAVE_CONSENTIMIENTO, REGIONES_CONSENTIMIENTO_PREVIO, SENALES_FIJAS, SENALES_VARIABLES } from "../scripts/consentimiento";
 
 /** Flujo de datos de Google Analytics 4 de la fundación: el que está puesto
     en el despliegue (`PUBLIC_GA_MEASUREMENT_ID` en Coolify). Vive también
@@ -59,7 +60,7 @@ const activo = import.meta.env.PROD && etiquetas.length > 0;
             {/* El bloque en línea va ANTES que gtag.js: las señales de
                 consentimiento tienen que estar declaradas cuando la etiqueta
                 arranque, o el primer envío saldría sin ellas. */}
-            <script is:inline define:vars={{ etiquetas, clave: CLAVE_CONSENTIMIENTO, variables: SENALES_VARIABLES, fijas: SENALES_FIJAS }}>
+            <script is:inline define:vars={{ etiquetas, clave: CLAVE_CONSENTIMIENTO, variables: SENALES_VARIABLES, fijas: SENALES_FIJAS, regiones: REGIONES_CONSENTIMIENTO_PREVIO }}>
                 if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
                     /* La build servida en local para revisarla antes de
                        desplegar no es una visita. */
@@ -70,22 +71,31 @@ const activo = import.meta.env.PROD && etiquetas.length > 0;
                 }
                 window.gtag = gtag;
 
-                /* Modo de consentimiento. Sin respuesta guardada, todo
-                   denegado: Google puede contar la visita, pero no guarda
-                   nada en el navegador ni sabe quién es. Si ya se respondió,
-                   se aplica de entrada para que el primer envío salga bien
-                   sin esperar al aviso. `wait_for_update` es el margen que
-                   Google espera por si la respuesta llega enseguida. */
+                /* Modo de consentimiento, en dos capas. Sin respuesta
+                   guardada: concedido en general y DENEGADO en las regiones
+                   que exigen consentimiento previo (EEE, Reino Unido, Suiza;
+                   ver scripts/consentimiento.ts). Google aplica la más
+                   específica. Si ya se respondió, esa respuesta manda en
+                   todas partes y el primer envío sale bien sin esperar al
+                   aviso. `wait_for_update` es el margen que Google espera por
+                   si la respuesta llega enseguida. */
                 let respuesta = null;
                 try {
                     respuesta = localStorage.getItem(clave);
                 } catch (e) {
                     /* Sin almacenamiento se pregunta otra vez. */
                 }
-                const valor = respuesta === "concedido" ? "granted" : "denied";
-                const porDefecto = Object.assign({ wait_for_update: 500 }, fijas);
-                for (const senal of variables) porDefecto[senal] = valor;
-                gtag("consent", "default", porDefecto);
+                const senales = function (valor, extra) {
+                    const s = Object.assign({ wait_for_update: 500 }, fijas, extra || {});
+                    for (const senal of variables) s[senal] = valor;
+                    return s;
+                };
+                if (respuesta === "concedido" || respuesta === "denegado") {
+                    gtag("consent", "default", senales(respuesta === "concedido" ? "granted" : "denied"));
+                } else {
+                    gtag("consent", "default", senales("granted"));
+                    gtag("consent", "default", senales("denied", { region: regiones }));
+                }
 
                 gtag("js", new Date());
                 for (const etiqueta of etiquetas) {

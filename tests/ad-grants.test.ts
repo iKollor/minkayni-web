@@ -466,9 +466,13 @@ test("el consentimiento se declara antes de cargar la etiqueta", () => {
         assert.ok(consentimiento > -1, `${ruta}: no se declara el consentimiento`);
         assert.ok(consentimiento < configuracion, `${ruta}: se configura Analytics antes de declarar el consentimiento`);
         assert.ok(configuracion < etiqueta, `${ruta}: gtag.js se carga antes de declarar el consentimiento`);
-        /* Y de partida, denegado: solo se concede si hay una respuesta
-           guardada que lo diga. Lo contrario sería medir sin preguntar. */
-        assert.match(html, /granted"\s*:\s*"denied/, `${ruta}: el consentimiento no parte de denegado`);
+        /* Y de partida, denegado donde la ley exige permiso previo: el
+           default con `region` tiene que existir e incluir el EEE (España
+           sirve de testigo) y Reino Unido. Sin él, o se mide sin preguntar
+           en Europa, o —si se deniega para todo el mundo— Google ve un 0% de
+           consentimiento fuera de Europa y lo marca como problema crítico. */
+        assert.match(html, /"denied",\s*\{\s*region:\s*regiones\s*\}/, `${ruta}: no hay un consentimiento por región`);
+        assert.match(html, /const regiones = \[[^\]]*"ES"[^\]]*"GB"[^\]]*\]/, `${ruta}: la lista de regiones no incluye el EEE y Reino Unido`);
     }
 });
 
@@ -487,16 +491,16 @@ test("cada página lleva el aviso de cookies, oculto hasta que haga falta", () =
     }
 });
 
-test("el fondo de la portada trae la versión buena y la de rescate", () => {
-    /* El filtro `url(#bubble-goo)` es lo que hace que la portada se vea como
-       se ve, y también lo que arrastra a 7 cuadros por segundo a un equipo
-       flojo (Chrome lo rasteriza por CPU). Por eso conviven los dos caminos:
-       el bueno para quien puede y uno ligero para quien no, que elige una
-       sonda en tiempo de ejecución. Borrar cualquiera de los dos rompe una
-       cosa distinta —el aspecto o el rendimiento—, así que se fijan aquí. */
+test("el fondo de la portada trae el primer fotograma estático y el camino sin JavaScript", () => {
+    /* Con JavaScript, el fondo lo pinta el shader si hay GPU y, si no, se
+       queda el primer fotograma estático: el fondo animado en CSS costaba
+       tanto sin GPU (2,3 s de bloqueo en 3 s de reposo) que se retiró de ese
+       camino. Sin JavaScript sigue el CSS animado. Las tres piezas viven en
+       la misma hoja; se fijan aquí para que nadie borre una sin querer. */
     const html = leer(path.join(DIST, "index.html"));
-    assert.match(html, /url\(#bubble-goo\)/, "la portada perdió el filtro bueno");
-    assert.match(html, /data-bubble-lite/, "la portada perdió el fondo de rescate");
+    assert.match(html, /\.bubble-bg\[[^\]]*\]::?before/, "la portada perdió el primer fotograma estático");
+    assert.match(html, /data-bubble-static/, "la portada perdió el modo estático");
+    assert.match(html, /url\(#bubble-goo\)/, "la portada perdió el fondo en CSS para navegadores sin JavaScript");
 });
 
 test("«Cómo tratamos los datos» lleva a una sección que existe", () => {

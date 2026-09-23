@@ -324,13 +324,13 @@ export function iniciarFondoGL(raiz: HTMLElement, colores: ColoresFondo, interac
     };
 
     /* Si el navegador se queda sin contexto (demasiadas pestañas, GPU
-       reiniciada) se retira el lienzo y reaparecen las capas de CSS. */
+       reiniciada) se retira el lienzo y queda el fotograma estático. */
     const alPerderContexto = (e: Event) => {
         e.preventDefault();
         correr(false);
         ro.disconnect();
         delete raiz.dataset.gl;
-        raiz.dataset.cssFondo = "1";
+        raiz.dataset.bubbleStatic = "1";
         lienzo.remove();
     };
     lienzo.addEventListener("webglcontextlost", alPerderContexto);

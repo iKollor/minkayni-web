@@ -302,13 +302,21 @@ const ogUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefi
         <Analytics />
     </head>
     <body class="bg-background text-black">
+        {/* El aviso de cookies va al PRINCIPIO del cuerpo, no al final. Es
+            `position: fixed`, así que se ve igual; lo que cambia es cuándo se
+            pinta. Al final del documento se pintaba el último, cuando ya
+            estaba todo lo demás, y su texto es lo bastante grande como para
+            que Chrome lo tomara a veces por el LCP: un LCP tardío al que
+            PageSpeed sumaba todo lo pedido antes (fuentes, scripts, fotos del
+            carrusel), 6,3 s en una pasada. Aquí se pinta con el primer cuadro
+            y el LCP vuelve a ser la leyenda de la portada. Para un lector de
+            pantalla, además, un aviso que pide una decisión va antes del
+            contenido. */}
+        <CookieConsent />
         <slot />
         {/* @font-face de las fuentes propias, declaradas con el documento ya
             parseado (ver el componente). Va al final: en el <head> eran 7 KB
             de script delante de todo el contenido. */}
         <FontFaces />
-        {/* El aviso que decide si esa medición puede guardar algo. Al final
-            del cuerpo: es marcado, y nadie lo necesita antes de tiempo. */}
-        <CookieConsent />
     </body>
 </html>

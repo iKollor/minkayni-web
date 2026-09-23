@@ -10,11 +10,12 @@
    necesita JavaScript: unas treinta líneas frente a los ~364 KB que pesaban
    el runtime de React más `motion` sólo para este efecto decorativo.
 
-   Degradación, igual que en Hero.astro:
-   1. normal              → todas las capas animadas + goo
-   2. `data-low-power`    → sin animación ni filtro pesado (ver layouts/lib/head.astro)
-   3. `reduced-motion`    → estático
-   4. fuera de viewport   → animaciones en pausa (IntersectionObserver)
+   Quién pinta (ver el script):
+   1. con GPU             → el shader de bubble-gl.ts, con las mismas manchas
+   2. sin GPU, movimiento reducido o equipo lento → el primer fotograma
+                            estático (CSS, dos gradientes)
+   3. sin JavaScript      → estas capas en CSS, animadas + goo
+   4. fuera de viewport   → todo en pausa (IntersectionObserver)
 ─────────────────────────────────────────────────────────────────────────── */
 
 interface BubbleColors {
@@ -117,8 +118,7 @@ const styleVars = [
         transition: opacity 400ms ease-out;
     }
 
-    .bubble-bg[data-gl]::before,
-    .bubble-bg[data-css-fondo]::before {
+    .bubble-bg[data-gl]::before {
         opacity: 0;
     }
 
@@ -279,96 +279,39 @@ const styleVars = [
         display: none;
     }
 
-    /* ── El traspaso, sin que se vea ─────────────────────────────────────
+    /* ── Con JavaScript, las capas de CSS no se muestran nunca ──────────
 
-       Las capas de CSS se pintan con el primer cuadro; el shader no puede
-       montarse hasta que corre el script, un par de centésimas después. En
-       ese hueco se veía primero una versión del fondo y enseguida la otra:
-       un parpadeo feo justo al entrar.
+       Estas capas son el fondo animado en CSS, y su coste no está en el
+       hilo de JavaScript sino en el de pintado: con `filter` a pantalla
+       completa, cada cuadro de la animación obliga a rasterizar la capa
+       entera. Donde no hay GPU —las máquinas de PageSpeed, una máquina
+       virtual, un navegador con la aceleración apagada— eso son tareas de
+       200 ms una detrás de otra mientras el fondo esté a la vista. Medido:
+       12 tareas largas y 2,3 s de bloqueo en 3 s de reposo; la variante
+       «ligera» (solo blur) daba lo mismo. Y era la lotería de la nota: si
+       esas tareas caían dentro de la ventana que mide PageSpeed, 74; si no,
+       93, con el mismo código.
 
-       Así que con JavaScript las capas nacen invisibles. En cuanto se sabe
-       quién pinta —y se sabe en el mismo instante en que arranca el
-       componente— o se quedan retiradas (manda la GPU) o aparecen con un
-       fundido corto. El degradado de debajo se ve desde el primer cuadro en
-       los dos casos, así que no hay hueco vacío, solo un fondo que termina
-       de asentarse.
-
-       El seguro: si el script no llega a correr nunca —un error, un bloqueo—
-       la animación las revela igualmente a los 2,5 s. Nadie se queda sin
-       fondo por culpa de esta optimización. */
+       Así que con JavaScript el reparto es este: si hay GPU, pinta el shader
+       (bubble-gl.ts); si no, se queda el primer fotograma estático de arriba,
+       que no cuesta nada. Un equipo sin GPU tampoco podía mover este fondo a
+       más de 7 cuadros por segundo. Las capas nacen invisibles y el script
+       las retira del árbol en cuanto decide; si el script no llega a correr
+       (un error, un bloqueo), se revelan solas a los 2,5 s: nadie se queda
+       sin fondo. Sin JavaScript se ven desde el principio, como siempre. */
     :global(html[data-js]) .bubble-bg__layers {
         opacity: 0;
         animation: bubble-revelar 200ms linear 2500ms forwards;
     }
 
-    .bubble-bg[data-css-fondo] .bubble-bg__layers {
-        animation: none;
-        opacity: 1;
-        transition: opacity 180ms linear;
+    .bubble-bg[data-bubble-static] .bubble-bg__layers {
+        display: none;
     }
 
     @keyframes bubble-revelar {
         to {
             opacity: 1;
         }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-        .bubble-bg[data-css-fondo] .bubble-bg__layers {
-            transition: none;
-        }
-    }
-
-    /* ── Versión ligera, para cuando el equipo no da de sí ───────────────
-
-       Lo caro de este fondo no es el movimiento: es `url(#bubble-goo)`. Un
-       filtro SVG referenciado lo rasteriza Chrome por CPU, cuadro a cuadro y
-       a pantalla completa, y no hay GPU que lo salve. Medido con la CPU
-       frenada 6x: 7,3 cuadros por segundo con el filtro, 14,6 sin él. La
-       página entera se arrastra mientras la portada está a la vista.
-
-       Lo que aporta ese filtro al aspecto NO es desenfoque —eso lo pone el
-       `blur(40px)` de después— sino un umbral de alfa: la matriz de color
-       multiplica la opacidad por 18 y resta 8, o sea que todo lo que pasa de
-       0,44 se vuelve opaco y lo demás desaparece. Eso deja los manchones más
-       densos y saturados.
-
-       La versión ligera hornea ese umbral donde no cuesta nada: el núcleo de
-       cada gradiente nace ya opaco, y un `brightness()` —una operación de
-       color por píxel, de las que sí van por GPU— recupera la intensidad que
-       ponía la matriz. Comparado píxel a píxel contra el original, el error
-       medio es de 6 sobre 255 (un 2,4%) al doble de cuadros por segundo.
-
-       No la ve todo el mundo: solo el equipo que ha demostrado no poder con
-       la buena (ver el script). En un teléfono que sí puede, esto no existe
-       y el fondo es exactamente el de siempre. */
-    :global(html[data-bubble-lite]) .bubble-bg__layers {
-        filter: blur(40px) brightness(1.12);
-    }
-
-    :global(html[data-bubble-lite]) .bubble-bg__blob--second {
-        background: radial-gradient(circle at center, rgba(var(--second-color), 1) 0%, rgba(var(--second-color), 0) 50%);
-    }
-    :global(html[data-bubble-lite]) .bubble-bg__blob--third {
-        background: radial-gradient(circle at center, rgba(var(--third-color), 1) 0%, rgba(var(--third-color), 0) 50%);
-    }
-    :global(html[data-bubble-lite]) .bubble-bg__blob--fourth {
-        background: radial-gradient(circle at center, rgba(var(--fourth-color), 1) 0%, rgba(var(--fourth-color), 0) 50%);
-    }
-    :global(html[data-bubble-lite]) .bubble-bg__blob--fifth {
-        background: radial-gradient(circle at center, rgba(var(--fifth-color), 1) 0%, rgba(var(--fifth-color), 0) 50%);
-    }
-
-    /* Equipos lentos: se conservan los colores, se retira el coste. */
-    :global(html[data-low-power]) .bubble-bg__layers {
-        filter: blur(30px);
-    }
-    :global(html[data-low-power]) .bubble-bg__orbit,
-    :global(html[data-low-power]) .bubble-bg__blob--fourth,
-    :global(html[data-low-power]) .bubble-bg__blob-shape,
-    :global(html[data-low-power]) .bubble-bg__blob--pointer {
-        animation: none;
-        transition: none;
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -385,46 +328,23 @@ const styleVars = [
 <script>
     import { iniciarFondoGL, type ColoresFondo, type FondoGL } from "../../scripts/index/bubble-gl";
 
-    /* ── Quién se queda con el fondo bueno ────────────────────────────────
+    /* ── Quién pinta el fondo ─────────────────────────────────────────────
 
-       El filtro `url(#bubble-goo)` es caro de verdad (ver la hoja de estilos)
-       y no hay forma de saber de antemano si un equipo puede con él. La
-       detección que ya había —`data-low-power`, en head.astro— mira el número
-       de núcleos y la memoria, y con el listón en dos núcleos no la cumple
-       ningún teléfono de este siglo: en la práctica el fondo caro se lo comía
-       todo el mundo.
+       Si hay GPU, el shader (bubble-gl.ts). Si no —sin WebGL, WebGL por
+       software, movimiento reducido o equipo declarado lento— el primer
+       fotograma estático, y nada más: el fondo animado en CSS costaba tanto
+       sin GPU que se retiró del todo (ver la hoja de estilos).
 
-       Así que en vez de adivinar, se mide. Se cuentan los cuadros que el
-       navegador consigue dibujar durante medio segundo con el fondo ya en
-       marcha; si la mayoría llegan tarde, este equipo no puede, y se pasa a
-       la versión ligera. Es una cuenta de enteros dentro de un
-       `requestAnimationFrame` que ya iba a ocurrir: no añade trabajo.
-
-       Se degrada una sola vez y no se vuelve atrás. Un equipo que va bien
-       nunca entra aquí y ve exactamente el fondo de siempre; uno que no,
-       cambia una vez y se queda. Lo que no se hace es ir y venir: eso sí se
-       notaría.
-
-       El listón: la mayoría de los cuadros por encima de 34 ms, o sea el
-       equipo sostenidamente por debajo de unos 29 cuadros por segundo. No se
-       trata de perseguir los 60: un teléfono que va a 44 se ve perfectamente
-       y se queda con el fondo bueno. Se trata de rescatar al que va a 7, que
-       es lo que pasa hoy y lo que hace que la página entera se arrastre.
-
-       La sonda cuenta CUADROS, no milisegundos, y ahí está el detalle que se
-       escapa a la primera: en un equipo que va a 6 cuadros por segundo —justo
-       el que hay que detectar— medio segundo no da ni para tres muestras, y
-       una sonda por tiempo se quedaría sin datos precisamente donde hace
-       falta. Contando cuadros, cuanto peor va el equipo antes se decide, que
-       es lo que conviene. El tope de tiempo solo está para no dejar un
-       `requestAnimationFrame` colgado si la pestaña se va al fondo.
-
-       Y se mide CON LA PÁGINA YA ASENTADA, no durante la carga. Medida antes,
-       la sonda degradaba hasta un equipo capaz de 46 cuadros por segundo:
-       mientras se ejecutan los scripts todo va a trompicones, y lo que se
-       estaba midiendo era la carga, no el fondo. Esperar cuesta que los
-       primeros segundos sigan siendo caros en un teléfono flojo; a cambio,
-       a nadie que pueda con el fondo bueno se le quita. */
+       Y una red por debajo: no hay forma de saber desde el código si la GPU
+       de quien visita puede con el shader, así que con el shader ya puesto
+       se cuentan los cuadros que el navegador consigue dibujar, y si la
+       mayoría llegan tarde se retira y se queda el fotograma estático. Se
+       mide con la página asentada, no durante la carga —medida antes, la
+       sonda degradaba hasta equipos capaces de 46 cuadros por segundo—, y
+       cuenta cuadros, no milisegundos: en un equipo a 6 por segundo medio
+       segundo no da ni para tres muestras. El listón, la mayoría de los
+       cuadros por encima de 34 ms: no se persiguen los 60, se rescata al que
+       va a 7. Se decide una vez y no se vuelve atrás. */
     const MUESTRAS = 12;
     const MUESTRAS_MINIMAS = 4;
     const TOPE_MS = 3000;
@@ -453,18 +373,6 @@ const styleVars = [
             }
         };
         requestAnimationFrame(paso);
-    };
-
-    const medirYDegradar = () => {
-        const html = document.documentElement;
-        /* Si ya se decidió por otra vía (equipo lento declarado, o movimiento
-           reducido, que apaga las animaciones) no hay nada que medir. */
-        if (html.hasAttribute("data-bubble-lite") || html.hasAttribute("data-low-power")) return;
-        if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-        medirCuadros((suficiente) => {
-            if (!suficiente) html.setAttribute("data-bubble-lite", "");
-        });
     };
 
     /* La página «asentada»: cargada del todo y con un hueco de inactividad. El
@@ -510,48 +418,27 @@ const styleVars = [
         }
 
         /* Se decide aquí, en el mismo trabajo en que arranca el componente:
-           o pinta la GPU, o se revelan las capas de CSS. Nunca lo uno y
-           luego lo otro dentro del mismo cuadro. */
-        if (!fondoGL) root.dataset.cssFondo = "1";
+           o pinta la GPU, o se queda el fotograma estático. */
+        if (!fondoGL) root.dataset.bubbleStatic = "1";
 
-        /* Y una red por debajo de todo. No hay forma de saber desde el
-           código si la GPU de quien visita va a poder con el shader —el
-           nombre del pintor descarta el software, pero no dice nada de una
-           GPU vieja y lenta—. Así que se comprueba igual: si con el shader
-           puesto la página sigue arrastrándose, se retira y manda el camino
-           de CSS, sonda incluida. Peor que antes no se puede acabar. */
+        /* La red: con el shader puesto y la página asentada, se mide; si no
+           da cuadros suficientes, fuera el shader y a quedarse con el
+           fotograma estático. Peor que eso no se puede acabar. */
         if (fondoGL) {
             alAsentarse(() => {
                 medirCuadros((suficiente) => {
                     if (suficiente) return;
                     fondoGL?.destruir();
                     fondoGL = null;
-                    root.dataset.cssFondo = "1";
-                    medirYDegradar();
+                    root.dataset.bubbleStatic = "1";
                 });
             });
-        } else {
-            alAsentarse(medirYDegradar);
         }
 
-        /* Pausa las animaciones cuando el fondo sale de pantalla. */
-        let onVisibilityChange: ((visible: boolean) => void) | null = null;
-        const io = new IntersectionObserver(
-            (entries) => {
-                const visible = entries[0]?.isIntersecting ?? true;
-                if (visible) delete root.dataset.paused;
-                else root.dataset.paused = "";
-                fondoGL?.correr(visible);
-                onVisibilityChange?.(visible);
-            },
-            { rootMargin: "120px" }
-        );
-        io.observe(root);
-
+        /* El muelle del cursor solo pinta en el shader: sin él el fondo es
+           estático y no hay nada que mover. */
+        if (!fondoGL) return;
         const blob = root.querySelector<HTMLElement>("[data-pointer-blob]");
-        if (!blob && !fondoGL) return;
-        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-        if (document.documentElement.hasAttribute("data-low-power")) return;
 
         /* Tamaño del degradado. La deriva lo necesita en cada cuadro, y leerlo
            del DOM ahí obligaba al navegador a recalcular el diseño de TODA la
