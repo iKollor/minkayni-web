@@ -16,9 +16,15 @@ import { createRoot, type Root } from 'react-dom/client';
 import Counter, { type CounterTween } from './Counter';
 import { APPLE_BEZIER } from '../../scripts/easing';
 
-/* Cada columna rueda hasta su cifra con la curva estándar de Apple: arranca y
-   se posa con suavidad, y ninguna columna gira tan rápido que se emborrone. */
-const COUNT_TWEEN: CounterTween = { duration: 1.6, ease: APPLE_BEZIER, roll: 'digit' };
+/* El conteo pasa por todas las cifras (1, 2, 3… 300) con la curva estándar de
+   Apple: simétrica, así el arranque y la llegada se leen cifra a cifra y solo
+   el tramo central va deprisa. Las cifras grandes tienen más recorrido y
+   reciben más tiempo: 1,8 s hasta 10, unos 2,2 s en las centenas, 2,4 s en
+   los miles y nunca más de 3 s. */
+const countTween = (target: number): CounterTween => ({
+  duration: Math.min(3, 1.5 + 0.3 * Math.log10(Math.max(10, target))),
+  ease: APPLE_BEZIER,
+});
 
 const ROOTS = new WeakMap<Element, Root>();
 
@@ -58,7 +64,7 @@ function CountUp({ target, prefix, suffix, fontSize, lineHeight, separator }: { 
         /* El contenedor alinea por línea base: la del primer dígito (Counter.tsx
            le da una real) coincide así con la del texto que lo rodea. */
         containerStyle={{ display: 'inline-flex', alignItems: 'baseline' }}
-        tween={COUNT_TWEEN}
+        tween={countTween(target)}
       />
       {suffix}
     </>
