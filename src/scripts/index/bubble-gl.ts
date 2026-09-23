@@ -281,7 +281,11 @@ export function iniciarFondoGL(raiz: HTMLElement, colores: ColoresFondo, interac
         gl.viewport(0, 0, lienzo.width, lienzo.height);
         gl.uniform2f(uTam, w, h);
         gl.uniform1f(uEscala, lienzo.width / w);
-        dibujarYa = true;
+        /* Cambiar el tamaño del lienzo lo borra. Se repinta aquí mismo —el
+           ResizeObserver avisa antes de pintar el cuadro— y no en el
+           siguiente del bucle: si el bucle estaba parado (hero fuera de
+           pantalla) el fondo se quedaba en el gris de la base hasta volver. */
+        pintar(performance.now());
     };
     const ro = new ResizeObserver(medir);
 
@@ -335,10 +339,10 @@ export function iniciarFondoGL(raiz: HTMLElement, colores: ColoresFondo, interac
     };
     lienzo.addEventListener("webglcontextlost", alPerderContexto);
 
+    /* El primer cuadro (lo pinta `medir`) va ANTES de meter el lienzo en la
+       página: así nunca se ve un lienzo vacío entre el fondo de CSS y el del
+       shader. */
     medir();
-    /* El primer cuadro se pinta ANTES de meter el lienzo en la página: así
-       nunca se ve un lienzo vacío entre el fondo de CSS y el del shader. */
-    pintar(performance.now());
     raiz.insertBefore(lienzo, raiz.firstChild);
     raiz.dataset.gl = "1";
     /* Entra con un fundido corto sobre el degradado base, que es lo único

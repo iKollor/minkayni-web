@@ -150,14 +150,15 @@ const projectsCta = homepage
            `pt-[70svh]` y tres literales en el script), y cualquier cambio en uno
            dejaba el texto pegado al degradado o flotando lejos de él. */
         :root {
-            /* 56svh en móvil, 64 en escritorio. Estuvo a 70 en los dos, y el
-               párrafo donde la portada cuenta qué hace la fundación caía justo
-               al filo de la primera pantalla; en un teléfono no se leía una
-               línea. Google rechazó la solicitud de Ad Grants pidiendo, entre
-               otras cosas, que se vea contenido y una llamada a la acción sin
-               tener que buscarlos. Bajar el degradado sube el texto sin tocar
-               ni el logotipo ni la identidad de la portada. */
-            --hero-h: 56svh;
+            /* En móvil, una altura fija: con `svh`/`dvh` el navegador del
+               teléfono recalculaba el hero al recoger o sacar su barra durante
+               el scroll, el lienzo WebGL se redimensionaba (y se borraba) y el
+               fondo parpadeaba. 24rem es lo que medía el 56svh de antes en un
+               teléfono corriente, y deja el párrafo de la fundación dentro de
+               la primera pantalla —Google rechazó la solicitud de Ad Grants
+               pidiendo, entre otras cosas, que se vea contenido sin buscarlo—.
+               En escritorio no hay barra que se recoja: sigue en `svh`. */
+            --hero-h: 24rem;
             /* Separación entre el degradado y la leyenda. En móvil el texto va
                debajo y necesita aire; en escritorio va al costado y no. */
             --hero-gap: 2.5rem;
