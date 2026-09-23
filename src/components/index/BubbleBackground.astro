@@ -93,6 +93,35 @@ const styleVars = [
         background-image: linear-gradient(to bottom right, oklch(0.38 0.19 294), oklch(0.38 0.14 259));
     }
 
+    /* ── Primer fotograma ────────────────────────────────────────────────
+
+       El fondo animado no existe hasta que corre su script: o el shader, o
+       las capas de CSS que se revelan entonces. Hasta ese momento solo se veía
+       el degradado liso, y de golpe aparecían las manchas: un cambio grande en
+       casi la mitad de la pantalla de un móvil, justo cuando PageSpeed mide
+       cuánto tarda la página en asentarse (Speed Index).
+
+       Esto es el cartel de ese vídeo: el reparto de color que tienen las
+       manchas en el segundo cero —todas nacen centradas, así que es un
+       resplandor celeste y azul en el medio que se abre a violeta—, pintado
+       con dos gradientes que no cuestan nada. Cuando el fondo real toma el
+       relevo, se funde fuera; como se parecen, el paso apenas se nota. */
+    .bubble-bg::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+            radial-gradient(38% 34% at 50% 52%, rgba(120, 200, 250, 0.7) 0%, rgba(63, 169, 245, 0.4) 45%, rgba(63, 169, 245, 0) 100%),
+            radial-gradient(75% 70% at 48% 50%, rgba(40, 120, 250, 0.55) 0%, rgba(90, 110, 250, 0.35) 45%, rgba(140, 100, 255, 0) 100%);
+        transition: opacity 400ms ease-out;
+    }
+
+    .bubble-bg[data-gl]::before,
+    .bubble-bg[data-css-fondo]::before {
+        opacity: 0;
+    }
+
     .bubble-bg__layers {
         position: absolute;
         inset: 0;
