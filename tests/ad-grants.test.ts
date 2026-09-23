@@ -429,27 +429,27 @@ test("cada página lleva la etiqueta de medición que Ad Grants exige", () => {
        que no puede demostrar qué hace la gente al llegar acaba suspendida. */
     for (const archivo of paginasReales()) {
         const html = leer(archivo);
-        assert.match(html, /googletagmanager\.com\/gtag\/js\?id=G-/, `${rutaDe(archivo)}: sin etiqueta de Analytics`);
+        const ruta = rutaDe(archivo);
+        assert.match(html, /googletagmanager\.com\/gtag\/js\?id=/, `${ruta}: sin cargador de Analytics`);
+        assert.match(html, /"G-[A-Z0-9]+"/, `${ruta}: sin identificador de Analytics`);
     }
 });
 
-test("la etiqueta va en el <head> y se descarga en prioridad baja", () => {
-    /* En el <head> porque el comprobador de Google la busca ahí: estuvo al
-       final del <body> —mejor para el rendimiento— y Google daba la propiedad
-       por no instalada. Una medición que Google no puede verificar no activa
-       Ad Grants, que es para lo que está.
-
-       Y en prioridad baja porque en el <head> un script async se descargaría
-       por delante de lo que pinta la página: son ~90 KB de un tercero y nada
-       de la página depende de ellos. */
+test("gtag.js se pide después del pintado, no como etiqueta fija", () => {
+    /* Son ~177 KB y en el modelo de PageSpeed todo lo que se pide antes del
+       primer pintado y del LCP cuenta contra los dos. Se pide con `trasLcp`
+       (o al primer toque); la configuración sí va en el <head> desde el
+       principio, y queda en dataLayer hasta que el script llega. */
     for (const archivo of paginasReales()) {
         const html = leer(archivo);
         const ruta = rutaDe(archivo);
+        assert.doesNotMatch(html, /<script[^>]*\bsrc="https:\/\/www\.googletagmanager\.com\/gtag\/js/, `${ruta}: gtag.js vuelve a ser una etiqueta fija`);
         const finHead = html.indexOf("</head>");
-        const etiqueta = html.indexOf("googletagmanager.com/gtag/js");
-        assert.ok(finHead > -1 && etiqueta > -1 && etiqueta < finHead, `${ruta}: la etiqueta no está en el <head>`);
-        assert.ok(html.indexOf('"consent", "default"') < etiqueta, `${ruta}: gtag.js se carga antes de declarar el consentimiento`);
-        assert.match(html.slice(etiqueta - 200, etiqueta), /fetchpriority="low"/, `${ruta}: la etiqueta se descarga en prioridad alta`);
+        const ayudante = html.indexOf("window.trasLcp =");
+        const cargador = html.indexOf("googletagmanager.com/gtag/js");
+        assert.ok(ayudante > -1 && ayudante < finHead, `${ruta}: falta trasLcp en el <head>`);
+        assert.ok(cargador > -1 && cargador < finHead, `${ruta}: la configuración de Analytics no está en el <head>`);
+        assert.ok(ayudante < cargador, `${ruta}: Analytics usa trasLcp antes de que exista`);
     }
 });
 

@@ -68,68 +68,10 @@ const css = hojas
             document.head.appendChild(hoja);
             listo();
         };
-        /* Cuándo: después de que Chrome haya ANOTADO el LCP del cuadro que ya
-           lleva la página entera, no antes.
-
-           La historia: con el HTML aún llegando, el primer cuadro solo tenía
-           el hero, y la leyenda se pintaba después con la fuente pendiente,
-           que Chrome no cuenta como LCP hasta que la fuente entra (PageSpeed:
-           LCP 4,5 s). Se pasó a declararlas «un cuadro después de parsear el
-           documento» (requestAnimationFrame + setTimeout), y eso caía justo
-           en el filo: el LCP se anota con la hora en que el cuadro llega a la
-           pantalla, que puede ser unos milisegundos DESPUÉS de ese setTimeout.
-           En una pasada de PageSpeed las fuentes salieron a los 1475 ms y el
-           LCP se anotó a los 1480; el modelo de PageSpeed suma al LCP todo lo
-           que se pidió antes, así que cargó con los ~250 KB de fuentes y el
-           LCP saltó de 2,0 a 5,3 s. Una carrera que unas veces se ganaba y
-           otras no.
-
-           Ahora no se adivina: con el documento parseado, se espera a que el
-           PerformanceObserver entregue una entrada de LCP de ese cuadro o de
-           uno posterior (Chrome las entrega con la hora de presentación ya
-           conocida). Si en dos cuadros no llega ninguna nueva es que el
-           elemento más grande ya se había pintado antes, y el LCP está
-           cerrado: se puede declarar. Donde no hay LCP (Safari, Firefox),
-           como antes: un cuadro después. Y el plazo de seguridad por si la
-           pestaña está oculta y no hay cuadros. */
-        var tipos = (window.PerformanceObserver && PerformanceObserver.supportedEntryTypes) || [];
-        var conLcp = tipos.indexOf("largest-contentful-paint") !== -1;
-        var arrancar = function () {
-            if (!conLcp) {
-                requestAnimationFrame(function () {
-                    setTimeout(declarar, 0);
-                });
-                return;
-            }
-            requestAnimationFrame(function (desde) {
-                var obs = new PerformanceObserver(function (lista) {
-                    var entradas = lista.getEntries();
-                    for (var i = 0; i < entradas.length; i++) {
-                        if (entradas[i].startTime >= desde - 1) {
-                            obs.disconnect();
-                            setTimeout(declarar, 0);
-                            return;
-                        }
-                    }
-                });
-                obs.observe({ type: "largest-contentful-paint", buffered: true });
-                requestAnimationFrame(function () {
-                    requestAnimationFrame(function () {
-                        setTimeout(function () {
-                            obs.disconnect();
-                            declarar();
-                        }, 50);
-                    });
-                });
-            });
-        };
-        if (document.readyState !== "loading") {
-            arrancar();
-        } else {
-            document.addEventListener("readystatechange", function () {
-                if (document.readyState !== "loading") arrancar();
-            });
-        }
+        /* Cuándo: después de que Chrome haya anotado el LCP (ver `trasLcp` en
+           layouts/lib/head.astro). El primer pintado sale con las caras
+           locales de respaldo, que llevan las métricas de las propias. */
+        (window.trasLcp || function (fn) { fn(); })(declarar);
         setTimeout(declarar, 2500);
     });
 </script>

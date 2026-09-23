@@ -21,11 +21,13 @@
  * poder marcarlos como conversión en el panel de Google Ads sin volver a tocar
  * el código.
  *
- * Dónde va: en el <head>, y lo último de él. El sitio lo tuvo al final del
- * <body>, que rinde mejor, pero el comprobador de Google no encontraba la
- * etiqueta ahí y daba la propiedad por no instalada; sus instrucciones piden
- * el <head>. Ad Grants necesita una medición que Google pueda verificar, así
- * que manda el <head> y el coste se compensa con `fetchpriority="low"`.
+ * Dónde va: la configuración, en el <head>, para que esté lista desde el
+ * principio. El script de Google (gtag.js), después de que la página se
+ * haya pintado (ver `trasLcp` en layouts/lib/head.astro) o al primer toque,
+ * lo que llegue antes. Estuvo como etiqueta fija en el <head> para que la
+ * detectara el botón «Probar» de Google; no se usa, y la etiqueta fija
+ * costaba puntos en PageSpeed móvil por pedirse antes del primer pintado.
+ * La dirección con el identificador sigue escrita en el HTML.
  *
  * Privacidad: nada se guarda en el navegador de quien visita hasta que
  * responda al aviso (components/CookieConsent.astro). Aquí se declaran las
@@ -115,19 +117,33 @@ const activo = import.meta.env.PROD && etiquetas.length > 0;
                     },
                     { passive: true },
                 );
+
+                /* gtag.js se pide cuando la página ya está pintada, no antes.
+                   Son ~177 KB, el archivo más pesado de la portada, y en el
+                   modelo de PageSpeed todo lo que se pide antes del primer
+                   pintado y del LCP cuenta contra los dos. Lo de arriba
+                   (consentimiento, config, eventos) no espera: queda en
+                   `dataLayer` y gtag.js lo envía en cuanto llega, así que la
+                   visita no se pierde.
+
+                   Si alguien toca o teclea antes, se pide en ese momento: un
+                   clic temprano en «Aporta» o en WhatsApp es justo la
+                   conversión que no hay que perder. */
+                var cargado = false;
+                var cargar = function () {
+                    if (cargado) return;
+                    cargado = true;
+                    var s = document.createElement("script");
+                    s.async = true;
+                    s.src = "https://www.googletagmanager.com/gtag/js?id=" + etiquetas[0];
+                    document.head.appendChild(s);
+                };
+                ["pointerdown", "keydown", "touchstart"].forEach(function (tipo) {
+                    addEventListener(tipo, cargar, { once: true, passive: true, capture: true });
+                });
+                (window.trasLcp || function (fn) { fn(); })(cargar);
                 }
             </script>
-            {/* `fetchpriority="low"`: el componente vive en el <head>, donde el
-                comprobador de Google busca la etiqueta, y ahí un script async
-                se descarga con prioridad alta por estar tan arriba. Bajándola,
-                el navegador atiende primero lo que pinta la página y deja los
-                ~90 KB de gtag.js para después. `async` ya impedía que
-                bloqueara el parseo; esto evita además que compita por el ancho
-                de banda con el LCP.
-
-                Sin `preconnect`: adelantar el saludo a un tercero antes de
-                pintar es justo lo que se está evitando. */}
-            <script is:inline async fetchpriority="low" src={`https://www.googletagmanager.com/gtag/js?id=${etiquetas[0]}`} />
         </>
     )
 }

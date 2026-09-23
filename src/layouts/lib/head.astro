@@ -222,19 +222,83 @@ const ogUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefi
                 if (sessionStorage.getItem("pixel-curtain") === "1") document.documentElement.dataset.curtain = "covered";
             } catch (e) {}
         </script>
-        {/* Medición para Ad Grants. Va en el <head>, y lo último de él.
+        {/* `trasLcp(fn)`: ejecuta fn cuando Chrome ya ha anotado el LCP del
+            cuadro que lleva la página entera. Lo usan las fuentes
+            (FontFaces.astro) y Google Analytics (Analytics.astro): las dos
+            cosas pesan, ninguna hace falta para ver la página, y el modelo de
+            PageSpeed suma al LCP todo lo que se pida antes de que se anote.
 
-            Estuvo al final del <body>, que es mejor para el rendimiento, y
-            hubo que traerla: el comprobador de Google —el botón «Probar» de
-            las instrucciones de instalación— no encontraba la etiqueta y daba
-            la propiedad por no instalada. Sus instrucciones piden ponerla
-            «justo después del elemento <head>», y al final de un documento de
-            300 KB no la veía. Medir sin que Google pueda verificarlo no sirve
-            para activar Ad Grants, que es para lo que está.
+            Declararlas «un cuadro después de parsear el documento» no
+            bastaba: el LCP se anota con la hora en que el cuadro llega a la
+            pantalla, que puede caer unos milisegundos después. En una pasada
+            las fuentes salieron a los 1475 ms, el LCP se anotó a los 1480, y
+            PageSpeed cargó el LCP con ~250 KB (2,0 → 5,3 s).
 
-            El coste se paga con `fetchpriority="low"` en el propio script (ver
-            el componente): sigue estando donde Google mira, pero el navegador
-            lo descarga detrás de lo que pinta la página. */}
+            Así que se espera a que el PerformanceObserver entregue una entrada
+            de LCP de ese cuadro o de uno posterior; si en dos cuadros no llega
+            ninguna, el elemento más grande ya estaba pintado y el LCP está
+            cerrado. Sin LCP (Safari, Firefox): un cuadro después. Y un plazo
+            de seguridad por si la pestaña está oculta y no hay cuadros. */}
+        <script is:inline>
+            window.trasLcp = (function () {
+                var cola = [];
+                var hecho = false;
+                var arrancado = false;
+                var ejecutar = function () {
+                    if (hecho) return;
+                    hecho = true;
+                    for (var i = 0; i < cola.length; i++) {
+                        try {
+                            cola[i]();
+                        } catch (e) {}
+                    }
+                    cola = [];
+                };
+                var tipos = (window.PerformanceObserver && PerformanceObserver.supportedEntryTypes) || [];
+                var conLcp = tipos.indexOf("largest-contentful-paint") !== -1;
+                var arrancar = function () {
+                    if (arrancado) return;
+                    arrancado = true;
+                    if (!conLcp) {
+                        requestAnimationFrame(function () {
+                            setTimeout(ejecutar, 0);
+                        });
+                        return;
+                    }
+                    requestAnimationFrame(function (desde) {
+                        var obs = new PerformanceObserver(function (lista) {
+                            var entradas = lista.getEntries();
+                            for (var i = 0; i < entradas.length; i++) {
+                                if (entradas[i].startTime >= desde - 1) {
+                                    obs.disconnect();
+                                    setTimeout(ejecutar, 0);
+                                    return;
+                                }
+                            }
+                        });
+                        obs.observe({ type: "largest-contentful-paint", buffered: true });
+                        requestAnimationFrame(function () {
+                            requestAnimationFrame(function () {
+                                setTimeout(function () {
+                                    obs.disconnect();
+                                    ejecutar();
+                                }, 50);
+                            });
+                        });
+                    });
+                };
+                if (document.readyState !== "loading") arrancar();
+                else
+                    document.addEventListener("readystatechange", function () {
+                        if (document.readyState !== "loading") arrancar();
+                    });
+                setTimeout(ejecutar, 3000);
+                return function (fn) {
+                    if (hecho) setTimeout(fn, 0);
+                    else cola.push(fn);
+                };
+            })();
+        </script>
         <Analytics />
     </head>
     <body class="bg-background text-black">
