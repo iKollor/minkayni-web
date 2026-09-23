@@ -117,6 +117,16 @@ export default defineConfig({
         /* `fetchpriority="low"` en los scripts de módulo de cada página.
            Ver src/integrations/modulepreload.ts. */
         modulepreload(),
+        /* `client:lcp`: islas que hidratan con el LCP ya anotado. Ver
+           src/directives/lcp.ts. */
+        {
+            name: "minkayni:client-lcp",
+            hooks: {
+                "astro:config:setup": ({ addClientDirective }) => {
+                    addClientDirective({ name: "lcp", entrypoint: "./src/directives/lcp.ts" });
+                },
+            },
+        },
     ],
     build: {
         /* Todo el CSS va dentro del HTML. Eran dos hojas externas que bloqueaban

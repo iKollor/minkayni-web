@@ -42,12 +42,14 @@ const homeHref = localizePath("/", locale);
                         <IsotipoIcon class="h-10 mr-10" />
                     </a>
                     {/* Megamenú de escritorio (Aceternity navbar-menu): enlaces,
-                        desplegable de proyectos y selector de idioma. Hidratan en
-                        idle: salen ya visibles del servidor y lo único que aporta
-                        la hidratación es el desplegable al pasar el cursor. En
+                        desplegable de proyectos y selector de idioma. Hidratan con
+                        el LCP ya anotado (`client:lcp`, ver src/directives/lcp.ts):
+                        salen ya visibles del servidor y lo único que aporta la
+                        hidratación es el desplegable al pasar el cursor. En
                         `client:load` su React más motion (120 KB) corría en la
-                        misma tanda que el resto y PageSpeed lo cargaba al TBT. */}
-                    <NavMenu client:idle items={barItems} projectsHref={menu.projectsHref} projects={menu.projects} languages={menu.languages} labels={menu.labels} intro={intro} />
+                        misma tanda que el resto y PageSpeed lo cargaba al TBT; en
+                        idle se pedía antes del LCP y lo sumaba al LCP. */}
+                    <NavMenu client:lcp items={barItems} projectsHref={menu.projectsHref} projects={menu.projects} languages={menu.languages} labels={menu.labels} intro={intro} />
                     <Reloj locale={locale} />
                     <div class="nav-cta flex items-center">
                         {
@@ -70,7 +72,7 @@ const homeHref = localizePath("/", locale);
                         `site-menu:toggle` y el panel confirma con `menu:state`,
                         que BurgerIcon ya escuchaba para girar su icono. */}
                     <div class="flex items-center gap-4 sm:gap-6">
-                        <LangMenu client:idle languages={menu.languages} labels={menu.labels} />
+                        <LangMenu client:lcp languages={menu.languages} labels={menu.labels} />
                         {/* La hamburguesa se dibuja a la mitad de su tamaño
                             (`scale-50 origin-right`) sobre una caja de 100px y
                             arrastra 50px de espacio muerto a su izquierda; el

@@ -41,13 +41,11 @@ const { title, description, noindex, image, imageAlt, showHero = true, buttonCla
     <SiteGrain />
 
     <Navbar buttons={navHeader} buttonClassName={buttonClassName} enableTheming={enableNavTheming} locale={locale} menu={menu} />
-    {/* Los contadores hidratan en idle: entran con el scroll o al final de la
-        cascada de la leyenda, que ya espera a las fuentes. El panel del menú
-        y la cortina también (ver MainLayout.astro): el módulo del menú, con
-        React, se pedía con prioridad alta antes del LCP. */}
+    {/* Las tres islas hidratan con el LCP ya anotado (`client:lcp`, ver
+        MainLayout.astro y src/directives/lcp.ts). */}
     <SiteScrollbar locale={locale} />
-    <PixelCurtain client:idle />
-    <CounterMount client:idle />
+    <PixelCurtain client:lcp />
+    <CounterMount client:lcp />
 
     <div id="smooth-wrapper" class="overflow-x-hidden">
         <div id="smooth-content" class="flex flex-col min-h-svh">
@@ -64,7 +62,7 @@ const { title, description, noindex, image, imageAlt, showHero = true, buttonCla
         leyenda de la portada (el LCP móvil) en cada visita. Es `fixed` y sale
         cerrado e `inert`, así que su sitio en el DOM no cambia nada visible;
         la hamburguesa lo referencia por id (`aria-controls`). */}
-    <SiteMenu client:idle {...menu} />
+    <SiteMenu client:lcp {...menu} />
     <script src="/src/scripts/main.ts"></script>
 
     <script>

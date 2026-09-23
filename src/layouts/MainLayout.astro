@@ -51,19 +51,18 @@ const intro = import.meta.env.PUBLIC_HOME_INTRO === "on";
 <Head title={title} description={description} image={image} imageAlt={imageAlt} intro={intro}>
     <SiteGrain />
     <Navbar buttons={navHeader} locale={locale} menu={menu} intro={intro} />
-    {/* Los contadores hidratan en idle: entran con el scroll o al final de la
-        cascada de la leyenda, que ya espera a las fuentes. El panel del menú
-        también: en `client:load` su módulo (React incluido, 75 KB) se pedía
-        con prioridad alta antes del LCP y PageSpeed lo sumaba al LCP; en
-        idle se pide en el primer hueco del hilo, bastante antes de que
-        alguien llegue a tocar la hamburguesa. La cortina va en idle: solo actúa al llegar desde otra
-        página del sitio (la tapa un script en línea antes del primer pintado y
-        la isla, al hidratar, la retira), y en una visita nueva —la que mide
-        PageSpeed— hidratarla con el resto solo añadía trabajo antes de que la
-        página respondiera. */}
+    {/* Las tres islas hidratan con el LCP ya anotado (`client:lcp`, ver
+        src/directives/lcp.ts): en `client:load` o `client:idle` el runtime
+        de React (75 KB) se pedía antes del LCP y PageSpeed lo sumaba al LCP.
+        Los contadores entran con el scroll o al final de la cascada de la
+        leyenda, que ya espera a las fuentes (también tras el LCP); el panel
+        del menú llega bastante antes de que alguien toque la hamburguesa; y
+        la cortina solo actúa al llegar desde otra página del sitio (la tapa
+        un script en línea antes del primer pintado y la isla, al hidratar,
+        la retira): en ese caso la directiva hidrata sin esperar. */}
     <SiteScrollbar locale={locale} />
-    <PixelCurtain client:idle />
-    <CounterMount client:idle />
+    <PixelCurtain client:lcp />
+    <CounterMount client:lcp />
     <PageNavigation items={pageNavItems} locale={locale} />
 
     <div id="smooth-wrapper" class="overflow-hidden">
@@ -77,7 +76,7 @@ const intro = import.meta.env.PUBLIC_HOME_INTRO === "on";
         leyenda de la portada (el LCP móvil) en cada visita. Es `fixed` y sale
         cerrado e `inert`, así que su sitio en el DOM no cambia nada visible;
         la hamburguesa lo referencia por id (`aria-controls`). */}
-    <SiteMenu client:idle {...menu} />
+    <SiteMenu client:lcp {...menu} />
     <script src="/src/scripts/main.ts"></script>
 </Head>
 

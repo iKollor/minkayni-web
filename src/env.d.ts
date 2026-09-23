@@ -36,3 +36,10 @@ declare global {
 }
 
 export {};
+
+/* Directiva propia `client:lcp` (src/directives/lcp.ts). */
+declare module "astro" {
+    interface AstroClientDirectives {
+        "client:lcp"?: boolean;
+    }
+}
