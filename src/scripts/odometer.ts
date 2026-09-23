@@ -2,12 +2,11 @@
    Odómetro con GSAP, a partir del plugin Odometer de countUp.js
    (github.com/msoler75/odometer_countup.js, MIT).
 
-   El movimiento es el del plugin: el valor sigue la curva de countUp
+   El movimiento parte del plugin: el valor sigue la curva de countUp
    (odometer-curve.ts) y, en cada cuadro en que una rueda recibe un carácter
-   distinto, lo apila y persigue la posición nueva con una transición
-   `ease-out` que se reinicia desde donde esté (un tween con overwrite). La rueda va
-   siempre un poco por detrás del valor y se posa deslizándose: de ahí la
-   suavidad.
+   distinto, lo apila y persigue la posición nueva con un tween que se
+   reinicia desde donde esté. Aquí ese tween sigue un resorte físico
+   (Springer) y las cifras se desvanecen y desenfocan mientras giran.
 
    Lo que cambia frente al plugin:
    - Cada rueda es una posición fija (unidades, decenas, el «.» de los
@@ -18,17 +17,38 @@
      desde 0 mientras entra.
    - Solo se pintan los dos caracteres visibles de cada rueda (el plugin
      apilaba un <span> por cambio).
-   - Persecución de 1,5 s y sin la espera del último dígito: con las dos del
-     plugin (2,3 s + 2,3 s) el final se alargaba hasta casi 8 s.
-   - Si se pide, al terminar sigue sumando de uno en uno (`liveEverySeconds`),
-     cada paso con un giro corto (LIVE_ROLL_SECONDS).
+   - Sin la espera del último dígito ni la transición de 2,3 s del plugin,
+     que alargaban el final hasta casi 8 s.
+   - Si se pide, al terminar sigue sumando de uno en uno (`liveEverySeconds`).
 ─────────────────────────────────────────────────────────────────────────── */
+import * as springerModule from "springer";
 import { gsap } from "./main";
-import { apple, cubicBezier } from "./easing";
+import { apple } from "./easing";
 import { countUpValue } from "./odometer-curve";
 
-/** `ease-out` de CSS, la de las transiciones del plugin. */
-const ROLL_EASE = cubicBezier([0, 0, 0.58, 1]);
+/* Springer se publica como CommonJS con `exports.default`, y según el
+   empaquetador la función llega como el módulo, su `default` o el `default`
+   de su `default` (Rolldown lo envuelve una vez más). */
+type SpringerFn = typeof import("springer").default;
+function resolveSpringer(mod: unknown): SpringerFn {
+    let candidate = mod;
+    for (let depth = 0; depth < 3 && typeof candidate !== "function"; depth++) {
+        candidate = (candidate as { default?: unknown } | null)?.default;
+    }
+    if (typeof candidate !== "function") throw new Error("springer: no se encontró la función exportada");
+    return candidate as SpringerFn;
+}
+
+/* Resorte físico de Springer (tension 0,5, wobble 0,5): llega al 90 % en el
+   primer quinto del tiempo, se pasa un 2,5 % y se asienta hacia la mitad de
+   la duración. Cada cambio reinicia el tween desde donde esté la rueda, así
+   que en el conteo rápido persigue la pila y el resorte se ve al posarse.
+   Springer devuelve su primer paso simulado en t = 0; se fija a 0 para que
+   el tween no arranque con un salto. */
+const spring = resolveSpringer(springerModule)(0.5, 0.5);
+const SPRING = (t: number) => (t <= 0 ? 0 : spring(t));
+/** Desenfoque máximo de la cifra a mitad de giro. */
+const BLUR_EM = 0.0816;
 
 /* Un carácter de la rueda; `null` es el hueco de una rueda que aún no ha
    entrado (ancho 0). */
@@ -55,8 +75,6 @@ class Wheel {
     private readonly slots = [document.createElement("span"), document.createElement("span")];
     private readonly stack: Glyph[];
     private readonly state = { p: 0 };
-    /** Fundido cruzado entre la cifra que sale y la que entra (pasos en vivo). */
-    private fade = false;
 
     constructor(
         initial: Glyph,
@@ -78,11 +96,10 @@ class Wheel {
 
     /* Persigue la posición nueva desde donde esté: un tween que se reinicia
        en cada cambio, como la transición CSS del plugin. */
-    set(glyph: Glyph, seconds: number, ease: gsap.EaseFunction = ROLL_EASE, fade = false): void {
+    set(glyph: Glyph, seconds: number): void {
         if (glyph === this.stack[this.stack.length - 1]) return;
         this.stack.push(glyph);
-        this.fade = fade;
-        gsap.to(this.state, { p: this.stack.length - 1, duration: seconds, ease, overwrite: true, onUpdate: () => this.draw() });
+        gsap.to(this.state, { p: this.stack.length - 1, duration: seconds, ease: SPRING, overwrite: true, onUpdate: () => this.draw() });
     }
 
     private width(glyph: Glyph | undefined): number {
@@ -98,10 +115,23 @@ class Wheel {
         this.slots[1].textContent = to ?? "";
         this.slots[0].style.transform = `translateY(${-f}em)`;
         this.slots[1].style.transform = `translateY(${1 - f}em)`;
-        this.slots[0].style.opacity = this.fade ? String(1 - f) : "";
-        this.slots[1].style.opacity = this.fade ? String(f) : "";
+        /* La que sale se desvanece y se desenfoca; la que entra, al revés. En
+           los giros rápidos se lee como desenfoque de movimiento. */
+        this.fadeBlur(this.slots[0], 1 - f);
+        this.fadeBlur(this.slots[1], f);
+        /* Pasado el último carácter (el resorte se pasa un poco) no hay
+           siguiente: se mantiene el ancho del que se ve. */
         const w0 = this.width(from);
-        this.el.style.width = `${w0 + (this.width(to) - w0) * f}px`;
+        this.el.style.width = `${to === undefined ? w0 : w0 + (this.width(to) - w0) * f}px`;
+    }
+
+    /* Opacidad y desenfoque siguen la curva simétrica de Apple, no el giro en
+       lineal: la cifra sigue nítida al arrancar, se emborrona sobre todo a
+       mitad del giro y se enfoca con suavidad al posarse. */
+    private fadeBlur(slot: HTMLElement, visibility: number): void {
+        const v = apple(Math.max(0, Math.min(1, visibility)));
+        slot.style.opacity = v === 1 ? "" : v.toFixed(3);
+        slot.style.filter = v === 1 ? "" : `blur(${((1 - v) * BLUR_EM).toFixed(4)}em)`;
     }
 }
 
@@ -115,10 +145,9 @@ export type OdometerOptions = {
     liveEverySeconds?: number;
 };
 
-/** Giro de cada +1 del modo en vivo: un solo paso, no la persecución del
-    conteo. Curva simétrica de Apple y fundido cruzado: entra y se posa suave,
-    sin el golpe seco de un ease-out corto. */
-const LIVE_ROLL_SECONDS = 0.7;
+/** Giro de cada +1 del modo en vivo. Con el resorte, la cifra se posa hacia
+    la mitad: ~0,5 s. */
+const LIVE_ROLL_SECONDS = 1.0;
 
 class Odometer {
     private readonly row = document.createElement("span");
@@ -156,10 +185,10 @@ class Odometer {
     }
 
     increment(): void {
-        this.show(this.value + 1, LIVE_ROLL_SECONDS, apple, true);
+        this.show(this.value + 1, LIVE_ROLL_SECONDS);
     }
 
-    private show(value: number, rollSeconds: number, ease?: gsap.EaseFunction, fade = false): void {
+    private show(value: number, rollSeconds: number): void {
         if (value === this.value) return;
         this.value = value;
         const text = group(value, this.separator);
@@ -171,12 +200,12 @@ class Odometer {
             this.row.prepend(wheel.el);
         }
         const offset = this.wheels.length - text.length;
-        this.wheels.forEach((wheel, i) => wheel.set(text[i - offset] ?? null, rollSeconds, ease, fade));
+        this.wheels.forEach((wheel, i) => wheel.set(text[i - offset] ?? null, rollSeconds));
     }
 }
 
 /** Odómetro en `host` que cuenta de 0 a `end` y, si se pide, sigue sumando. */
-export function startOdometer(host: HTMLElement, end: number, { separator, countSeconds = 3, rollSeconds = 1.5, liveEverySeconds }: OdometerOptions): void {
+export function startOdometer(host: HTMLElement, end: number, { separator, countSeconds = 3, rollSeconds = 1.6, liveEverySeconds }: OdometerOptions): void {
     const odometer = new Odometer(host, separator, rollSeconds);
     void odometer.count(end, countSeconds).then(() => {
         if (liveEverySeconds) keepCounting(host, odometer, liveEverySeconds);
