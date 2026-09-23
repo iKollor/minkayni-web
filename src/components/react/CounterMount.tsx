@@ -14,9 +14,11 @@
 import { useEffect, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import Counter, { type CounterTween } from './Counter';
-import { APPLE_OUT_BEZIER } from '../../scripts/easing';
+import { APPLE_BEZIER } from '../../scripts/easing';
 
-const COUNT_TWEEN: CounterTween = { duration: 1.8, ease: APPLE_OUT_BEZIER };
+/* Cada columna rueda hasta su cifra con la curva estándar de Apple: arranca y
+   se posa con suavidad, y ninguna columna gira tan rápido que se emborrone. */
+const COUNT_TWEEN: CounterTween = { duration: 1.6, ease: APPLE_BEZIER, roll: 'digit' };
 
 const ROOTS = new WeakMap<Element, Root>();
 
@@ -56,8 +58,6 @@ function CountUp({ target, prefix, suffix, fontSize, lineHeight, separator }: { 
         /* El contenedor alinea por línea base: la del primer dígito (Counter.tsx
            le da una real) coincide así con la del texto que lo rodea. */
         containerStyle={{ display: 'inline-flex', alignItems: 'baseline' }}
-        /* Con duración explícita se ve rodar cada columna; la curva de entrada
-           de Apple arranca con velocidad y posa la cifra sin frenazo. */
         tween={COUNT_TWEEN}
       />
       {suffix}

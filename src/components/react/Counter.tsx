@@ -32,6 +32,14 @@ type PlaceValue = number | string;
 export interface CounterTween {
   duration: number;
   ease?: readonly [number, number, number, number];
+  /**
+   * `value` (por defecto): cada columna recorre el número entero, como un
+   * contador que pasa por todas las cifras intermedias (un cambio de año).
+   * `digit`: cada columna rueda solo hasta su cifra final. Para contar desde
+   * cero es lo legible: en «95» las unidades dan media vuelta, no nueve y
+   * media, y no hay columna que se convierta en un borrón.
+   */
+  roll?: 'value' | 'digit';
 }
 
 const DEFAULT_TWEEN: CounterTween = { duration: 0.6, ease: APPLE_OUT_BEZIER };
@@ -98,16 +106,17 @@ function Digit({ place, value, height, digitStyle, tween }: DigitProps) {
   }
 
   const valueRoundedToPlace = getValueRoundedToPlace(value, place);
-  const animatedValue = useMotionValue(valueRoundedToPlace);
-
-  const { duration, ease = APPLE_OUT_BEZIER } = tween;
-  useEffect(() => {
-    const controls = animate(animatedValue, valueRoundedToPlace, { duration, ease: [...ease] });
-    return () => controls.stop();
-  }, [animatedValue, valueRoundedToPlace, duration, ease]);
-
   /* El dígito en el que acabará esta columna: es el que fija su ancho. */
   const finalDigit = ((valueRoundedToPlace % 10) + 10) % 10;
+
+  const { duration, ease = APPLE_OUT_BEZIER, roll = 'value' } = tween;
+  const target = roll === 'digit' ? finalDigit : valueRoundedToPlace;
+  const animatedValue = useMotionValue(target);
+
+  useEffect(() => {
+    const controls = animate(animatedValue, target, { duration, ease: [...ease] });
+    return () => controls.stop();
+  }, [animatedValue, target, duration, ease]);
 
   /* inline-flex y no inline-block: un inline-block con overflow oculto pierde
      su línea base (pasa a ser el borde inferior); un contenedor flex la toma
