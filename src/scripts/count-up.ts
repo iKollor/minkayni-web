@@ -1,7 +1,7 @@
 /* ──────────────────────────────────────────────────────────────────────────
-   Contadores del sitio: el odómetro de scripts/odometer.ts (réplica con GSAP
-   de countUp.js + plugin Odometer), con los parámetros del ejemplo oficial:
-   3 s de conteo y columnas que ruedan con una transición de 2,3 s.
+   Contadores del sitio: el odómetro de scripts/odometer.ts. Con
+   `data-count-live` (la leyenda de la portada), al terminar sigue sumando de
+   uno en uno mientras está a la vista.
 
    Las cifras ya vienen escritas en el HTML (`<span data-count>`), que es lo
    que leen los buscadores. Al montar, ese texto queda para los lectores de
@@ -15,6 +15,9 @@
 ─────────────────────────────────────────────────────────────────────────── */
 import { startOdometer } from "./odometer";
 import { prefersReducedMotion } from "./platform";
+
+/** Cada cuánto suma uno una cifra `data-count-live` ya contada. */
+const LIVE_EVERY_SECONDS = 2;
 
 const mounted = new WeakSet<HTMLElement>();
 
@@ -35,7 +38,7 @@ function mount(el: HTMLElement, separator: string): void {
 
     el.replaceChildren(label, visual);
 
-    startOdometer(digits, target, { separator });
+    startOdometer(digits, target, { separator, liveEverySeconds: "countLive" in el.dataset ? LIVE_EVERY_SECONDS : undefined });
 }
 
 /** Prepara todas las cifras de la página; devuelve la limpieza. */

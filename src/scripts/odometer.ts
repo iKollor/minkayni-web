@@ -1,169 +1,201 @@
 /* ──────────────────────────────────────────────────────────────────────────
-   Odómetro con GSAP: réplica del conjunto countUp.js + plugin Odometer
-   (github.com/msoler75/odometer_countup.js, MIT) sin cargar ninguno de los dos.
+   Odómetro con GSAP, a partir del plugin Odometer de countUp.js
+   (github.com/msoler75/odometer_countup.js, MIT). Del original se conserva
+   la curva del conteo (odometer-curve.ts, la de countUp) y el aspecto de
+   ruedas que giran; la mecánica es la de un cuentakilómetros:
 
-   Cómo se mueve, igual que el original:
-   - El valor sigue la curva de countUp: easeOutExpo con su corrección
-     1024/1023 y, por encima de 999, su «smart easing» (lineal hasta 333 antes
-     del final durante la primera mitad y frenada en la segunda).
-   - En cada cuadro el número se formatea y cada carácter va a su columna.
-     Cada vez que una columna recibe un carácter distinto lo apila y persigue
-     la nueva posición con una transición de 2,3 s y curva `ease-out` de CSS
-     que se reinicia desde donde esté: eso es `gsap.quickTo`. Las columnas van
-     siempre por detrás del valor y se posan con una cola larga; de ahí la
-     suavidad.
-
-   Diferencias deliberadas:
-   - El plugin mete en el DOM un <span> por carácter apilado (en «300» son
-     cientos) y los limpia segundos después. Aquí la pila es un array y solo
-     se pintan los dos caracteres que caben en la ventana de 1em.
-   - Cada columna mide lo que su carácter final, no lo que el dígito más
-     ancho: las cifras de Aristotelica son proporcionales.
+   - Cada rueda es una posición fija (unidades, decenas, el «.» de los
+     miles…) alineada por la derecha. El plugin repartía las celdas por la
+     izquierda, y la que acababa siendo el «.» pasaba antes por dígitos.
+   - El número cambia por «eventos» (199 → 200). Todas las ruedas que cambian
+     en un evento giran juntas, en el mismo tramo previo a él, como un
+     acarreo: la cifra que se lee nunca retrocede. El tramo dura como mucho
+     ROLL_SECONDS con la curva estándar de Apple; si el evento anterior está
+     más cerca, se gira de corrido.
+   - El conteo es determinista: sus eventos se calculan antes de empezar, a 30
+     muestras por segundo. Así la rueda de las unidades avanza como mucho un
+     dígito por muestra y en el arranque rueda sin volverse un parpadeo.
+   - El ancho de cada rueda se interpola entre los dos caracteres que muestra
+     (las cifras de Aristotelica son proporcionales); una rueda nueva crece
+     desde 0 mientras entra.
+   - Termina con el último cambio del conteo, sin la cola larga del plugin.
+     Si se pide, luego sigue sumando de uno en uno (`live`).
 ─────────────────────────────────────────────────────────────────────────── */
 import { gsap } from "./main";
-import { cubicBezier } from "./easing";
+import { apple } from "./easing";
 import { countUpValue } from "./odometer-curve";
 
-/** `lastDigitDelay` del plugin, en ms: por debajo, un carácter espera al siguiente. */
-const LAST_DIGIT_DELAY_MS = 250;
-/** `ease-out` de CSS, la de las transiciones del plugin. */
-const CSS_EASE_OUT = cubicBezier([0, 0, 0.58, 1]);
+const SAMPLES_PER_SECOND = 30;
+/** Lo más que tarda una rueda en pasar de un carácter al siguiente. */
+const ROLL_SECONDS = 0.35;
+
+/* Un carácter de la rueda; `null` es el hueco de una rueda que aún no ha
+   entrado (ancho 0). */
+type Glyph = string | null;
+/** La rueda llega a `glyph` en `at`, girando durante los `roll` segundos previos. */
+type Change = { at: number; roll: number; glyph: Glyph };
 
 const group = (n: number, separator: string) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, separator);
 
-/* Un carácter de la pila; `null` es la celda en blanco con la que entra una
-   columna nueva (el plugin la pinta como un «0» transparente). */
-type Glyph = string | null;
+/** Ancho de cada carácter en la tipografía de `host`. */
+function measureGlyphs(host: HTMLElement): Map<string, number> {
+    const probe = document.createElement("span");
+    probe.style.cssText = "position:absolute;visibility:hidden;white-space:pre";
+    host.append(probe);
+    const widths = new Map<string, number>();
+    for (const ch of "0123456789.,") {
+        probe.textContent = ch;
+        widths.set(ch, probe.getBoundingClientRect().width);
+    }
+    probe.remove();
+    return widths;
+}
 
-class Column {
+class Wheel {
     readonly el = document.createElement("span");
     private readonly slots = [document.createElement("span"), document.createElement("span")];
-    private readonly stack: Glyph[];
-    private current: Glyph;
-    private readonly state = { p: 0 };
-    private readonly roll: (value: number) => void;
-    private readonly rollMs: number;
-    private lastAdd = 0;
-    private pending: Glyph | undefined;
-    private pendingTimer: ReturnType<typeof setTimeout> | undefined;
+    private readonly changes: Change[];
+    private next = 1;
 
-    constructor(first: Glyph, fromBlank: boolean, rollSeconds: number, finalGlyph: string) {
+    constructor(
+        initial: Glyph,
+        private readonly widths: Map<string, number>
+    ) {
         /* Recorte solo vertical (como .clip-reveal de global.css): Aristotelica
-           se sale de su caja, y un dígito más ancho que el final no se corta
-           por los lados mientras pasa. */
-        this.el.style.cssText = "position:relative;display:inline-flex;height:1em;clip-path:inset(0 -0.5em)";
-        /* Referencia en flujo, invisible: el carácter en que acabará la
-           columna. Le da su ancho y su línea base. El plugin usaba el ancho
-           del dígito más ancho, que con cifras proporcionales como las de
-           Aristotelica separaba «1 2» y ensanchaba «1 . 200». */
-        const ref = document.createElement("span");
-        ref.style.visibility = "hidden";
-        ref.textContent = finalGlyph;
-        this.el.append(ref);
-        for (const slot of this.slots) {
-            slot.style.cssText = "position:absolute;left:0;right:0;top:0;text-align:center;will-change:transform";
-            this.el.append(slot);
-        }
-
-        this.rollMs = rollSeconds * 1000;
-        this.stack = fromBlank ? [null, first] : [first];
-        this.lastAdd = performance.now();
-        this.current = first;
-        this.roll = gsap.quickTo(this.state, "p", { duration: rollSeconds, ease: CSS_EASE_OUT, onUpdate: () => this.draw() });
-        this.draw();
-        if (fromBlank) this.roll(1);
+           se sale de su caja por los lados. El «0» invisible y sin ancho da a
+           la rueda la línea base del texto. */
+        this.el.style.cssText = "position:relative;display:inline-flex;height:1em;clip-path:inset(0 -0.2em)";
+        const baseline = document.createElement("span");
+        baseline.style.cssText = "visibility:hidden;width:0";
+        baseline.textContent = "0";
+        this.el.append(baseline, ...this.slots);
+        for (const slot of this.slots) slot.style.cssText = "position:absolute;left:0;right:0;top:0;text-align:center";
+        this.changes = [{ at: 0, roll: 0, glyph: initial }];
+        this.draw(0);
     }
 
-    /* Mismo reparto que `pushDigit` del plugin: con la columna ya cargada,
-       un carácter que llega antes de tiempo espera; lo añade el siguiente
-       cambio (que a su vez espera) o, si no llega ninguno, un temporizador. */
-    push(glyph: Glyph): void {
-        if (glyph === this.current) return;
-        this.current = glyph;
-        if (this.stack.length < 4) {
-            this.append(glyph);
-            return;
-        }
-        if (this.pending !== undefined) {
-            this.append(this.pending);
-            clearTimeout(this.pendingTimer);
-            this.pending = undefined;
-        }
-        const since = performance.now() - this.lastAdd;
-        if (since >= (LAST_DIGIT_DELAY_MS - since) * 1.05) {
-            this.append(glyph);
-        } else {
-            this.pending = glyph;
-            this.pendingTimer = setTimeout(() => {
-                if (this.pending === undefined) return;
-                this.append(this.pending);
-                this.pending = undefined;
-            }, this.rollMs);
-        }
+    get glyph(): Glyph {
+        return this.changes[this.changes.length - 1].glyph;
     }
 
-    private append(glyph: Glyph): void {
-        this.stack.push(glyph);
-        this.lastAdd = performance.now();
-        this.roll(this.stack.length - 1);
+    add(change: Change): void {
+        if (change.glyph !== this.glyph) this.changes.push(change);
     }
 
-    private paint(slot: HTMLElement, glyph: Glyph | undefined): void {
-        slot.textContent = glyph ?? (glyph === null ? "0" : "");
-        slot.style.color = glyph === null ? "transparent" : "";
-    }
+    /** Pinta la rueda en el instante `t` (segundos); el tiempo solo avanza. */
+    draw(t: number): void {
+        while (this.next < this.changes.length && this.changes[this.next].at <= t) this.next++;
+        const from = this.changes[this.next - 1];
+        const to = this.changes[this.next];
+        let f = 0;
+        if (to && to.roll > 0) {
+            const x = Math.max(0, Math.min(1, (t - (to.at - to.roll)) / to.roll));
+            f = to.roll === ROLL_SECONDS ? apple(x) : x;
+        }
 
-    private draw(): void {
-        const i = Math.floor(this.state.p);
-        const f = this.state.p - i;
-        this.paint(this.slots[0], this.stack[i]);
-        this.paint(this.slots[1], this.stack[i + 1]);
+        this.slots[0].textContent = from.glyph ?? "";
+        this.slots[1].textContent = f > 0 ? (to?.glyph ?? "") : "";
         this.slots[0].style.transform = `translateY(${-f}em)`;
         this.slots[1].style.transform = `translateY(${1 - f}em)`;
+        const w0 = this.width(from.glyph);
+        this.el.style.width = `${w0 + (this.width(to?.glyph) - w0) * f}px`;
+    }
+
+    private width(glyph: Glyph | undefined): number {
+        return glyph ? (this.widths.get(glyph) ?? 0) : 0;
     }
 }
 
 export type OdometerOptions = {
     separator: string;
-    /** Duración del conteo (countUp `duration`). */
+    /** Duración del conteo. */
     countSeconds?: number;
-    /** Transición de cada columna (Odometer `duration`). */
-    rollSeconds?: number;
+    /** Después del conteo, seguir sumando uno cada tantos segundos. */
+    liveEverySeconds?: number;
 };
 
-/** Pinta en `host` un odómetro que cuenta de 0 a `end`. */
-export function startOdometer(host: HTMLElement, end: number, { separator, countSeconds = 3, rollSeconds = 2.3 }: OdometerOptions): void {
-    const row = document.createElement("span");
-    /* line-height 1 y columnas de 1em, como `.odometer-numbers` del plugin. */
-    row.style.cssText = "display:inline-flex;align-items:baseline;line-height:1";
-    host.replaceChildren(row);
+export class Odometer {
+    private readonly row = document.createElement("span");
+    private readonly wheels: Wheel[] = [];
+    private readonly widths: Map<string, number>;
+    private readonly clock = { t: 0 };
+    private lastEvent = 0;
+    private value = 0;
 
-    const finalText = group(end, separator);
-    const columns: Column[] = [];
-    let firstFrame = true;
-    const render = (text: string) => {
-        for (let i = 0; i < Math.max(text.length, columns.length); i++) {
-            const glyph = i < text.length ? text.charAt(i) : null;
-            if (columns[i]) {
-                columns[i].push(glyph);
-            } else {
-                /* Las columnas del primer cuadro ya están; las que aparecen al
-                   crecer el número entran desde una celda en blanco. */
-                const column = new Column(glyph, !firstFrame, rollSeconds, finalText.charAt(i) || (glyph ?? "0"));
-                columns.push(column);
-                row.append(column.el);
-            }
+    constructor(
+        host: HTMLElement,
+        private readonly separator: string
+    ) {
+        this.widths = measureGlyphs(host);
+        this.row.style.cssText = "display:inline-flex;align-items:baseline;line-height:1";
+        host.replaceChildren(this.row);
+        this.show(0, 0, 0);
+    }
+
+    /** Cuenta de 0 a `end` con la curva de countUp; resuelve al terminar. */
+    count(end: number, seconds: number): Promise<void> {
+        const total = seconds * 1000;
+        const samples = Math.ceil(seconds * SAMPLES_PER_SECOND);
+        for (let n = 1; n <= samples; n++) {
+            const at = (n / samples) * seconds;
+            const value = countUpValue(at * 1000, end, total);
+            if (value !== this.value) this.show(value, at, Math.min(ROLL_SECONDS, at - this.lastEvent));
         }
-        firstFrame = false;
-    };
+        return this.playTo(this.lastEvent);
+    }
 
-    const total = countSeconds * 1000;
-    const clock = { ms: 0 };
-    let last = "";
-    const tick = () => {
-        const text = group(countUpValue(clock.ms, end, total), separator);
-        if (text !== last) render((last = text));
-    };
-    tick();
-    gsap.to(clock, { ms: total, duration: countSeconds, ease: "none", onUpdate: tick, onComplete: tick });
+    /** Suma uno con un giro completo. */
+    increment(): Promise<void> {
+        const at = this.clock.t + ROLL_SECONDS;
+        this.show(this.value + 1, at, ROLL_SECONDS);
+        return this.playTo(at);
+    }
+
+    /** Programa que el número sea `value` en `at`, girando `roll` segundos antes. */
+    private show(value: number, at: number, roll: number): void {
+        const text = group(value, this.separator);
+        /* Una cifra más larga que las ruedas (999 → 1.000) añade las que falten
+           por la izquierda, vacías: entran girando desde el hueco. */
+        while (this.wheels.length < text.length) {
+            const wheel = new Wheel(null, this.widths);
+            this.wheels.unshift(wheel);
+            this.row.prepend(wheel.el);
+        }
+        const offset = this.wheels.length - text.length;
+        this.wheels.forEach((wheel, i) => wheel.add({ at, roll, glyph: text[i - offset] ?? null }));
+        this.value = value;
+        this.lastEvent = at;
+    }
+
+    private playTo(t: number): Promise<void> {
+        const duration = Math.max(0, t - this.clock.t);
+        return new Promise((resolve) => {
+            gsap.to(this.clock, {
+                t,
+                duration,
+                ease: "none",
+                onUpdate: () => this.wheels.forEach((wheel) => wheel.draw(this.clock.t)),
+                onComplete: () => resolve(),
+            });
+        });
+    }
+}
+
+/** Odómetro en `host` que cuenta de 0 a `end` y, si se pide, sigue sumando. */
+export function startOdometer(host: HTMLElement, end: number, { separator, countSeconds = 2.6, liveEverySeconds }: OdometerOptions): void {
+    const odometer = new Odometer(host, separator);
+    void odometer.count(end, countSeconds).then(() => {
+        if (liveEverySeconds) keepCounting(host, odometer, liveEverySeconds);
+    });
+}
+
+/* Suma uno cada `seconds` mientras la cifra está en pantalla y la pestaña a
+   la vista: fuera de ellas no hay nadie mirando y no se gasta un cuadro. */
+function keepCounting(host: HTMLElement, odometer: Odometer, seconds: number): void {
+    let visible = true;
+    new IntersectionObserver(([entry]) => (visible = entry.isIntersecting)).observe(host);
+    gsap.delayedCall(seconds, function tick() {
+        if (visible && !document.hidden) void odometer.increment();
+        gsap.delayedCall(seconds, tick);
+    });
 }

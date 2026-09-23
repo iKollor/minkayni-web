@@ -26,7 +26,7 @@ export const markdownRules: ModularConfig = {
                 return {
                     type: "element",
                     tagName: "span",
-                    properties: { "data-count": num, "data-count-manual": "", className: ["tabular-nums", "font-semibold"] },
+                    properties: { "data-count": num, "data-count-manual": "", "data-count-live": "", className: ["tabular-nums", "font-semibold"] },
                     children: [{ type: "text", value: num }],
                 };
             },
