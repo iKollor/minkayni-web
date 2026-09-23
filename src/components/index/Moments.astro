@@ -17,8 +17,22 @@ const captionLang = getLocale(Astro.url) === "es" ? undefined : "es";
 const STRAPI_URL = import.meta.env.STRAPI_URL ?? "";
 const posts = await getCollection("posts");
 
-// Si quieres, filtra sólo los que tienen media:
-const items = posts.filter((p) => p?.data?.source?.url);
+type Media = { url?: string | null; mime?: string | null } | null | undefined;
+
+/* Vídeo o imagen se decide por el archivo, no por `media_kind`: un reel cuya
+   música tiene derechos llega sin vídeo (Meta no lo entrega), y lo que queda
+   es su portada. Antes eso acababa en un <video> con un JPEG dentro. */
+const isVideo = (file: Media) => Boolean(file?.url) && (file?.mime ? file.mime.startsWith("video/") : /\.(webm|mp4|mov)$/i.test(file?.url ?? ""));
+const pickMedia = (post: { source?: Media; poster?: Media }) => {
+    const video = isVideo(post.source) ? post.source : null;
+    const image = post.poster?.url ? post.poster : post.source?.url && !video ? post.source : null;
+    return { video, image };
+};
+
+const items = posts.filter(({ data }) => {
+    const { video, image } = pickMedia(data);
+    return Boolean(video || image);
+});
 ---
 
 <div class="bg-primary w-full">
@@ -28,23 +42,26 @@ const items = posts.filter((p) => p?.data?.source?.url);
                 <div class="text-white opacity-70 w-full flex items-center justify-center text-center">{t("empty.posts")}</div>
             ) : (
                 items.map(({ data: post }) => {
-                    const mediaUrl = strapiMediaUrl(post.source?.url, STRAPI_URL, 960);
-                    const mediaSrcSet = strapiMediaSrcSet(post.source?.url, STRAPI_URL, [320, 640, 960]);
-                    /* Portada del reel: un fotograma que el CMS saca al
-                       transcodificar, servido por Imagor en WebP a 640 px.
-                       Es lo que se ve mientras el vídeo no se reproduce, así
-                       que ningún reel queda como un hueco oscuro. Los reels
-                       importados antes de que existiera no la tienen. */
-                    const posterUrl = post.poster?.url ? strapiMediaUrl(post.poster.url, STRAPI_URL, 640) : undefined;
+                    const { video, image } = pickMedia(post);
+                    const mediaUrl = strapiMediaUrl(image?.url, STRAPI_URL, 960);
+                    const mediaSrcSet = strapiMediaSrcSet(image?.url, STRAPI_URL, [320, 640, 960]);
+                    /* Portada del reel: la miniatura de Meta o un fotograma que
+                       el CMS saca al transcodificar, servida por Imagor en WebP
+                       a 640 px. Es lo que se ve mientras el vídeo no se
+                       reproduce, y lo único que se ve donde el navegador no
+                       lee WebM (Safari de iPhone anterior a iOS 17.4). */
+                    const posterUrl = image?.url ? strapiMediaUrl(image.url, STRAPI_URL, 640) : undefined;
+                    const videoType = video && (video.mime === "video/webm" || /\.webm$/i.test(video.url ?? "")) ? 'video/webm; codecs="vp9"' : (video?.mime ?? undefined);
                     return (
                     <div class="post-card group aspect-[1/1] h-full flex-shrink-0 rounded-lg overflow-hidden relative shadow-lg" data-id={post.external_id}>
                         <div class="relative w-full h-full">
                             {/* Media: fondo (solo el fondo escala en hover del grupo) */}
-                            {post.source?.url ? (
-                                post.media_kind === "reel" ? (
+                            {video || image ? (
+                                video ? (
                                     <video
                                         class="media object-cover w-full h-full absolute inset-0 -z-10 pointer-events-none transition-transform duration-300 transform-gpu origin-center group-hover:scale-105"
-                                        data-src={strapiMediaUrl(post.source?.url, STRAPI_URL)}
+                                        data-src={strapiMediaUrl(video.url, STRAPI_URL)}
+                                        data-type={videoType}
                                         data-lcp-poster={posterUrl || undefined}
                                         preload="none"
                                         muted

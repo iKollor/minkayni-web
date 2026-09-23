@@ -69,7 +69,12 @@ export const init = () => {
        Y un vídeo que sale de pantalla, pasados unos segundos, suelta el
        archivo: deja de ocupar decodificador y memoria. Si vuelve, se recarga
        (normalmente de la caché del navegador). */
-    const videos = Array.from(wrapperEl.querySelectorAll<HTMLVideoElement>("video[data-src]"));
+    /* Sin soporte del formato (WebM en Safari de iPhone antiguo) el vídeo ni
+       entra en el reparto: se queda su portada, que ya es un estado final. */
+    const videos = Array.from(wrapperEl.querySelectorAll<HTMLVideoElement>("video[data-src]")).filter((video) => {
+        const tipo = video.dataset.type;
+        return !tipo || video.canPlayType(tipo) !== "";
+    });
     const visibles = new Set<HTMLVideoElement>();
     const reproduciendo = new Set<HTMLVideoElement>();
     const liberar = new Map<HTMLVideoElement, number>();
@@ -169,6 +174,20 @@ export const init = () => {
         { threshold: [0, 0.35, 1] }
     );
     videos.forEach((video) => videoObserver.observe(video));
+
+    /* Si aun así no se puede reproducir, se retira del reparto y vuelve a su
+       portada; el hueco lo toma el siguiente vídeo más cercano al centro. */
+    const onVideoError = (event: Event) => {
+        const video = event.currentTarget as HTMLVideoElement;
+        videoObserver.unobserve(video);
+        visibles.delete(video);
+        pausar(video);
+        delete video.dataset.src;
+        video.removeAttribute("src");
+        video.load();
+        reordenarVideos();
+    };
+    videos.forEach((video) => video.addEventListener("error", onVideoError, { once: true }));
 
     // Pausar el carousel al hacer hover (pointer enter) y restaurar al salir.
     // Guardamos si estaba reproduciéndose para restaurar correctamente.

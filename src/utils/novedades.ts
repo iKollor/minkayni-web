@@ -137,9 +137,13 @@ export async function cargarNovedades(locale: Locale): Promise<Novedad[]> {
         .map((post) => {
             const { primera, parrafos, etiquetas } = partir(post.caption as string);
             const { titular, sobrante } = partirTitular(primera);
-            const media = post.source as { url?: string; width?: number; height?: number } | null;
+            type Archivo = { url?: string; mime?: string; width?: number; height?: number } | null;
+            const esImagenDe = (archivo: Archivo) =>
+                Boolean(archivo?.url) && (archivo?.mime ? archivo.mime.startsWith("image/") : !/\.(mp4|webm|mov)$/i.test(archivo?.url ?? ""));
+            /* En los reels el vídeo va en `source` y la portada en `poster`. */
+            const media = esImagenDe(post.poster as Archivo) ? (post.poster as Archivo) : (post.source as Archivo);
             const fuente = media?.url;
-            const esImagen = Boolean(fuente) && !/\.(mp4|webm|mov)$/i.test(fuente as string);
+            const esImagen = esImagenDe(media);
 
             return {
                 id: String(post.documentId ?? post.external_id ?? post.permalink),
