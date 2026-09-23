@@ -90,7 +90,7 @@ export default function BuilderPreview({ strapiUrl, locale, labels }: Props) {
 
     /* Ya pintado: los mismos arranques que una página publicada. Los
        contadores los monta CounterMount al recibir `count:reveal`; los títulos
-       los parte ScrollFloatTitles al recibir `scrollfloat:scan`; y ScrollTrigger
+       los prepara scripts/scroll-float.ts al recibir `scrollfloat:scan`; y ScrollTrigger
        recalcula posiciones porque la página acaba de cambiar de alto. */
     useEffect(() => {
         if (state.kind !== "ready") return;

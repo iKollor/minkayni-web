@@ -6,7 +6,6 @@ import SiteMenu from "../components/react/SiteMenu";
 import SiteScrollbar from "../components/SiteScrollbar.astro";
 import PixelCurtain from "../components/react/PixelCurtain";
 import CounterMount from "../components/react/CounterMount";
-import ScrollFloatTitles from "../components/react/ScrollFloatTitles";
 import { buildMenuData } from "../utils/menu-data";
 import Hero from "../components/Hero.astro";
 import SiteGrain from "../components/SiteGrain.astro";
@@ -50,7 +49,6 @@ const { title, description, noindex, image, imageAlt, showHero = true, buttonCla
     <SiteScrollbar locale={locale} />
     <PixelCurtain client:idle />
     <CounterMount client:idle />
-    <ScrollFloatTitles client:idle />
 
     <div id="smooth-wrapper" class="overflow-x-hidden">
         <div id="smooth-content" class="flex flex-col min-h-svh">
@@ -75,3 +73,14 @@ const { title, description, noindex, image, imageAlt, showHero = true, buttonCla
         showContentNoIntro();
     </script>
 </Head>
+
+<script>
+    /* Títulos que flotan letra a letra (ver scripts/scroll-float.ts). Fue una
+       isla de React en `client:idle`; se arranca igual, cuando el navegador
+       está desocupado, pero sin hidratar nada. */
+    import { initScrollFloat } from "../scripts/scroll-float";
+
+    const arrancar = () => initScrollFloat();
+    if ("requestIdleCallback" in window) window.requestIdleCallback(arrancar, { timeout: 2000 });
+    else window.setTimeout(arrancar, 200);
+</script>
