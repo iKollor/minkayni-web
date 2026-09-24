@@ -30,6 +30,7 @@ const BLOCKS = {
     "hero.html": ["display-900"],
     "encabezado.html": ["display-900", "text-700"],
     "boton.html": ["display-500"],
+    "novedades.html": ["display-900", "display-500", "text-400", "text-700"],
 };
 
 const fontFace = (key) => {
@@ -52,6 +53,7 @@ const replacements = {
     "{{BASE_CSS}}": baseCss,
     "{{LOGO_TAG_WHITE}}": inlineSvg("LOGO+TAG_WHITE.svg"),
     "{{FLOR}}": inlineSvg("misc/flor.svg"),
+    "{{ISOTIPO_WHITE}}": inlineSvg("ISOTIPO_WHITE.svg"),
 };
 
 /* Variante ligera: sin fuentes incrustadas, con Nunito de Google Fonts (la

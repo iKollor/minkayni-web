@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Novedades · Fundación Minkayni</title>
+<!--
+  NOVEDADES CONECTADAS AL CMS (colección `posts` de Strapi)
+  Lee las mismas publicaciones que minkayni.org/novedades: lo que se publica
+  en Strapi aparece aquí sin tocar el Google Site.
+
+  Requisito (una vez): en Strapi → Configuración → Usuarios y permisos →
+  Roles → Public → Post, marcar `find`. Ver README, sección «Novedades».
+  Nunca pongas aquí el token de Strapi: este código lo puede leer cualquiera.
+-->
+<style>
+{{FONTS}}
+{{BASE_CSS}}
+
+.news {
+    padding: 8px 4px 24px;
+}
+.news__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 40px 28px;
+}
+/* En móvil las tarjetas pasan a un carrusel horizontal: Google Sites da al
+   bloque un alto fijo y apiladas no cabrían. */
+@media (max-width: 700px) {
+    .news__grid {
+        grid-template-columns: none;
+        grid-auto-flow: column;
+        grid-auto-columns: 82%;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 12px;
+        gap: 20px;
+    }
+    .news__grid > li {
+        scroll-snap-align: start;
+    }
+}
+.card {
+    display: flex;
+    flex-direction: column;
+}
+.card__img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: 16px;
+    background: rgb(10 8 1 / 0.05);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+}
+.card__img--empty {
+    display: grid;
+    place-items: center;
+    color: #fff;
+    background: linear-gradient(130deg, var(--primary), var(--primary-deep));
+}
+.card__img--empty svg {
+    width: 64px;
+    height: 64px;
+}
+.card__date {
+    margin-top: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--primary);
+}
+.card__title {
+    margin-top: 10px;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 22px;
+    line-height: 1.15;
+    color: var(--text);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.card__body {
+    margin-top: 10px;
+    font-size: 16px;
+    line-height: 1.6;
+    color: rgb(10 8 1 / 0.75);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.card__tags {
+    margin-top: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.card__tags li {
+    padding: 4px 12px;
+    border-radius: 9999px;
+    background: rgb(110 0 163 / 0.1);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary);
+}
+.card__link {
+    margin-top: 16px;
+    align-self: flex-start;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    transition: color 0.2s var(--ease-apple);
+}
+.card__link:hover {
+    color: var(--secondary-deep);
+}
+.card__link:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+.news__more {
+    margin-top: 48px;
+    text-align: center;
+}
+.card__actions {
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 20px;
+}
+.card__read {
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font: inherit;
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text);
+    transition: color 0.2s var(--ease-apple);
+}
+.card__read:hover {
+    color: var(--primary);
+}
+.card__read:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Lectura completa de un post, dentro del mismo bloque. */
+.reader {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 16px;
+    overflow-y: auto;
+    background: rgb(65 0 99 / 0.55);
+    backdrop-filter: blur(4px);
+}
+.reader[hidden] {
+    display: none;
+}
+.reader__panel {
+    position: relative;
+    width: min(100%, 760px);
+    margin: auto;
+    padding: 32px 24px;
+    border-radius: 30px;
+    background: var(--bg-white);
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.35);
+}
+.reader__close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    display: inline-flex;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 9999px;
+    background: var(--primary);
+    color: var(--bg-white);
+    font-size: 22px;
+    cursor: pointer;
+    transition: background-color 0.2s var(--ease-apple);
+}
+.reader__close:hover {
+    background: var(--accent);
+    color: var(--bg-black);
+}
+.reader__close:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+.reader__img {
+    display: block;
+    width: 100%;
+    max-height: 70vh;
+    object-fit: contain;
+    border-radius: 16px;
+    margin-bottom: 20px;
+}
+.reader__title {
+    margin-top: 10px;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: clamp(26px, 4vw, 36px);
+    line-height: 1.1;
+}
+.reader__body p {
+    margin-top: 16px;
+    font-size: 17px;
+    line-height: 1.65;
+    color: rgb(10 8 1 / 0.8);
+}
+@media (min-width: 640px) {
+    .reader__panel {
+        padding: 48px;
+    }
+}
+
+.news__status {
+    padding: 48px 0;
+    font-size: 18px;
+    text-align: center;
+    color: rgb(10 8 1 / 0.6);
+}
+.news__status a {
+    font-weight: 700;
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+</style>
+</head>
+<body>
+<section class="news" aria-label="Novedades">
+    <p class="news__status" id="status">Cargando novedades…</p>
+    <ol class="news__grid" id="grid" hidden></ol>
+    <div class="news__more">
+        <a class="magic-btn" id="more" href="https://minkayni.org/novedades" target="_top" aria-label="Ver todas las novedades">
+            <span class="magic-btn__glow" aria-hidden="true"></span>
+            <span class="magic-btn__surface">
+                <span class="magic-btn__label magic-btn__label--default">Ver todas las novedades</span>
+                <span class="magic-btn__label magic-btn__label--hover" aria-hidden="true">Y todo lo que suena 🥁</span>
+            </span>
+        </a>
+    </div>
+</section>
+
+<div class="reader" id="reader" role="dialog" aria-modal="true" aria-labelledby="reader-title" hidden>
+    <article class="reader__panel">
+        <button type="button" class="reader__close" id="reader-close" aria-label="Cerrar">×</button>
+        <img class="reader__img" id="reader-img" alt="" hidden />
+        <time class="card__date" id="reader-date"></time>
+        <h2 class="reader__title" id="reader-title"></h2>
+        <div class="reader__body" id="reader-body"></div>
+        <ul class="card__tags" id="reader-tags" aria-label="Etiquetas"></ul>
+        <p class="card__actions"><a class="card__link" id="reader-link" target="_blank" rel="noopener noreferrer">Ver publicación original ↗</a></p>
+    </article>
+</div>
+
+<template id="iso">{{ISOTIPO_WHITE}}</template>
+
+<script>
+/* ─────────────────────────── CONFIGURACIÓN ───────────────────────────
+   CMS:       dirección pública de Strapi (la misma que STRAPI_URL de la web).
+   CANTIDAD:  cuántas novedades mostrar (3 por fila en escritorio).
+   IDIOMA:    "es" o "en".
+   ETIQUETA:  deja "" para todas, o una etiqueta sin # (p. ej.
+              "BatucadaPopular") para mostrar solo las que la lleven.
+   ENLACE_TODAS: a dónde lleva el botón del final. Déjalo en "" para
+              ocultar el botón (p. ej. si este bloque ya es la página de
+              todas las novedades). */
+var CMS = "https://strapi.minkayni.org";
+var CANTIDAD = 6;
+var IDIOMA = "es";
+var ETIQUETA = "";
+var ENLACE_TODAS = "https://minkayni.org/novedades";
+/* ──────────────────────────────────────────────────────────────────── */
+
+(function () {
+    var base = CMS.replace(/\/+$/, "");
+    var status = document.getElementById("status");
+    var grid = document.getElementById("grid");
+    var more = document.getElementById("more");
+    if (ENLACE_TODAS) more.href = ENLACE_TODAS;
+    else more.parentNode.hidden = true;
+
+    var fail = function () {
+        status.innerHTML = "";
+        status.append("Las novedades no se pudieron cargar ahora. ");
+        var a = document.createElement("a");
+        a.href = ENLACE_TODAS || "https://minkayni.org/novedades";
+        a.target = "_top";
+        a.textContent = "Míralas en minkayni.org";
+        status.append(a);
+    };
+
+    /* Mismo criterio que src/utils/novedades.ts: el titular es la primera
+       línea del pie de foto (sin la sección «#Etiqueta |»), el cuerpo el
+       resto sin el bloque final de etiquetas. */
+    var parse = function (caption) {
+        var lines = caption.split(/\r?\n/).map(function (l) { return l.trim(); }).filter(Boolean);
+        var tags = [];
+        (caption.match(/#[\p{L}\p{N}_]+/gu) || []).forEach(function (t) {
+            t = t.slice(1);
+            if (tags.indexOf(t) === -1) tags.push(t);
+        });
+        var rest = lines.slice(1);
+        while (rest.length) {
+            var words = rest[rest.length - 1].split(/\s+/);
+            var hashed = words.filter(function (w) { return w.charAt(0) === "#"; }).length;
+            if (hashed >= Math.max(1, words.length - 1)) rest.pop();
+            else break;
+        }
+        var first = (lines[0] || "").replace(/^\s*#\S+\s*[|·–—-]\s*/u, "").replace(/^\s*#\S+\s+/u, "").trim();
+        if (/^#/.test(first) || !first) first = rest.shift() || "";
+        return { title: first, paragraphs: rest, tags: tags.slice(0, 4) };
+    };
+
+    var mediaUrl = function (file) {
+        if (!file || !file.url) return "";
+        var isImage = file.mime ? file.mime.indexOf("image/") === 0 : !/\.(mp4|webm|mov)$/i.test(file.url);
+        if (!isImage) return "";
+        var small = file.formats && (file.formats.medium || file.formats.small);
+        var url = (small && small.url) || file.url;
+        return /^https?:\/\//.test(url) ? url : base + url;
+    };
+
+    var reader = document.getElementById("reader");
+    var lastTrigger = null;
+    var closeReader = function () {
+        reader.hidden = true;
+        if (lastTrigger) lastTrigger.focus();
+    };
+    var openReader = function (p, trigger) {
+        lastTrigger = trigger;
+        var img = document.getElementById("reader-img");
+        img.hidden = !p.img;
+        if (p.img) img.src = p.img;
+        var date = document.getElementById("reader-date");
+        date.dateTime = p.date.toISOString();
+        date.textContent = dateFmt.format(p.date);
+        document.getElementById("reader-title").textContent = p.title;
+        var body = document.getElementById("reader-body");
+        body.textContent = "";
+        p.paragraphs.forEach(function (text) {
+            var el = document.createElement("p");
+            el.textContent = text;
+            body.appendChild(el);
+        });
+        var tags = document.getElementById("reader-tags");
+        tags.textContent = "";
+        p.tags.forEach(function (t) {
+            var li = document.createElement("li");
+            li.textContent = "#" + t;
+            tags.appendChild(li);
+        });
+        var link = document.getElementById("reader-link");
+        link.hidden = !p.link;
+        if (p.link) link.href = p.link;
+        reader.hidden = false;
+        reader.scrollTop = 0;
+        document.getElementById("reader-close").focus();
+    };
+    document.getElementById("reader-close").addEventListener("click", closeReader);
+    reader.addEventListener("click", function (e) { if (e.target === reader) closeReader(); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !reader.hidden) closeReader(); });
+
+    var dateFmt = new Intl.DateTimeFormat(IDIOMA === "en" ? "en-GB" : "es-EC", { day: "numeric", month: "long", year: "numeric" });
+
+    var query = [
+        "sort=posted_at:desc",
+        "pagination[pageSize]=" + (ETIQUETA ? 100 : CANTIDAD * 2),
+        "locale=" + IDIOMA,
+        "fields[0]=caption",
+        "fields[1]=title",
+        "fields[2]=posted_at",
+        "fields[3]=permalink",
+        "fields[4]=media_kind",
+        "populate[poster]=true",
+        "populate[source]=true",
+    ].join("&");
+
+    fetch(base + "/api/posts?" + query)
+        .then(function (r) {
+            if (!r.ok) throw new Error("HTTP " + r.status);
+            return r.json();
+        })
+        .then(function (json) {
+            var posts = (json.data || [])
+                .map(function (p) { return p.attributes ? Object.assign({ id: p.id }, p.attributes) : p; })
+                .filter(function (p) { return p.caption && p.posted_at; })
+                .map(function (p) {
+                    var parsed = parse(p.caption);
+                    return {
+                        title: (p.title || "").trim() || parsed.title,
+                        paragraphs: parsed.paragraphs,
+                        tags: parsed.tags,
+                        date: new Date(p.posted_at),
+                        link: p.permalink,
+                        img: mediaUrl(p.poster) || mediaUrl(p.source),
+                    };
+                })
+                .filter(function (p) {
+                    return p.title && (!ETIQUETA || p.tags.some(function (t) { return t.toLowerCase() === ETIQUETA.toLowerCase(); }));
+                })
+                .slice(0, CANTIDAD);
+
+            if (!posts.length) return fail();
+
+            var iso = document.getElementById("iso").innerHTML;
+            posts.forEach(function (p) {
+                var li = document.createElement("li");
+                var art = document.createElement("article");
+                art.className = "card";
+
+                if (p.img) {
+                    var img = document.createElement("img");
+                    img.className = "card__img";
+                    img.src = p.img;
+                    img.alt = "";
+                    img.loading = "lazy";
+                    art.appendChild(img);
+                } else {
+                    var ph = document.createElement("div");
+                    ph.className = "card__img card__img--empty";
+                    ph.innerHTML = iso;
+                    art.appendChild(ph);
+                }
+
+                var time = document.createElement("time");
+                time.className = "card__date";
+                time.dateTime = p.date.toISOString();
+                time.textContent = dateFmt.format(p.date);
+                art.appendChild(time);
+
+                var h = document.createElement("h2");
+                h.className = "card__title";
+                h.textContent = p.title;
+                art.appendChild(h);
+
+                if (p.paragraphs.length) {
+                    var body = document.createElement("p");
+                    body.className = "card__body";
+                    body.textContent = p.paragraphs.join(" ");
+                    art.appendChild(body);
+                }
+
+                if (p.tags.length) {
+                    var ul = document.createElement("ul");
+                    ul.className = "card__tags";
+                    ul.setAttribute("aria-label", "Etiquetas");
+                    p.tags.forEach(function (t) {
+                        var tag = document.createElement("li");
+                        tag.textContent = "#" + t;
+                        ul.appendChild(tag);
+                    });
+                    art.appendChild(ul);
+                }
+
+                var actions = document.createElement("p");
+                actions.className = "card__actions";
+                var read = document.createElement("button");
+                read.type = "button";
+                read.className = "card__read";
+                read.textContent = "Leer más →";
+                read.addEventListener("click", function () { openReader(p, read); });
+                actions.appendChild(read);
+                if (p.link) {
+                    var a = document.createElement("a");
+                    a.className = "card__link";
+                    a.href = p.link;
+                    a.target = "_blank";
+                    a.rel = "noopener noreferrer";
+                    a.textContent = "Ver original ↗";
+                    actions.appendChild(a);
+                }
+                art.appendChild(actions);
+
+                li.appendChild(art);
+                grid.appendChild(li);
+            });
+
+            status.hidden = true;
+            grid.hidden = false;
+        })
+        .catch(fail);
+})();
+</script>
+</body>
+</html>

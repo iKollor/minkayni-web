@@ -1,6 +1,8 @@
-# Plantilla de Google Sites · Fundación Minkayni
+# Plantilla de Google Sites · Novedades Minkayni (news.minkayni.org)
 
-Kit para montar un Google Site con la misma identidad que [minkayni.org](https://minkayni.org).
+Kit para montar en Google Sites el sitio de **novedades, posts y newsletter** de la fundación
+(`news.minkayni.org`), con la misma identidad que [minkayni.org](https://minkayni.org) y conectado
+al CMS (Strapi) que ya alimenta la web.
 Colores, tipografías, logotipos y el **footer original** salen directamente del código del sitio
 (`src/styles/global.css`, `src/components/Footer.astro`, `src/assets/`). No hay nada reinterpretado.
 
@@ -8,7 +10,14 @@ Google Sites no deja subir tipografías ni cambiar su propio HTML, así que el k
 
 1. **Tema de Google Sites.** Colores, logo, favicon y fuente de los bloques nativos (texto, botones, secciones).
 2. **Bloques «Insertar código».** Las piezas que el tema no puede reproducir (el hero, los títulos en
-   Aristotelica, el botón animado y el footer completo). Se pegan tal cual.
+   Aristotelica, el botón animado, **el listado de novedades conectado a Strapi** y el footer completo).
+   Se pegan tal cual.
+
+> **Sobre «subir la plantilla».** Google Sites no tiene un gestor que acepte archivos (ni ZIP, ni HTML, ni temas).
+> Este ZIP es el material para montar el Site una vez a mano (paso 2 y 3). Hecho eso, ese Site ya es la plantilla:
+> - Cuenta de Gmail personal: menú ⋮ → **Hacer una copia** para duplicarlo.
+> - Google Workspace: desde la página principal de Sites → **Galería de plantillas** → *Enviar plantilla*, y el Site
+>   queda como plantilla de la organización (si el administrador tiene activada la galería).
 
 ```
 google-sites/
@@ -17,6 +26,7 @@ google-sites/
 │   ├── hero.html        ← cabecera de página con el fondo de burbujas
 │   ├── encabezado.html  ← antetítulo + título de sección
 │   ├── boton.html       ← botón «mágico» celeste
+│   ├── novedades.html   ← posts desde Strapi (tarjetas + lectura completa)
 │   └── ligero/          ← los mismos bloques con Nunito (si Sites rechaza el tamaño)
 ├── logos/               ← PNG transparentes para el tema, el logo y el favicon
 ├── vista-previa.html    ← simulación de una página del Site con todo aplicado
@@ -103,6 +113,7 @@ Luego estira el bloque a todo el ancho y ajústale el alto:
 | `hero.html` | Primer bloque de cada página | 420–520 px |
 | `encabezado.html` | Al inicio de cada sección | 180–220 px (según líneas) |
 | `boton.html` | Donde quieras un CTA | 72 px (ancho ~280 px) |
+| `novedades.html` | Portada y páginas por tema | 850 px con 3 posts · 1550 px con 6 |
 | `footer.html` | Último bloque de cada página | **1440 px** |
 
 El footer rellena solo el alto que le des: si sobra espacio, se lo queda la franja morada y los créditos siguen al fondo.
@@ -125,6 +136,8 @@ Google Sites no tiene un footer global que acepte código, así que el footer va
     igual que en la web.
   - El año del copyright se actualiza solo.
 
+- **Novedades:** el bloque `CONFIGURACIÓN` del final (ver sección 4).
+
 ### Si Google Sites no acepta el bloque
 
 Los bloques de `embeds/` llevan las fuentes incrustadas (el footer pesa ~195 KB). Si el editor da error al insertarlo,
@@ -135,7 +148,74 @@ Si un enlace del footer se abre dentro del recuadro en vez de en la página comp
 
 ---
 
-## 4. Qué es igual y qué cambia respecto a la web
+## 4. Novedades conectadas al CMS
+
+`novedades.html` lee la colección **`posts`** del Strapi de la fundación (`https://strapi.minkayni.org`), la misma que
+pinta minkayni.org/novedades. Publicas en Strapi y el Site se actualiza solo, sin tocar Google Sites.
+
+Cada tarjeta muestra la foto, la fecha, el titular (la primera línea del pie de foto, igual que en la web), un
+extracto y las etiquetas. «Leer más» abre el post completo encima del bloque; «Ver original» lleva a Instagram o Facebook.
+En móvil las tarjetas pasan a un carrusel horizontal para que el bloque no necesite más alto.
+
+### Activarlo (una vez, en Strapi)
+
+El bloque corre en el navegador de cada visitante, así que **no puede llevar el token de Strapi** (quedaría a la vista de
+cualquiera). Necesita lectura pública de los posts:
+
+1. Strapi → **Configuración → Usuarios y permisos → Roles → Public**.
+2. En **Post**, marca `find` (y `findOne` si quieres). Guarda.
+3. Comprueba abriendo `https://strapi.minkayni.org/api/posts?pagination[pageSize]=1` en el navegador: debe devolver JSON.
+
+Ten en cuenta que con eso **cualquiera puede leer todos los campos de los posts publicados**, incluido `raw`
+(los datos originales importados de la red social). Los borradores siguen privados. Si `raw` guarda algo que no deba
+ser público, conviene limpiarlo antes de activar el permiso.
+
+Si el permiso no está activo o el CMS no responde, el bloque no se rompe: muestra «Las novedades no se pudieron cargar
+ahora» con un enlace a minkayni.org/novedades.
+
+### Opciones del bloque (`CONFIGURACIÓN`)
+
+| Variable | Qué hace |
+| --- | --- |
+| `CMS` | Dirección pública de Strapi |
+| `CANTIDAD` | Cuántos posts mostrar (3 por fila en escritorio) |
+| `IDIOMA` | `"es"` o `"en"` (la colección es bilingüe) |
+| `ETIQUETA` | Solo posts con esa etiqueta, sin `#` (p. ej. `"BatucadaPopular"`). Sirve para páginas por tema |
+| `ENLACE_TODAS` | Destino del botón final; `""` lo oculta |
+
+### Estructura sugerida del Site
+
+- **Novedades** (portada): hero «Novedades» + encabezado + `novedades.html` con 6 posts + suscripción + footer.
+- **Batucada Popular**, **Comunidad**, … : la misma página duplicada con `ETIQUETA` distinta.
+- **Newsletter**: formulario de suscripción. Lo más simple es **Insertar → Formularios** (Google Forms, las respuestas
+  quedan en una hoja de cálculo). Si usan Brevo, Mailchimp o similar, su formulario se pega con «Insertar código».
+
+---
+
+## 5. Dominio news.minkayni.org
+
+En el editor: ⚙ **Configuración → Dominios personalizados → Iniciar configuración**, escribe `news.minkayni.org` y
+sigue los pasos. Google pide verificar que el dominio es vuestro (Google Search Console) y añadir en el DNS de
+minkayni.org un registro **CNAME** `news` → `ghs.googlehosted.com.`. El cambio de DNS puede tardar unas horas.
+
+---
+
+## 6. Límites de Google Sites para un sitio de noticias
+
+Conviene saberlos antes de decidir:
+
+- **Buscadores:** lo que carga el bloque de novedades vive dentro de un iframe y Google no lo indexa como parte de
+  news.minkayni.org. Los posts no tendrán una URL propia que aparezca en buscadores ni que se pueda compartir.
+- **Un post = una página a mano.** Si quieres una página propia para un post, hay que crearla en Google Sites y copiar
+  el contenido; eso ya no sale del CMS.
+- **Alto fijo:** cada bloque de código tiene un alto fijo; por eso la cantidad de posts se elige de antemano.
+
+Si esos puntos pesan, la alternativa es servir news.minkayni.org con el mismo stack de la web (Astro + Strapi): cada
+post tendría su URL, se indexaría y se publicaría desde Strapi sin ningún paso en Google Sites.
+
+---
+
+## 7. Qué es igual y qué cambia respecto a la web
 
 **Igual:** paleta, tipografías en los bloques, logotipos, cúpulas con la flor, títulos «¿Quieres ser nuestro aliado?» y
 «Nuestros Aliados», botones «Quiero unirme 💜 / a cambiar vidas ✨» y «Aporta hoy 💜», navegación principal y de
@@ -151,7 +231,7 @@ proyectos, redes (Facebook, Instagram, TikTok), línea legal (razón social, RUC
 
 ---
 
-## 5. Regenerar el kit
+## 8. Regenerar el kit
 
 Si cambian los colores, las fuentes o el footer de la web, edita `fuente/` y ejecuta:
 
