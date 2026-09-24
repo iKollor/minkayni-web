@@ -12,6 +12,7 @@ import {
   BatucadaEcosystemPageSchema,
   BatucadaHistoryPageSchema,
   BuilderPageSchema,
+  ActivitySchema,
   GlobalSettingsSchema,
   PostContentSchema,
   HomepageContentSchema,
@@ -373,6 +374,29 @@ const builderPageSelection = `
     seo { ${seoSelection} }
 `;
 
+/* Actividades de campo: mismos bloques que el constructor. */
+const activitySelection = `
+    ${entryMetaSelection}
+    title
+    slug
+    summary
+    date
+    end_date
+    brand
+    project
+    place_name
+    lat
+    lng
+    is_featured
+    tags
+    cover { ${uploadFileSelection} }
+    gallery(pagination: { limit: 100 }) { ${uploadFileSelection} }
+    video { ${uploadFileSelection} }
+    ${builderSectionsSelection}
+    social_posts(pagination: { limit: 20 }) { documentId platform media_kind permalink }
+    seo { ${seoSelection} }
+`;
+
 const donationMethodSelection = `id name description href linkText fee icon`;
 
 const donatePageSelection = `
@@ -598,6 +622,16 @@ const [builderPages, builderPagesEn] = defineBilingual({
   schema: BuilderPageSchema(),
 });
 
+/* Actividades de campo (collection type `activity`). Si el CMS desplegado
+   todavía no tiene el tipo, la consulta falla, el loader avisa y /novedades
+   se queda solo con las publicaciones de redes. */
+const [activities, activitiesEn] = defineBilingual({
+  mode: "collection",
+  rootField: "activities",
+  selection: activitySelection,
+  schema: ActivitySchema(),
+});
+
 export const collections = {
   posts,
   homepage,
@@ -630,4 +664,6 @@ export const collections = {
   donatePageEn,
   builderPages,
   builderPagesEn,
+  activities,
+  activitiesEn,
 };

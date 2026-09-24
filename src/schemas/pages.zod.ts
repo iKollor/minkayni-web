@@ -368,6 +368,40 @@ export const BuilderPageSchema = () =>
     });
 export type BuilderPage = z.infer<ReturnType<typeof BuilderPageSchema>>;
 
+/* Actividades de campo (collection type `activity`): las crea el Reportero
+   de campo del CMS y se ven en /novedades y /novedades/<slug>. */
+export const ActivitySocialPostSchema = () =>
+    z.object({
+        documentId: z.string().nullish(),
+        platform: z.string().nullish(),
+        media_kind: z.string().nullish(),
+        permalink: z.string().nullish(),
+    });
+
+export const ActivitySchema = () =>
+    z.object({
+        ...entryBase,
+        title: z.string().nullish(),
+        slug: z.string().nullish(),
+        summary: z.string().nullish(),
+        date: z.string().nullish(),
+        end_date: z.string().nullish(),
+        brand: z.enum(["minkayni", "batucada"]).nullish(),
+        project: z.string().nullish(),
+        place_name: z.string().nullish(),
+        lat: z.number().nullish(),
+        lng: z.number().nullish(),
+        cover: media(),
+        gallery: mediaList(),
+        video: media(),
+        sections: z.array(z.any()).nullish(),
+        social_posts: z.array(ActivitySocialPostSchema().nullable()).nullish(),
+        tags: z.array(z.string()).nullish(),
+        is_featured: z.boolean().nullish(),
+        seo: SeoSchema().nullish(),
+    });
+export type Activity = z.infer<ReturnType<typeof ActivitySchema>>;
+
 /* Testimonios y Equipo (collection types; antes componentes de homepage). */
 export const TestimonialEntrySchema = () =>
     z.object({

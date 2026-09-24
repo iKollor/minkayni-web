@@ -71,12 +71,13 @@ export const genericSectorPhotos = (alt: string): ViewerPhoto[] =>
  * @param strapiBase Origen del CMS (`STRAPI_URL`), que resuelve las rutas.
  * @param alt        Texto alternativo de respaldo, ya traducido, para las
  *                   fotos que el CMS no describa.
+ * @param max        Tope de fotos (el mapa usa 8; la galería de una actividad, más).
  */
-export function sectorPhotos(photos: readonly CmsPhoto[] | null | undefined, strapiBase: string, alt: string): ViewerPhoto[] {
+export function sectorPhotos(photos: readonly CmsPhoto[] | null | undefined, strapiBase: string, alt: string, max = MAX_SECTOR_PHOTOS): ViewerPhoto[] {
     const resolved: ViewerPhoto[] = [];
 
     for (const photo of photos ?? []) {
-        if (resolved.length >= MAX_SECTOR_PHOTOS) break;
+        if (resolved.length >= max) break;
         const url = photo?.url ?? "";
         if (!url) continue;
 

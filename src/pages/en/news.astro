@@ -6,15 +6,17 @@ import PageLayout from "../../layouts/PageLayout.astro";
 import Novedades from "../../components/Novedades.astro";
 import { loadLayoutContent } from "../../utils/layout-content";
 import { cargarNovedades } from "../../utils/novedades";
+import { cargarActividades } from "../../utils/actividades";
 import { getLocale, useTranslations } from "../../i18n";
 
 const locale = getLocale(Astro.url);
 const t = useTranslations(locale);
 const novedades = await cargarNovedades(locale);
+const actividades = await cargarActividades(locale);
 /* Redes y correo para el bloque «Síguenos y participa». */
 const { footer, site } = await loadLayoutContent(locale);
 ---
 
 <PageLayout title={t("news.title")} description={t("news.metaDescription")}>
-    <Novedades {novedades} {locale} socials={footer.Socials} contactEmail={site.contactEmail} />
+    <Novedades {novedades} {actividades} {locale} socials={footer.Socials} contactEmail={site.contactEmail} />
 </PageLayout>

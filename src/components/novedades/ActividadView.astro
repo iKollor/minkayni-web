@@ -1,0 +1,306 @@
+---
+/* Página de una actividad de campo: /novedades/<slug> y /en/news/<slug>.
+
+   Los bloques del cuerpo son los del constructor (los mismos componentes que
+   las subpáginas y que la vista previa del panel), pintados a HTML estático.
+   La galería reutiliza el visor del mapa de Batucada; sin JavaScript cada
+   miniatura es un enlace a la foto. */
+import PageLayout from "../../layouts/PageLayout.astro";
+import BuilderBlocks from "../react/builder/BuilderBlocks";
+import { normalizeBlocks, type Block } from "../react/builder/normalize";
+import { Icon } from "astro-icon/components";
+import { renderMarkdown } from "../../utils/render-markdown";
+import { sectorPhotos } from "../../utils/sector-photos";
+import { strapiMediaUrl } from "../../utils/media-url";
+import { enlaceMapa, esImagen, imagenDe, type ActividadResumen } from "../../utils/actividades-core";
+import { localizePath, useTranslations, type Locale } from "../../i18n";
+import type { Activity } from "../../schemas/pages.zod";
+
+interface Vecina {
+    slug: string;
+    titulo: string;
+}
+
+interface Props {
+    actividad: Activity;
+    resumen: ActividadResumen;
+    locale: Locale;
+    anterior?: Vecina;
+    siguiente?: Vecina;
+}
+
+const { actividad, resumen, locale, anterior, siguiente } = Astro.props;
+const t = useTranslations(locale);
+const STRAPI_URL = (import.meta.env.STRAPI_URL ?? "").trim();
+
+const blocks: Block[] = await Promise.all(
+    normalizeBlocks(actividad.sections).map(async (block) => (block.type === "richText" && block.body ? { ...block, bodyHtml: await renderMarkdown(block.body) } : block))
+);
+
+const portada = imagenDe(actividad.cover, STRAPI_URL, resumen.titulo, [640, 1080, 1600, 2200]);
+const galeria = (actividad.gallery ?? []).filter(esImagen);
+const fotos = sectorPhotos(galeria, STRAPI_URL, resumen.titulo, 40);
+const videos = [actividad.video, ...(actividad.gallery ?? [])]
+    .filter((m, i, lista) => m?.url && m.mime?.startsWith("video/") && lista.findIndex((x) => x?.url === m.url) === i)
+    .map((m) => strapiMediaUrl(m?.url, STRAPI_URL))
+    .filter(Boolean);
+const mapa = enlaceMapa(actividad.lat, actividad.lng);
+const redes = (actividad.social_posts ?? []).filter((p) => p?.permalink && /^https:\/\//.test(p.permalink));
+const marca = resumen.marca === "batucada" ? t("news.brand.batucada") : t("news.brand.minkayni");
+const novedades = localizePath("/novedades/", locale);
+
+const viewerStrings = JSON.stringify({
+    label: t("viewer.label"),
+    close: t("viewer.close"),
+    previous: t("viewer.previous"),
+    next: t("viewer.next"),
+    zoomIn: t("viewer.zoomIn"),
+    zoomOut: t("viewer.zoomOut"),
+    goTo: t("viewer.goTo"),
+    position: t("viewer.position"),
+});
+
+/* Google quiere descripciones de al menos 50 caracteres (tests/ad-grants):
+   si la del CMS se queda corta se completa con la fecha, el lugar y la marca. */
+const descripcionBase = actividad.seo?.metaDescription?.trim() || resumen.resumen;
+const description =
+    descripcionBase.length >= 50 ? descripcionBase : [descripcionBase, `${marca} · ${resumen.fechaTexto}${resumen.lugar ? ` · ${resumen.lugar}` : ""}`].filter(Boolean).join(" — ");
+const url = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
+const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: resumen.titulo,
+    description,
+    datePublished: actividad.publishedAt ?? resumen.fechaIso,
+    dateModified: actividad.updatedAt ?? undefined,
+    inLanguage: locale === "es" ? "es-EC" : "en",
+    url,
+    image: portada ? [portada.src] : undefined,
+    author: { "@type": "Organization", name: "Fundación Minkayni" },
+    publisher: { "@type": "Organization", name: "Fundación Minkayni" },
+    about: {
+        "@type": "Event",
+        name: resumen.titulo,
+        startDate: resumen.fechaIso,
+        endDate: actividad.end_date ?? undefined,
+        eventStatus: "https://schema.org/EventCompleted",
+        location: resumen.lugar
+            ? {
+                  "@type": "Place",
+                  name: resumen.lugar,
+                  ...(mapa ? { geo: { "@type": "GeoCoordinates", latitude: actividad.lat, longitude: actividad.lng } } : {}),
+              }
+            : undefined,
+        organizer: { "@type": "Organization", name: marca },
+    },
+};
+---
+
+<PageLayout title={resumen.titulo} description={description} image={portada?.src} imageAlt={portada?.alt}>
+    <article class="mx-auto w-[90%] max-w-[1100px] pb-24 pt-10 sm:pb-32">
+        <nav class="text-sm" aria-label={t("news.backToNews")}>
+            <a href={novedades} class="inline-flex items-center gap-1.5 font-bold text-primary underline underline-offset-4 hover:text-secondary-deep">
+                <Icon name="mdi:arrow-left" class="h-4 w-4" aria-hidden="true" />
+                {t("news.backToNews")}
+            </a>
+        </nav>
+
+        <header class="mt-8 max-w-[70ch]">
+            <p class="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-[0.18em]">
+                <span class:list={["rounded-full px-3 py-1", resumen.marca === "batucada" ? "bg-accent/25 text-black" : "bg-primary/10 text-primary"]}>{marca}</span>
+                {resumen.proyecto && resumen.proyecto !== marca && <span class="text-black/60">{resumen.proyecto}</span>}
+            </p>
+            <p class="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 text-base text-black/70">
+                <time datetime={resumen.fechaIso} class="font-bold text-black/85">{resumen.fechaTexto}</time>
+                {resumen.lugar && (
+                    <>
+                        <span aria-hidden="true">·</span>
+                        <span>{resumen.lugar}</span>
+                    </>
+                )}
+                {mapa && (
+                    <>
+                        <span aria-hidden="true">·</span>
+                        <a href={mapa} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 font-bold text-primary underline underline-offset-4 hover:text-secondary-deep">
+                            <Icon name="mdi:map-marker-outline" class="h-4 w-4" aria-hidden="true" />
+                            {t("news.seeOnMap")}
+                        </a>
+                    </>
+                )}
+            </p>
+            {resumen.resumen && <p class="mt-6 text-xl leading-relaxed text-black/80 sm:text-2xl">{resumen.resumen}</p>}
+        </header>
+
+        {
+            portada && (
+                <img
+                    class="mt-10 max-h-[75vh] w-full rounded-3xl bg-black/5 object-cover shadow-sm"
+                    src={portada.src}
+                    srcset={portada.srcset || undefined}
+                    sizes="(min-width: 1100px) 1100px, 90vw"
+                    width={portada.ancho}
+                    height={portada.alto}
+                    alt={portada.alt}
+                    fetchpriority="high"
+                    decoding="async"
+                />
+            )
+        }
+
+        {blocks.length > 0 && (
+            <div class="mt-6">
+                <BuilderBlocks blocks={blocks} strapiUrl={STRAPI_URL} />
+            </div>
+        )}
+
+        {
+            videos.length > 0 && (
+                <section class="mt-16" aria-labelledby="actividad-video">
+                    <h2 id="actividad-video" class="font-display text-2xl font-black text-black sm:text-3xl">{t("news.video")}</h2>
+                    <div class="mt-6 grid gap-6 md:grid-cols-2">
+                        {videos.map((src) => (
+                            <video class="w-full rounded-3xl bg-black" src={src} controls playsinline preload="metadata" />
+                        ))}
+                    </div>
+                </section>
+            )
+        }
+
+        {
+            fotos.length > 1 && (
+                <section class="mt-16" aria-labelledby="actividad-galeria">
+                    <h2 id="actividad-galeria" class="font-display text-2xl font-black text-black sm:text-3xl">{t("news.gallery")}</h2>
+                    <ul class="mt-6 grid list-none grid-cols-2 gap-3 p-0 sm:grid-cols-3 lg:grid-cols-4" data-act-gallery={JSON.stringify(fotos)} data-act-strings={viewerStrings} data-act-caption={resumen.titulo}>
+                        {fotos.map((foto, indice) => (
+                            <li>
+                                <a
+                                    href={foto.zoom || foto.full}
+                                    data-act-photo={indice}
+                                    class="block overflow-hidden rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                                    aria-label={t("viewer.open", { index: indice + 1, count: fotos.length })}
+                                >
+                                    <img
+                                        class="aspect-square w-full bg-black/5 object-cover transition duration-300 hover:scale-[1.03] motion-reduce:transition-none motion-reduce:hover:scale-100"
+                                        src={foto.thumb}
+                                        width={foto.width ?? 600}
+                                        height={foto.height ?? 600}
+                                        alt={foto.alt}
+                                        loading="lazy"
+                                        decoding="async"
+                                    />
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )
+        }
+
+        {
+            redes.length > 0 && (
+                <section class="mt-16 rounded-3xl border border-black/10 bg-white/50 px-8 py-8 sm:px-10" aria-labelledby="actividad-redes">
+                    <h2 id="actividad-redes" class="text-sm font-bold uppercase tracking-[0.22em] text-primary">{t("news.alsoOnSocials")}</h2>
+                    <ul class="mt-4 flex list-none flex-wrap gap-3 p-0">
+                        {redes.map((post) => (
+                            <li>
+                                <a href={post!.permalink} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-full bg-secondary px-5 py-2.5 font-bold text-white transition hover:bg-secondary-deep">
+                                    <Icon name={post!.platform === "facebook" ? "mdi:facebook" : "mdi:instagram"} class="h-5 w-5" aria-hidden="true" />
+                                    {post!.platform === "facebook" ? t("news.onFacebook") : t("news.onInstagram")}
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )
+        }
+
+        <section class="mt-16 grid gap-6 rounded-3xl border border-black/10 bg-white/50 px-8 py-10 sm:px-12 md:grid-cols-[1fr_auto] md:items-end" aria-labelledby="actividad-sobre">
+            <div class="max-w-[62ch]">
+                <h2 id="actividad-sobre" class="font-display text-2xl font-black leading-tight text-black sm:text-3xl">{t(`news.aboutTitle.${resumen.marca}`)}</h2>
+                <p class="mt-4 text-lg leading-relaxed text-black/75">{t(`news.aboutBody.${resumen.marca}`)}</p>
+            </div>
+            <a
+                href={localizePath(resumen.marca === "batucada" ? "/projects/batucada-popular/" : "/about", locale)}
+                class="inline-flex items-center gap-1.5 font-bold text-primary underline underline-offset-4 hover:text-secondary-deep"
+            >
+                {t(`news.aboutLink.${resumen.marca}`)}
+                <Icon name="mdi:arrow-right" class="h-4 w-4" aria-hidden="true" />
+            </a>
+        </section>
+
+        {
+            (anterior || siguiente) && (
+                <nav class="mt-16 grid gap-4 border-t border-black/10 pt-10 sm:grid-cols-2" aria-label={t("news.backToNews")}>
+                    {anterior ? (
+                        <a href={localizePath(`/novedades/${anterior.slug}/`, locale)} class="group rounded-2xl p-4 transition hover:bg-white/60">
+                            <span class="block text-xs font-bold uppercase tracking-[0.18em] text-black/50">← {t("news.previous")}</span>
+                            <span class="mt-1 block font-display text-lg font-black text-black group-hover:text-primary">{anterior.titulo}</span>
+                        </a>
+                    ) : (
+                        <span />
+                    )}
+                    {siguiente && (
+                        <a href={localizePath(`/novedades/${siguiente.slug}/`, locale)} class="group rounded-2xl p-4 text-right transition hover:bg-white/60">
+                            <span class="block text-xs font-bold uppercase tracking-[0.18em] text-black/50">{t("news.next")} →</span>
+                            <span class="mt-1 block font-display text-lg font-black text-black group-hover:text-primary">{siguiente.titulo}</span>
+                        </a>
+                    )}
+                </nav>
+            )
+        }
+
+        <aside class="mt-16 rounded-3xl bg-primary px-8 py-12 text-center text-white sm:px-14 sm:py-14" aria-labelledby="actividad-cta">
+            <h2 id="actividad-cta" class="font-display text-3xl font-black leading-tight sm:text-4xl">{t("news.ctaTitle")}</h2>
+            <p class="mx-auto mt-4 max-w-[52ch] text-lg leading-relaxed text-white/85">{t("news.ctaBody")}</p>
+            <div class="mt-8 flex flex-wrap justify-center gap-4">
+                <a class="inline-block rounded-full bg-white px-8 py-4 font-display text-lg font-black text-primary transition hover:scale-[1.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white motion-reduce:transition-none" href={localizePath("/donate", locale)}>
+                    {t("news.ctaButton")}
+                </a>
+                <a class="inline-block rounded-full border-2 border-white/70 px-8 py-4 font-display text-lg font-black text-white transition hover:bg-white/10" href={localizePath("/about#contacto", locale)}>
+                    {t("news.followContact")}
+                </a>
+            </div>
+        </aside>
+    </article>
+
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />
+</PageLayout>
+
+<script>
+    import { openViewer, type ViewerStrings } from "../../scripts/batucada/viewer";
+    import type { ViewerPhoto } from "../../utils/sector-photos";
+    import { initReveals } from "../../scripts/reveals";
+    import { initMagicButtons } from "../../scripts/magic-button";
+
+    const initActividad = () => {
+        initReveals();
+        initMagicButtons();
+
+        const galeria = document.querySelector<HTMLElement>("[data-act-gallery]");
+        if (!galeria || galeria.dataset.ready) return;
+        galeria.dataset.ready = "1";
+        let fotos: ViewerPhoto[] = [];
+        let textos: ViewerStrings | null = null;
+        try {
+            fotos = JSON.parse(galeria.dataset.actGallery ?? "[]");
+            textos = JSON.parse(galeria.dataset.actStrings ?? "null");
+        } catch {
+            return;
+        }
+        if (!fotos.length || !textos) return;
+        const strings = textos;
+
+        galeria.addEventListener("click", (event) => {
+            const enlace = (event.target as HTMLElement).closest<HTMLAnchorElement>("[data-act-photo]");
+            if (!enlace) return;
+            event.preventDefault();
+            openViewer({ photos: fotos, index: Number(enlace.dataset.actPhoto), caption: galeria.dataset.actCaption ?? "", strings, trigger: enlace });
+        });
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initActividad, { once: true });
+    } else {
+        initActividad();
+    }
+</script>

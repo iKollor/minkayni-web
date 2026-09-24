@@ -9,10 +9,15 @@
  *
  * Los datos salen de src/utils/novedades.ts; ahí está el porqué del troceo del
  * pie de foto en titular y cuerpo.
+ *
+ * Arriba de las publicaciones van las actividades de campo (Actividades.astro),
+ * cada una con su propia página en /novedades/<slug>.
  */
 import { Icon } from "astro-icon/components";
 
+import Actividades from "./novedades/Actividades.astro";
 import type { Novedad } from "../utils/novedades";
+import type { ActividadResumen } from "../utils/actividades-core";
 import { localizePath, useTranslations, type Locale } from "../i18n";
 import { buildSocialItems } from "../scripts/components/socials";
 import { fallbackFooter } from "../data/site";
@@ -21,6 +26,8 @@ import type { Footer } from "../schemas/strapi.graphql.zod";
 
 interface Props {
     novedades: Novedad[];
+    /** Actividades de campo del CMS, ya ordenadas. */
+    actividades?: ActividadResumen[];
     locale: Locale;
     /** Redes del single type `footer`; sin CMS se usan las del respaldo. */
     socials?: Footer["Socials"] | null;
@@ -28,7 +35,7 @@ interface Props {
     contactEmail?: string | null;
 }
 
-const { novedades, locale, socials = fallbackFooter.Socials, contactEmail = globalFallback.contactEmail } = Astro.props;
+const { novedades, actividades = [], locale, socials = fallbackFooter.Socials, contactEmail = globalFallback.contactEmail } = Astro.props;
 const t = useTranslations(locale);
 const socialItems = buildSocialItems(socials ?? fallbackFooter.Socials);
 const contacto = localizePath("/about#contacto", locale);
@@ -71,7 +78,7 @@ const jsonLd = {
 {/* `data-cms-empty` marca una build sin publicaciones del CMS (local sin
     Strapi). La auditoría de Ad Grants (tests/ad-grants.test.ts) lo lee para
     no juzgar la cantidad de contenido de una página cuyo cuerpo no llegó. */}
-<div class="mx-auto w-[90%] max-w-[1100px] py-16 sm:py-24" data-cms-empty={novedades.length === 0 ? "" : undefined}>
+<div class="mx-auto w-[90%] max-w-[1100px] py-16 sm:py-24" data-cms-empty={novedades.length === 0 && actividades.length === 0 ? "" : undefined}>
     <header class="max-w-[70ch]">
         <p class="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-primary">{t("news.eyebrow")}</p>
         <p class="text-lg leading-relaxed text-black/75">{t("news.lead")}</p>
@@ -92,9 +99,19 @@ const jsonLd = {
         }
     </header>
 
+    <Actividades {actividades} {locale} />
+
+    {
+        actividades.length > 0 && novedades.length > 0 && (
+            <h2 id="novedades-redes" class="mt-20 font-display text-3xl font-black leading-tight text-black sm:mt-28 sm:text-4xl">
+                {t("news.fromSocials")}
+            </h2>
+        )
+    }
+
     {
         novedades.length === 0 ? (
-            <p class="mt-16 text-lg text-black/60">{t("empty.posts")}</p>
+            actividades.length === 0 && <p class="mt-16 text-lg text-black/60">{t("empty.posts")}</p>
         ) : (
             <ol class="mt-14 list-none space-y-14 border-t border-black/10 p-0 sm:mt-20 sm:space-y-20">
                 {novedades.map((novedad) => (
