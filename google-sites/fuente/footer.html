@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Footer · Fundación Minkayni</title>
+<!--
+  FOOTER ORIGINAL DE MINKAYNI.ORG PARA GOOGLE SITES
+  Réplica de src/components/Footer.astro + legal/LegalFooterBand.astro.
+
+  Cómo usarlo: Insertar → Insertar código (pestaña «Insertar código»),
+  pegar TODO este archivo y ajustar el alto del bloque (ver README).
+
+  Qué se puede editar sin tocar el diseño está en el bloque CONFIGURACIÓN
+  del <script> al final del archivo.
+-->
+<style>
+{{FONTS}}
+{{BASE_CSS}}
+
+body {
+    background: transparent;
+}
+
+/* Google Sites da a cada bloque un alto fijo: si sobra alto, lo absorbe la
+   franja morada de navegación y los créditos quedan siempre al fondo. */
+footer {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+.site-nav {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+}
+.site-nav__grid {
+    flex: 1 0 auto;
+}
+
+/* ── Cúpula (DomeSeparator.astro) ───────────────────────────────────────
+   Una elipse de 140 % del ancho recortada por arriba; en el sitio separa
+   cada tramo del pie con la misma curva. */
+.dome {
+    position: relative;
+    width: 100%;
+    height: 150px;
+    color: var(--bg-white);
+}
+.dome__clip {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+.dome__fill,
+.dome__line {
+    position: absolute;
+    left: 50%;
+    width: 140vw;
+    height: 600px;
+    border-radius: 50%;
+    transform: translateX(-50%);
+}
+.dome__fill {
+    top: 0;
+    background: currentColor;
+}
+.dome__line {
+    top: 40px;
+    border: 6px solid var(--primary);
+}
+.dome__flor {
+    position: absolute;
+    top: 44px;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    transform: translate(-50%, -50%);
+}
+.dome__content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 16px 0;
+    text-align: center;
+}
+.dome--primary {
+    color: var(--primary);
+}
+
+.title-xl {
+    font-family: var(--font-display);
+    font-weight: 900;
+    letter-spacing: -0.025em;
+    font-size: 24px;
+    line-height: 1.1;
+}
+
+/* ── Aliados ─────────────────────────────────────────────────────────── */
+.allies {
+    background: var(--bg-white);
+}
+.allies__title {
+    color: var(--primary);
+}
+.logo-loop {
+    --logo-h: 72px;
+    overflow: hidden;
+    padding: 8px 0 40px;
+    mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
+}
+.logo-loop__track {
+    display: flex;
+    width: max-content;
+    gap: 64px;
+    align-items: center;
+    animation: loop 40s linear infinite;
+}
+.logo-loop:hover .logo-loop__track {
+    animation-play-state: paused;
+}
+.logo-loop img {
+    display: block;
+    height: auto;
+    max-height: var(--logo-h);
+    max-width: calc(var(--logo-h) * 2.6);
+}
+@keyframes loop {
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+/* ── Súmate / aporta ─────────────────────────────────────────────────── */
+.join {
+    position: relative;
+    padding-top: 40px;
+    background: var(--bg-white);
+}
+.join .dome {
+    top: 1px;
+}
+.join__title {
+    color: var(--bg-white);
+}
+.join__subtitle {
+    margin-top: 4px;
+    color: var(--bg-white);
+}
+.join__actions {
+    background: var(--primary);
+    padding: 20px 0;
+}
+.join__actions-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    max-width: 90%;
+    margin: 0 auto;
+}
+
+/* ── Navegación del pie ──────────────────────────────────────────────── */
+.site-nav {
+    background: var(--primary);
+    color: var(--bg-white);
+}
+.site-nav__grid {
+    width: 90%;
+    margin: 0 auto;
+    padding: 40px 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    align-items: start;
+}
+.nav-main {
+    font-size: 24px;
+}
+.nav-main li + li {
+    margin-top: 12px;
+}
+.nav-main a {
+    position: relative;
+    transition: color 0.2s var(--ease-apple);
+}
+.nav-main a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 2px;
+    background: var(--secondary);
+    transition: width 0.2s var(--ease-apple);
+}
+.nav-main a:hover {
+    color: var(--secondary);
+}
+.nav-main a:hover::after {
+    width: 100%;
+}
+.nav-extra {
+    margin-top: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    font-size: 16px;
+}
+.nav-extra a {
+    opacity: 0.8;
+    text-underline-offset: 4px;
+    transition: opacity 0.2s var(--ease-apple), color 0.2s var(--ease-apple);
+}
+.nav-extra a:hover {
+    opacity: 1;
+    color: var(--secondary);
+    text-decoration: underline;
+}
+.nav-projects {
+    font-size: 16px;
+}
+.nav-projects li + li {
+    margin-top: 12px;
+}
+.nav-projects h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: inherit;
+    opacity: 0.4;
+}
+.nav-projects a {
+    position: relative;
+}
+.nav-projects a::after {
+    content: "";
+    position: absolute;
+    left: -16px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--secondary);
+    transform: translateY(-50%);
+    opacity: 0;
+}
+.nav-projects a:hover {
+    color: var(--secondary);
+}
+.nav-projects a:hover::after {
+    opacity: 1;
+}
+.brand {
+    text-align: center;
+}
+.brand__logo {
+    display: inline-block;
+    width: 100%;
+    max-width: 320px;
+}
+.brand__logo svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+.socials {
+    margin-top: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+.socials a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    border-radius: 9999px;
+    background: var(--secondary);
+    color: #fff;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    transition: all 0.2s var(--ease-apple);
+}
+.socials a:hover {
+    background: var(--accent);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+.socials a:active {
+    transform: scale(0.98);
+}
+.socials a:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary), 0 0 0 4px var(--accent);
+}
+.socials svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Línea legal (LegalFooterBand.astro). */
+.legal {
+    width: 90%;
+    margin: 0 auto;
+    padding: 24px 0;
+    border-top: 1px solid rgb(255 246 229 / 0.15);
+}
+.legal__row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 14px;
+}
+.legal__items {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    color: rgb(255 246 229 / 0.8);
+}
+.legal__dot {
+    color: rgb(255 246 229 / 0.35);
+}
+.legal__link {
+    flex-shrink: 0;
+    font-weight: 700;
+    color: rgb(255 246 229 / 0.8);
+    text-underline-offset: 4px;
+    transition: color 0.2s var(--ease-apple);
+}
+.legal__link:hover,
+.legal__link:focus-visible {
+    color: var(--bg-white);
+    text-decoration: underline;
+    outline: none;
+}
+
+/* Créditos sobre celeste: tinta negra (contraste AA, como en el sitio). */
+.credits {
+    background: var(--secondary);
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--bg-black);
+}
+.credits > div {
+    width: 100%;
+    text-align: center;
+}
+.credits__links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px 20px;
+}
+.credits span,
+.credits a {
+    opacity: 0.8;
+}
+.credits a {
+    transition: color 0.2s var(--ease-apple), opacity 0.2s var(--ease-apple);
+}
+.credits a:hover {
+    opacity: 1;
+    color: var(--primary);
+}
+.credits__author {
+    position: relative;
+}
+.credits__author::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+    background: var(--bg-black);
+    transition: width 0.2s var(--ease-apple), background-color 0.2s var(--ease-apple);
+}
+.credits__author:hover::after {
+    width: 0;
+    background: var(--primary);
+}
+
+@media (min-width: 640px) {
+    .nav-main {
+        font-size: 30px;
+    }
+    .nav-extra,
+    .nav-projects {
+        font-size: 18px;
+    }
+    .legal__row {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        column-gap: 32px;
+    }
+}
+
+@media (min-width: 768px) {
+    .dome {
+        height: 300px;
+    }
+    .dome__fill,
+    .dome__line {
+        height: 1400px;
+    }
+    .dome__line {
+        top: 60px;
+    }
+    .dome__flor {
+        top: 64px;
+    }
+    .dome__content {
+        padding-top: 80px;
+    }
+    .title-xl {
+        font-size: 60px;
+    }
+    .logo-loop {
+        --logo-h: 96px;
+    }
+    .site-nav__grid {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+    .nav-main-col {
+        grid-column: span 4;
+    }
+    .nav-projects-col {
+        grid-column: span 5;
+    }
+    .nav-projects {
+        font-size: 20px;
+        max-width: 56ch;
+    }
+    .nav-main {
+        font-size: 36px;
+    }
+    .brand {
+        grid-column: span 3;
+        justify-self: end;
+        text-align: right;
+    }
+    .brand__logo-wrap {
+        margin-top: 48px;
+    }
+    .socials {
+        justify-content: flex-end;
+    }
+    .socials svg {
+        width: 24px;
+        height: 24px;
+    }
+    .credits {
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 20px 40px;
+        font-size: 16px;
+    }
+    .credits > div:first-child {
+        text-align: left;
+    }
+    .credits__links {
+        justify-content: flex-start;
+    }
+    .credits > div:last-child {
+        text-align: right;
+    }
+}
+</style>
+</head>
+<body>
+<footer id="footer" role="contentinfo">
+    <!-- Aliados -->
+    <section class="allies" aria-labelledby="allies-title">
+        <div class="dome">
+            <div class="dome__clip">
+                <div class="dome__fill"></div>
+                <div class="dome__line"></div>
+            </div>
+            <span class="dome__flor" aria-hidden="true">{{FLOR}}</span>
+            <div class="dome__content">
+                <h2 id="allies-title" class="title-xl allies__title">Nuestros Aliados</h2>
+            </div>
+        </div>
+        <div class="logo-loop" id="logo-loop" aria-label="Carrusel de logos de empresas colaboradoras" hidden>
+            <div class="logo-loop__track" id="logo-track"></div>
+        </div>
+    </section>
+
+    <!-- ¿Quieres ser nuestro aliado? -->
+    <section class="join" aria-labelledby="join-title">
+        <div class="dome dome--primary">
+            <div class="dome__clip">
+                <div class="dome__fill"></div>
+            </div>
+            <div class="dome__content">
+                <div>
+                    <h2 id="join-title" class="title-xl join__title">¿Quieres ser nuestro aliado?</h2>
+                    <p class="join__subtitle">Juntos construyamos nuevas oportunidades</p>
+                </div>
+            </div>
+        </div>
+        <div class="join__actions">
+            <div class="join__actions-inner">
+                <a class="magic-btn" data-path="/about#contacto" href="https://minkayni.org/about#contacto" target="_top" aria-label="Quiero unirme 💜">
+                    <span class="magic-btn__glow" aria-hidden="true"></span>
+                    <span class="magic-btn__surface">
+                        <span class="magic-btn__label magic-btn__label--default">Quiero unirme 💜</span>
+                        <span class="magic-btn__label magic-btn__label--hover" aria-hidden="true">a cambiar vidas ✨</span>
+                    </span>
+                </a>
+                <a class="outline-btn" data-path="/donate" href="https://minkayni.org/donate" target="_top">Aporta hoy 💜</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Navegación, logotipo y redes -->
+    <div class="site-nav">
+        <section class="site-nav__grid" aria-labelledby="site-navigation-title">
+            <h2 id="site-navigation-title" class="sr-only">Navegación del sitio</h2>
+
+            <nav class="nav-main-col" aria-label="Navegación principal">
+                <ul class="nav-main">
+                    <li><a data-path="/" href="https://minkayni.org/" target="_top">Inicio</a></li>
+                    <li><a data-path="/about" href="https://minkayni.org/about" target="_top">Conócenos</a></li>
+                    <li><a data-path="/impact" href="https://minkayni.org/impact" target="_top">Impacto</a></li>
+                    <li><a data-path="/projects" href="https://minkayni.org/projects" target="_top">Proyectos</a></li>
+                    <li><a data-path="/novedades" href="https://minkayni.org/novedades" target="_top">Novedades</a></li>
+                    <li><a data-path="/about#contacto" href="https://minkayni.org/about#contacto" target="_top">Súmate</a></li>
+                </ul>
+                <ul class="nav-extra">
+                    <li><a data-path="/donate" href="https://minkayni.org/donate" target="_top">Aporta hoy</a></li>
+                    <li><a data-path="/transparencia" href="https://minkayni.org/transparencia" target="_top">Transparencia legal</a></li>
+                </ul>
+            </nav>
+
+            <nav class="nav-projects-col" aria-label="Navegación secundaria">
+                <ul class="nav-projects">
+                    <li><h2>Proyectos</h2></li>
+                    <li><a data-path="/projects/batucada-popular/" href="https://minkayni.org/projects/batucada-popular/" target="_top">Batucada Popular</a></li>
+                </ul>
+            </nav>
+
+            <div class="brand">
+                <div class="brand__logo-wrap">
+                    <a class="brand__logo" data-path="/" href="https://minkayni.org/" target="_top" aria-label="Logotipo de la Fundación Minkayni">{{LOGO_TAG_WHITE}}</a>
+                </div>
+                <nav aria-label="Redes sociales">
+                    <ul class="socials">
+                        <li>
+                            <a href="https://www.facebook.com/FMinkayni/" aria-label="Facebook" title="Facebook" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.04C6.5 2.04 2 6.53 2 12.06C2 17.06 5.66 21.21 10.44 21.96V14.96H7.9V12.06H10.44V9.85C10.44 7.34 11.93 5.96 14.22 5.96C15.31 5.96 16.45 6.15 16.45 6.15V8.62H15.19C13.95 8.62 13.56 9.39 13.56 10.18V12.06H16.34L15.89 14.96H13.56V21.96A10 10 0 0 0 22 12.06C22 6.53 17.5 2.04 12 2.04Z"/></svg>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.instagram.com/batucada_popular_/" aria-label="Instagram" title="Instagram" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8 1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3Z"/></svg>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.tiktok.com/@batucada.popular" aria-label="Tiktok" title="Tiktok" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.6 5.82s.51.5 0 0A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6c0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64c0 3.33 2.76 5.7 5.69 5.7c3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48"/></svg>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </section>
+
+        <!-- Línea legal -->
+        <section class="legal" aria-label="Información legal de la organización">
+            <div class="legal__row">
+                <p class="legal__items">
+                    <span>FUNDACIÓN MINKAYNI</span>
+                    <span class="legal__dot" aria-hidden="true">·</span>
+                    <span>RUC 0993333182001</span>
+                    <span class="legal__dot" aria-hidden="true">·</span>
+                    <span>Resolución MIES-CZ-8-DDG1-2020-0059-R</span>
+                    <span class="legal__dot" aria-hidden="true">·</span>
+                    <span>Guayaquil, Ecuador</span>
+                </p>
+                <a class="legal__link" data-path="/transparencia" href="https://minkayni.org/transparencia" target="_top">Transparencia legal <span aria-hidden="true">→</span></a>
+            </div>
+        </section>
+    </div>
+
+    <!-- Créditos -->
+    <section class="credits" aria-label="Información legal y créditos">
+        <div>
+            <div class="credits__links">
+                <p><span id="copyright">© 2020–2026 Fundación Minkayni</span></p>
+            </div>
+        </div>
+        <div>
+            <span>Desarrollado por </span><a class="credits__author" href="https://allmylinks.com/definitelynotisai" rel="noopener noreferrer" target="_blank">Isaí Tobar</a>
+        </div>
+        <div>
+            <span>Hecho con </span><a href="https://sites.google.com" rel="noopener noreferrer" target="_blank">Google Sites</a>
+        </div>
+    </section>
+</footer>
+
+<script>
+/* ─────────────────────────── CONFIGURACIÓN ───────────────────────────
+   SITIO: a dónde llevan los enlaces del pie. Por defecto, a minkayni.org.
+   Si prefieres que apunten a las páginas de este Google Site, pon aquí su
+   dirección publicada (p. ej. "https://sites.google.com/view/minkayni") y
+   crea páginas con las mismas rutas (/about, /impact, /projects…).
+
+   ALIADOS: logos del carrusel «Nuestros Aliados». Sube cada logo a Google
+   Drive/Fotos o usa la URL pública del CMS y añádelo así:
+     { src: "https://…/logo.png", alt: "Nombre del aliado" },
+   Si la lista queda vacía, el carrusel no se muestra (igual que en la web). */
+var SITIO = "https://minkayni.org";
+var ALIADOS = [
+];
+var AÑO_INICIO = 2020;
+/* ──────────────────────────────────────────────────────────────────── */
+
+(function () {
+    var base = SITIO.replace(/\/+$/, "");
+    if (base !== "https://minkayni.org") {
+        document.querySelectorAll("[data-path]").forEach(function (a) {
+            a.href = base + a.getAttribute("data-path");
+        });
+    }
+
+    var year = new Date().getFullYear();
+    var range = year > AÑO_INICIO ? AÑO_INICIO + "–" + year : String(AÑO_INICIO);
+    document.getElementById("copyright").textContent = "© " + range + " Fundación Minkayni";
+
+    var logos = ALIADOS.filter(function (l) { return l && l.src; });
+    if (logos.length) {
+        var track = document.getElementById("logo-track");
+        /* Dos copias seguidas: la animación recorre la mitad y vuelve a empezar sin salto. */
+        for (var copy = 0; copy < 2; copy++) {
+            logos.forEach(function (l) {
+                var img = document.createElement("img");
+                img.src = l.src;
+                img.alt = copy === 0 ? (l.alt || "") : "";
+                img.loading = "lazy";
+                track.appendChild(img);
+            });
+        }
+        document.getElementById("logo-loop").hidden = false;
+    }
+})();
+</script>
+</body>
+</html>

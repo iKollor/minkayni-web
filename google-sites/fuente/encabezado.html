@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Encabezado de sección · Fundación Minkayni</title>
+<!--
+  ANTETÍTULO + TÍTULO DE SECCIÓN (src/components/SectionHeading.astro)
+  Edita el antetítulo y el título. Lo que va dentro de <em> sale en el
+  morado de marca, como el `*texto*` del CMS; <br> es un salto de línea.
+  Para centrarlo, cambia `data-align="left"` por `data-align="center"`.
+-->
+<style>
+{{FONTS}}
+{{BASE_CSS}}
+
+.heading {
+    padding: 8px 0;
+}
+.heading[data-align="center"] {
+    text-align: center;
+}
+.heading__eyebrow {
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--primary);
+}
+.heading__title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: clamp(2.25rem, 6vw, 4.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: var(--text);
+}
+.heading__title em {
+    font-style: normal;
+    color: var(--primary);
+}
+</style>
+</head>
+<body>
+<div class="heading" data-align="left">
+    <!-- ✏️ Antetítulo -->
+    <p class="heading__eyebrow">Aporta hoy</p>
+    <!-- ✏️ Título -->
+    <h2 class="heading__title">Tu aporte suena<br />en <em>todo el barrio</em>.</h2>
+</div>
+</body>
+</html>

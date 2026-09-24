@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Botón · Fundación Minkayni</title>
+<!--
+  BOTÓN «MÁGICO» DEL SITIO (src/components/Button.astro)
+  Celeste, texto crema en mayúsculas; al pasar el cursor cambia al segundo
+  texto y aparece el brillo de colores. Edita href y los dos textos.
+  Deja target="_top" para que el enlace abra la página completa y no
+  dentro del recuadro del bloque.
+-->
+<style>
+{{FONTS}}
+{{BASE_CSS}}
+
+.wrap {
+    display: flex;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+    <!-- ✏️ Enlace y textos -->
+    <a class="magic-btn" href="https://minkayni.org/donate" target="_top" aria-label="Aporta hoy 💜">
+        <span class="magic-btn__glow" aria-hidden="true"></span>
+        <span class="magic-btn__surface">
+            <span class="magic-btn__label magic-btn__label--default">Aporta hoy 💜</span>
+            <span class="magic-btn__label magic-btn__label--hover" aria-hidden="true">Al cambio ✨</span>
+        </span>
+    </a>
+</div>
+</body>
+</html>

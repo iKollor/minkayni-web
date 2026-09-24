@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Encabezado de sección · Fundación Minkayni</title>
+<!--
+  ANTETÍTULO + TÍTULO DE SECCIÓN (src/components/SectionHeading.astro)
+  Edita el antetítulo y el título. Lo que va dentro de <em> sale en el
+  morado de marca, como el `*texto*` del CMS; <br> es un salto de línea.
+  Para centrarlo, cambia `data-align="left"` por `data-align="center"`.
+-->
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;700;900&display=swap");
+/* Tokens de marca: los mismos de src/styles/global.css del sitio. */
+:root {
+    --text: #0a0801;
+    --bg-black: #0a0801;
+    --bg-white: #fff6e5;
+    --primary: #6e00a3;
+    --primary-deep: #410063;
+    --secondary: #3fa9f5;
+    --secondary-deep: #166fb0;
+    --secondary-light: #a6d8fb;
+    --accent: #f3a20b;
+    --surface: #dedbd4;
+
+    --font-display: "Aristotelica Pro Display", "Nunito", system-ui, sans-serif;
+    --font-text: "Aristotelica Pro Text", "Nunito", system-ui, sans-serif;
+
+    --ease-apple: cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-family: var(--font-text);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    color: var(--text);
+    /* Transparente: por fuera de cada bloque se ve el fondo crema del tema. */
+    background: transparent;
+    overflow-x: hidden;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+p,
+ul {
+    margin: 0;
+}
+
+ul {
+    padding: 0;
+    list-style: none;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Botón «mágico» del sitio (Button.astro): píldora celeste, texto crema en
+   mayúsculas; al pasar el cursor la etiqueta alternativa sube y aparece el
+   brillo de colores. Versión solo CSS de scripts/magic-button.ts. */
+.magic-btn {
+    --btn-bg: var(--secondary);
+    --btn-bg-hover: #4cede1;
+    --btn-text: var(--bg-white);
+    position: relative;
+    display: inline-block;
+    isolation: isolate;
+    border-radius: 9999px;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 18px;
+    text-transform: uppercase;
+    color: var(--btn-text);
+    user-select: none;
+}
+.magic-btn__surface {
+    position: relative;
+    z-index: 1;
+    display: inline-grid;
+    place-items: center;
+    overflow: hidden;
+    padding: 0.45em 1.3rem;
+    border-radius: 9999px;
+    background: var(--btn-bg);
+    white-space: nowrap;
+    transition: background-color 0.35s var(--ease-apple);
+}
+.magic-btn__label {
+    grid-area: 1 / 1;
+    transition: transform 0.45s cubic-bezier(0.34, 1.35, 0.4, 1);
+}
+.magic-btn__label--hover {
+    transform: translateY(160%);
+}
+.magic-btn__glow {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 9999px;
+    background: linear-gradient(20deg, #00f8f1, #ffbd1e 33%, #fe848f 66%, #00f8f1);
+    background-size: 100% 200%;
+    filter: blur(5px);
+    opacity: 0;
+    transition: opacity 0.35s var(--ease-apple);
+}
+.magic-btn:hover .magic-btn__label--default,
+.magic-btn:focus-visible .magic-btn__label--default {
+    transform: translateY(-160%);
+}
+.magic-btn:hover .magic-btn__label--hover,
+.magic-btn:focus-visible .magic-btn__label--hover {
+    transform: translateY(0);
+}
+.magic-btn:hover .magic-btn__glow,
+.magic-btn:focus-visible .magic-btn__glow {
+    opacity: 1;
+    animation: glow-shift 5s linear infinite;
+}
+.magic-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+}
+@keyframes glow-shift {
+    to {
+        background-position: 0% 200%;
+    }
+}
+
+/* Botón de contorno (el «Aporta hoy» del footer). */
+.outline-btn {
+    display: inline-flex;
+    min-height: 48px;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 28px;
+    border: 2px solid rgb(255 246 229 / 0.8);
+    border-radius: 9999px;
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--bg-white);
+    transition:
+        transform 0.2s var(--ease-apple),
+        background-color 0.2s var(--ease-apple),
+        border-color 0.2s var(--ease-apple),
+        color 0.2s var(--ease-apple);
+}
+.outline-btn:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--bg-black);
+}
+.outline-btn:focus-visible {
+    outline: 2px solid var(--bg-white);
+    outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+
+.heading {
+    padding: 8px 0;
+}
+.heading[data-align="center"] {
+    text-align: center;
+}
+.heading__eyebrow {
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--primary);
+}
+.heading__title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: clamp(2.25rem, 6vw, 4.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: var(--text);
+}
+.heading__title em {
+    font-style: normal;
+    color: var(--primary);
+}
+</style>
+</head>
+<body>
+<div class="heading" data-align="left">
+    <!-- ✏️ Antetítulo -->
+    <p class="heading__eyebrow">Aporta hoy</p>
+    <!-- ✏️ Título -->
+    <h2 class="heading__title">Tu aporte suena<br />en <em>todo el barrio</em>.</h2>
+</div>
+</body>
+</html>

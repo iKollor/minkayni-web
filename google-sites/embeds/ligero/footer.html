@@ -1,0 +1,856 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Footer · Fundación Minkayni</title>
+<!--
+  FOOTER ORIGINAL DE MINKAYNI.ORG PARA GOOGLE SITES
+  Réplica de src/components/Footer.astro + legal/LegalFooterBand.astro.
+
+  Cómo usarlo: Insertar → Insertar código (pestaña «Insertar código»),
+  pegar TODO este archivo y ajustar el alto del bloque (ver README).
+
+  Qué se puede editar sin tocar el diseño está en el bloque CONFIGURACIÓN
+  del <script> al final del archivo.
+-->
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;700;900&display=swap");
+/* Tokens de marca: los mismos de src/styles/global.css del sitio. */
+:root {
+    --text: #0a0801;
+    --bg-black: #0a0801;
+    --bg-white: #fff6e5;
+    --primary: #6e00a3;
+    --primary-deep: #410063;
+    --secondary: #3fa9f5;
+    --secondary-deep: #166fb0;
+    --secondary-light: #a6d8fb;
+    --accent: #f3a20b;
+    --surface: #dedbd4;
+
+    --font-display: "Aristotelica Pro Display", "Nunito", system-ui, sans-serif;
+    --font-text: "Aristotelica Pro Text", "Nunito", system-ui, sans-serif;
+
+    --ease-apple: cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-family: var(--font-text);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    color: var(--text);
+    /* Transparente: por fuera de cada bloque se ve el fondo crema del tema. */
+    background: transparent;
+    overflow-x: hidden;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+p,
+ul {
+    margin: 0;
+}
+
+ul {
+    padding: 0;
+    list-style: none;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Botón «mágico» del sitio (Button.astro): píldora celeste, texto crema en
+   mayúsculas; al pasar el cursor la etiqueta alternativa sube y aparece el
+   brillo de colores. Versión solo CSS de scripts/magic-button.ts. */
+.magic-btn {
+    --btn-bg: var(--secondary);
+    --btn-bg-hover: #4cede1;
+    --btn-text: var(--bg-white);
+    position: relative;
+    display: inline-block;
+    isolation: isolate;
+    border-radius: 9999px;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 18px;
+    text-transform: uppercase;
+    color: var(--btn-text);
+    user-select: none;
+}
+.magic-btn__surface {
+    position: relative;
+    z-index: 1;
+    display: inline-grid;
+    place-items: center;
+    overflow: hidden;
+    padding: 0.45em 1.3rem;
+    border-radius: 9999px;
+    background: var(--btn-bg);
+    white-space: nowrap;
+    transition: background-color 0.35s var(--ease-apple);
+}
+.magic-btn__label {
+    grid-area: 1 / 1;
+    transition: transform 0.45s cubic-bezier(0.34, 1.35, 0.4, 1);
+}
+.magic-btn__label--hover {
+    transform: translateY(160%);
+}
+.magic-btn__glow {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 9999px;
+    background: linear-gradient(20deg, #00f8f1, #ffbd1e 33%, #fe848f 66%, #00f8f1);
+    background-size: 100% 200%;
+    filter: blur(5px);
+    opacity: 0;
+    transition: opacity 0.35s var(--ease-apple);
+}
+.magic-btn:hover .magic-btn__label--default,
+.magic-btn:focus-visible .magic-btn__label--default {
+    transform: translateY(-160%);
+}
+.magic-btn:hover .magic-btn__label--hover,
+.magic-btn:focus-visible .magic-btn__label--hover {
+    transform: translateY(0);
+}
+.magic-btn:hover .magic-btn__glow,
+.magic-btn:focus-visible .magic-btn__glow {
+    opacity: 1;
+    animation: glow-shift 5s linear infinite;
+}
+.magic-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+}
+@keyframes glow-shift {
+    to {
+        background-position: 0% 200%;
+    }
+}
+
+/* Botón de contorno (el «Aporta hoy» del footer). */
+.outline-btn {
+    display: inline-flex;
+    min-height: 48px;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 28px;
+    border: 2px solid rgb(255 246 229 / 0.8);
+    border-radius: 9999px;
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--bg-white);
+    transition:
+        transform 0.2s var(--ease-apple),
+        background-color 0.2s var(--ease-apple),
+        border-color 0.2s var(--ease-apple),
+        color 0.2s var(--ease-apple);
+}
+.outline-btn:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--bg-black);
+}
+.outline-btn:focus-visible {
+    outline: 2px solid var(--bg-white);
+    outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+
+body {
+    background: transparent;
+}
+
+/* Google Sites da a cada bloque un alto fijo: si sobra alto, lo absorbe la
+   franja morada de navegación y los créditos quedan siempre al fondo. */
+footer {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+.site-nav {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+}
+.site-nav__grid {
+    flex: 1 0 auto;
+}
+
+/* ── Cúpula (DomeSeparator.astro) ───────────────────────────────────────
+   Una elipse de 140 % del ancho recortada por arriba; en el sitio separa
+   cada tramo del pie con la misma curva. */
+.dome {
+    position: relative;
+    width: 100%;
+    height: 150px;
+    color: var(--bg-white);
+}
+.dome__clip {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+.dome__fill,
+.dome__line {
+    position: absolute;
+    left: 50%;
+    width: 140vw;
+    height: 600px;
+    border-radius: 50%;
+    transform: translateX(-50%);
+}
+.dome__fill {
+    top: 0;
+    background: currentColor;
+}
+.dome__line {
+    top: 40px;
+    border: 6px solid var(--primary);
+}
+.dome__flor {
+    position: absolute;
+    top: 44px;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    transform: translate(-50%, -50%);
+}
+.dome__content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 16px 0;
+    text-align: center;
+}
+.dome--primary {
+    color: var(--primary);
+}
+
+.title-xl {
+    font-family: var(--font-display);
+    font-weight: 900;
+    letter-spacing: -0.025em;
+    font-size: 24px;
+    line-height: 1.1;
+}
+
+/* ── Aliados ─────────────────────────────────────────────────────────── */
+.allies {
+    background: var(--bg-white);
+}
+.allies__title {
+    color: var(--primary);
+}
+.logo-loop {
+    --logo-h: 72px;
+    overflow: hidden;
+    padding: 8px 0 40px;
+    mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
+}
+.logo-loop__track {
+    display: flex;
+    width: max-content;
+    gap: 64px;
+    align-items: center;
+    animation: loop 40s linear infinite;
+}
+.logo-loop:hover .logo-loop__track {
+    animation-play-state: paused;
+}
+.logo-loop img {
+    display: block;
+    height: auto;
+    max-height: var(--logo-h);
+    max-width: calc(var(--logo-h) * 2.6);
+}
+@keyframes loop {
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+/* ── Súmate / aporta ─────────────────────────────────────────────────── */
+.join {
+    position: relative;
+    padding-top: 40px;
+    background: var(--bg-white);
+}
+.join .dome {
+    top: 1px;
+}
+.join__title {
+    color: var(--bg-white);
+}
+.join__subtitle {
+    margin-top: 4px;
+    color: var(--bg-white);
+}
+.join__actions {
+    background: var(--primary);
+    padding: 20px 0;
+}
+.join__actions-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    max-width: 90%;
+    margin: 0 auto;
+}
+
+/* ── Navegación del pie ──────────────────────────────────────────────── */
+.site-nav {
+    background: var(--primary);
+    color: var(--bg-white);
+}
+.site-nav__grid {
+    width: 90%;
+    margin: 0 auto;
+    padding: 40px 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    align-items: start;
+}
+.nav-main {
+    font-size: 24px;
+}
+.nav-main li + li {
+    margin-top: 12px;
+}
+.nav-main a {
+    position: relative;
+    transition: color 0.2s var(--ease-apple);
+}
+.nav-main a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 2px;
+    background: var(--secondary);
+    transition: width 0.2s var(--ease-apple);
+}
+.nav-main a:hover {
+    color: var(--secondary);
+}
+.nav-main a:hover::after {
+    width: 100%;
+}
+.nav-extra {
+    margin-top: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    font-size: 16px;
+}
+.nav-extra a {
+    opacity: 0.8;
+    text-underline-offset: 4px;
+    transition: opacity 0.2s var(--ease-apple), color 0.2s var(--ease-apple);
+}
+.nav-extra a:hover {
+    opacity: 1;
+    color: var(--secondary);
+    text-decoration: underline;
+}
+.nav-projects {
+    font-size: 16px;
+}
+.nav-projects li + li {
+    margin-top: 12px;
+}
+.nav-projects h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: inherit;
+    opacity: 0.4;
+}
+.nav-projects a {
+    position: relative;
+}
+.nav-projects a::after {
+    content: "";
+    position: absolute;
+    left: -16px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--secondary);
+    transform: translateY(-50%);
+    opacity: 0;
+}
+.nav-projects a:hover {
+    color: var(--secondary);
+}
+.nav-projects a:hover::after {
+    opacity: 1;
+}
+.brand {
+    text-align: center;
+}
+.brand__logo {
+    display: inline-block;
+    width: 100%;
+    max-width: 320px;
+}
+.brand__logo svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+.socials {
+    margin-top: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+.socials a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    border-radius: 9999px;
+    background: var(--secondary);
+    color: #fff;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    transition: all 0.2s var(--ease-apple);
+}
+.socials a:hover {
+    background: var(--accent);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+.socials a:active {
+    transform: scale(0.98);
+}
+.socials a:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary), 0 0 0 4px var(--accent);
+}
+.socials svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Línea legal (LegalFooterBand.astro). */
+.legal {
+    width: 90%;
+    margin: 0 auto;
+    padding: 24px 0;
+    border-top: 1px solid rgb(255 246 229 / 0.15);
+}
+.legal__row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 14px;
+}
+.legal__items {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    color: rgb(255 246 229 / 0.8);
+}
+.legal__dot {
+    color: rgb(255 246 229 / 0.35);
+}
+.legal__link {
+    flex-shrink: 0;
+    font-weight: 700;
+    color: rgb(255 246 229 / 0.8);
+    text-underline-offset: 4px;
+    transition: color 0.2s var(--ease-apple);
+}
+.legal__link:hover,
+.legal__link:focus-visible {
+    color: var(--bg-white);
+    text-decoration: underline;
+    outline: none;
+}
+
+/* Créditos sobre celeste: tinta negra (contraste AA, como en el sitio). */
+.credits {
+    background: var(--secondary);
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--bg-black);
+}
+.credits > div {
+    width: 100%;
+    text-align: center;
+}
+.credits__links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px 20px;
+}
+.credits span,
+.credits a {
+    opacity: 0.8;
+}
+.credits a {
+    transition: color 0.2s var(--ease-apple), opacity 0.2s var(--ease-apple);
+}
+.credits a:hover {
+    opacity: 1;
+    color: var(--primary);
+}
+.credits__author {
+    position: relative;
+}
+.credits__author::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+    background: var(--bg-black);
+    transition: width 0.2s var(--ease-apple), background-color 0.2s var(--ease-apple);
+}
+.credits__author:hover::after {
+    width: 0;
+    background: var(--primary);
+}
+
+@media (min-width: 640px) {
+    .nav-main {
+        font-size: 30px;
+    }
+    .nav-extra,
+    .nav-projects {
+        font-size: 18px;
+    }
+    .legal__row {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        column-gap: 32px;
+    }
+}
+
+@media (min-width: 768px) {
+    .dome {
+        height: 300px;
+    }
+    .dome__fill,
+    .dome__line {
+        height: 1400px;
+    }
+    .dome__line {
+        top: 60px;
+    }
+    .dome__flor {
+        top: 64px;
+    }
+    .dome__content {
+        padding-top: 80px;
+    }
+    .title-xl {
+        font-size: 60px;
+    }
+    .logo-loop {
+        --logo-h: 96px;
+    }
+    .site-nav__grid {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+    .nav-main-col {
+        grid-column: span 4;
+    }
+    .nav-projects-col {
+        grid-column: span 5;
+    }
+    .nav-projects {
+        font-size: 20px;
+        max-width: 56ch;
+    }
+    .nav-main {
+        font-size: 36px;
+    }
+    .brand {
+        grid-column: span 3;
+        justify-self: end;
+        text-align: right;
+    }
+    .brand__logo-wrap {
+        margin-top: 48px;
+    }
+    .socials {
+        justify-content: flex-end;
+    }
+    .socials svg {
+        width: 24px;
+        height: 24px;
+    }
+    .credits {
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 20px 40px;
+        font-size: 16px;
+    }
+    .credits > div:first-child {
+        text-align: left;
+    }
+    .credits__links {
+        justify-content: flex-start;
+    }
+    .credits > div:last-child {
+        text-align: right;
+    }
+}
+</style>
+</head>
+<body>
+<footer id="footer" role="contentinfo">
+    <!-- Aliados -->
+    <section class="allies" aria-labelledby="allies-title">
+        <div class="dome">
+            <div class="dome__clip">
+                <div class="dome__fill"></div>
+                <div class="dome__line"></div>
+            </div>
+            <span class="dome__flor" aria-hidden="true"><svg aria-hidden="true" focusable="false" id="Capa_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 85.2 84.4">
+  <defs>
+    <style>
+      .st0 {
+        fill: #fff;
+      }
+
+      .st1 {
+        fill: #550089;
+      }
+    </style>
+  </defs>
+  <path class="st1" d="M84.6,29.3c2.9-11.2-4.4-24.7-16.4-28.3-8.7-2.7-18.9.3-25.6,7.4C36,1.5,26.8-1.6,18.2.8,6,4-1.9,17.2.4,28.7c1.6,7.7,7.3,12,9.4,13.5C8.5,43.3,0,51.6.9,62.5c1.1,13.4,16,24.3,28.5,21.4,7.7-1.8,11.8-8.5,13.2-10.9,1.2,2,6.3,9.3,14.7,11,12.2,2.4,26.3-7.8,27.4-20.9,1-11.9-8.8-20.3-9.7-20.9,2.1-1.4,7.7-5.3,9.6-12.8Z"/>
+  <path class="st0" d="M75,42.3c0,.8-.5,1.6-.9,2.2-4.5,5.7-11.7,7.2-16.9,3.2-1-.8-1.9-1.7-.6.1,3,4.2,7.1,8.3,8.4,13.4.4,1.6-.4,2.3-2,1.9-5.4-1.3-10.2-3.8-14.8-6.9-1.5-1.1-1.3-.8-.3.4,3.9,4.9,3.2,11.6-2.6,15.7-.8.5-1.7.9-2.7.8-.9,0-1.7-.5-2.5-1-6.2-4.4-6.8-11.4-1.9-16.2.6-.7.6-.6,0-.2-4.7,3.3-8.9,6.4-14.7,7.6-1.1.2-2.9.8-3.4-.3-.6-2.5,6.8-12.4,9.4-15.9.1-.2.5-.7.5-.7,0,0-.3.2-.6.6-5.2,5-13.3,3.7-18.2-2.3-.6-.7-1-1.5-1-2.4,0-.9.5-1.7,1-2.4,4.7-5.8,12.3-7.5,17.5-3.2.3.2,1.8,1.7,1,.6-4-5.6-8.8-10.9-10.2-17.9-1-4.3,4.2-1.7,6-.7,4.4,2.6,7.8,6.9,11.9,9.9.5.4,1.7,1.3.7.1-5.1-5.4-3.4-14.1,2.6-19.3.6-.6,1.5-1,2.3-1,.8,0,1.6.5,2.3,1,5.8,4.9,7.6,13.1,3.2,18.5-.7.8-1.8,1.9-.1.4,2.7-2.2,4.9-4,7.6-6,20.2-14.8,7,5.9.7,14.3-1.3,1.8,0,.4.7-.2,5.2-4.3,12.6-2.6,17.1,3.4.5.6.9,1.4.9,2.2v.2Z"/>
+  <path class="st1" d="M33.8,42.1c0-4.7,3.7-8.6,8.4-8.7.1,0,.2,0,.3,0,4.8,0,8.8,3.8,8.9,8.6,0,0,0,0,0,0,0,4.9-4,8.9-9,8.9-4.9,0-8.8-4-8.7-8.9Z"/>
+</svg></span>
+            <div class="dome__content">
+                <h2 id="allies-title" class="title-xl allies__title">Nuestros Aliados</h2>
+            </div>
+        </div>
+        <div class="logo-loop" id="logo-loop" aria-label="Carrusel de logos de empresas colaboradoras" hidden>
+            <div class="logo-loop__track" id="logo-track"></div>
+        </div>
+    </section>
+
+    <!-- ¿Quieres ser nuestro aliado? -->
+    <section class="join" aria-labelledby="join-title">
+        <div class="dome dome--primary">
+            <div class="dome__clip">
+                <div class="dome__fill"></div>
+            </div>
+            <div class="dome__content">
+                <div>
+                    <h2 id="join-title" class="title-xl join__title">¿Quieres ser nuestro aliado?</h2>
+                    <p class="join__subtitle">Juntos construyamos nuevas oportunidades</p>
+                </div>
+            </div>
+        </div>
+        <div class="join__actions">
+            <div class="join__actions-inner">
+                <a class="magic-btn" data-path="/about#contacto" href="https://minkayni.org/about#contacto" target="_top" aria-label="Quiero unirme 💜">
+                    <span class="magic-btn__glow" aria-hidden="true"></span>
+                    <span class="magic-btn__surface">
+                        <span class="magic-btn__label magic-btn__label--default">Quiero unirme 💜</span>
+                        <span class="magic-btn__label magic-btn__label--hover" aria-hidden="true">a cambiar vidas ✨</span>
+                    </span>
+                </a>
+                <a class="outline-btn" data-path="/donate" href="https://minkayni.org/donate" target="_top">Aporta hoy 💜</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Navegación, logotipo y redes -->
+    <div class="site-nav">
+        <section class="site-nav__grid" aria-labelledby="site-navigation-title">
+            <h2 id="site-navigation-title" class="sr-only">Navegación del sitio</h2>
+
+            <nav class="nav-main-col" aria-label="Navegación principal">
+                <ul class="nav-main">
+                    <li><a data-path="/" href="https://minkayni.org/" target="_top">Inicio</a></li>
+                    <li><a data-path="/about" href="https://minkayni.org/about" target="_top">Conócenos</a></li>
+                    <li><a data-path="/impact" href="https://minkayni.org/impact" target="_top">Impacto</a></li>
+                    <li><a data-path="/projects" href="https://minkayni.org/projects" target="_top">Proyectos</a></li>
+                    <li><a data-path="/novedades" href="https://minkayni.org/novedades" target="_top">Novedades</a></li>
+                    <li><a data-path="/about#contacto" href="https://minkayni.org/about#contacto" target="_top">Súmate</a></li>
+                </ul>
+                <ul class="nav-extra">
+                    <li><a data-path="/donate" href="https://minkayni.org/donate" target="_top">Aporta hoy</a></li>
+                    <li><a data-path="/transparencia" href="https://minkayni.org/transparencia" target="_top">Transparencia legal</a></li>
+                </ul>
+            </nav>
+
+            <nav class="nav-projects-col" aria-label="Navegación secundaria">
+                <ul class="nav-projects">
+                    <li><h2>Proyectos</h2></li>
+                    <li><a data-path="/projects/batucada-popular/" href="https://minkayni.org/projects/batucada-popular/" target="_top">Batucada Popular</a></li>
+                </ul>
+            </nav>
+
+            <div class="brand">
+                <div class="brand__logo-wrap">
+                    <a class="brand__logo" data-path="/" href="https://minkayni.org/" target="_top" aria-label="Logotipo de la Fundación Minkayni"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" id="Capa_2" data-name="Capa 2" viewBox="0 0 1053.7 481.7"><defs><style>.cls-1{fill:#fff}</style></defs><g id="tag"><path d="M26 291.2V89c23 23 63.7 48.6 102 48.6s79.8-26.2 102.2-48.6v201.4" style="fill:none;stroke:#fff;stroke-linecap:round;stroke-linejoin:round;stroke-width:50px"/><circle cx="230.6" cy="25.6" r="25.6" class="cls-1"/><circle cx="25.6" cy="25.6" r="25.6" class="cls-1"/><path d="M285.5 168a15 15 0 0 1 4.5-10.9 16 16 0 0 1 10.9-4.5q3 0 5.9 1.2 2.9 1.3 5 3.3a15.2 15.2 0 0 1-5 25 15 15 0 0 1-11.9 0 16 16 0 0 1-8.2-8.1q-1.2-2.8-1.2-6m29.4 134.8a14 14 0 0 1-4 10 14 14 0 0 1-24-10v-92.2q0-2.8 1.2-5.4 1.1-2.5 3-4.4a14 14 0 0 1 15.6-3 14 14 0 0 1 7.2 7.4 14 14 0 0 1 1 5.4zm142.3.4q0 3-1.1 5.5-1 2.6-3 4.4-1.7 1.9-4.2 3c-2.5 1-3.5 1-5.4 1a15 15 0 0 1-10-4 14 14 0 0 1-3.2-4.4q-1.1-2.5-1.1-5.5v-49.6q-.1-6.3-2.5-11.9a31 31 0 0 0-15.7-16.2q-5.4-2.4-11.8-2.4c-6.4 0-8.5.8-12.2 2.4a28 28 0 0 0-9.5 6.7 33 33 0 0 0-8.5 22.3v48.7q0 3-1 5.5a13 13 0 0 1-7.2 7.3q-2.4 1-5.4 1c-3 0-3.7-.3-5.4-1a15 15 0 0 1-7.8-7.3q-1.2-2.5-1.2-5.5v-48.7a60 60 0 0 1 16.8-42 57 57 0 0 1 64.4-12.8 57 57 0 0 1 30.5 31.6q4.5 10.9 4.5 23.2zm83.8-52 39.7 42.2q2 2 3 4.5a15 15 0 0 1-.1 10.6 13 13 0 0 1-3.3 4.7 14 14 0 0 1-15 2.8q-2.6-1.2-4.5-3.3l-39.3-43-11.3 10.8v22.6a13 13 0 0 1-4 9.7 15 15 0 0 1-4.4 3q-2.5 1-5.3 1a15 15 0 0 1-10-4 14 14 0 0 1-4.2-9.7V164q0-3 1.1-5.4a14 14 0 0 1 7.6-7.2 14 14 0 0 1 11 0 14 14 0 0 1 7.2 7.2q1 2.5 1.1 5.4v79.7l44-43.2a12 12 0 0 1 9.1-3.7 14 14 0 0 1 10 4.5 15 15 0 0 1 3 4.6q1 2.5 1 5.2 0 2.6-1 5.1-1.1 2.6-3.2 4.5zm52.3 5.5a59 59 0 0 1 4.9-24A64 64 0 0 1 631 200q11.2-4.8 23.9-4.8a48 48 0 0 1 24 4.8 62 62 0 0 1 37.5 56.8v45.8a14 14 0 0 1-8.8 13.1q-2.6 1.2-5.6 1.2-5 0-8.5-3t-4.7-7.5q-7.3 5.6-16 8.8a51 51 0 0 1-18 3.3q-12.6 0-23.8-4.9a63 63 0 0 1-37.8-56.8m28 0q0 7 2.6 13a34 34 0 0 0 31 20.6 33 33 0 0 0 23.7-9.9 34 34 0 0 0 0-47.4A34 34 0 0 0 655 223a35 35 0 0 0-31 20.5q-2.6 6.2-2.6 13.1m147.1 2.2a31 31 0 0 0 19.3 28.9 32 32 0 0 0 34.7-7 33 33 0 0 0 9-22.7v-47.5q0-2.8 1.3-5.4 1.1-2.5 3-4.4a14 14 0 0 1 10.1-4.2 13.5 13.5 0 0 1 12.7 8.6 14 14 0 0 1 1 5.4v48a58 58 0 0 1-13 37.3 60 60 0 0 1-32.7 20.8v29.7a14 14 0 0 1-4.1 10q-2 1.9-4.5 3c-2.5 1-3.5 1-5.4 1a13.7 13.7 0 0 1-14-14v-29.9a59 59 0 0 1-32.5-20.9 60 60 0 0 1-13-37v-48q0-2.9 1.2-5.4a15 15 0 0 1 3-4.4 14 14 0 0 1 9.9-4.2 14 14 0 0 1 9.9 4.2q2 1.9 3 4.4 1.1 2.5 1.1 5.4zm229.8 44.3q0 3-1.1 5.5a12 12 0 0 1-3 4.4q-1.8 1.9-4.3 3c-2.5 1-3.5 1-5.3 1s-3.8-.4-5.5-1a14 14 0 0 1-8.9-12.9v-48l.1-1.6q-.2-6.3-2.5-11.9a31 31 0 0 0-15.7-16.2q-5.4-2.4-11.9-2.4c-6.5 0-8.4.8-12 2.4a28 28 0 0 0-9.6 6.7 33 33 0 0 0-8.5 22.3v48.7q0 3-1 5.5a13 13 0 0 1-7.2 7.3q-2.5 1-5.5 1c-3 0-3.7-.3-5.4-1a15 15 0 0 1-7.7-7.3q-1.2-2.5-1.2-5.5v-48.7a60 60 0 0 1 16.7-42 57 57 0 0 1 64.4-12.8 57 57 0 0 1 30.6 31.6q4.5 10.9 4.5 23.2zm24.6-135.1a15 15 0 0 1 4.5-11 16 16 0 0 1 10.9-4.5q3 0 6 1.2 2.7 1.3 5 3.3a15.2 15.2 0 0 1-5 25 15 15 0 0 1-12 0 16 16 0 0 1-8.1-8.1q-1.3-2.8-1.3-6m29.5 134.7a14 14 0 0 1-4 10 14 14 0 0 1-24-10v-92.2q0-2.8 1.1-5.4 1.2-2.5 3.1-4.4a14 14 0 0 1 10-4.2 13 13 0 0 1 9.8 4.2 14 14 0 0 1 4 9.8zM175 471.5q-1.6 0-3.3-.5a17 17 0 0 1-10.8-9.4q-3.3-7-3.3-16.5a95 95 0 0 1 10.6-40q5-9 11.2-15a19 19 0 0 1 12.9-5.7q1.6 0 3.3.4 2.7.6 4.2 3.4a15 15 0 0 1 1.6 7.4 51 51 0 0 1-6.3 22.6q-1.7 2.8-2.5 2.8-1 0-1-2c0-2 .3-3.1 1-5.5q.4-1 1.4-1l.8.2a54 54 0 0 0 4.1-18.2q0-3-.8-5-1.2-3.2-5.5-3.2-5.5 0-11.2 5.8a62 62 0 0 0-10.3 15q-4.6 9-7.5 19.6-3 10.5-3 19.7 0 8.1 2.8 14.2t9.1 8.2q1.5.4 3.2.4 4.7 0 10-3.3 5.4-3.3 10.7-8.6a139 139 0 0 0 18-22.6q3.3-5.5 5-9.2.3-.7 1-.7l.4.1.5.4.2.6-.1.4a74 74 0 0 1-5.3 9.9 135 135 0 0 1-19 23.3 61 61 0 0 1-11.2 8.7 21 21 0 0 1-10.8 3.3" class="cls-1"/><path d="M224.2 439.5h-.3q-2-.3-3.1-3-1.3-2.5-1.3-6.4v-.7q-1.5-.9-1.5-3.6 0-1.8.7-3.7a8 8 0 0 1 2.2-3.2q1.5-1.4 3.7-1.4l1.1.1q5.1 1 5.1 8.5 0 2.9-.6 5.1 3.3-.5 5.8-2.2t5-4.1q.3-.3.8-.4l.7.4q.4.3.3.8 0 .4-.4.8a33 33 0 0 1-5.8 4.7q-3 1.9-7 2.4-2.4 6-5.4 6m3.7-8.2q.7-2.2.7-5.2 0-5.7-3.5-6-1.8 0-3.4 2.7.5.2.8.6.4.5.3 1l-.3 5.1a8 8 0 0 0 5.4 1.8m-3.4 5.4q1.6 0 2.7-3.2-2.2 0-4.6-1.2.3 4.3 2 4.4" class="cls-1"/><path d="M245.4 460.6h-.3q-6-1-5.9-16 0-8.7 1.5-18.3 2.6-18.6 6.5-34 2.1-8 4.3-12t3.5-4c1.4 0 1.3 1.3 1.4 3.8q0 9.6-12 41.2l-.8 5.4q-1.4 9.8-1.4 18.1 0 11.6 3.4 12.9l.9.1q2.7 0 6.3-4.2t7.1-10a188 188 0 0 0 9.8-18.1q.4-.7 1-.7 1.2.3 1.1 1.1v.5q-4.2 9.4-11 19.8-9 14.4-15.4 14.4m1-51.3q3-8.1 5.4-16.4a75 75 0 0 0 2.2-11.5 49 49 0 0 0-3.8 11.5q-2 7.3-3.7 16.4" class="cls-1"/><path d="M285.2 439.6q-5.5 0-5.5-8.6l.2-2.6-1 1.1-1.8 2.2q-4.3 5.3-7.2 5.3-2.4 0-2.5-3.8 0-3 2.1-7.6 1.7-3.4 4.4-5.8c2.7-2.4 3.7-2.4 6-2.4q1.6 0 3.4.8.8.6.8 1.4l-.1.6q-.6.9-1.4.8l-.6-.1q-1-.5-2-.5-2.3 0-4.5 2a18 18 0 0 0-3.4 4.6 14 14 0 0 0-1.7 5.5q0 1.5 1 1.7 1.4 0 4.4-3.7l5.6-7.4q.5-.4 1-.4.9 0 1 1.6l-.2 1.8q-.5 3-.5 4.7 0 6 3.9 6 4.1 0 12.4-7l5.8-5 .6-.3q.5 0 .9.3.3.4.3.8 0 .9-6.2 6-9.7 8-15.2 8" class="cls-1"/><path d="M303 452.9q-4 0-4.4-4.4 0-2.2 1.8-4.8c1.9-2.6 3.2-3.1 5.9-4.4h.2q4.5-1.9 9.5-2.9a32 32 0 0 0 1.7-9.3q0-4-2-4.7l-.6-.2q-1.9 0-4.2 3a22 22 0 0 0-4 8.3q0 .6-.6.9t-1 .3l-1-.3q-.6-.4-.6-1 2.7-28.5 6.9-45.2 2.2-9.4 4.7-10 1.8 0 1.8 3.5 0 8.5-8 34l-.8 2.8-.8 7.9q4-6.8 8-6.8h.5q4.5.8 4.5 8 0 3.8-1.1 8.1 4.8-1 8-3.2 3.2-2.4 6.2-7.4.3-.6.9-.5l.6.1q.5.4.5 1l-.1.5q-3.5 6-7.5 8.5c-4 2.5-5.8 2.7-9.5 3.4a27 27 0 0 1-7.1 10.7q-4.6 4-8.4 4zm.2-3q2.5 0 6.4-3.4 3.5-3.4 5.4-7.6-4 .9-7.6 2.4h-.2q-3 1.5-4.5 3.4-1.5 2-1.5 3.3 0 1.7 2 2m7.6-48.4a117 117 0 0 0 4.1-19.7q-1.9 4.4-3.7 17.3z" class="cls-1"/><path d="M338.4 439.5h-.3q-2-.3-3.1-3-1.3-2.5-1.3-6.4v-.7q-1.5-.9-1.5-3.6 0-1.8.7-3.7a8 8 0 0 1 2.2-3.2q1.5-1.4 3.7-1.4l1.1.1q5.1 1 5.1 8.5 0 2.9-.6 5.1 3.3-.5 5.8-2.2 2.6-1.7 5-4.1.3-.3.8-.4l.7.4q.3.3.3.8t-.4.8a33 33 0 0 1-5.8 4.7q-3 1.9-7 2.4-2.4 6-5.4 6m3.7-8.2q.7-2.2.7-5.2 0-5.7-3.5-6-1.8 0-3.4 2.7.5.2.8.6t.3 1l-.3 5.1a8 8 0 0 0 5.4 1.8m-3.4 5.4q1.6 0 2.8-3.2-2.4 0-4.7-1.2.3 4.3 2 4.4" class="cls-1"/><path d="M356.1 440q-.6 0-1-.5t-.4-1l.7-19.5q0-.6.5-1t1-.4q.8 0 1 .4.5.5.5 1.1l-.5 11.5a86 86 0 0 1 4.7-10.1q1.8-3 3.5-3 1.3 0 2.2 1.6.8 1 1.4 2.5c.6 1.5.9 1.8 1.4 2.5s1.2 1.2 2 1.2q1.4 0 3.6-2.7.5-.4.8-.4t.6.2.2.6-.3.8q-3.9 3.7-6.1 3.7-1.6 0-2.8-1.3-1-1.3-1.8-2.8-1-1.9-1.9-2.1-1.2 0-2.7 3.4a87 87 0 0 0-4.9 13.3l-.3 1q0 .4-.5.7-.3.3-.9.3m39.9-.4q-5.5 0-5.5-8.6l.2-2.6-1 1.1-1.8 2.2q-4.4 5.3-7.2 5.3-2.4 0-2.5-3.8 0-3 2.1-7.6 1.7-3.4 4.4-5.8c2.7-2.4 3.7-2.4 6-2.4q1.6 0 3.4.8.8.6.8 1.4l-.1.6q-.6.9-1.4.8l-.6-.1q-1-.5-2-.5-2.4 0-4.5 2a18 18 0 0 0-3.4 4.6 14 14 0 0 0-1.7 5.5q0 1.5 1 1.7 1.3 0 4.4-3.7l5.6-7.4q.5-.4 1-.4.7 0 1 1.6l-.2 1.8q-.5 3-.5 4.7 0 6 3.8 6 4.2 0 12.5-7l5.8-5 .6-.3q.5 0 .8.3.4.4.4.8 0 .9-6.2 6-9.7 8-15.2 8" class="cls-1"/><path d="M420.7 439.6q-3.7 0-5.4-2.2c-1.7-2.2-1.6-3.1-1.6-5.1q0-4.8 3-9.6c3-4.8 4.3-4.8 7-5.1q1.5 0 2.9 1.6 1.2 1.6 1.2 5.4v1q0 .6-.3.9-.4.3-1 .3-.3 0-.6-.4-.4-.4-.3-.7v-1.4q0-4-1.8-4h-.2q-2.4.5-4.7 4.4a15 15 0 0 0-2.3 7.6q0 4.8 4.8 4.9 3.3 0 7-2.2a47 47 0 0 0 12.6-10q.4-.4.9-.4t.7.3.4.8-.3.8a59 59 0 0 1-14 11 17 17 0 0 1-8 2.2" class="cls-1"/><path d="M445.4 439.6h-.4q-4.5-.2-4.5-8.6 0-4 1.2-10.4.3-1.4 1.6-1.3.5 0 1 .3.5.4.4 1v.2q-1.4 6.7-1.3 10.7 0 5.1 2.2 5.7h.6q2.8 0 6.8-3.3a64 64 0 0 0 8.5-8.9q.4-.4 1-.4l.6.2q.4.3.4.8 0 .3-.3.7-5 6-9.7 9.7-4.8 3.6-8.1 3.6m-1.7-23.2q-.8 0-1-2.4l.1-1q.1-.6.6-.9a2 2 0 0 1 1.9 0q.4.4.4 1v.2q-1 3.1-2 3.1" class="cls-1"/><path d="M466.4 439.5h-.3q-2-.3-3.2-3-1.2-2.5-1.2-6.4v-.7q-1.6-.9-1.6-3.6 0-1.8.8-3.7a8 8 0 0 1 2.1-3.2q1.5-1.4 3.7-1.4l1.2.1q5 1 5 8.5 0 2.9-.5 5.1 3.1-.5 5.8-2.2 2.5-1.7 4.9-4.1.3-.3.8-.4.4 0 .7.4.4.5.4.8t-.4.8a33 33 0 0 1-5.9 4.7q-3 1.9-7 2.4-2.3 6-5.3 6m-4.9-27.8q-.4 0-.7-.3-.4-.4-.3-.6 0-.5 1-1.1l12-5.5q.9 0 1.4 1l.2.6q0 .8-.8 1.3zm8.6 19.6q.6-2.2.7-5.2 0-5.7-3.5-6-1.8 0-3.5 2.7.5.2.8.6t.4 1l-.4 5.1a8 8 0 0 0 5.5 1.8m-3.4 5.4q1.5 0 2.7-3.2-2.4 0-4.6-1.2.3 4.3 1.9 4.4" class="cls-1"/><path d="M502.2 439.6h-.2q-4-.6-5-5.3a48 48 0 0 1-1.7-12.4q-.3-1.2-.6-1.2-1.5.3-5.2 7.7a52 52 0 0 0-4.8 10.8q-.5.3-1 .3-.7 0-1-.3-.5-.4-.5-1l1-19.2q.1-.6.6-1t1-.3 1 .5.5.9l-.8 12.8q6.2-13.6 9.8-14 1.3 0 2 1.4 1 2 1.6 8 .4 3.7 1 6.8.9 3 2.9 3 3.6 0 13-12.2.3-.4.8-.4t.7.3q.4.3.4.8t-.2.7q-10 13.3-15.3 13.3m29.5 42.1q-2.3 0-3.9-2a9 9 0 0 1-1.5-5.7q0-6.9 5.6-16.6 4.8-8.3 12.4-16.3V439q0-7.5-.5-14-1.3 4.5-3.3 8.5c-2 4-2.8 4.4-4.4 5l-1 .2q-1.9 0-2.7-2c-.8-2-1-2.8-1.2-4.7a45 45 0 0 1-.2-10.6q0-1.7 1.6-1.7.6 0 1 .5s.4.7.4 1l-.1 5q0 9.9 2 9.9 1 0 2.4-2.8a69 69 0 0 0 5.4-16.4q.4-.4 1.1-.4.6 0 1 .3.5.4.5 1l.2 1.6q.7 10 .7 17.7v1.2l.1-.1q8.7-8.4 19-13.4l.5-.1q.7 0 1 .6l.2.5q0 .6-.6 1a76 76 0 0 0-20.2 14.6q0 11.4-2.4 22.4a33 33 0 0 1-6 13.6q-4 4.4-7.1 4.4m-.3-3q2.4 0 5.5-3.8a31 31 0 0 0 5.1-12q1.9-9 2.2-18.5a86 86 0 0 0-10.4 14 34 34 0 0 0-5.5 15.5q0 4.7 3.1 4.8M582 440q-.5 0-1-.5t-.4-1l.8-19.5q0-.6.5-1t1-.4q.8 0 1 .4.5.5.5 1.1l-.5 11.5a86 86 0 0 1 4.7-10.1q1.8-3 3.5-3 1.2 0 2.2 1.6.8 1 1.3 2.5l1.5 2.5q.8 1.1 2 1.2 1.4 0 3.6-2.7.4-.4.8-.4t.6.2q.3.3.2.6l-.3.8q-3.9 3.7-6.1 3.7-1.6 0-2.8-1.3t-1.9-2.8q-.9-1.9-1.8-2.1-1.2 0-2.7 3.4a87 87 0 0 0-4.9 13.3l-.3 1q0 .4-.5.7t-1 .3m30.8-.4q-4.3 0-6.7-2.7a7 7 0 0 1-1.5-4.7q0-2.4 1.3-5.9 2-4.5 5.8-7.1l.4-.3q2.6-1.5 4.5-1.5 3 0 3.4 2.6 0 2.7-4.7 5.6a13 13 0 0 1-6.4 2.2h-.4q-.9 2.4-.9 4 0 2 .8 3a4 4 0 0 0 2.3 1.6q1.5.5 3 .5a14 14 0 0 0 7-2q3.5-2.1 6.5-4.8t5-5.2q.4-.4.8-.4t.8.3q.5.4.3.8 0 .4-.2.7a48 48 0 0 1-13.1 11.1 17 17 0 0 1-8 2.2m-3.1-14.1.5-.2q1.9-.4 4-1.6 3.2-2 3.2-2.8 0-.5-.8-.5a9 9 0 0 0-3.3 1.2 14 14 0 0 0-3.6 3.9" class="cls-1"/><path d="M637.5 439.6q-3.7 0-5.4-2.2a8 8 0 0 1-1.6-5.1q0-4.8 3-9.6c3-4.8 4.3-4.8 7-5.1q1.5 0 2.9 1.6 1.2 1.6 1.2 5.4v1q0 .6-.3.9-.4.3-1 .3-.4 0-.6-.4-.3-.4-.3-.7v-1.4q0-4-1.8-4h-.3q-2.2.5-4.6 4.4c-2.4 4-2.3 5.2-2.3 7.6q0 4.8 4.8 4.9 3.2 0 7-2.2a47 47 0 0 0 12.6-10.1q.4-.4.8-.4t.8.3q.5.4.4.8t-.3.8a59 59 0 0 1-14 11 17 17 0 0 1-8 2.2" class="cls-1"/><path d="M662.2 439.6h-.4q-4.5-.2-4.5-8.6 0-4 1.2-10.4.3-1.4 1.6-1.3.4 0 1 .3c.5.3.3.5.3 1v.2q-1.2 6.7-1.2 10.7 0 5.1 2.2 5.7h.6q2.7 0 6.8-3.3a64 64 0 0 0 8.5-8.9q.4-.4.9-.4l.7.2q.5.3.4.8 0 .3-.3.7-5 6-9.8 9.7-4.7 3.6-8 3.6m-1.7-23.2q-.8 0-1-2.4l.1-1q0-.6.5-.9a2 2 0 0 1 2 0q.4.4.4 1v.2q-1 3.1-2 3.1" class="cls-1"/><path d="M678.2 472.6q-.6 0-1-.4-.5-.6-.5-1v-6q0-35.5 2.9-49 1.3-6.5 3.7-6.5 1.1 0 2 1l.1.9q0 .6-.6 1.2-.4.3-.7.3h-.5q-2.7 5.3-3.7 34.4 1.8-12 5.5-21.3 2-4.7 4.3-6.8c2.3-2.1 3.1-2.1 4.5-2.1q2.4 0 4 2.1c1.5 2.1 1.5 3.4 1.5 6a20 20 0 0 1-.5 4.2 59 59 0 0 1 13.5-5.1h.2q.6 0 .8.3.3.4.3.8 0 1-1 1-5.1 1-14.7 6a24 24 0 0 1-4.3 7.3q-3.5 4-6.3 4-2.2 0-2.4-2.4 0-1.4 1.2-3.3 1.3-1.8 4-3.8l5-3q1.3-3.4 1.3-6 0-5-3.4-5.3-1.5 0-3 1.6-1.7 1.5-3.3 5.1-3.8 9.9-5.6 24t-1.8 20v.3q0 .6-.5 1-.4.6-1 .5M688 441q.9 0 3.6-3 1.2-1.4 2.2-3.2l-2.2 1.5q-2.1 1.5-3 2.6-1 1.2-1 1.8 0 .3.4.3" class="cls-1"/><path d="M713.2 440q-.7 0-1-.5-.6-.6-.5-1l.8-19.5q0-.6.4-1t1-.4q.8 0 1.1.4t.4 1.1l-.4 11.5a86 86 0 0 1 4.6-10.1q1.8-3 3.6-3 1.2 0 2.2 1.6.7 1 1.3 2.5t1.4 2.5q1 1.3 2 1.2 1.5 0 3.6-2.7.5-.4.9-.4t.6.2l.2.6q0 .3-.4.8-3.7 3.7-6 3.7-1.8 0-2.8-1.3-1.2-1.3-1.9-2.8-1-1.9-1.8-2.1-1.2 0-2.7 3.4a87 87 0 0 0-4.9 13.3l-.3 1-.5.7q-.4.3-1 .3m29.4-.5h-.3q-1.9-.3-3.2-3-1.2-2.5-1.2-6.4v-.7q-1.5-.9-1.5-3.6 0-1.8.7-3.7a8 8 0 0 1 2.1-3.2q1.5-1.4 3.8-1.4l1 .1q5.2 1 5.2 8.5 0 2.9-.6 5.1 3.2-.5 5.8-2.2t4.9-4.1q.3-.3.8-.4.4 0 .7.4.4.5.4.8t-.4.8a33 33 0 0 1-5.8 4.7q-3.1 1.9-7 2.4-2.4 6-5.4 6m3.7-8.2q.7-2.2.7-5.2 0-5.7-3.5-6-1.9 0-3.4 2.7l.8.6q.4.4.3 1l-.4 5.1a8 8 0 0 0 5.5 1.8m-3.4 5.4q1.5 0 2.7-3.2-2.4 0-4.6-1.2.3 4.3 1.9 4.4" class="cls-1"/><path d="M764.4 439.6q-3.7 0-5.4-2.2a8 8 0 0 1-1.6-5.1q0-4.8 3-9.6c3-4.8 4.3-4.8 6.9-5.1q1.8 0 3 1.6t1.2 5.4v1q0 .6-.4.9-.3.3-.8.3t-.7-.4-.3-.7v-1.4q0-4-1.8-4h-.3q-2.2.5-4.6 4.4c-2.4 4-2.3 5.2-2.3 7.6q0 4.8 4.8 4.9 3.2 0 7-2.2a47 47 0 0 0 12.6-10.1q.3-.4.8-.4t.8.3q.5.4.4.8t-.3.8a59 59 0 0 1-14 11 17 17 0 0 1-8 2.2" class="cls-1"/><path d="M789 439.6h-.3q-4.6-.2-4.6-8.6 0-4 1.3-10.4.3-1.4 1.6-1.3.4 0 1 .3c.5.3.3.5.3 1v.2q-1.2 6.7-1.3 10.7 0 5.1 2.2 5.7h.7q2.7 0 6.7-3.3a64 64 0 0 0 8.6-8.9q.3-.4.9-.4l.7.2q.5.3.4.8 0 .3-.3.7-5 6-9.8 9.7-4.7 3.6-8 3.6m-1.6-23.2q-.8 0-1-2.4l.1-1q0-.6.5-.9a2 2 0 0 1 2 0q.4.4.4 1v.2q-1 3.1-2 3.1" class="cls-1"/><path d="M823.8 472h-.7q-2.7-.3-3.3-6.3-.3-3.2-.3-8 .3-18.8 2.9-39.8-5.1 9-9.7 14.3-6 7.5-9.3 7.4-2-.2-2-3 0-3.2 1.8-7.5c1.8-4.3 2.9-5.6 4.8-7.9q3-3.5 6-3.5 1 0 1.9.6t.8 1.3l-.1.7q-.6.8-1.3.8-.4 0-.7-.2l-.8-.2q-2 0-4.2 3.2a39 39 0 0 0-4 6.8q-1.5 3.8-1.5 5.4 0 1 .5 1 1.3 0 6.5-6.3 6.3-8 12.1-19a185 185 0 0 1 3.3-17.6q3.3-13.8 6.4-13.8 2 .3 2 3.6 0 6-5.5 19.4l-3 7a377 377 0 0 0-4 47.3q0 4.5.4 7.8l.6 3.6h.1q.6 0 1 .3.5.5.5 1.1 0 1.2-1.2 1.5m4-70.2a121 121 0 0 0 4.7-15.8l-.1-.5q-.8 0-2.6 7.2z" class="cls-1"/><path d="M847.4 439.6q-5.4 0-5.5-8.6l.2-2.6-1 1.1-1.7 2.2Q835 437 832 437q-2.4 0-2.5-3.8 0-3 2.2-7.6 1.5-3.4 4.3-5.8c2.8-2.4 3.8-2.4 6-2.4q1.6 0 3.4.8.9.6.8 1.4l-.1.6q-.6.9-1.4.8l-.6-.1q-1-.5-2-.5-2.4 0-4.4 2a18 18 0 0 0-3.5 4.6 14 14 0 0 0-1.7 5.5q0 1.5 1 1.7 1.4 0 4.5-3.7l5.5-7.4q.6-.4 1-.4.9 0 1 1.6l-.2 1.8q-.4 3-.4 4.7 0 6 3.8 6 4.2 0 12.4-7l5.8-5q.3-.3.7-.3t.8.3.3.8q0 .9-6.2 6-9.6 8-15.2 8Z" class="cls-1"/><path d="M885.4 472h-.7q-2.7-.3-3.3-6.3-.3-3.2-.3-8 .3-18.8 2.8-39.8-5 9-9.6 14.3-6.1 7.5-9.3 7.4-2-.2-2-3 0-3.2 1.8-7.5c1.8-4.3 2.9-5.6 4.8-7.9q3-3.5 6-3.5 1 0 1.8.6 1 .5 1 1.3l-.2.7q-.6.8-1.3.8-.4 0-.7-.2l-.8-.2q-2.1 0-4.2 3.2a39 39 0 0 0-4 6.8q-1.5 3.8-1.5 5.4 0 1 .5 1 1.3 0 6.4-6.3 6.3-8 12.2-19a185 185 0 0 1 3.3-17.6q3.3-13.8 6.4-13.8 2 .3 2 3.6 0 6-5.5 19.4l-3 7a377 377 0 0 0-4 47.3q0 4.5.4 7.8l.5 3.6h.2q.5 0 1 .3.4.5.4 1.1 0 1.2-1.1 1.5m4-70.2a121 121 0 0 0 4.7-15.8l-.1-.5q-1 0-2.6 7.2z" class="cls-1"/></g></svg></a>
+                </div>
+                <nav aria-label="Redes sociales">
+                    <ul class="socials">
+                        <li>
+                            <a href="https://www.facebook.com/FMinkayni/" aria-label="Facebook" title="Facebook" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.04C6.5 2.04 2 6.53 2 12.06C2 17.06 5.66 21.21 10.44 21.96V14.96H7.9V12.06H10.44V9.85C10.44 7.34 11.93 5.96 14.22 5.96C15.31 5.96 16.45 6.15 16.45 6.15V8.62H15.19C13.95 8.62 13.56 9.39 13.56 10.18V12.06H16.34L15.89 14.96H13.56V21.96A10 10 0 0 0 22 12.06C22 6.53 17.5 2.04 12 2.04Z"/></svg>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.instagram.com/batucada_popular_/" aria-label="Instagram" title="Instagram" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8 1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3Z"/></svg>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.tiktok.com/@batucada.popular" aria-label="Tiktok" title="Tiktok" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.6 5.82s.51.5 0 0A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6c0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64c0 3.33 2.76 5.7 5.69 5.7c3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48"/></svg>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </section>
+
+        <!-- Línea legal -->
+        <section class="legal" aria-label="Información legal de la organización">
+            <div class="legal__row">
+                <p class="legal__items">
+                    <span>FUNDACIÓN MINKAYNI</span>
+                    <span class="legal__dot" aria-hidden="true">·</span>
+                    <span>RUC 0993333182001</span>
+                    <span class="legal__dot" aria-hidden="true">·</span>
+                    <span>Resolución MIES-CZ-8-DDG1-2020-0059-R</span>
+                    <span class="legal__dot" aria-hidden="true">·</span>
+                    <span>Guayaquil, Ecuador</span>
+                </p>
+                <a class="legal__link" data-path="/transparencia" href="https://minkayni.org/transparencia" target="_top">Transparencia legal <span aria-hidden="true">→</span></a>
+            </div>
+        </section>
+    </div>
+
+    <!-- Créditos -->
+    <section class="credits" aria-label="Información legal y créditos">
+        <div>
+            <div class="credits__links">
+                <p><span id="copyright">© 2020–2026 Fundación Minkayni</span></p>
+            </div>
+        </div>
+        <div>
+            <span>Desarrollado por </span><a class="credits__author" href="https://allmylinks.com/definitelynotisai" rel="noopener noreferrer" target="_blank">Isaí Tobar</a>
+        </div>
+        <div>
+            <span>Hecho con </span><a href="https://sites.google.com" rel="noopener noreferrer" target="_blank">Google Sites</a>
+        </div>
+    </section>
+</footer>
+
+<script>
+/* ─────────────────────────── CONFIGURACIÓN ───────────────────────────
+   SITIO: a dónde llevan los enlaces del pie. Por defecto, a minkayni.org.
+   Si prefieres que apunten a las páginas de este Google Site, pon aquí su
+   dirección publicada (p. ej. "https://sites.google.com/view/minkayni") y
+   crea páginas con las mismas rutas (/about, /impact, /projects…).
+
+   ALIADOS: logos del carrusel «Nuestros Aliados». Sube cada logo a Google
+   Drive/Fotos o usa la URL pública del CMS y añádelo así:
+     { src: "https://…/logo.png", alt: "Nombre del aliado" },
+   Si la lista queda vacía, el carrusel no se muestra (igual que en la web). */
+var SITIO = "https://minkayni.org";
+var ALIADOS = [
+];
+var AÑO_INICIO = 2020;
+/* ──────────────────────────────────────────────────────────────────── */
+
+(function () {
+    var base = SITIO.replace(/\/+$/, "");
+    if (base !== "https://minkayni.org") {
+        document.querySelectorAll("[data-path]").forEach(function (a) {
+            a.href = base + a.getAttribute("data-path");
+        });
+    }
+
+    var year = new Date().getFullYear();
+    var range = year > AÑO_INICIO ? AÑO_INICIO + "–" + year : String(AÑO_INICIO);
+    document.getElementById("copyright").textContent = "© " + range + " Fundación Minkayni";
+
+    var logos = ALIADOS.filter(function (l) { return l && l.src; });
+    if (logos.length) {
+        var track = document.getElementById("logo-track");
+        /* Dos copias seguidas: la animación recorre la mitad y vuelve a empezar sin salto. */
+        for (var copy = 0; copy < 2; copy++) {
+            logos.forEach(function (l) {
+                var img = document.createElement("img");
+                img.src = l.src;
+                img.alt = copy === 0 ? (l.alt || "") : "";
+                img.loading = "lazy";
+                track.appendChild(img);
+            });
+        }
+        document.getElementById("logo-loop").hidden = false;
+    }
+})();
+</script>
+</body>
+</html>

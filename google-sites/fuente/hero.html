@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hero · Fundación Minkayni</title>
+<!--
+  HERO DE PÁGINA INTERIOR (src/components/Hero.astro)
+  Fondo de burbujas violeta/celeste en movimiento y título crema en
+  Aristotelica Display Fat. Cambia solo el texto del <h1>.
+-->
+<style>
+{{FONTS}}
+{{BASE_CSS}}
+
+html,
+body {
+    height: 100%;
+}
+
+.hero {
+    position: relative;
+    display: flex;
+    height: 100%;
+    min-height: 240px;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 0 0 30px 30px;
+    background-image: linear-gradient(to bottom right, oklch(0.38 0.19 294), oklch(0.38 0.14 259));
+    contain: paint;
+}
+
+/* Fondo de burbujas (index/BubbleBackground.astro) con la paleta del hero. */
+.bubbles {
+    --second: 18, 113, 255;
+    --third: 140, 100, 255;
+    --fourth: 63, 169, 245;
+    --fifth: 140, 100, 255;
+    position: absolute;
+    inset: 0;
+    filter: blur(40px);
+}
+.bubbles::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(38% 34% at 50% 52%, rgba(120, 200, 250, 0.7) 0%, rgba(63, 169, 245, 0.4) 45%, rgba(63, 169, 245, 0) 100%),
+        radial-gradient(75% 70% at 48% 50%, rgba(40, 120, 250, 0.55) 0%, rgba(90, 110, 250, 0.35) 45%, rgba(140, 100, 255, 0) 100%);
+}
+.orbit {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: orbit linear infinite;
+}
+.orbit--a {
+    transform-origin: calc(50% - 400px);
+    animation-duration: 20s;
+}
+.orbit--b {
+    transform-origin: calc(50% + 400px);
+    animation-duration: 40s;
+}
+.orbit--c {
+    transform-origin: calc(50% - 800px) calc(50% + 200px);
+    animation-duration: 20s;
+}
+.blob {
+    position: absolute;
+    display: block;
+    border-radius: 9999px;
+    mix-blend-mode: hard-light;
+}
+.blob--second {
+    top: 10%;
+    left: 10%;
+    width: 80%;
+    height: 80%;
+    background: radial-gradient(circle at center, rgba(var(--second), 0.8) 0%, rgba(var(--second), 0) 50%);
+}
+.blob--third {
+    top: calc(50% + 200px);
+    left: calc(50% - 500px);
+    width: 80%;
+    height: 80%;
+    background: radial-gradient(circle at center, rgba(var(--third), 0.8) 0%, rgba(var(--third), 0) 50%);
+}
+.blob--fourth {
+    top: 10%;
+    left: 10%;
+    width: 80%;
+    height: 80%;
+    opacity: 0.7;
+    background: radial-gradient(circle at center, rgba(var(--fourth), 0.8) 0%, rgba(var(--fourth), 0) 50%);
+    animation: sway 40s ease-in-out infinite;
+}
+.blob--fifth {
+    top: calc(50% - 80%);
+    left: calc(50% - 80%);
+    width: 160%;
+    height: 160%;
+    background: radial-gradient(circle at center, rgba(var(--fifth), 0.8) 0%, rgba(var(--fifth), 0) 50%);
+}
+@keyframes orbit {
+    to {
+        transform: rotate(360deg);
+    }
+}
+@keyframes sway {
+    0%,
+    100% {
+        transform: translate3d(-50px, 0, 0);
+    }
+    50% {
+        transform: translate3d(50px, 0, 0);
+    }
+}
+
+.hero__title {
+    position: relative;
+    z-index: 1;
+    max-width: min(100%, 18ch);
+    margin: 0 auto;
+    padding: 0.08em 24px;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: clamp(2.75rem, 13vw, 8rem);
+    line-height: 0.84;
+    letter-spacing: -0.02em;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--bg-white);
+}
+</style>
+</head>
+<body>
+<header class="hero">
+    <div class="bubbles" aria-hidden="true">
+        <div class="orbit orbit--a"><span class="blob blob--second"></span></div>
+        <div class="orbit orbit--b"><span class="blob blob--third"></span></div>
+        <span class="blob blob--fourth"></span>
+        <div class="orbit orbit--c"><span class="blob blob--fifth"></span></div>
+    </div>
+    <!-- ✏️ Cambia aquí el título de la página -->
+    <h1 class="hero__title">Conócenos</h1>
+</header>
+</body>
+</html>

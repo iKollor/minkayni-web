@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Plantilla Google Sites · Minkayni</title>
+<!--
+  Simulación de cómo queda una página de Google Sites con el tema y los
+  bloques de esta carpeta. Lo que aquí es HTML «nativo» (cabecera, párrafo,
+  sección morada) lo pinta Google Sites con el tema; los <iframe> son los
+  bloques de embeds/ tal cual se pegan en «Insertar código».
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+<style>
+    :root {
+        --text: #0a0801;
+        --bg-white: #fff6e5;
+        --primary: #6e00a3;
+        --secondary: #3fa9f5;
+        --accent: #f3a20b;
+    }
+    * {
+        box-sizing: border-box;
+    }
+    body {
+        margin: 0;
+        background: var(--bg-white);
+        color: var(--text);
+        font-family: "Nunito", system-ui, sans-serif;
+    }
+    iframe {
+        display: block;
+        width: 100%;
+        border: 0;
+    }
+    .gs-header {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        height: 72px;
+        padding: 0 24px;
+        background: var(--bg-white);
+        box-shadow: 0 1px 0 rgb(10 8 1 / 0.08);
+    }
+    .gs-header img {
+        height: 40px;
+        width: auto;
+        display: block;
+    }
+    .gs-nav {
+        display: flex;
+        gap: 24px;
+        font-weight: 700;
+        font-size: 15px;
+    }
+    .gs-nav a {
+        color: var(--text);
+        text-decoration: none;
+    }
+    .gs-nav a[aria-current] {
+        color: var(--primary);
+        border-bottom: 3px solid var(--primary);
+        padding-bottom: 4px;
+    }
+    .gs-section {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 48px 16px;
+    }
+    .gs-section p {
+        font-size: 18px;
+        line-height: 1.6;
+        max-width: 62ch;
+        margin: 16px 0 24px;
+    }
+    .gs-emph {
+        background: var(--primary);
+        color: var(--bg-white);
+    }
+    .gs-emph h2 {
+        font-weight: 900;
+        font-size: 36px;
+        margin: 0;
+    }
+    .gs-note {
+        font-size: 13px;
+        opacity: 0.55;
+        text-align: center;
+        padding: 8px;
+    }
+    @media (max-width: 720px) {
+        .gs-nav {
+            display: none;
+        }
+    }
+</style>
+</head>
+<body>
+<header class="gs-header">
+    <img src="logos/minkayni-logo-color.png" alt="Fundación Minkayni" />
+    <nav class="gs-nav" aria-label="Navegación de Google Sites">
+        <a href="#">Inicio</a>
+        <a href="#" aria-current="page">Conócenos</a>
+        <a href="#">Impacto</a>
+        <a href="#">Proyectos</a>
+        <a href="#">Novedades</a>
+    </nav>
+</header>
+
+<iframe src="embeds/hero.html" title="Hero" style="height: clamp(240px, 60vh, 520px)"></iframe>
+
+<section class="gs-section">
+    <iframe src="embeds/encabezado.html" title="Encabezado de sección" style="height: 200px"></iframe>
+    <p>Cada donación sostiene ensayos, instrumentos y procesos formativos para las juventudes de Guayaquil. Somos una fundación sin fines de lucro: tu aporte llega directo a la cuenta institucional y se respalda con un certificado de donación.</p>
+    <iframe src="embeds/boton.html" title="Botón" style="height: 72px; width: 280px"></iframe>
+</section>
+
+<section class="gs-emph">
+    <div class="gs-section">
+        <h2>Sección destacada (estilo «Énfasis 1» del tema)</h2>
+        <p>Texto nativo de Google Sites sobre el morado de marca.</p>
+    </div>
+</section>
+
+<iframe src="embeds/footer.html" title="Footer" style="height: 1440px"></iframe>
+<p class="gs-note">Vista previa: la cabecera, el párrafo y la sección morada son bloques nativos de Google Sites; el hero, el encabezado, el botón y el footer son bloques «Insertar código».</p>
+
+</body>
+</html>
