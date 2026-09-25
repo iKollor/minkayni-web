@@ -396,6 +396,8 @@ export const ActivitySchema = () =>
         video: media(),
         sections: z.array(z.any()).nullish(),
         social_posts: z.array(ActivitySocialPostSchema().nullable()).nullish(),
+        /* Enlaces que guarda el webhook de Postiz (Instagram, Facebook, TikTok, LinkedIn). */
+        social_links: z.array(z.object({ platform: z.string().nullish(), url: z.string().nullish() }).nullable()).nullish(),
         tags: z.array(z.string()).nullish(),
         is_featured: z.boolean().nullish(),
         seo: SeoSchema().nullish(),

@@ -394,6 +394,7 @@ const activitySelection = `
     video { ${uploadFileSelection} }
     ${builderSectionsSelection}
     social_posts(pagination: { limit: 20 }) { documentId platform media_kind permalink }
+    social_links
     seo { ${seoSelection} }
 `;
 

@@ -45,7 +45,21 @@ const videos = [actividad.video, ...(actividad.gallery ?? [])]
     .map((m) => strapiMediaUrl(m?.url, STRAPI_URL))
     .filter(Boolean);
 const mapa = enlaceMapa(actividad.lat, actividad.lng);
-const redes = (actividad.social_posts ?? []).filter((p) => p?.permalink && /^https:\/\//.test(p.permalink));
+/* Enlaces a redes: los posts importados de Meta y los que guardó el webhook
+   de Postiz (también TikTok y LinkedIn), sin repetir. */
+const RED = {
+    instagram: { icon: "mdi:instagram", label: t("news.onInstagram") },
+    facebook: { icon: "mdi:facebook", label: t("news.onFacebook") },
+    tiktok: { icon: "ic:baseline-tiktok", label: t("news.onTiktok") },
+    linkedin: { icon: "mdi:linkedin", label: t("news.onLinkedin") },
+} as const;
+type Red = keyof typeof RED;
+const redes = [
+    ...(actividad.social_posts ?? []).map((p) => ({ platform: p?.platform, url: p?.permalink })),
+    ...(actividad.social_links ?? []).map((l) => ({ platform: l?.platform, url: l?.url })),
+]
+    .filter((r): r is { platform: Red; url: string } => Boolean(r.url && /^https:\/\//.test(r.url) && r.platform && r.platform in RED))
+    .filter((r, i, lista) => lista.findIndex((x) => x.url === r.url) === i);
 const marca = resumen.marca === "batucada" ? t("news.brand.batucada") : t("news.brand.minkayni");
 const novedades = localizePath("/novedades/", locale);
 
@@ -201,11 +215,11 @@ const jsonLd = {
                 <section class="mt-16 rounded-3xl border border-black/10 bg-white/50 px-8 py-8 sm:px-10" aria-labelledby="actividad-redes">
                     <h2 id="actividad-redes" class="text-sm font-bold uppercase tracking-[0.22em] text-primary">{t("news.alsoOnSocials")}</h2>
                     <ul class="mt-4 flex list-none flex-wrap gap-3 p-0">
-                        {redes.map((post) => (
+                        {redes.map((red) => (
                             <li>
-                                <a href={post!.permalink} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-full bg-secondary px-5 py-2.5 font-bold text-white transition hover:bg-secondary-deep">
-                                    <Icon name={post!.platform === "facebook" ? "mdi:facebook" : "mdi:instagram"} class="h-5 w-5" aria-hidden="true" />
-                                    {post!.platform === "facebook" ? t("news.onFacebook") : t("news.onInstagram")}
+                                <a href={red.url} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-full bg-secondary px-5 py-2.5 font-bold text-white transition hover:bg-secondary-deep">
+                                    <Icon name={RED[red.platform].icon} class="h-5 w-5" aria-hidden="true" />
+                                    {RED[red.platform].label}
                                 </a>
                             </li>
                         ))}
