@@ -3,12 +3,13 @@
 
    Los bloques del cuerpo son los del constructor (los mismos componentes que
    las subpáginas y que la vista previa del panel), pintados a HTML estático.
-   La galería reutiliza el visor del mapa de Batucada; sin JavaScript cada
-   miniatura es un enlace a la foto. */
+   Galería y redes viven en sus propios componentes. */
 import PageLayout from "../../layouts/PageLayout.astro";
 import BuilderBlocks from "../react/builder/BuilderBlocks";
 import { normalizeBlocks, type Block } from "../react/builder/normalize";
 import { Icon } from "astro-icon/components";
+import ActividadGaleria from "./ActividadGaleria.astro";
+import ActividadRedes from "./ActividadRedes.astro";
 import { renderMarkdown } from "../../utils/render-markdown";
 import { sectorPhotos } from "../../utils/sector-photos";
 import { strapiMediaUrl } from "../../utils/media-url";
@@ -45,34 +46,12 @@ const videos = [actividad.video, ...(actividad.gallery ?? [])]
     .map((m) => strapiMediaUrl(m?.url, STRAPI_URL))
     .filter(Boolean);
 const mapa = enlaceMapa(actividad.lat, actividad.lng);
-/* Enlaces a redes: los posts importados de Meta y los que guardó el webhook
-   de Postiz (también TikTok y LinkedIn), sin repetir. */
-const RED = {
-    instagram: { icon: "mdi:instagram", label: t("news.onInstagram") },
-    facebook: { icon: "mdi:facebook", label: t("news.onFacebook") },
-    tiktok: { icon: "ic:baseline-tiktok", label: t("news.onTiktok") },
-    linkedin: { icon: "mdi:linkedin", label: t("news.onLinkedin") },
-} as const;
-type Red = keyof typeof RED;
-const redes = [
-    ...(actividad.social_posts ?? []).map((p) => ({ platform: p?.platform, url: p?.permalink })),
-    ...(actividad.social_links ?? []).map((l) => ({ platform: l?.platform, url: l?.url })),
-]
-    .filter((r): r is { platform: Red; url: string } => Boolean(r.url && /^https:\/\//.test(r.url) && r.platform && r.platform in RED))
-    .filter((r, i, lista) => lista.findIndex((x) => x.url === r.url) === i);
+const vecinas = [
+    { vecina: anterior, etiqueta: `← ${t("news.previous")}`, clase: "" },
+    { vecina: siguiente, etiqueta: `${t("news.next")} →`, clase: "text-right" },
+];
 const marca = resumen.marca === "batucada" ? t("news.brand.batucada") : t("news.brand.minkayni");
 const novedades = localizePath("/novedades/", locale);
-
-const viewerStrings = JSON.stringify({
-    label: t("viewer.label"),
-    close: t("viewer.close"),
-    previous: t("viewer.previous"),
-    next: t("viewer.next"),
-    zoomIn: t("viewer.zoomIn"),
-    zoomOut: t("viewer.zoomOut"),
-    goTo: t("viewer.goTo"),
-    position: t("viewer.position"),
-});
 
 /* Google quiere descripciones de al menos 50 caracteres (tests/ad-grants):
    si la del CMS se queda corta se completa con la fecha, el lugar y la marca. */
@@ -180,53 +159,9 @@ const jsonLd = {
             )
         }
 
-        {
-            fotos.length > 1 && (
-                <section class="mt-16" aria-labelledby="actividad-galeria">
-                    <h2 id="actividad-galeria" class="font-display text-2xl font-black text-black sm:text-3xl">{t("news.gallery")}</h2>
-                    <ul class="mt-6 grid list-none grid-cols-2 gap-3 p-0 sm:grid-cols-3 lg:grid-cols-4" data-act-gallery={JSON.stringify(fotos)} data-act-strings={viewerStrings} data-act-caption={resumen.titulo}>
-                        {fotos.map((foto, indice) => (
-                            <li>
-                                <a
-                                    href={foto.zoom || foto.full}
-                                    data-act-photo={indice}
-                                    class="block overflow-hidden rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                                    aria-label={t("viewer.open", { index: indice + 1, count: fotos.length })}
-                                >
-                                    <img
-                                        class="aspect-square w-full bg-black/5 object-cover transition duration-300 hover:scale-[1.03] motion-reduce:transition-none motion-reduce:hover:scale-100"
-                                        src={foto.thumb}
-                                        width={foto.width ?? 600}
-                                        height={foto.height ?? 600}
-                                        alt={foto.alt}
-                                        loading="lazy"
-                                        decoding="async"
-                                    />
-                                </a>
-                            </li>
-                        ))}
-                    </ul>
-                </section>
-            )
-        }
+        {fotos.length > 1 && <ActividadGaleria {fotos} titulo={resumen.titulo} {locale} />}
 
-        {
-            redes.length > 0 && (
-                <section class="mt-16 rounded-3xl border border-black/10 bg-white/50 px-8 py-8 sm:px-10" aria-labelledby="actividad-redes">
-                    <h2 id="actividad-redes" class="text-sm font-bold uppercase tracking-[0.22em] text-primary">{t("news.alsoOnSocials")}</h2>
-                    <ul class="mt-4 flex list-none flex-wrap gap-3 p-0">
-                        {redes.map((red) => (
-                            <li>
-                                <a href={red.url} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-full bg-secondary px-5 py-2.5 font-bold text-white transition hover:bg-secondary-deep">
-                                    <Icon name={RED[red.platform].icon} class="h-5 w-5" aria-hidden="true" />
-                                    {RED[red.platform].label}
-                                </a>
-                            </li>
-                        ))}
-                    </ul>
-                </section>
-            )
-        }
+        <ActividadRedes {actividad} {locale} />
 
         <section class="mt-16 grid gap-6 rounded-3xl border border-black/10 bg-white/50 px-8 py-10 sm:px-12 md:grid-cols-[1fr_auto] md:items-end" aria-labelledby="actividad-sobre">
             <div class="max-w-[62ch]">
@@ -245,19 +180,15 @@ const jsonLd = {
         {
             (anterior || siguiente) && (
                 <nav class="mt-16 grid gap-4 border-t border-black/10 pt-10 sm:grid-cols-2" aria-label={t("news.backToNews")}>
-                    {anterior ? (
-                        <a href={localizePath(`/novedades/${anterior.slug}/`, locale)} class="group rounded-2xl p-4 transition hover:bg-white/60">
-                            <span class="block text-xs font-bold uppercase tracking-[0.18em] text-black/50">← {t("news.previous")}</span>
-                            <span class="mt-1 block font-display text-lg font-black text-black group-hover:text-primary">{anterior.titulo}</span>
-                        </a>
-                    ) : (
-                        <span />
-                    )}
-                    {siguiente && (
-                        <a href={localizePath(`/novedades/${siguiente.slug}/`, locale)} class="group rounded-2xl p-4 text-right transition hover:bg-white/60">
-                            <span class="block text-xs font-bold uppercase tracking-[0.18em] text-black/50">{t("news.next")} →</span>
-                            <span class="mt-1 block font-display text-lg font-black text-black group-hover:text-primary">{siguiente.titulo}</span>
-                        </a>
+                    {vecinas.map(({ vecina, etiqueta, clase }) =>
+                        vecina ? (
+                            <a href={localizePath(`/novedades/${vecina.slug}/`, locale)} class:list={["group rounded-2xl p-4 transition hover:bg-white/60", clase]}>
+                                <span class="block text-xs font-bold uppercase tracking-[0.18em] text-black/50">{etiqueta}</span>
+                                <span class="mt-1 block font-display text-lg font-black text-black group-hover:text-primary">{vecina.titulo}</span>
+                            </a>
+                        ) : (
+                            <span />
+                        )
                     )}
                 </nav>
             )
@@ -281,40 +212,14 @@ const jsonLd = {
 </PageLayout>
 
 <script>
-    import { openViewer, type ViewerStrings } from "../../scripts/batucada/viewer";
-    import type { ViewerPhoto } from "../../utils/sector-photos";
     import { initReveals } from "../../scripts/reveals";
     import { initMagicButtons } from "../../scripts/magic-button";
 
     const initActividad = () => {
         initReveals();
         initMagicButtons();
-
-        const galeria = document.querySelector<HTMLElement>("[data-act-gallery]");
-        if (!galeria || galeria.dataset.ready) return;
-        galeria.dataset.ready = "1";
-        let fotos: ViewerPhoto[] = [];
-        let textos: ViewerStrings | null = null;
-        try {
-            fotos = JSON.parse(galeria.dataset.actGallery ?? "[]");
-            textos = JSON.parse(galeria.dataset.actStrings ?? "null");
-        } catch {
-            return;
-        }
-        if (!fotos.length || !textos) return;
-        const strings = textos;
-
-        galeria.addEventListener("click", (event) => {
-            const enlace = (event.target as HTMLElement).closest<HTMLAnchorElement>("[data-act-photo]");
-            if (!enlace) return;
-            event.preventDefault();
-            openViewer({ photos: fotos, index: Number(enlace.dataset.actPhoto), caption: galeria.dataset.actCaption ?? "", strings, trigger: enlace });
-        });
     };
 
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initActividad, { once: true });
-    } else {
-        initActividad();
-    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initActividad, { once: true });
+    else initActividad();
 </script>

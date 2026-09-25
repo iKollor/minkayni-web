@@ -48,6 +48,8 @@ export async function cargarActividades(locale: Locale): Promise<ActividadResume
     return ordenarActividades(completas.map((a) => resumirActividad(a, locale, STRAPI_URL)));
 }
 
+const vecina = (resumen?: ActividadResumen) => (resumen ? { slug: resumen.slug, titulo: resumen.titulo } : undefined);
+
 /** Rutas de /novedades/<slug> (y /en/news/<slug>). */
 export async function rutasDeActividades(locale: Locale) {
     const completas = await cargarActividadesCompletas(locale);
@@ -58,8 +60,8 @@ export async function rutasDeActividades(locale: Locale) {
             actividad: completa,
             resumen,
             /* Para «Siguiente / anterior» al pie de la actividad. */
-            anterior: resumenes[indice + 1] ? { slug: resumenes[indice + 1].slug, titulo: resumenes[indice + 1].titulo } : undefined,
-            siguiente: resumenes[indice - 1] ? { slug: resumenes[indice - 1].slug, titulo: resumenes[indice - 1].titulo } : undefined,
+            anterior: vecina(resumenes[indice + 1]),
+            siguiente: vecina(resumenes[indice - 1]),
         },
     }));
 }
