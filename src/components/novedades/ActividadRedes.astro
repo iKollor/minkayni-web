@@ -1,0 +1,51 @@
+---
+/* «También en redes»: los posts importados de Meta y los enlaces que guardó
+   el webhook de Postiz (también TikTok y LinkedIn), sin repetir. */
+import { Icon } from "astro-icon/components";
+import type { Activity } from "../../schemas/pages.zod";
+import { useTranslations, type Locale } from "../../i18n";
+
+interface Props {
+    actividad: Activity;
+    locale: Locale;
+}
+
+const { actividad, locale } = Astro.props;
+const t = useTranslations(locale);
+
+const RED = {
+    instagram: { icon: "mdi:instagram", label: t("news.onInstagram") },
+    facebook: { icon: "mdi:facebook", label: t("news.onFacebook") },
+    tiktok: { icon: "ic:baseline-tiktok", label: t("news.onTiktok") },
+    linkedin: { icon: "mdi:linkedin", label: t("news.onLinkedin") },
+};
+type Red = keyof typeof RED;
+
+const candidatos = [
+    ...(actividad.social_posts ?? []).map((p) => ({ platform: p?.platform, url: p?.permalink })),
+    ...(actividad.social_links ?? []).map((l) => ({ platform: l?.platform, url: l?.url })),
+];
+const redes = candidatos
+    .filter((r): r is { platform: Red; url: string } => Boolean(r.url?.startsWith("https://") && r.platform && r.platform in RED))
+    .filter((r, i, lista) => lista.findIndex((x) => x.url === r.url) === i);
+---
+
+{
+    redes.length > 0 && (
+        <section class="mt-16 rounded-3xl border border-black/10 bg-white/50 px-8 py-8 sm:px-10" aria-labelledby="actividad-redes">
+            <h2 id="actividad-redes" class="text-sm font-bold uppercase tracking-[0.22em] text-primary">
+                {t("news.alsoOnSocials")}
+            </h2>
+            <ul class="mt-4 flex list-none flex-wrap gap-3 p-0">
+                {redes.map((red) => (
+                    <li>
+                        <a href={red.url} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-full bg-secondary px-5 py-2.5 font-bold text-white transition hover:bg-secondary-deep">
+                            <Icon name={RED[red.platform].icon} class="h-5 w-5" aria-hidden="true" />
+                            {RED[red.platform].label}
+                        </a>
+                    </li>
+                ))}
+            </ul>
+        </section>
+    )
+}

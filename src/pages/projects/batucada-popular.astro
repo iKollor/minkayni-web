@@ -12,6 +12,7 @@ import { batucadaFallback } from "@/data/pages/batucada";
 import { loadPageContent } from "@/utils/page-content";
 import { formatTitle, splitParagraphs } from "@/utils/rich-title";
 import { sectorPhotos } from "@/utils/sector-photos";
+import { viewerStrings } from "../../utils/viewer-strings";
 import { getLocale, useTranslations } from "../../i18n";
 
 /* Contenido: single type `batucada-page` en Strapi, con fallback local. */
@@ -43,14 +44,7 @@ const sectorsJson = JSON.stringify(
 /* Textos del mapa y del visor. Los scripts no conocen idiomas: las plantillas
    con `{index}`/`{count}` viajan sin rellenar y las completa quien las usa. */
 const mapStringsJson = JSON.stringify({
-    label: t("viewer.label"),
-    close: t("viewer.close"),
-    previous: t("viewer.previous"),
-    next: t("viewer.next"),
-    zoomIn: t("viewer.zoomIn"),
-    zoomOut: t("viewer.zoomOut"),
-    goTo: t("viewer.goTo"),
-    position: t("viewer.position"),
+    ...viewerStrings(t),
     open: t("viewer.open"),
     error: t("batucada.mapError"),
 });

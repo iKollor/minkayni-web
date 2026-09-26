@@ -1,0 +1,138 @@
+---
+/* Actividades de campo al comienzo de /novedades (y /en/news).
+
+   La destacada abre la sección; debajo, todas las demás en una grilla que se
+   filtra por marca y por año SIN JavaScript: los filtros son radios y el CSS
+   (`:has()`) esconde las tarjetas que no coinciden. Sin soporte de `:has()`
+   se ven todas, que es un buen respaldo. Todo el contenido está en el HTML
+   inicial, como pide AGENTS.md. */
+import ActividadCard from "./ActividadCard.astro";
+import { actividadPrincipal, aniosDe, marcasDe, type ActividadResumen } from "../../utils/actividades-core";
+import { useTranslations, type Locale } from "../../i18n";
+
+interface Props {
+    actividades: ActividadResumen[];
+    locale: Locale;
+}
+
+const { actividades, locale } = Astro.props;
+const t = useTranslations(locale);
+const principal = actividadPrincipal(actividades);
+const anios = aniosDe(actividades);
+const marcas = marcasDe(actividades);
+const conFiltros = actividades.length > 3 && (anios.length > 1 || marcas.length > 1);
+
+/* Una regla por año (los años salen del CMS; `:is()` no admite variables).
+   Los valores son cuatro dígitos, así que no hay nada que escapar. */
+const reglasAnio = anios
+    .map((anio) => `.act:has(input[name="act-anio"][value="${anio}"]:checked) .act-grid > li:not([data-anio="${anio}"]){display:none}`)
+    .join("\n");
+---
+
+{
+    principal && (
+        <section class="act mt-14 sm:mt-20" aria-labelledby="actividades-titulo">
+            <h2 id="actividades-titulo" class="font-display text-3xl font-black leading-tight text-black sm:text-4xl">
+                {t("news.activitiesTitle")}
+            </h2>
+            <p class="mt-3 max-w-[60ch] text-lg leading-relaxed text-black/70">
+                {t("news.activitiesLead")} <span class="text-black/50">({t("news.activityCount", { count: actividades.length })})</span>
+            </p>
+
+            <div class="act-principal mt-10">
+                <ActividadCard actividad={principal} {locale} destacada nivel="h3" />
+            </div>
+
+            {conFiltros && (
+                <div class="mt-10 flex flex-wrap gap-x-8 gap-y-4" role="group" aria-label={t("news.filterLabel")}>
+                    {marcas.length > 1 && (
+                        <div class="flex flex-wrap items-center gap-2" role="radiogroup" aria-label={t("news.filterLabel")}>
+                            <label class="act-chip">
+                                <input type="radio" name="act-marca" value="" class="sr-only" checked data-filtro />
+                                {t("news.filterAll")}
+                            </label>
+                            {marcas.map((marca) => (
+                                <label class="act-chip">
+                                    <input type="radio" name="act-marca" value={marca} class="sr-only" data-filtro />
+                                    {marca === "batucada" ? t("news.brand.batucada") : t("news.brand.minkayni")}
+                                </label>
+                            ))}
+                        </div>
+                    )}
+                    {anios.length > 1 && (
+                        <div class="flex flex-wrap items-center gap-2" role="radiogroup" aria-labelledby="act-filtro-anio">
+                            <span id="act-filtro-anio" class="mr-2 text-sm font-bold uppercase tracking-[0.18em] text-black/50">{t("news.filterYear")}</span>
+                            <label class="act-chip">
+                                <input type="radio" name="act-anio" value="" class="sr-only" checked data-filtro />
+                                {t("news.filterAll")}
+                            </label>
+                            {anios.map((anio) => (
+                                <label class="act-chip">
+                                    <input type="radio" name="act-anio" value={anio} class="sr-only" data-filtro />
+                                    {anio}
+                                </label>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {actividades.length > 1 && (
+                <ul class="act-grid mt-8 grid list-none gap-6 p-0 sm:grid-cols-2 lg:grid-cols-3">
+                    {actividades.map((actividad) => (
+                        <li data-marca={actividad.marca} data-anio={actividad.anio} data-principal={actividad === principal ? "" : undefined}>
+                            <ActividadCard {actividad} {locale} />
+                        </li>
+                    ))}
+                </ul>
+            )}
+
+            {conFiltros && <style is:inline set:html={reglasAnio} />}
+        </section>
+    )
+}
+
+<style>
+    .act-chip {
+        display: inline-flex;
+        cursor: pointer;
+        align-items: center;
+        border-radius: 999px;
+        border: 2px solid color-mix(in srgb, var(--primary) 35%, transparent);
+        padding: 0.35rem 1rem;
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--primary);
+        transition: background-color 150ms, color 150ms;
+    }
+    .act-chip:has(input:checked) {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+    }
+    .act-chip:has(input:focus-visible) {
+        outline: 2px solid var(--primary);
+        outline-offset: 3px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .act-chip {
+            transition: none;
+        }
+    }
+
+    /* Sin filtros: la destacada va arriba y no se repite en la grilla.
+       Con algún filtro: se esconde el bloque destacado y la grilla la incluye
+       si coincide. */
+    :global(.act:not(:has(input[data-filtro]:checked:not([value=""])))) .act-grid > li[data-principal] {
+        display: none;
+    }
+    :global(.act:has(input[data-filtro]:checked:not([value=""]))) .act-principal {
+        display: none;
+    }
+    :global(.act:has(input[name="act-marca"][value="minkayni"]:checked)) .act-grid > li:not([data-marca="minkayni"]) {
+        display: none;
+    }
+    :global(.act:has(input[name="act-marca"][value="batucada"]:checked)) .act-grid > li:not([data-marca="batucada"]) {
+        display: none;
+    }
+</style>

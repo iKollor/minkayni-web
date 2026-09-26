@@ -66,6 +66,38 @@ for (const [canonical, byLocale] of Object.entries(TRANSLATED_PATHS)) {
     }
 }
 
+/* Secciones cuyas subpáginas heredan la traducción del prefijo: cada
+   actividad vive en `/novedades/<slug>` y en inglés en `/en/news/<slug>`,
+   con el mismo slug (ver src/utils/actividades.ts). */
+const TRANSLATED_PREFIXES = ["/novedades"] as const;
+
+/** `rest` si `pathname` es una subruta de `prefix` (`/news/x` bajo `/news` → `/x`). */
+const subpathOf = (pathname: string, prefix: string): string | undefined =>
+    pathname.startsWith(`${prefix}/`) && pathname.length > prefix.length + 1 ? pathname.slice(prefix.length) : undefined;
+
+function canonicalOf(withoutLocale: string): string {
+    const exact = CANONICAL_PATHS.get(withoutLocale);
+    if (exact) return exact;
+    for (const canonical of TRANSLATED_PREFIXES) {
+        for (const translated of Object.values(TRANSLATED_PATHS[canonical] ?? {})) {
+            const rest = translated ? subpathOf(withoutLocale, translated) : undefined;
+            if (rest) return canonical + rest;
+        }
+    }
+    return withoutLocale;
+}
+
+function translatedOf(canonical: string, locale: Locale): string | undefined {
+    const exact = TRANSLATED_PATHS[canonical]?.[locale];
+    if (exact) return exact;
+    for (const prefix of TRANSLATED_PREFIXES) {
+        const translated = TRANSLATED_PATHS[prefix]?.[locale];
+        const rest = subpathOf(canonical, prefix);
+        if (translated && rest) return translated + rest;
+    }
+    return undefined;
+}
+
 /**
  * Idioma de la página que se está renderizando, deducido de la URL.
  * `/en`, `/en/`, `/en/about` → inglés. Cualquier otra cosa → español.
@@ -90,7 +122,7 @@ export function stripLocale(pathname: string): string {
     if (first !== undefined && isLocale(first) && first !== defaultLocale) segments.shift();
 
     const withoutLocale = segments.length === 0 ? "/" : `/${segments.join("/")}`;
-    return CANONICAL_PATHS.get(withoutLocale) ?? withoutLocale;
+    return canonicalOf(withoutLocale);
 }
 
 /**
@@ -104,7 +136,7 @@ export function localizePath(path: string, locale: Locale): string {
     const [pathnameRaw, ...rest] = path.split(/(?=[?#])/);
     const suffix = rest.join("");
     const canonical = stripLocale(pathnameRaw || "/");
-    const pathname = (locale === defaultLocale ? canonical : TRANSLATED_PATHS[canonical]?.[locale]) ?? canonical;
+    const pathname = (locale === defaultLocale ? canonical : translatedOf(canonical, locale)) ?? canonical;
     const trailing = pathnameRaw.endsWith("/") && pathname !== "/" ? "/" : "";
 
     if (locale === defaultLocale) return `${pathname}${trailing}${suffix}`;

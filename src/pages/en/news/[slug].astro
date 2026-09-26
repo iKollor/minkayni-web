@@ -1,0 +1,14 @@
+---
+/* An activity from the field (/en/news/<slug>). The Spanish version lives at
+   /novedades/<slug>, with the same slug. See src/utils/actividades.ts. */
+import ActividadView from "../../../components/novedades/ActividadView.astro";
+import { rutasDeActividades } from "../../../utils/actividades";
+
+export async function getStaticPaths() {
+    return rutasDeActividades("en");
+}
+
+const { actividad, resumen, anterior, siguiente } = Astro.props;
+---
+
+<ActividadView {actividad} {resumen} {anterior} {siguiente} locale="en" />
